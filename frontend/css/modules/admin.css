@@ -1,0 +1,399 @@
+/* ========================================
+   SIPAD
+   MÓDULO: ADMINISTRACIÓN
+======================================== */
+
+
+/* ========================================
+   TOOLBAR
+======================================== */
+
+.module-page .section-actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.module-page .actions-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.module-page .actions-right{
+  display:flex;
+  align-items:center;
+}
+
+
+/* ========================================
+   BUSCADOR
+======================================== */
+
+.module-page .input-search{
+  width:260px;
+  padding:8px 12px;
+  border-radius:6px;
+  border:1px solid #d0d5dd;
+  font-size:14px;
+  background:#fff;
+  transition:border 0.2s ease;
+}
+
+.module-page .input-search:focus{
+  outline:none;
+  border-color:#3b82f6;
+}
+
+
+/* ========================================
+   TABLA ADMIN
+======================================== */
+
+.module-page .table{
+  width:100%;
+  overflow:visible;
+  position:relative;
+  table-layout:auto;
+}
+
+.module-page .table th{
+  font-weight:600;
+  text-align:center;
+  white-space:nowrap;
+}
+
+.module-page .table td{
+  vertical-align:middle;
+  font-size:13px;
+}
+
+
+/* COLUMNAS ESPECÍFICAS (módulos simples) */
+
+.module-page .table td:nth-child(1){
+  text-align:center; /* ID */
+}
+
+.module-page .table td:nth-child(3){
+  text-align:center; /* Estado */
+}
+
+.module-page .table td:nth-child(4){
+  text-align:center; /* Fecha */
+}
+
+.module-page .table td:nth-child(5){
+  text-align:center; /* Acciones */
+}
+
+
+/* ========================================
+   TABLA USUARIOS (AJUSTES ESPECÍFICOS)
+======================================== */
+
+#tablaUsuarios{
+  width:100%;
+  table-layout:auto;
+}
+
+#tablaUsuarios td:nth-child(2),
+#tablaUsuarios td:nth-child(3),
+#tablaUsuarios td:nth-child(4),
+#tablaUsuarios td:nth-child(5),
+#tablaUsuarios td:nth-child(6),
+#tablaUsuarios td:nth-child(7){
+  white-space:nowrap;
+}
+
+/* anchos sugeridos para mejor lectura */
+
+#tablaUsuarios th:nth-child(2){min-width:220px;}
+#tablaUsuarios th:nth-child(3){min-width:140px;}
+#tablaUsuarios th:nth-child(4){min-width:220px;}
+#tablaUsuarios th:nth-child(5){min-width:160px;}
+#tablaUsuarios th:nth-child(6){min-width:120px;}
+#tablaUsuarios th:nth-child(7){min-width:180px;}
+
+
+/* ========================================
+   BADGES ESTADO
+======================================== */
+
+.badge-aprobado{
+  background:#d1fae5;
+  color:#065f46;
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:500;
+}
+
+.badge-inactivo{
+  background:#fee2e2;
+  color:#7f1d1d;
+  padding:4px 10px;
+  border-radius:6px;
+  font-size:12px;
+  font-weight:500;
+}
+
+
+/* ========================================
+   BOTONES DE ACCIONES TABLA
+======================================== */
+
+.acciones-admin{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.acciones-admin button{
+  padding:5px 9px;
+  font-size:12px;
+  border-radius:6px;
+  line-height:1;
+}
+
+
+/* ========================================
+   MODAL ADMIN
+======================================== */
+
+.modal-content{
+  width:520px;
+  max-width:92%;
+}
+
+
+/* ========================================
+   FORMULARIOS ADMIN
+======================================== */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+  margin-top:12px;
+}
+
+/* CAMPOS FULL */
+
+.form-grid .full{
+  grid-column:1 / span 2;
+}
+
+
+/* ========================================
+   GRUPOS DE FORMULARIO
+======================================== */
+
+.form-group{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+
+.form-group label{
+  font-size:13px;
+  font-weight:500;
+  color:#344054;
+}
+
+
+/* ========================================
+   INPUTS / SELECT
+======================================== */
+
+.form-group input,
+.form-group select{
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid #d0d5dd;
+  font-size:14px;
+  background:#fff;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+  outline:none;
+  border-color:#3b82f6;
+}
+
+
+/* ========================================
+   CHECKBOX
+======================================== */
+
+.checkbox-group{
+  display:flex;
+  align-items:center;
+}
+
+.checkbox-inline{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.checkbox-inline input{
+  width:16px;
+  height:16px;
+}
+
+
+/* ========================================
+   ACCIONES DEL MODAL
+======================================== */
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:6px;
+}
+
+
+/* =========================================
+   SWITCH TOGGLE
+========================================= */
+
+.switch-field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:14px;
+  color:#334155;
+}
+
+.switch{
+  position:relative;
+  display:inline-block;
+  width:44px;
+  height:24px;
+}
+
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+
+.slider{
+  position:absolute;
+  cursor:pointer;
+  inset:0;
+  background:#cbd5e1;
+  transition:.25s;
+  border-radius:30px;
+}
+
+.slider:before{
+  position:absolute;
+  content:"";
+  height:18px;
+  width:18px;
+  left:3px;
+  bottom:3px;
+  background:#fff;
+  transition:.25s;
+  border-radius:50%;
+}
+
+.switch input:checked + .slider{
+  background:#2563eb;
+}
+
+.switch input:checked + .slider:before{
+  transform:translateX(20px);
+}
+
+
+/* =================================
+   MENÚ ACCIONES TABLA
+================================= */
+
+.acciones-menu{
+  position:relative;
+  display:inline-block;
+}
+
+/* BOTÓN ⋮ */
+
+.btn-menu{
+  background:none;
+  border:none;
+  font-size:20px;
+  cursor:pointer;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+.btn-menu:hover{
+  background:#f1f5f9;
+}
+
+
+/* DROPDOWN */
+
+.menu-dropdown{
+  position:absolute;
+  right:0;
+  top:32px;
+  background:#fff;
+  border:1px solid #e2e8f0;
+  border-radius:8px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.12);
+  display:none;
+  min-width:170px;
+  z-index:9999;
+}
+
+
+/* ITEMS */
+
+.menu-dropdown button{
+  display:block;
+  width:100%;
+  text-align:left;
+  padding:9px 12px;
+  background:none;
+  border:none;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.menu-dropdown button:hover{
+  background:#f8fafc;
+}
+
+
+/* ESTADO VISIBLE */
+
+.menu-dropdown.show{
+  display:block;
+}
+
+/* ======================================================
+   TABLA USUARIOS
+====================================================== */
+
+#tablaUsuarios{
+  min-width:1150px;
+}
+
+#tablaUsuarios td,
+#tablaUsuarios th{
+  white-space:nowrap;
+}
+
+/* Página usuarios */
+
+body:has(#tablaUsuarios) .module-page{
+  max-width:1600px;
+}

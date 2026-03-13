@@ -1,0 +1,106 @@
+/* Home moderno – SEG-TEC / TRD-AI SPA */
+body {
+  font-family: 'Arial', sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: #004080;
+  color: #fff;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+header nav button {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #fff;
+  color: #004080;
+  font-weight: bold;
+}
+
+header nav button.active {
+  background: #003366;
+  color: #fff;
+}
+
+section.home-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  text-align: center;
+}
+
+.home-container h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.home-container p {
+  margin-bottom: 1.5rem;
+}
+
+.home-modulos {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.modulo-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #004080;
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 250px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.modulo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.modulo-info {
+  text-align: left;
+}
+
+.modulo-info strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.modulo-info span {
+  font-size: 0.9rem;
+  color: #cfd8dc;
+}
+
+.modulo-icon {
+  font-size: 2rem;
+}
+
+@media (max-width: 700px) {
+  .home-modulos {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .modulo-card {
+    width: 90%;
+  }
+}

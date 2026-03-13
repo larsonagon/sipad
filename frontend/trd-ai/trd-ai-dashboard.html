@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TRD-AI – Dashboard</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+
+<style>
+
+/* KPI CARDS */
+
+.trd-kpis{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+margin-bottom:30px;
+}
+
+.trd-card{
+background:white;
+padding:22px;
+border-radius:8px;
+box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+
+.trd-card-title{
+font-size:13px;
+color:#777;
+margin-bottom:8px;
+}
+
+.trd-card-value{
+font-size:32px;
+font-weight:700;
+color:#2c3e50;
+}
+
+/* CTA */
+
+.trd-actions{
+margin:20px 0 30px 0;
+display:flex;
+gap:10px;
+}
+
+/* TABLA */
+
+.trd-table{
+width:100%;
+border-collapse:collapse;
+}
+
+.trd-table th{
+text-align:left;
+padding:12px;
+border-bottom:2px solid #e5e5e5;
+}
+
+.trd-table td{
+padding:12px;
+border-bottom:1px solid #f0f0f0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<div class="module-header premium-header">
+
+<h1>TRD-AI</h1>
+
+<p class="module-subtext">
+Motor inteligente para generación asistida de Tablas de Retención Documental.
+</p>
+
+</div>
+
+
+<div class="module-content">
+
+<div class="trd-actions">
+
+<button id="btnVerPropuestas" class="btn-primary">
+Ver propuestas
+</button>
+
+
+</div>
+
+
+<div class="trd-kpis">
+
+<div class="trd-card">
+<div class="trd-card-title">Total propuestas</div>
+<div id="kpiTotal" class="trd-card-value">0</div>
+</div>
+
+<div class="trd-card">
+<div class="trd-card-title">Aprobadas</div>
+<div id="kpiAprobadas" class="trd-card-value">0</div>
+</div>
+
+<div class="trd-card">
+<div class="trd-card-title">Rechazadas</div>
+<div id="kpiRechazadas" class="trd-card-value">0</div>
+</div>
+
+<div class="trd-card">
+<div class="trd-card-title">Pendientes</div>
+<div id="kpiPendientes" class="trd-card-value">0</div>
+</div>
+
+</div>
+
+
+<h3>Series aprobadas recientemente</h3>
+
+<div class="table-container">
+
+<table class="trd-table">
+
+<thead>
+<tr>
+<th>Serie</th>
+<th>Fecha aprobación</th>
+</tr>
+</thead>
+
+<tbody id="tablaRecientes">
+
+<tr>
+<td colspan="2">No hay registros</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</main>
+
+<script type="module" src="/trd-ai/trd-ai-dashboard.js"></script>
+
+</body>
+</html>

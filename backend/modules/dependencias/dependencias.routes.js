@@ -1,0 +1,264 @@
+import express from 'express'
+import { db } from '../../db/database.js'
+import { verificarJWT } from '../../middlewares/auth.middleware.js'
+import { requireLevel } from '../../middlewares/role.middleware.js'
+
+const router = express.Router()
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
+
+  if (!dependenciaId) {
+    console.warn('⚠️ Auditoría cancelada: dependenciaId null')
+    return
+  }
+
+  try {
+
+    await db.run(
+      `
+      INSERT INTO auditoria_dependencias
+      (actor_id, dependencia_afectada_id, accion, detalle_json)
+      VALUES ($1, $2, $3, $4)
+      `,
+      [
+        actorId,
+        dependenciaId,
+        accion,
+        JSON.stringify(detalle || {})
+      ]
+    )
+
+  } catch (err) {
+
+    // ⚠️ La auditoría NUNCA debe romper el sistema
+    console.error('⚠️ Error registrando auditoría:', err)
+
+  }
+
+}
+
+// =====================================================
+// LISTAR DEPENDENCIAS (>=80)
+// =====================================================
+
+router.get(
+  '/',
+  verificarJWT,
+  requireLevel(80),
+  async (req, res) => {
+
+    try {
+
+      const rows = await db.all(`
+        SELECT id, nombre, activa, created_at
+        FROM dependencias
+        ORDER BY created_at ASC
+      `)
+
+      res.json(rows)
+
+    } catch (err) {
+
+      console.error(err)
+      res.status(500).json({ error: 'Error listando dependencias' })
+
+    }
+
+  }
+)
+
+// =====================================================
+// CREAR DEPENDENCIA (>=80)
+// =====================================================
+
+router.post(
+  '/',
+  verificarJWT,
+  requireLevel(80),
+  async (req, res) => {
+
+    try {
+
+      const actorId = parseInt(req.user.sub)
+      const { nombre } = req.body
+
+      if (!nombre || !nombre.trim()) {
+        return res.status(400).json({ error: 'Nombre requerido' })
+      }
+
+      const nombreLimpio = nombre.trim()
+
+      const existe = await db.get(
+        `SELECT id FROM dependencias WHERE nombre = $1`,
+        [nombreLimpio]
+      )
+
+      if (existe) {
+        return res.status(400).json({
+          error: 'Ya existe una dependencia con ese nombre'
+        })
+      }
+
+      const result = await db.get(
+        `
+        INSERT INTO dependencias (nombre, activa)
+        VALUES ($1, 1)
+        RETURNING id
+        `,
+        [nombreLimpio]
+      )
+
+      const nuevaDependenciaId =
+        result?.id ??
+        result?.rows?.[0]?.id ??
+        null
+
+      if (!nuevaDependenciaId) {
+
+        console.error('❌ No se pudo obtener el ID de la dependencia creada')
+
+        return res.status(500).json({
+          error: 'Error creando dependencia'
+        })
+
+      }
+
+      await registrarAuditoria(
+        actorId,
+        nuevaDependenciaId,
+        'CREAR_DEPENDENCIA',
+        { nombre: nombreLimpio }
+      )
+
+      res.status(201).json({ ok: true })
+
+    } catch (err) {
+
+      console.error(err)
+      res.status(500).json({ error: 'Error creando dependencia' })
+
+    }
+
+  }
+)
+
+// =====================================================
+// EDITAR DEPENDENCIA
+// =====================================================
+
+router.patch(
+  '/:id',
+  verificarJWT,
+  requireLevel(80),
+  async (req, res) => {
+
+    try {
+
+      const actorId = parseInt(req.user.sub)
+      const id = parseInt(req.params.id)
+      const { nombre } = req.body
+
+      if (!nombre || !nombre.trim()) {
+        return res.status(400).json({ error: 'Nombre requerido' })
+      }
+
+      const nombreLimpio = nombre.trim()
+
+      const existe = await db.get(
+        `SELECT id FROM dependencias WHERE nombre = $1 AND id != $2`,
+        [nombreLimpio, id]
+      )
+
+      if (existe) {
+        return res.status(400).json({
+          error: 'Ya existe otra dependencia con ese nombre'
+        })
+      }
+
+      await db.run(
+        `UPDATE dependencias SET nombre = $1 WHERE id = $2`,
+        [nombreLimpio, id]
+      )
+
+      await registrarAuditoria(
+        actorId,
+        id,
+        'EDITAR_DEPENDENCIA',
+        { nombre: nombreLimpio }
+      )
+
+      res.json({ ok: true })
+
+    } catch (err) {
+
+      console.error(err)
+      res.status(500).json({ error: 'Error editando dependencia' })
+
+    }
+
+  }
+)
+
+// =====================================================
+// ACTIVAR / DESACTIVAR
+// =====================================================
+
+router.patch(
+  '/:id/estado',
+  verificarJWT,
+  requireLevel(80),
+  async (req, res) => {
+
+    try {
+
+      const actorId = parseInt(req.user.sub)
+      const id = parseInt(req.params.id)
+      const { activa } = req.body
+
+      if (activa === 0) {
+
+        const usuariosActivos = await db.get(`
+          SELECT COUNT(*) as total
+          FROM usuarios
+          WHERE id_dependencia = $1 AND estado = 1
+        `, [id])
+
+        if (usuariosActivos.total > 0) {
+          return res.status(400).json({
+            error: 'No puedes desactivar una dependencia con usuarios activos'
+          })
+        }
+
+      }
+
+      await db.run(
+        `UPDATE dependencias SET activa = $1 WHERE id = $2`,
+        [activa ? 1 : 0, id]
+      )
+
+      await registrarAuditoria(
+        actorId,
+        id,
+        activa ? 'ACTIVAR_DEPENDENCIA' : 'DESACTIVAR_DEPENDENCIA',
+        {}
+      )
+
+      res.json({ ok: true })
+
+    } catch (err) {
+
+      console.error(err)
+      res.status(500).json({ error: 'Error actualizando dependencia' })
+
+    }
+
+  }
+)
+
+console.log('🔥 DEPENDENCIAS ROUTES CARGADO')
+
+export default router

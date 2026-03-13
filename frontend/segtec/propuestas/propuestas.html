@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SEG-TEC – Propuestas técnicas</title>
+
+  <!-- CSS Core Global -->
+  <link rel="stylesheet" href="/css/core/layout.css">
+
+  <!-- CSS Core Formularios -->
+  <link rel="stylesheet" href="/css/core/forms.css">
+
+  <!-- CSS del módulo SEG-TEC -->
+  <link rel="stylesheet" href="/css/modules/segtec.css">
+</head>
+<body>
+
+<script type="module">
+  import { renderHeader } from '/components/header.js';
+  renderHeader('SEG-TEC');
+</script>
+
+<div class="dashboard-container">
+  <div class="card">
+
+    <div class="card-header">
+      <h2>Resultado del análisis técnico</h2>
+    </div>
+
+    <div id="tablaPropuestas">
+      <p>Cargando propuestas...</p>
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="./propuestas.js"></script>
+
+</body>
+</html>

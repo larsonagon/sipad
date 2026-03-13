@@ -1,0 +1,30 @@
+{
+  "name": "sipad-backend",
+  "version": "1.0.0",
+  "description": "Backend SIPAD - Sistema Inteligente de Procesos Archivísticos Digitales",
+  "type": "module",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "DB_ENGINE=postgres node server.js",
+    "dev": "DB_ENGINE=postgres nodemon server.js",
+    "dev:sqlite": "DB_ENGINE=sqlite nodemon server.js",
+    "restart": "rs"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "pdfkit": "^0.17.2",
+    "puppeteer": "^24.38.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Registro de actividades – SIPAD</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/segtec.css">
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<div class="contenido-documento">
+
+<!-- ========================= -->
+<!-- HEADER -->
+<!-- ========================= -->
+
+<div class="module-header centered">
+<h1>Registro completo de actividades</h1>
+<p class="module-subtext">
+Listado detallado de actividades registradas en el sistema
+</p>
+</div>
+
+<!-- ========================= -->
+<!-- FILTROS -->
+<!-- ========================= -->
+
+<section class="card">
+
+<h3>Filtros</h3>
+
+<div class="form-grid">
+
+<div class="form-group">
+<label>Dependencia</label>
+<select id="dependencia" class="form-control">
+<option value="">Todas</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Funcionario</label>
+<select id="funcionario" class="form-control">
+<option value="">Todos</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Fecha inicio</label>
+<input type="date" id="fechaInicio" class="form-control">
+</div>
+
+<div class="form-group">
+<label>Fecha fin</label>
+<input type="date" id="fechaFin" class="form-control">
+</div>
+
+</div>
+
+<div class="module-actions">
+
+<button class="btn-primary" id="btnConsultar">
+Generar informe
+</button>
+
+<button class="btn-secondary" id="btnWord">
+Exportar Word
+</button>
+
+<button class="btn-secondary" id="btnExcel">
+Exportar Excel
+</button>
+
+</div>
+
+</section>
+
+<!-- ========================= -->
+<!-- RESULTADOS -->
+<!-- ========================= -->
+
+<section class="card" style="margin-top:30px">
+
+<h3>Resultados</h3>
+
+<div class="table-container">
+
+<table class="table" id="tablaResultados">
+
+<thead>
+
+<tr>
+<th>Actividad</th>
+<th>Funcionario</th>
+<th>Dependencia</th>
+<th>Frecuencia</th>
+<th>Fecha</th>
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
+
+<script type="module" src="/informes/registro.js"></script>
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

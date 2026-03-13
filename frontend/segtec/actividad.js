@@ -1,0 +1,620 @@
+import { notify } from '/components/notifications.js'
+
+// ======================================================
+// SEG-TEC – Vista única actividad
+// ======================================================
+
+function notifySafe(message,type="success"){
+try{
+if(typeof notify === "function"){
+notify(message,type)
+return
+}
+}catch(e){}
+console.log(message)
+}
+
+// ======================================================
+
+const token = localStorage.getItem('token')
+
+if (!token)
+window.location.href = '/login.html'
+
+const params = new URLSearchParams(window.location.search)
+
+let actividadId = params.get('id')
+
+const $ = id => document.getElementById(id)
+
+// ======================================================
+// ELEMENTOS UI
+// ======================================================
+
+const badge = $('badgeEstado')
+const btnGuardar = $('guardarActividadCompleta')
+const btnCancelar = $('btnCancelar')
+
+const nombre = $('nombre')
+const cargoEjecutor = $('cargoEjecutor')
+const clasificacion = $('clasificacion')
+const periodicidad = $('periodicidad')
+const descripcion = $('descripcion')
+
+const generaDoc = $('generaDoc')
+const documentosGenerados = $('documentosGenerados')
+const formato = $('formato')
+const recepcionExterna = $('recepcionExterna')
+
+const volumenCategoria = $('volumenCategoria')
+const volumenAnualPersonalizado = $('volumenAnualPersonalizado')
+const grupoVolumenAnual = $('grupoVolumenAnual')
+
+const custodiaTipo = $('custodiaTipo')
+const dependenciaCustodia = $('dependenciaCustodia')
+const grupoDependenciaCustodia = $('grupoDependenciaCustodia')
+const cargoCustodia = $('cargoCustodia')
+
+const localizacionTipo = $('localizacionTipo')
+const localizacionOtro = $('localizacionOtro')
+
+const pasosFormales = $('pasosFormales')
+const otrasDep = $('otrasDep')
+const normaAplicable = $('normaAplicable')
+
+const selectDependencia = $('selectDependencia')
+const tagsContainer = $('dependenciasTags')
+
+const tienePlazo = $('tienePlazo')
+const plazoLegal = $('plazoLegal')
+const tiempoPromedio = $('tiempoPromedio')
+const generaExpediente = $('generaExpediente')
+
+// ======================================================
+
+let dependenciasSeleccionadas = []
+let estadoActual = "borrador"
+
+// ======================================================
+// CONTROL DEPENDENCIAS
+// ======================================================
+
+function actualizarDependenciasUI(){
+
+const requiere = otrasDep.value === "si"
+
+selectDependencia.disabled = !requiere
+
+if(!requiere){
+dependenciasSeleccionadas = []
+renderTags()
+}
+
+}
+
+otrasDep?.addEventListener("change", actualizarDependenciasUI)
+
+// ======================================================
+// CONTROL VOLUMEN
+// ======================================================
+
+function actualizarVolumenUI(){
+
+const mostrar = volumenCategoria.value === "anual"
+
+if(grupoVolumenAnual)
+grupoVolumenAnual.style.display =
+mostrar ? "block":"none"
+
+}
+
+volumenCategoria?.addEventListener("change", actualizarVolumenUI)
+
+// ======================================================
+// CONTROL CUSTODIA
+// ======================================================
+
+function actualizarCustodiaUI(){
+
+const mostrar = custodiaTipo.value === "otra_dependencia"
+
+if(grupoDependenciaCustodia)
+grupoDependenciaCustodia.style.display =
+mostrar ? "block":"none"
+
+}
+
+custodiaTipo?.addEventListener("change", actualizarCustodiaUI)
+
+// ======================================================
+// CONTROL PLAZO
+// ======================================================
+
+function actualizarPlazoUI(){
+
+const mostrar = tienePlazo.value === "si"
+
+plazoLegal.parentElement.style.display =
+mostrar ? "block":"none"
+
+tiempoPromedio.parentElement.style.display =
+mostrar ? "block":"none"
+
+}
+
+tienePlazo?.addEventListener("change", actualizarPlazoUI)
+
+// ======================================================
+// SELECCIONAR DEPENDENCIA
+// ======================================================
+
+selectDependencia?.addEventListener("change",()=>{
+
+const id = selectDependencia.value
+if(!id) return
+
+const nombre =
+selectDependencia.options[
+selectDependencia.selectedIndex
+].textContent
+
+const existe =
+dependenciasSeleccionadas.find(d=>String(d.id)===String(id))
+
+if(!existe){
+
+dependenciasSeleccionadas.push({
+id,
+nombre
+})
+
+renderTags()
+
+}
+
+selectDependencia.value=""
+
+})
+
+// ======================================================
+// ELIMINAR TAG
+// ======================================================
+
+tagsContainer?.addEventListener("click",(e)=>{
+
+if(!e.target.classList.contains("tag-remove")) return
+
+const id = e.target.dataset.id
+
+dependenciasSeleccionadas =
+dependenciasSeleccionadas.filter(
+d=>String(d.id)!==String(id)
+)
+
+renderTags()
+
+})
+
+// ======================================================
+// BLOQUEAR FORMULARIO
+// ======================================================
+
+function bloquearFormulario(){
+
+document
+.querySelectorAll("input,select,textarea")
+.forEach(el=>el.disabled=true)
+
+btnGuardar.style.display="none"
+
+}
+
+// ======================================================
+// CARGO DESDE TOKEN
+// ======================================================
+
+function cargarCargoUsuarioLocal(){
+
+try{
+
+const payload =
+JSON.parse(atob(token.split('.')[1]))
+
+const cargo =
+payload.cargo ||
+payload.cargo_nombre ||
+payload.nombre_cargo ||
+payload.rol ||
+payload.role ||
+payload.perfil ||
+""
+
+if(cargo){
+cargoEjecutor.value = cargo
+}
+
+}catch(e){}
+
+}
+
+// ======================================================
+
+function normalizarBoolean(valor){
+return (
+valor === true ||
+valor === 1 ||
+valor === "1" ||
+valor === "true" ||
+valor === "si"
+)
+}
+
+// ======================================================
+// FETCH
+// ======================================================
+
+async function fetchSeguro(url, options = {}) {
+
+const res = await fetch(url,{
+...options,
+headers:{
+'Content-Type':'application/json',
+Authorization:`Bearer ${token}`
+}
+})
+
+const text = await res.text()
+
+let json
+
+try { json = JSON.parse(text) }
+catch { throw new Error(text) }
+
+if(!res.ok)
+throw new Error(json.error || 'Error servidor')
+
+return json
+
+}
+
+// ======================================================
+// CREAR ACTIVIDAD
+// ======================================================
+
+async function asegurarActividad(){
+
+if(actividadId) return actividadId
+
+const res = await fetchSeguro('/api/segtec/actividades',{
+method:'POST',
+body:JSON.stringify({
+nombre: nombre.value || "Actividad en edición"
+})
+})
+
+actividadId = res.data?.id || res.id
+
+return actividadId
+
+}
+
+// ======================================================
+// DEPENDENCIAS
+// ======================================================
+
+async function cargarDependencias(){
+
+const data = await fetchSeguro('/api/dependencias')
+
+selectDependencia.innerHTML =
+'<option value="">Seleccione dependencia...</option>'
+
+dependenciaCustodia.innerHTML =
+'<option value="">Seleccione dependencia...</option>'
+
+data.forEach(dep=>{
+
+if(dep.activa !== 1) return
+
+const opt=document.createElement('option')
+opt.value = dep.id
+opt.textContent = dep.nombre
+selectDependencia.appendChild(opt)
+
+const opt2 = opt.cloneNode(true)
+dependenciaCustodia.appendChild(opt2)
+
+})
+
+}
+
+// ======================================================
+// CARGAR CARGOS
+// ======================================================
+
+async function cargarCargos(){
+
+const data = await fetchSeguro('/api/cargos')
+
+cargoCustodia.innerHTML =
+'<option value="">Seleccione cargo...</option>'
+
+data.forEach(cargo=>{
+
+if(cargo.estado !== 1) return
+
+const opt=document.createElement('option')
+
+opt.value=cargo.id
+opt.textContent=cargo.nombre
+
+cargoCustodia.appendChild(opt)
+
+})
+
+}
+
+// ======================================================
+// TAGS
+// ======================================================
+
+function renderTags(){
+
+tagsContainer.innerHTML=''
+
+dependenciasSeleccionadas.forEach(dep=>{
+
+const tag=document.createElement('div')
+tag.className='tag-item'
+
+tag.innerHTML = `
+${dep.nombre}
+<span class="tag-remove" data-id="${dep.id}">✕</span>
+`
+
+tagsContainer.appendChild(tag)
+
+})
+
+}
+
+// ======================================================
+// NORMALIZAR DEPENDENCIAS
+// ======================================================
+
+function normalizarDependencias(valor){
+
+if(!valor) return []
+
+if(Array.isArray(valor)) return valor
+
+if(typeof valor === "string"){
+try{
+return JSON.parse(valor)
+}catch{
+return []
+}
+}
+
+return []
+
+}
+
+// ======================================================
+// CARGAR ACTIVIDAD
+// ======================================================
+
+async function cargarActividad(){
+
+if(!actividadId) return
+
+const json =
+await fetchSeguro(`/api/segtec/actividades/${actividadId}`)
+
+const act = json.data ?? json
+
+estadoActual = act.estado_general || "borrador"
+
+nombre.value = act.nombre ?? ""
+clasificacion.value = act.tipo_funcion ?? ""
+periodicidad.value = act.frecuencia ?? ""
+descripcion.value = act.descripcion_funcional ?? ""
+
+generaDoc.value =
+normalizarBoolean(act.genera_documentos) ? "si":"no"
+
+documentosGenerados.value =
+act.documentos_generados ?? ""
+
+formato.value =
+act.formato_produccion ?? ""
+
+recepcionExterna.value =
+act.recepcion_externa ?? ""
+
+volumenCategoria.value =
+act.volumen_categoria ?? act.volumen_documental ?? ""
+
+volumenAnualPersonalizado.value =
+act.volumen_anual_personalizado ?? ""
+
+custodiaTipo.value =
+act.custodia_tipo ?? act.responsable_custodia ?? ""
+
+cargoCustodia.value =
+act.cargo_custodia ?? ""
+
+dependenciaCustodia.value =
+act.dependencia_custodia ?? ""
+
+localizacionTipo.value =
+act.localizacion_tipo ?? act.localizacion_documentos ?? ""
+
+localizacionOtro.value =
+act.localizacion_otro ?? ""
+
+plazoLegal.value =
+act.plazo_legal ?? ""
+
+tiempoPromedio.value =
+act.tiempo_ejecucion ?? ""
+
+generaExpediente.value =
+normalizarBoolean(act.genera_expediente_propio) ? "si":"no"
+
+pasosFormales.value =
+normalizarBoolean(act.tiene_pasos_formales) ? "si":"no"
+
+otrasDep.value =
+normalizarBoolean(act.requiere_otras_dependencias) ? "si":"no"
+
+tienePlazo.value =
+normalizarBoolean(act.tiene_plazo) ? "si":"no"
+
+normaAplicable.value =
+act.norma_aplicable ?? ""
+
+dependenciasSeleccionadas = []
+
+const deps = normalizarDependencias(act.dependencias_relacionadas)
+
+deps.forEach(id=>{
+const opt = selectDependencia.querySelector(`option[value="${id}"]`)
+if(opt){
+dependenciasSeleccionadas.push({
+id: opt.value,
+nombre: opt.textContent
+})
+}
+})
+
+renderTags()
+
+actualizarDependenciasUI()
+actualizarPlazoUI()
+actualizarCustodiaUI()
+actualizarVolumenUI()
+
+badge.innerText =
+estadoActual.toUpperCase()
+
+if(
+estadoActual === "caracterizada" ||
+estadoActual === "analizada"
+){
+bloquearFormulario()
+}
+
+}
+
+// ======================================================
+// GUARDAR
+// ======================================================
+
+btnGuardar?.addEventListener('click',async()=>{
+
+try{
+
+await asegurarActividad()
+
+await fetchSeguro(`/api/segtec/actividades/${actividadId}/bloque1`,{
+method:'PUT',
+body:JSON.stringify({
+nombre:nombre.value,
+tipo_funcion:clasificacion.value,
+frecuencia:periodicidad.value,
+descripcion_funcional:descripcion.value
+})
+})
+
+await fetchSeguro(`/api/segtec/actividades/${actividadId}/bloque2`,{
+method:'PUT',
+body:JSON.stringify({
+
+genera_documentos:generaDoc.value==="si",
+documentos_generados:documentosGenerados.value,
+formato_produccion:formato.value,
+recepcion_externa:recepcionExterna.value || null,
+
+volumen_categoria:volumenCategoria.value,
+volumen_anual_personalizado:volumenAnualPersonalizado.value,
+
+custodia_tipo:custodiaTipo.value,
+cargo_custodia:cargoCustodia.value,
+dependencia_custodia:dependenciaCustodia.value,
+
+localizacion_tipo:localizacionTipo.value,
+localizacion_otro:localizacionOtro.value
+
+})
+})
+
+await fetchSeguro(`/api/segtec/actividades/${actividadId}/bloque3`,{
+method:'PUT',
+body:JSON.stringify({
+
+tiene_pasos_formales:pasosFormales.value==="si",
+requiere_otras_dependencias:otrasDep.value==="si",
+
+tiene_plazo:tienePlazo.value==="si",
+
+plazo_legal:plazoLegal.value,
+tiempo_ejecucion:tiempoPromedio.value,
+
+genera_expediente_propio:generaExpediente.value==="si",
+
+norma_aplicable:normaAplicable.value,
+
+dependencias_relacionadas:
+dependenciasSeleccionadas.map(d=>d.id)
+
+})
+})
+
+notifySafe("Actividad guardada correctamente")
+
+setTimeout(()=>{
+window.location.href='/segtec/segtec.html'
+},1000)
+
+}catch(err){
+
+console.error(err)
+notifySafe("Error al guardar","warning")
+
+}
+
+})
+
+// ======================================================
+// CANCELAR
+// ======================================================
+
+btnCancelar?.addEventListener('click',()=>{
+window.location.href='/segtec/segtec.html'
+})
+
+// ======================================================
+// INIT
+// ======================================================
+
+async function init(){
+
+await cargarDependencias()
+await cargarCargos()
+
+cargarCargoUsuarioLocal()
+
+await cargarActividad()
+
+actualizarDependenciasUI()
+actualizarPlazoUI()
+actualizarCustodiaUI()
+actualizarVolumenUI()
+
+if(!actividadId)
+badge.innerText="NUEVA"
+
+}
+
+init()

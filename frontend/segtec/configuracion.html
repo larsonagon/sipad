@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SIPAD – Estructura funcional</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/segtec.css">
+
+</head>
+
+<body>
+
+<header></header>
+
+<main class="module-page segtec-premium">
+
+<form id="formConfiguracion">
+
+<div class="contenido-documento">
+
+<div class="module-header">
+
+<h1>Estructura funcional de la dependencia</h1>
+
+<p class="module-subtext">
+Defina la estructura funcional base para la identificación técnica de actividades.
+</p>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- BLOQUE 1 -->
+<!-- ===================================================== -->
+
+<section class="segtec-card">
+
+<div class="card-header">
+<h3>1. Naturaleza funcional</h3>
+</div>
+
+<div class="card-body form-grid">
+
+<div class="form-group">
+<label>Tipo de función</label>
+
+<select name="tipo_funcion" class="form-control" required>
+<option value="">Seleccione...</option>
+<option value="misional">Misional</option>
+<option value="apoyo">Apoyo</option>
+<option value="control">Control</option>
+<option value="direccion">Dirección estratégica</option>
+</select>
+
+</div>
+
+
+<div class="form-group">
+<label>Nivel decisorio</label>
+
+<select name="nivel_decisorio" class="form-control" required>
+<option value="">Seleccione...</option>
+<option value="operativo">Operativo</option>
+<option value="tecnico">Técnico</option>
+<option value="directivo">Directivo</option>
+</select>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>Características funcionales</label>
+
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+
+<label>
+<input type="checkbox" name="recibe_solicitudes">
+Recibe solicitudes externas
+</label>
+
+<label>
+<input type="checkbox" name="emite_actos">
+Emite actos administrativos
+</label>
+
+<label>
+<input type="checkbox" name="produce_decisiones">
+Produce decisiones que afectan terceros
+</label>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- BLOQUE 2 -->
+<!-- ===================================================== -->
+
+<section class="segtec-card">
+
+<div class="card-header">
+<h3>2. Procesos y decisiones</h3>
+</div>
+
+<div class="card-body form-grid">
+
+<div class="form-group">
+<label>Procesos principales</label>
+<textarea name="procesos_principales" class="form-control"></textarea>
+</div>
+
+<div class="form-group">
+<label>Trámites frecuentes</label>
+<textarea name="tramites_frecuentes" class="form-control"></textarea>
+</div>
+
+<div class="form-group full">
+<label>Tipo de decisiones que produce</label>
+<textarea name="tipo_decisiones" class="form-control"></textarea>
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- BLOQUE 3 -->
+<!-- ===================================================== -->
+
+<section class="segtec-card">
+
+<div class="card-header">
+<h3>3. Producción documental general</h3>
+</div>
+
+<div class="card-body form-grid">
+
+<div class="form-group">
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="actos_administrativos">
+Actos administrativos
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="informes_tecnicos">
+Informes técnicos
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="comunicaciones_oficiales">
+Comunicaciones oficiales
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="conceptos">
+Conceptos
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="contratos">
+Contratos
+</label>
+
+</div>
+
+
+<div class="form-group">
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="actas">
+Actas
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="resoluciones">
+Resoluciones
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="memorandos">
+Memorandos
+</label>
+
+<label>
+<input type="checkbox" name="tipos_documentales" value="expedientes_administrativos">
+Expedientes administrativos
+</label>
+
+</div>
+
+
+<div class="form-group full">
+
+<label>Otros tipos documentales</label>
+
+<textarea name="otros_documentos" class="form-control"></textarea>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- ===================================================== -->
+<!-- BLOQUE 4 -->
+<!-- ===================================================== -->
+
+<section class="segtec-card">
+
+<div class="card-header">
+<h3>4. Contexto funcional descriptivo</h3>
+</div>
+
+<div class="card-body form-grid">
+
+<div class="form-group full">
+
+<label>Descripción estructural del rol del área</label>
+
+<textarea name="descripcion_funcional" class="form-control"></textarea>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<div class="module-actions">
+
+<button type="button" class="btn-secondary" id="btnCancelar">
+Cancelar
+</button>
+
+<button type="submit" class="btn-primary">
+Guardar estructura
+</button>
+
+</div>
+
+</div>
+
+</form>
+
+</main>
+
+<script type="module" src="/segtec/configuracion.js"></script>
+
+</body>
+</html>

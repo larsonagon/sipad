@@ -1,0 +1,77 @@
+/* =========================================
+   MAIN ESTRUCTURA
+========================================= */
+
+main {
+  max-width: 1200px;
+  margin: 2.5rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+main h2 {
+  margin-top: 0;
+  color: #0d3f77;
+  text-align: center;
+}
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:28px;
+  margin-top:2.5rem;
+  justify-items:center;
+}
+
+.card{
+  background:#ffffff;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  padding:28px 26px;
+  width:100%;
+  max-width:260px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s ease;
+}
+
+.card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 28px rgba(0,0,0,.10);
+}
+
+.card h3{
+  margin-top:10px;
+  font-size:16px;
+  color:#0d3f77;
+}
+
+.card p{
+  font-size:13px;
+  color:#6b7280;
+  margin-top:6px;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width:600px){
+
+  main{
+    margin:1rem;
+    padding:1.2rem;
+  }
+
+  .cards{
+    grid-template-columns:1fr;
+  }
+
+}

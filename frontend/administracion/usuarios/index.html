@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Usuarios | SIPAD</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/admin.css">
+
+<style>
+
+/* ampliar solo esta vista */
+.module-page{
+  max-width:1200px;
+}
+
+/* evitar saltos de línea en columnas importantes */
+#tablaUsuarios td:nth-child(2),
+#tablaUsuarios td:nth-child(3),
+#tablaUsuarios td:nth-child(4),
+#tablaUsuarios td:nth-child(5),
+#tablaUsuarios td:nth-child(6),
+#tablaUsuarios td:nth-child(7){
+  white-space:nowrap;
+}
+
+/* ancho mínimo para columnas largas */
+
+#tablaUsuarios th:nth-child(2){min-width:220px;} /* nombre */
+#tablaUsuarios th:nth-child(3){min-width:140px;} /* username */
+#tablaUsuarios th:nth-child(4){min-width:220px;} /* email */
+#tablaUsuarios th:nth-child(5){min-width:140px;} /* cargo */
+#tablaUsuarios th:nth-child(6){min-width:120px;} /* nivel */
+#tablaUsuarios th:nth-child(7){min-width:180px;} /* dependencia */
+
+</style>
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<div class="module-header centered">
+<h1>Gestión de usuarios</h1>
+<p>Administración de usuarios institucionales del sistema.</p>
+</div>
+
+<section class="section-actions">
+
+<div class="actions-left">
+<button id="btnNuevoUsuario" class="btn-primary">
++ Nuevo Usuario
+</button>
+</div>
+
+<div class="actions-right">
+<input
+type="text"
+id="inputBuscarUsuario"
+class="input-search"
+placeholder="Buscar usuario, username o email"
+autocomplete="off">
+</div>
+
+</section>
+
+<section>
+
+<table id="tablaUsuarios" class="table">
+
+<thead>
+<tr>
+<th style="width:60px;">ID</th>
+<th>Nombre</th>
+<th>Username</th>
+<th>Email</th>
+<th>Cargo</th>
+<th>Nivel</th>
+<th>Dependencia</th>
+<th style="width:110px;">Estado</th>
+<th style="width:110px;">Bloqueado</th>
+<th style="width:80px;">Acciones</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</section>
+
+</main>
+
+<div id="modalUsuario" class="modal hidden">
+
+<div class="modal-content">
+
+<h3 id="modalTitle">Nuevo Usuario</h3>
+
+<form id="formUsuario" class="form-grid">
+
+<input type="hidden" id="inputUsuarioId">
+
+<div class="form-group full">
+<label>Nombre Completo</label>
+<input type="text" id="inputNombre" required>
+</div>
+
+<div class="form-group">
+<label>Documento</label>
+<input type="text" id="inputDocumento">
+</div>
+
+<div class="form-group">
+<label>Email</label>
+<input type="email" id="inputEmail" required>
+</div>
+
+<div class="form-group">
+<label>Username</label>
+<input type="text" id="inputUsername" required>
+</div>
+
+<div class="form-group">
+<label>Password</label>
+<input type="password" id="inputPassword">
+</div>
+
+<div class="form-group">
+<label>Confirmar Password</label>
+<input type="password" id="inputPasswordConfirm">
+</div>
+
+<div class="form-group">
+<label>Rol</label>
+<select id="selectRol" required></select>
+</div>
+
+<div class="form-group">
+<label>Dependencia</label>
+<select id="selectDependencia" required></select>
+</div>
+
+<div class="form-group">
+<label>Cargo</label>
+<select id="selectCargo" required></select>
+</div>
+
+<div class="form-group">
+<label>Nivel</label>
+<select id="selectNivel" required></select>
+</div>
+
+<div class="form-group full" id="grupoEstado">
+<div class="switch-field">
+<label class="switch">
+<input type="checkbox" id="checkEstado">
+<span class="slider"></span>
+</label>
+<span>Usuario activo</span>
+</div>
+</div>
+
+<div class="form-group full" id="grupoBloqueado">
+<div class="switch-field">
+<label class="switch">
+<input type="checkbox" id="checkBloqueado">
+<span class="slider"></span>
+</label>
+<span>Usuario bloqueado</span>
+</div>
+</div>
+
+<div class="modal-actions full">
+
+<button type="button" id="btnCancelar" class="btn-secondary">
+Cancelar
+</button>
+
+<button type="submit" class="btn-primary">
+Guardar
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+<script type="module" src="./usuarios.js"></script>
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

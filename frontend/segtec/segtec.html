@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SEG-TEC – SIPAD</title>
+
+  <!-- CORE VISUAL -->
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+
+  <!-- ESTILOS SEGTEC -->
+  <link rel="stylesheet" href="/css/modules/segtec.css">
+
+  <style>
+
+    /* BOTÓN NUEVA ACTIVIDAD */
+
+    .premium-cta{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      margin:32px 0 28px 0;
+    }
+
+    .premium-cta .btn-cta{
+      min-width:180px;
+      font-weight:600;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <div id="header"></div>
+
+  <main class="module-page segtec-premium">
+
+    <!-- ENCABEZADO -->
+    <div class="module-header premium-header">
+      <h1>Identificación técnica de actividades</h1>
+      <p class="module-subtext">
+        Caracterización funcional para estructuración de series documentales.
+      </p>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL (MISMO ANCHO PARA TODO) -->
+    <div class="module-content">
+
+      <!-- MARCO FUNCIONAL -->
+      <div id="panelMarcoFuncional" class="premium-marco"></div>
+
+      <!-- BOTÓN NUEVA ACTIVIDAD -->
+      <div class="premium-cta">
+        <button id="nuevaActividad" class="btn-primary btn-cta">
+          + Nueva actividad
+        </button>
+      </div>
+
+      <!-- MENSAJES -->
+      <div id="mensaje"></div>
+
+      <!-- TABLA ACTIVIDADES -->
+      <div id="tablaRegistros" class="table-container"></div>
+
+    </div>
+
+  </main>
+
+
+  <!-- MODAL BASE -->
+  <div id="modalBase" class="modal hidden">
+
+    <div class="modal-content">
+
+      <h3 id="modalTitle"></h3>
+
+      <div id="modalBody"></div>
+
+      <div class="modal-actions" id="modalFooter"></div>
+
+      <button id="cerrarModal" class="hidden"></button>
+
+    </div>
+
+  </div>
+
+
+  <!-- MODAL PASSWORD -->
+  <div id="modalPassword" class="modal hidden">
+
+    <div class="modal-content small">
+
+      <h3>Cambiar contraseña</h3>
+
+      <form id="formCambiarPassword" novalidate>
+
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input type="password" id="passwordActual" required>
+        </div>
+
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input type="password" id="passwordNueva" required>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input type="password" id="passwordConfirmar" required>
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            id="btnCancelarPassword"
+            class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn-primary">
+            Actualizar contraseña
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- JS -->
+  <script type="module" src="/segtec/segtec.js"></script>
+  <script src="/components/password-modal.js"></script>
+
+</body>
+</html>

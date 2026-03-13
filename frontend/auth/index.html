@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIGD – Plataforma institucional de gestión documental</title>
+
+  <!-- SOLO CSS DEL LOGIN -->
+  <link rel="stylesheet" href="/auth/index.css">
+</head>
+
+<body>
+
+  <div class="login-page">
+
+    <div class="login-wrapper">
+
+      <div class="login-brand">
+        <h1>PIGD</h1>
+        <span>Plataforma institucional de gestión documental</span>
+      </div>
+
+      <div class="login-card">
+
+        <h2 class="login-title">Ingreso al sistema</h2>
+
+        <form id="loginForm">
+
+          <div class="login-field">
+            <input 
+              type="text" 
+              id="usuario" 
+              placeholder="Usuario"
+              required
+            >
+          </div>
+
+          <div class="login-field">
+            <input 
+              type="password" 
+              id="password" 
+              placeholder="Contraseña"
+              required
+            >
+          </div>
+
+          <button type="submit" class="login-button">
+            Ingresar
+          </button>
+
+          <div id="mensaje" class="login-message"></div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="/auth/index.js"></script>
+  <!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

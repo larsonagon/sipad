@@ -1,0 +1,38 @@
+#sipad-notifications {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.sipad-toast {
+  background: #1e7e34;
+  color: white;
+  padding: 16px 22px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.25s ease;
+}
+
+.sipad-toast.error {
+  background: #c82333;
+}
+
+.sipad-toast.warning {
+  background: #e0a800;
+}
+
+.sipad-toast.info {
+  background: #007bff;
+}
+
+.sipad-toast.visible {
+  opacity: 1;
+  transform: scale(1);
+}

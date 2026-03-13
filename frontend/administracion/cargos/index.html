@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cargos Institucionales | SIPAD</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/admin.css">
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<!-- HEADER -->
+
+<div class="module-header centered">
+
+<h1>Gestión de cargos</h1>
+
+<p class="module-subtext">
+Administración de los cargos o funciones oficiales dentro de la entidad.
+</p>
+
+</div>
+
+
+
+<!-- TOOLBAR -->
+
+<section class="section-actions">
+
+<div class="actions-left">
+
+<button id="btnNuevo" class="btn-primary">
++ Crear Cargo
+</button>
+
+</div>
+
+
+<div class="actions-right">
+
+<input
+type="text"
+id="inputBuscarCargo"
+class="input-search"
+placeholder="Buscar cargo"
+autocomplete="off"
+>
+
+</div>
+
+</section>
+
+
+
+<!-- TABLA -->
+
+<section>
+
+<table id="tablaCargos" class="table">
+
+<thead>
+
+<tr>
+
+<th style="width:80px;">ID</th>
+
+<th>Nombre</th>
+
+<th style="width:130px;">Estado</th>
+
+<th style="width:160px;">Fecha de registro</th>
+
+<th style="width:80px;">Acciones</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</section>
+
+</main>
+
+
+
+<!-- MODAL -->
+
+<div id="modal" class="modal hidden">
+
+<div class="modal-content">
+
+<h3 id="modalTitle">Crear Cargo</h3>
+
+<form id="formCargo" autocomplete="off">
+
+<div class="form-group">
+
+<label>Nombre</label>
+
+<input
+type="text"
+id="inputNombre"
+placeholder="Nombre del cargo institucional"
+required
+>
+
+</div>
+
+
+
+<div class="modal-actions">
+
+<button
+type="button"
+id="btnCancelar"
+class="btn-secondary"
+>
+Cancelar
+</button>
+
+<button
+type="submit"
+id="btnGuardar"
+class="btn-primary"
+>
+Guardar
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+
+<script type="module" src="./cargos.js"></script>
+
+<!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

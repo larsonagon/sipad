@@ -1,0 +1,9 @@
+{
+  "name": "SIPAD",
+  "short_name": "SIPAD",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b5ed7",
+  "icons": []
+}

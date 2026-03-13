@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dependencias | SIPAD</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/admin.css">
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<!-- HEADER -->
+
+<div class="module-header centered">
+<h1>Gestión de dependencias u oficinas</h1>
+<p>Administración de la estructura organizacional institucional.</p>
+</div>
+
+
+
+<!-- TOOLBAR -->
+
+<section class="section-actions">
+
+<div class="actions-left">
+
+<button id="btnNueva" class="btn-primary">
++ Nueva Dependencia
+</button>
+
+</div>
+
+
+<div class="actions-right">
+
+<input
+type="text"
+id="inputBuscarDependencia"
+class="input-search"
+placeholder="Buscar dependencia"
+autocomplete="off"
+>
+
+</div>
+
+</section>
+
+
+
+<!-- TABLA -->
+
+<section>
+
+<table id="tablaDependencias" class="table">
+
+<thead>
+
+<tr>
+<th style="width:80px;">ID</th>
+
+<th>Nombre</th>
+
+<th style="width:130px;">Estado</th>
+
+<th style="width:160px;">Fecha de registro</th>
+
+<th style="width:80px;">Acciones</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</section>
+
+</main>
+
+
+
+<!-- MODAL DEPENDENCIA -->
+
+<div id="modal" class="modal hidden">
+
+<div class="modal-content">
+
+<h3 id="modalTitle">Nueva Dependencia</h3>
+
+<form id="formDependencia" autocomplete="off">
+
+
+<div class="form-group">
+
+<label>Nombre</label>
+
+<input
+type="text"
+id="inputNombre"
+placeholder="Nombre de la dependencia u oficina"
+required
+>
+
+</div>
+
+
+
+<div class="modal-actions">
+
+<button
+type="button"
+id="btnCancelar"
+class="btn-secondary"
+>
+Cancelar
+</button>
+
+<button
+type="submit"
+id="btnGuardar"
+class="btn-primary"
+>
+Guardar
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+
+<script type="module" src="./dependencias.js"></script>
+<!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

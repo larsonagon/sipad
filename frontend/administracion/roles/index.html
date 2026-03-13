@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Roles | SIPAD</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/modules/admin.css">
+
+</head>
+
+<body>
+
+<div id="header"></div>
+
+<main class="module-page">
+
+<!-- HEADER -->
+
+<div class="module-header centered">
+<h1>Gestión de roles</h1>
+<p>Definición de permisos funcionales del sistema.</p>
+</div>
+
+
+
+<!-- TOOLBAR -->
+
+<section class="section-actions">
+
+<div class="actions-left">
+
+<button id="btnNuevo" class="btn-primary">
++ Nuevo Rol
+</button>
+
+</div>
+
+
+<div class="actions-right">
+
+<input
+type="text"
+id="inputBuscarRol"
+class="input-search"
+placeholder="Buscar rol"
+autocomplete="off"
+>
+
+</div>
+
+</section>
+
+
+
+<!-- TABLA -->
+
+<section>
+
+<table id="tablaRoles" class="table">
+
+<thead>
+
+<tr>
+<th style="width:80px;">ID</th>
+<th>Nombre</th>
+<th>Descripción</th>
+<th style="width:120px;">Estado</th>
+<th style="width:160px;">Fecha de registro</th>
+<th style="width:80px;">Acciones</th>
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+</section>
+
+</main>
+
+
+
+<!-- MODAL -->
+
+<div id="modal" class="modal hidden">
+
+<div class="modal-content">
+
+<h3 id="modalTitle">Nuevo Rol</h3>
+
+<form id="formRol" autocomplete="off">
+
+<div class="form-group">
+
+<label>Nombre</label>
+
+<input
+type="text"
+id="inputNombre"
+placeholder="Ej: Administrador TRD"
+required
+>
+
+</div>
+
+
+<div class="form-group">
+
+<label>Descripción</label>
+
+<textarea
+id="inputDescripcion"
+placeholder="Descripción funcional del rol dentro del sistema"
+></textarea>
+
+</div>
+
+
+<div class="modal-actions">
+
+<button
+type="button"
+id="btnCancelar"
+class="btn-secondary"
+>
+Cancelar
+</button>
+
+<button
+type="submit"
+class="btn-primary"
+>
+Guardar
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+
+<script type="module" src="./roles.js"></script>
+<script src="/components/password-modal.js"></script>
+
+</body>
+</html>

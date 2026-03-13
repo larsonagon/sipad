@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análisis actividad – SIPAD</title>
+
+  <link rel="stylesheet" href="/css/core/layout.css">
+  <link rel="stylesheet" href="/css/core/forms.css">
+  <link rel="stylesheet" href="/css/modules/segtec.css">
+</head>
+<body>
+
+<div class="wizard-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="wizard-sidebar">
+    <h3>Análisis técnico</h3>
+
+    <ul class="wizard-steps">
+      <li data-step="1" class="active">Información adicional</li>
+      <li data-step="2">Resultado TRD-IA</li>
+      <li data-step="3">Confirmación</li>
+    </ul>
+
+    <div class="wizard-progress">
+      <div class="wizard-progress-bar" id="wizardProgressBar"></div>
+    </div>
+
+    <div class="wizard-progress-text" id="wizardProgressText">
+      Paso 1 de 3
+    </div>
+  </aside>
+
+  <!-- CONTENIDO -->
+  <main class="wizard-content">
+
+    <div class="wizard-card">
+
+      <!-- PASO 1 -->
+      <section class="wizard-step active" data-step="1">
+
+        <h2>Información adicional sobre la actividad</h2>
+
+        <p style="color:#6b7280; margin-bottom:25px;">
+          Esta información ayuda al sistema a determinar los tiempos de conservación documental.
+          Puede diligenciar únicamente los campos que considere aplicables.
+        </p>
+
+        <div class="form-group">
+          <label>Soporte principal de los documentos</label>
+          <select id="vt_soporte_principal">
+            <option value="">No especificado</option>
+            <option value="digital">Digital</option>
+            <option value="fisico">Físico</option>
+            <option value="hibrido">Híbrido</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>¿Se generan actos oficiales o decisiones formales?</label>
+          <select id="vt_impacto_juridico">
+            <option value="">No especificado</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>¿Se manejan recursos públicos o información contable?</label>
+          <select id="vt_impacto_fiscal">
+            <option value="">No especificado</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>¿Se crea una carpeta o expediente independiente?</label>
+          <select id="vt_expediente_propio">
+            <option value="">No especificado</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>¿Es una actividad habitual del área?</label>
+          <select id="vt_actividad_permanente">
+            <option value="">No especificado</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción adicional (opcional)</label>
+          <textarea id="vt_observacion_tecnica"
+                    rows="4"
+                    placeholder="Puede describir detalles adicionales sobre cómo se generan o gestionan los documentos de esta actividad..."></textarea>
+        </div>
+
+        <div id="estadoValidacionTecnica"
+             style="margin-top:10px; font-weight:600; color:#6b7280;">
+          Información no registrada
+        </div>
+
+      </section>
+
+      <!-- PASO 2 -->
+      <section class="wizard-step" data-step="2">
+
+        <h2>Resultado TRD-IA</h2>
+
+        <div class="form-group">
+          <label>Serie propuesta</label>
+          <input type="text" id="serie_propuesta" readonly>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Retención en gestión</label>
+            <input type="text" id="retencion_gestion" readonly>
+          </div>
+
+          <div class="form-group">
+            <label>Retención en archivo central</label>
+            <input type="text" id="retencion_central" readonly>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Disposición final</label>
+          <input type="text" id="disposicion_final" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Justificación técnica</label>
+          <textarea id="justificacion" rows="4" readonly></textarea>
+        </div>
+
+      </section>
+
+      <!-- PASO 3 -->
+      <section class="wizard-step" data-step="3">
+
+        <h2>Análisis completado</h2>
+
+        <p>
+          El sistema ha aplicado el análisis documental utilizando la información disponible.
+        </p>
+
+      </section>
+
+      <!-- FOOTER DENTRO DE LA TARJETA -->
+      <div class="wizard-footer">
+
+        <button id="btnPrev" class="btn-secondary">
+          Anterior
+        </button>
+
+        <button id="btnNext" class="btn-primary">
+          Siguiente
+        </button>
+
+        <button id="btnGuardarValidacion"
+                class="btn-primary"
+                style="display:none;">
+          Guardar información
+        </button>
+
+        <button id="btnEjecutarAnalisis"
+                class="btn-primary"
+                style="display:none;">
+          Ejecutar análisis TRD-IA
+        </button>
+
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<script type="module" src="./analisis-actividad.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración | SIPAD</title>
+
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+
+    <div class="module-header centered">
+      <h1>Administración Institucional</h1>
+      <p>
+        Configuración estructural del sistema: dependencias, cargos, niveles, roles y usuarios.
+      </p>
+    </div>
+
+    <div class="module-content">
+      <div class="module-grid">
+
+        <!-- DEPENDENCIAS -->
+        <div class="module-card" id="btnDependencias">
+          <div class="module-icon">🏢</div>
+          <h3>Dependencias</h3>
+          <p>Estructura organizacional y unidades administrativas.</p>
+        </div>
+
+        <!-- CARGOS -->
+        <div class="module-card" id="btnCargos">
+          <div class="module-icon">📌</div>
+          <h3>Cargos</h3>
+          <p>Funciones y cargos oficiales dentro de la entidad.</p>
+        </div>
+
+        <!-- NIVELES (NUEVO) -->
+        <div class="module-card" id="btnNiveles">
+          <div class="module-icon">📊</div>
+          <h3>Niveles</h3>
+          <p>Definición de niveles jerárquicos y estructura de acceso.</p>
+        </div>
+
+        <!-- ROLES -->
+        <div class="module-card" id="btnRoles">
+          <div class="module-icon">🛡️</div>
+          <h3>Roles</h3>
+          <p>Permisos y control funcional dentro del sistema.</p>
+        </div>
+
+        <!-- USUARIOS -->
+        <div class="module-card" id="btnUsuarios">
+          <div class="module-icon">👤</div>
+          <h3>Usuarios</h3>
+          <p>Gestión de usuarios institucionales y asignaciones.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="./administracion.js"></script>
+  <!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
+  <script src="/components/password-modal.js"></script>
+</body>
+</html>
