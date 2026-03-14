@@ -99,12 +99,18 @@ export async function findUserByUsernameDB(username) {
     username: row.username,
     nombre_completo: row.nombre_completo,
     passwordHash: row.password_hash,
+
+    // 🔥 Normalización institucional
     role: row.rol_nombre,
-    nivel: row.nivel_acceso,
+    nivel_acceso: Number(row.nivel_acceso),
+
     cargo: row.cargo_nombre,
+
     id_entidad: row.id_entidad ? Number(row.id_entidad) : null,
     id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
+
     dependencia_nombre: row.dependencia_nombre,
+
     es_master_admin: Boolean(row.es_master_admin),
     es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
   }
