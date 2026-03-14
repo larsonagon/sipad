@@ -22,7 +22,7 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
       `
       INSERT INTO auditoria_dependencias
       (actor_id, dependencia_afectada_id, accion, detalle_json)
-      VALUES ($1, $2, $3, $4)
+      VALUES (?, ?, ?, ?)
       `,
       [
         actorId,
@@ -93,7 +93,7 @@ router.post(
       const nombreLimpio = nombre.trim()
 
       const existe = await db.get(
-        `SELECT id FROM dependencias WHERE nombre = $1`,
+        `SELECT id FROM dependencias WHERE nombre = ?`,
         [nombreLimpio]
       )
 
@@ -106,16 +106,13 @@ router.post(
       const result = await db.get(
         `
         INSERT INTO dependencias (nombre, activa)
-        VALUES ($1, 1)
+        VALUES (?, 1)
         RETURNING id
         `,
         [nombreLimpio]
       )
 
-      const nuevaDependenciaId =
-        result?.id ??
-        result?.rows?.[0]?.id ??
-        null
+      const nuevaDependenciaId = result?.id ?? null
 
       if (!nuevaDependenciaId) {
 
@@ -169,7 +166,7 @@ router.patch(
       const nombreLimpio = nombre.trim()
 
       const existe = await db.get(
-        `SELECT id FROM dependencias WHERE nombre = $1 AND id != $2`,
+        `SELECT id FROM dependencias WHERE nombre = ? AND id != ?`,
         [nombreLimpio, id]
       )
 
@@ -180,7 +177,7 @@ router.patch(
       }
 
       await db.run(
-        `UPDATE dependencias SET nombre = $1 WHERE id = $2`,
+        `UPDATE dependencias SET nombre = ? WHERE id = ?`,
         [nombreLimpio, id]
       )
 
@@ -221,13 +218,16 @@ router.patch(
 
       if (activa === 0) {
 
-        const usuariosActivos = await db.get(`
+        const usuariosActivos = await db.get(
+          `
           SELECT COUNT(*) as total
           FROM usuarios
-          WHERE id_dependencia = $1 AND estado = 1
-        `, [id])
+          WHERE id_dependencia = ? AND estado = 1
+          `,
+          [id]
+        )
 
-        if (usuariosActivos.total > 0) {
+        if (usuariosActivos?.total > 0) {
           return res.status(400).json({
             error: 'No puedes desactivar una dependencia con usuarios activos'
           })
@@ -236,7 +236,7 @@ router.patch(
       }
 
       await db.run(
-        `UPDATE dependencias SET activa = $1 WHERE id = $2`,
+        `UPDATE dependencias SET activa = ? WHERE id = ?`,
         [activa ? 1 : 0, id]
       )
 
