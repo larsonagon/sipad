@@ -24,6 +24,7 @@ const __dirname = path.dirname(__filename)
 const DB_PATH = path.resolve(__dirname, 'sipad.sqlite')
 
 let sqliteDb = null
+let sqliteReady = Promise.resolve()
 
 async function initSQLite() {
 
@@ -39,9 +40,9 @@ async function initSQLite() {
   await sqliteDb.exec('PRAGMA synchronous = NORMAL')
 }
 
-// Inicializar SQLite solo si se usa
+// Inicializar SQLite sin usar top-level await
 if (DB_ENGINE === 'sqlite') {
-  await initSQLite()
+  sqliteReady = initSQLite()
 }
 
 // =======================================
@@ -71,11 +72,13 @@ const db = {
   async get(query, params = []) {
 
     if (DB_ENGINE === 'sqlite') {
+
+      await sqliteReady
       return sqliteDb.get(query, params)
+
     }
 
     const q = convertPlaceholders(query)
-
     const result = await pool.query(q, params)
 
     return result.rows[0] || null
@@ -88,11 +91,13 @@ const db = {
   async all(query, params = []) {
 
     if (DB_ENGINE === 'sqlite') {
+
+      await sqliteReady
       return sqliteDb.all(query, params)
+
     }
 
     const q = convertPlaceholders(query)
-
     const result = await pool.query(q, params)
 
     return result.rows
@@ -105,11 +110,13 @@ const db = {
   async run(query, params = []) {
 
     if (DB_ENGINE === 'sqlite') {
+
+      await sqliteReady
       return sqliteDb.run(query, params)
+
     }
 
     const q = convertPlaceholders(query)
-
     const result = await pool.query(q, params)
 
     return {
@@ -124,7 +131,10 @@ const db = {
   async exec(query) {
 
     if (DB_ENGINE === 'sqlite') {
+
+      await sqliteReady
       return sqliteDb.exec(query)
+
     }
 
     return pool.query(query)
@@ -132,5 +142,8 @@ const db = {
 
 }
 
-// export nombrado
+// =======================================
+// EXPORT
+// =======================================
+
 export { db }
