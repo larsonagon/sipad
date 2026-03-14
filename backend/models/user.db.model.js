@@ -1,10 +1,10 @@
 // backend/models/user.db.model.js
-// SIPAD – Modelo institucional de usuarios (PostgreSQL)
+// SIPAD – Modelo institucional de usuarios (SQLite / PostgreSQL)
 
 import { db } from '../db/database.js'
 
 /* =========================
-   CREAR USUARIO (DB)
+   CREAR USUARIO
 ========================= */
 
 export async function createUserDB({
@@ -23,7 +23,7 @@ export async function createUserDB({
     throw new Error('El cargo es obligatorio')
   }
 
-  const result = await db.query(
+  const row = await db.get(
     `
     INSERT INTO usuarios (
       nombre_completo,
@@ -36,7 +36,7 @@ export async function createUserDB({
       id_cargo,
       id_entidad
     )
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     RETURNING id
     `,
     [
@@ -52,17 +52,19 @@ export async function createUserDB({
     ]
   )
 
-  return { id: result.rows[0].id }
+  return {
+    id: row?.id || null
+  }
 }
 
 
 /* =========================
-   BUSCAR POR USERNAME
+   BUSCAR USUARIO POR USERNAME
 ========================= */
 
 export async function findUserByUsernameDB(username) {
 
-  const result = await db.query(
+  const row = await db.get(
     `
     SELECT
       u.id,
@@ -81,30 +83,30 @@ export async function findUserByUsernameDB(username) {
     JOIN roles r ON r.id = u.id_rol
     LEFT JOIN dependencias d ON d.id = u.id_dependencia
     LEFT JOIN cargos c ON c.id = u.id_cargo
-    WHERE u.username = $1
+    WHERE u.username = ?
       AND u.estado = 1
       AND u.bloqueado = false
     `,
     [username]
   )
 
-  if (result.rows.length === 0) return null
-
-  const row = result.rows[0]
+  if (!row) {
+    return null
+  }
 
   return {
-    id: row.id,
+    id: Number(row.id),
     username: row.username,
     nombre_completo: row.nombre_completo,
     passwordHash: row.password_hash,
     role: row.rol_nombre,
     nivel: row.nivel_acceso,
     cargo: row.cargo_nombre,
-    id_entidad: row.id_entidad,
-    id_dependencia: row.id_dependencia,
+    id_entidad: row.id_entidad ? Number(row.id_entidad) : null,
+    id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
     dependencia_nombre: row.dependencia_nombre,
-    es_master_admin: row.es_master_admin,
-    es_responsable_dependencia: row.es_responsable_dependencia
+    es_master_admin: Boolean(row.es_master_admin),
+    es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
   }
 }
 
@@ -115,7 +117,7 @@ export async function findUserByUsernameDB(username) {
 
 export async function getAllUsersDB() {
 
-  const result = await db.query(
+  const rows = await db.all(
     `
     SELECT
       u.id,
@@ -136,5 +138,5 @@ export async function getAllUsersDB() {
     `
   )
 
-  return result.rows
+  return rows || []
 }
