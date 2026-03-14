@@ -59,8 +59,8 @@ router.post('/login', async (req, res) => {
         nombre: user.nombre_completo,
         rol: user.role,
 
-        // 🔥 CORRECCIÓN REAL
-        nivel_acceso: Number(user.nivel_acceso),
+        // 🔧 CORRECTO
+        nivel_acceso: Number(user.nivel),
 
         id_entidad: Number(user.id_entidad),
         id_dependencia: Number(user.id_dependencia),
@@ -111,8 +111,8 @@ router.post('/login', async (req, res) => {
         nombre: user.nombre_completo,
         rol: user.role,
 
-        // 🔥 MISMO CAMPO QUE EL TOKEN
-        nivel_acceso: Number(user.nivel_acceso),
+        // 🔧 MISMO CAMPO
+        nivel_acceso: Number(user.nivel),
 
         dependencia: user.dependencia_nombre,
         id_entidad: Number(user.id_entidad),
