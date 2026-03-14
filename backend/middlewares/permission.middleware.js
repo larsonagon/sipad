@@ -6,9 +6,25 @@ export function requirePermission(codigoPermiso) {
 
     try {
 
-      const userId = req.user.sub
+      if (!req.user) {
+        return res.status(401).json({
+          error: 'Usuario no autenticado'
+        })
+      }
 
-      const permiso = await db.get(`
+      const userId =
+        req.user?.sub ??
+        req.user?.id ??
+        null
+
+      if (!userId) {
+        return res.status(401).json({
+          error: 'Usuario no identificado'
+        })
+      }
+
+      const permiso = await db.get(
+        `
         SELECT p.codigo
         FROM usuarios u
         JOIN rol_permisos rp ON rp.id_rol = u.id_rol
@@ -16,7 +32,9 @@ export function requirePermission(codigoPermiso) {
         WHERE u.id = ?
           AND p.codigo = ?
           AND p.activo = 1
-      `, [userId, codigoPermiso])
+        `,
+        [userId, codigoPermiso]
+      )
 
       if (!permiso) {
         return res.status(403).json({
@@ -27,11 +45,15 @@ export function requirePermission(codigoPermiso) {
       next()
 
     } catch (err) {
-      console.error(err)
-      res.status(500).json({
+
+      console.error('Error validando permisos:', err)
+
+      return res.status(500).json({
         error: 'Error validando permisos'
       })
+
     }
 
   }
+
 }
