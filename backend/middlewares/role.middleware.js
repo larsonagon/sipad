@@ -21,22 +21,18 @@ export const requireLevel = (minLevel) => {
         })
       }
 
-      const userLevel = req.user.nivel_acceso
-
-      // 🔒 Validación robusta
-      if (userLevel === undefined || userLevel === null) {
-        return res.status(401).json({
-          error: 'Token sin nivel de acceso'
-        })
-      }
-
-      const nivel = Number(userLevel)
+      // 🔹 Normalizar nivel
+      const rawLevel = req.user.nivel_acceso
+      const nivel = Number(rawLevel ?? 0)
 
       if (Number.isNaN(nivel)) {
         return res.status(401).json({
           error: 'Nivel de acceso inválido'
         })
       }
+
+      // 🔹 Guardar normalizado
+      req.user.nivel_acceso = nivel
 
       if (nivel < minLevel) {
         return res.status(403).json({
@@ -55,6 +51,7 @@ export const requireLevel = (minLevel) => {
       return res.status(500).json({
         error: 'Error validando nivel de acceso'
       })
+
     }
 
   }
@@ -64,10 +61,10 @@ export const requireLevel = (minLevel) => {
 
 // =====================================================
 // POLÍTICA INSTITUCIONAL SEG-TEC
-// Acceso permitido si:
+// Permite acceso si:
 // - Nivel >= 80
-// - Master admin
-// - Responsable de dependencia
+// - Es master admin
+// - Es responsable de dependencia
 // =====================================================
 
 export const requireSEGTECPolicy = async (req, res, next) => {
@@ -81,8 +78,8 @@ export const requireSEGTECPolicy = async (req, res, next) => {
     }
 
     const usuarioId =
-      req.user?.sub ??
       req.user?.id ??
+      req.user?.sub ??
       null
 
     if (!usuarioId) {
@@ -93,11 +90,12 @@ export const requireSEGTECPolicy = async (req, res, next) => {
 
     const nivel = Number(req.user?.nivel_acceso ?? 0)
 
-    // 🔥 Si nivel alto, pasa directo
+    // 🔥 Nivel alto pasa directo
     if (nivel >= 80) {
       return next()
     }
 
+    // 🔥 Consultar flags institucionales
     const usuario = await db.get(
       `
       SELECT
