@@ -49,6 +49,21 @@ router.post('/login', async (req, res) => {
     }
 
     // =========================
+    // VALIDACIÓN CRÍTICA
+    // =========================
+
+    const nivelAcceso = Number(user.nivel_acceso ?? 0)
+
+    if (Number.isNaN(nivelAcceso) || nivelAcceso <= 0) {
+
+      console.error('[AUTH] Usuario sin nivel de acceso válido:', user.username)
+
+      return res.status(500).json({
+        error: 'Usuario sin nivel de acceso válido'
+      })
+    }
+
+    // =========================
     // ACCESS TOKEN
     // =========================
 
@@ -59,12 +74,12 @@ router.post('/login', async (req, res) => {
         nombre: user.nombre_completo,
         rol: user.role,
 
-        // 🔧 CORRECTO
-        nivel_acceso: Number(user.nivel),
+        nivel_acceso: nivelAcceso,
 
-        id_entidad: Number(user.id_entidad),
-        id_dependencia: Number(user.id_dependencia),
+        id_entidad: Number(user.id_entidad ?? 0),
+        id_dependencia: Number(user.id_dependencia ?? 0),
         dependencia: user.dependencia_nombre,
+
         es_master_admin: Boolean(user.es_master_admin),
         es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
       },
@@ -102,6 +117,10 @@ router.post('/login', async (req, res) => {
       ]
     )
 
+    // =========================
+    // RESPUESTA LOGIN
+    // =========================
+
     return res.json({
       token: accessToken,
       refreshToken,
@@ -111,12 +130,12 @@ router.post('/login', async (req, res) => {
         nombre: user.nombre_completo,
         rol: user.role,
 
-        // 🔧 MISMO CAMPO
-        nivel_acceso: Number(user.nivel),
+        nivel_acceso: nivelAcceso,
 
         dependencia: user.dependencia_nombre,
-        id_entidad: Number(user.id_entidad),
-        id_dependencia: Number(user.id_dependencia),
+        id_entidad: Number(user.id_entidad ?? 0),
+        id_dependencia: Number(user.id_dependencia ?? 0),
+
         es_master_admin: Boolean(user.es_master_admin),
         es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
       }
@@ -185,16 +204,21 @@ router.post('/refresh', async (req, res) => {
       })
     }
 
+    const nivelAcceso = Number(row.nivel_acceso ?? 0)
+
     const newAccessToken = jwt.sign(
       {
         sub: Number(row.user_id),
         username: row.username,
         nombre: row.nombre_completo,
         rol: row.rol_nombre,
-        nivel_acceso: Number(row.nivel_acceso),
-        id_entidad: Number(row.id_entidad),
-        id_dependencia: Number(row.id_dependencia),
+
+        nivel_acceso: nivelAcceso,
+
+        id_entidad: Number(row.id_entidad ?? 0),
+        id_dependencia: Number(row.id_dependencia ?? 0),
         dependencia: row.dependencia_nombre,
+
         es_master_admin: Boolean(row.es_master_admin),
         es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
       },
