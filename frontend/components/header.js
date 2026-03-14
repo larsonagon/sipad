@@ -1,5 +1,5 @@
 // ======================================================
-// HEADER INSTITUCIONAL PIGD
+// HEADER INSTITUCIONAL SIPAD
 // ======================================================
 
 function getUserFromToken() {
@@ -70,7 +70,7 @@ export function renderHeader(activeModule) {
       <div class="pig-header-left">
 
         <div class="pig-title">
-          PIGD
+          SIPAD
           <span class="pig-module">
             ${
               modulo === 'home'

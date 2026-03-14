@@ -439,7 +439,7 @@ INSTRUMENTO DE CARACTERIZACIÓN DE ACTIVIDADES FUNCIONALES
 </div>
 
 <div class="footer">
-<div>Plataforma institucional para la gestión documental – PIGD</div>
+<div>Sistema inteligente para la planeación archivística documental – SIPAD</div>
 <div>Instrumento de caracterización de actividades funcionales</div>
 </div>
 
