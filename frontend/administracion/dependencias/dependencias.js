@@ -12,6 +12,26 @@ let inputBuscar
 
 let dependenciasCache = []
 
+/* =========================================
+   UTIL TOKEN
+========================================= */
+
+function getToken(){
+
+  const token = localStorage.getItem('token')
+
+  if(!token){
+    window.location.href = '/'
+    throw new Error('Token no encontrado')
+  }
+
+  return token
+}
+
+
+/* =========================================
+   INIT
+========================================= */
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -64,24 +84,40 @@ document.addEventListener('DOMContentLoaded', async () => {
    CARGAR DEPENDENCIAS
 ========================================= */
 
-async function cargarDependencias() {
+async function cargarDependencias(){
 
-  const token = localStorage.getItem('token')
+  try{
 
-  const res = await fetch(API, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  })
+    const res = await fetch(API,{
+      headers:{
+        'Authorization':`Bearer ${getToken()}`
+      }
+    })
 
-  const data = await res.json()
+    if(res.status === 401 || res.status === 403){
+      localStorage.clear()
+      alert('Sesión expirada')
+      window.location.href = '/'
+      return
+    }
 
-  if (!res.ok) {
-    alert(data.error || 'Error cargando dependencias')
-    return
+    const data = await res.json()
+
+    if(!res.ok){
+      alert(data.error || 'Error cargando dependencias')
+      return
+    }
+
+    dependenciasCache = data.sort((a,b)=> a.id - b.id)
+
+    renderTabla(dependenciasCache)
+
+  }catch(err){
+
+    console.error('Error cargando dependencias:',err)
+    alert('Error de conexión con el servidor')
+
   }
-
-  dependenciasCache = data.sort((a,b)=> a.id - b.id)
-
-  renderTabla(dependenciasCache)
 }
 
 
@@ -199,14 +235,19 @@ function filtrarDependencias(){
 ========================================= */
 
 function abrirModalNueva(){
+
   modoEdicion = false
   idEditando = null
+
   document.getElementById('modalTitle').innerText = 'Nueva Dependencia'
+
   inputNombre.value = ''
+
   modal.classList.remove('hidden')
 }
 
 function cerrarModal(){
+
   modal.classList.add('hidden')
 }
 
@@ -238,37 +279,44 @@ async function guardarDependencia(e){
 
   e.preventDefault()
 
-  const token = localStorage.getItem('token')
+  try{
 
-  const nombre = inputNombre.value.trim()
+    const nombre = inputNombre.value.trim()
 
-  if(!nombre){
-    alert('Nombre requerido')
-    return
+    if(!nombre){
+      alert('Nombre requerido')
+      return
+    }
+
+    const url = modoEdicion ? `${API}/${idEditando}` : API
+    const method = modoEdicion ? 'PATCH' : 'POST'
+
+    const res = await fetch(url,{
+      method,
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${getToken()}`
+      },
+      body:JSON.stringify({nombre})
+    })
+
+    const data = await res.json()
+
+    if(!res.ok){
+      alert(data.error || 'Error')
+      return
+    }
+
+    cerrarModal()
+
+    await cargarDependencias()
+
+  }catch(err){
+
+    console.error(err)
+    alert('Error guardando dependencia')
+
   }
-
-  const url = modoEdicion ? `${API}/${idEditando}` : API
-  const method = modoEdicion ? 'PATCH' : 'POST'
-
-  const res = await fetch(url,{
-    method,
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${token}`
-    },
-    body:JSON.stringify({nombre})
-  })
-
-  const data = await res.json()
-
-  if(!res.ok){
-    alert(data.error || 'Error')
-    return
-  }
-
-  cerrarModal()
-
-  await cargarDependencias()
 }
 
 
@@ -279,25 +327,32 @@ async function guardarDependencia(e){
 
 window.toggleEstado = async function(id,activaActual){
 
-  const token = localStorage.getItem('token')
+  try{
 
-  const res = await fetch(`${API}/${id}/estado`,{
-    method:'PATCH',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${token}`
-    },
-    body:JSON.stringify({activa:activaActual ? 0 : 1})
-  })
+    const res = await fetch(`${API}/${id}/estado`,{
+      method:'PATCH',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${getToken()}`
+      },
+      body:JSON.stringify({activa:activaActual ? 0 : 1})
+    })
 
-  const data = await res.json()
+    const data = await res.json()
 
-  if(!res.ok){
-    alert(data.error || 'Error')
-    return
+    if(!res.ok){
+      alert(data.error || 'Error')
+      return
+    }
+
+    await cargarDependencias()
+
+  }catch(err){
+
+    console.error(err)
+    alert('Error actualizando estado')
+
   }
-
-  await cargarDependencias()
 }
 
 
@@ -325,5 +380,6 @@ function escapeHTML(text){
 
   const div = document.createElement('div')
   div.innerText = text
+
   return div.innerHTML
 }
