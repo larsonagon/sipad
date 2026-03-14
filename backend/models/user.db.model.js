@@ -1,7 +1,7 @@
 // backend/models/user.db.model.js
-// SIPAD – Modelo institucional de usuarios (PostgreSQL compatible)
+// SIPAD – Modelo institucional de usuarios (PostgreSQL)
 
-import { db } from '../db/database.js';
+import { db } from '../db/database.js'
 
 /* =========================
    CREAR USUARIO (DB)
@@ -20,10 +20,10 @@ export async function createUserDB({
 }) {
 
   if (!idCargo) {
-    throw new Error('El cargo es obligatorio');
+    throw new Error('El cargo es obligatorio')
   }
 
-  const result = await db.get(
+  const result = await db.query(
     `
     INSERT INTO usuarios (
       nombre_completo,
@@ -36,7 +36,7 @@ export async function createUserDB({
       id_cargo,
       id_entidad
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
     RETURNING id
     `,
     [
@@ -50,9 +50,9 @@ export async function createUserDB({
       idCargo,
       idEntidad
     ]
-  );
+  )
 
-  return { id: result?.id };
+  return { id: result.rows[0].id }
 }
 
 
@@ -62,7 +62,7 @@ export async function createUserDB({
 
 export async function findUserByUsernameDB(username) {
 
-  const row = await db.get(
+  const result = await db.query(
     `
     SELECT
       u.id,
@@ -81,14 +81,16 @@ export async function findUserByUsernameDB(username) {
     JOIN roles r ON r.id = u.id_rol
     LEFT JOIN dependencias d ON d.id = u.id_dependencia
     LEFT JOIN cargos c ON c.id = u.id_cargo
-    WHERE u.username = ?
+    WHERE u.username = $1
       AND u.estado = 1
       AND u.bloqueado = false
     `,
     [username]
-  );
+  )
 
-  if (!row) return null;
+  if (result.rows.length === 0) return null
+
+  const row = result.rows[0]
 
   return {
     id: row.id,
@@ -103,16 +105,18 @@ export async function findUserByUsernameDB(username) {
     dependencia_nombre: row.dependencia_nombre,
     es_master_admin: row.es_master_admin,
     es_responsable_dependencia: row.es_responsable_dependencia
-  };
+  }
 }
 
 
 /* =========================
-   DEBUG
+   DEBUG – LISTAR USUARIOS
 ========================= */
 
 export async function getAllUsersDB() {
-  return db.all(`
+
+  const result = await db.query(
+    `
     SELECT
       u.id,
       u.username,
@@ -129,5 +133,8 @@ export async function getAllUsersDB() {
     JOIN roles r ON r.id = u.id_rol
     LEFT JOIN cargos c ON c.id = u.id_cargo
     ORDER BY u.created_at ASC
-  `);
+    `
+  )
+
+  return result.rows
 }

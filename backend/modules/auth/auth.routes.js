@@ -196,7 +196,7 @@ router.post('/refresh', async (req, res) => {
   } catch (err) {
 
     console.error('Error refresh:', err)
-
+    
     return res.status(500).json({
       error: 'Error interno'
     })
