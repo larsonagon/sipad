@@ -40,7 +40,6 @@ router.post('/login', async (req, res) => {
       })
     }
 
-    // ⚠️ el modelo devuelve passwordHash
     const valid = await bcrypt.compare(password, user.passwordHash)
 
     if (!valid) {
@@ -59,7 +58,10 @@ router.post('/login', async (req, res) => {
         username: user.username,
         nombre: user.nombre_completo,
         rol: user.role,
-        nivel_acceso: user.nivel,
+
+        // 🔥 CORRECCIÓN REAL
+        nivel_acceso: Number(user.nivel_acceso),
+
         id_entidad: Number(user.id_entidad),
         id_dependencia: Number(user.id_dependencia),
         dependencia: user.dependencia_nombre,
@@ -77,6 +79,7 @@ router.post('/login', async (req, res) => {
     const refreshToken = crypto.randomUUID()
 
     const now = new Date()
+
     const expiresAt = new Date(
       now.getTime() + REFRESH_TOKEN_DAYS * 86400000
     )
@@ -107,7 +110,10 @@ router.post('/login', async (req, res) => {
         username: user.username,
         nombre: user.nombre_completo,
         rol: user.role,
-        nivel: user.nivel,
+
+        // 🔥 MISMO CAMPO QUE EL TOKEN
+        nivel_acceso: Number(user.nivel_acceso),
+
         dependencia: user.dependencia_nombre,
         id_entidad: Number(user.id_entidad),
         id_dependencia: Number(user.id_dependencia),
@@ -185,7 +191,7 @@ router.post('/refresh', async (req, res) => {
         username: row.username,
         nombre: row.nombre_completo,
         rol: row.rol_nombre,
-        nivel_acceso: row.nivel_acceso,
+        nivel_acceso: Number(row.nivel_acceso),
         id_entidad: Number(row.id_entidad),
         id_dependencia: Number(row.id_dependencia),
         dependencia: row.dependencia_nombre,
