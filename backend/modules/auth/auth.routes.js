@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' })
     }
 
-    const valid = await bcrypt.compare(password, user.passwordHash)
+    const valid = await bcrypt.compare(password, user.password_hash)
 
     if (!valid) {
       return res.status(401).json({ error: 'Credenciales inválidas' })
@@ -55,8 +55,8 @@ router.post('/login', async (req, res) => {
         id_entidad: Number(user.id_entidad),
         id_dependencia: Number(user.id_dependencia),
         dependencia: user.dependencia_nombre,
-        es_master_admin: user.es_master_admin === 1,
-        es_responsable_dependencia: user.es_responsable_dependencia === 1
+        es_master_admin: Boolean(user.es_master_admin),
+        es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
       },
       JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
@@ -71,9 +71,9 @@ router.post('/login', async (req, res) => {
     const now = new Date()
     const expiresAt = new Date(
       now.getTime() + REFRESH_TOKEN_DAYS * 86400000
-    ).toISOString()
+    )
 
-    await db.run(
+    await db.query(
       `
       INSERT INTO refresh_tokens (
         user_id,
@@ -81,13 +81,13 @@ router.post('/login', async (req, res) => {
         expires_at,
         created_at
       )
-      VALUES (?, ?, ?, ?)
+      VALUES ($1,$2,$3,$4)
       `,
       [
         Number(user.id),
         refreshToken,
         expiresAt,
-        now.toISOString()
+        now
       ]
     )
 
@@ -103,14 +103,18 @@ router.post('/login', async (req, res) => {
         dependencia: user.dependencia_nombre,
         id_entidad: Number(user.id_entidad),
         id_dependencia: Number(user.id_dependencia),
-        es_master_admin: user.es_master_admin === 1,
-        es_responsable_dependencia: user.es_responsable_dependencia === 1
+        es_master_admin: Boolean(user.es_master_admin),
+        es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
       }
     })
 
   } catch (err) {
+
     console.error('Error login institucional:', err)
-    return res.status(500).json({ error: 'Error interno' })
+
+    return res.status(500).json({
+      error: 'Error interno'
+    })
   }
 })
 
@@ -120,15 +124,18 @@ router.post('/login', async (req, res) => {
 // =========================
 
 router.post('/refresh', async (req, res) => {
+
   try {
 
     const { refreshToken } = req.body || {}
 
     if (!refreshToken) {
-      return res.status(400).json({ error: 'Refresh token requerido' })
+      return res.status(400).json({
+        error: 'Refresh token requerido'
+      })
     }
 
-    const row = await db.get(
+    const result = await db.query(
       `
       SELECT
         rt.user_id,
@@ -146,17 +153,23 @@ router.post('/refresh', async (req, res) => {
       JOIN usuarios u ON u.id = rt.user_id
       JOIN roles r ON r.id = u.id_rol
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
-      WHERE rt.token = ?
+      WHERE rt.token = $1
       `,
       [refreshToken]
     )
 
+    const row = result.rows[0]
+
     if (!row) {
-      return res.status(401).json({ error: 'Refresh inválido' })
+      return res.status(401).json({
+        error: 'Refresh inválido'
+      })
     }
 
     if (new Date(row.expires_at) < new Date()) {
-      return res.status(401).json({ error: 'Refresh expirado' })
+      return res.status(401).json({
+        error: 'Refresh expirado'
+      })
     }
 
     const newAccessToken = jwt.sign(
@@ -169,18 +182,24 @@ router.post('/refresh', async (req, res) => {
         id_entidad: Number(row.id_entidad),
         id_dependencia: Number(row.id_dependencia),
         dependencia: row.dependencia_nombre,
-        es_master_admin: row.es_master_admin === 1,
-        es_responsable_dependencia: row.es_responsable_dependencia === 1
+        es_master_admin: Boolean(row.es_master_admin),
+        es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
       },
       JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
     )
 
-    return res.json({ token: newAccessToken })
+    return res.json({
+      token: newAccessToken
+    })
 
   } catch (err) {
+
     console.error('Error refresh:', err)
-    return res.status(500).json({ error: 'Error interno' })
+
+    return res.status(500).json({
+      error: 'Error interno'
+    })
   }
 })
 
