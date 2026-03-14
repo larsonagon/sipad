@@ -21,24 +21,32 @@ const router = express.Router()
 // =========================
 
 router.post('/login', async (req, res) => {
+
   try {
 
     const { username, password } = req.body || {}
 
     if (!username || !password) {
-      return res.status(400).json({ error: 'Datos incompletos' })
+      return res.status(400).json({
+        error: 'Datos incompletos'
+      })
     }
 
     const user = await findUserByUsernameDB(username)
 
     if (!user) {
-      return res.status(401).json({ error: 'Credenciales inválidas' })
+      return res.status(401).json({
+        error: 'Credenciales inválidas'
+      })
     }
 
-    const valid = await bcrypt.compare(password, user.password_hash)
+    // ⚠️ el modelo devuelve passwordHash
+    const valid = await bcrypt.compare(password, user.passwordHash)
 
     if (!valid) {
-      return res.status(401).json({ error: 'Credenciales inválidas' })
+      return res.status(401).json({
+        error: 'Credenciales inválidas'
+      })
     }
 
     // =========================
@@ -73,7 +81,7 @@ router.post('/login', async (req, res) => {
       now.getTime() + REFRESH_TOKEN_DAYS * 86400000
     )
 
-    await db.query(
+    await db.run(
       `
       INSERT INTO refresh_tokens (
         user_id,
@@ -81,7 +89,7 @@ router.post('/login', async (req, res) => {
         expires_at,
         created_at
       )
-      VALUES ($1,$2,$3,$4)
+      VALUES (?, ?, ?, ?)
       `,
       [
         Number(user.id),
@@ -116,6 +124,7 @@ router.post('/login', async (req, res) => {
       error: 'Error interno'
     })
   }
+
 })
 
 
@@ -135,7 +144,7 @@ router.post('/refresh', async (req, res) => {
       })
     }
 
-    const result = await db.query(
+    const row = await db.get(
       `
       SELECT
         rt.user_id,
@@ -153,12 +162,10 @@ router.post('/refresh', async (req, res) => {
       JOIN usuarios u ON u.id = rt.user_id
       JOIN roles r ON r.id = u.id_rol
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
-      WHERE rt.token = $1
+      WHERE rt.token = ?
       `,
       [refreshToken]
     )
-
-    const row = result.rows[0]
 
     if (!row) {
       return res.status(401).json({
@@ -196,11 +203,12 @@ router.post('/refresh', async (req, res) => {
   } catch (err) {
 
     console.error('Error refresh:', err)
-    
+
     return res.status(500).json({
       error: 'Error interno'
     })
   }
+
 })
 
 export default router
