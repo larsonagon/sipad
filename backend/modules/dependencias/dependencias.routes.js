@@ -34,7 +34,7 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 
   } catch (err) {
 
-    // ⚠️ La auditoría NUNCA debe romper el sistema
+    // La auditoría nunca debe romper el flujo
     console.error('⚠️ Error registrando auditoría:', err)
 
   }
@@ -42,7 +42,7 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 }
 
 // =====================================================
-// LISTAR DEPENDENCIAS (>=80)
+// LISTAR DEPENDENCIAS
 // =====================================================
 
 router.get(
@@ -72,7 +72,7 @@ router.get(
 )
 
 // =====================================================
-// CREAR DEPENDENCIA (>=80)
+// CREAR DEPENDENCIA
 // =====================================================
 
 router.post(
@@ -83,7 +83,7 @@ router.post(
 
     try {
 
-      const actorId = parseInt(req.user.sub)
+      const actorId = Number(req.user.sub)
       const { nombre } = req.body
 
       if (!nombre || !nombre.trim()) {
@@ -155,8 +155,8 @@ router.patch(
 
     try {
 
-      const actorId = parseInt(req.user.sub)
-      const id = parseInt(req.params.id)
+      const actorId = Number(req.user.sub)
+      const id = Number(req.params.id)
       const { nombre } = req.body
 
       if (!nombre || !nombre.trim()) {
@@ -201,7 +201,7 @@ router.patch(
 )
 
 // =====================================================
-// ACTIVAR / DESACTIVAR
+// ACTIVAR / DESACTIVAR DEPENDENCIA
 // =====================================================
 
 router.patch(
@@ -212,8 +212,8 @@ router.patch(
 
     try {
 
-      const actorId = parseInt(req.user.sub)
-      const id = parseInt(req.params.id)
+      const actorId = Number(req.user.sub)
+      const id = Number(req.params.id)
       const { activa } = req.body
 
       if (activa === 0) {
