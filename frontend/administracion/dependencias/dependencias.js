@@ -35,6 +35,8 @@ function getToken(){
 
 document.addEventListener('DOMContentLoaded', async () => {
 
+  console.log("dependencias.js cargado")
+
   const token = localStorage.getItem('token')
   const userRaw = localStorage.getItem('user')
 
@@ -44,7 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const user = JSON.parse(userRaw)
-  const nivel = user?.nivel_acceso ?? user?.nivel ?? 0
+
+  // 🔥 FORZAR A NÚMERO
+  const nivel = Number(user?.nivel_acceso ?? user?.nivel ?? 0)
+
+  console.log("Usuario:", user)
+  console.log("Nivel detectado:", nivel)
 
   if (nivel < 80) {
     alert('No autorizado')
