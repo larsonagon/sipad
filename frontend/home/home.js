@@ -48,13 +48,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const nivel = user.nivel_acceso || 0;
   const esMaster = user.es_master_admin === true;
 
+  // 👇 NUEVO: detectar rol General
+  const esRolGeneral =
+    (user?.rol || '').toLowerCase().includes('general');
+
   // =========================
   // CONTROL DE VISIBILIDAD
   // =========================
 
+  const cardTRD = document.getElementById('cardTRD');
   const cardTRDAI = document.getElementById('cardTRDAI');
   const cardAdmin = document.getElementById('cardAdmin');
+  const cardInformes = document.getElementById('cardInformes');
 
+  // Regla existente (nivel de acceso)
   if (nivel < 80 && !esMaster) {
 
     if (cardTRDAI) {
@@ -67,21 +74,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
+  // 👇 NUEVA REGLA PARA ROL GENERAL
+  if (esRolGeneral) {
+
+    if (cardTRD) {
+      cardTRD.style.display = 'none';
+    }
+
+    if (cardTRDAI) {
+      cardTRDAI.style.display = 'none';
+    }
+
+    if (cardAdmin) {
+      cardAdmin.style.display = 'none';
+    }
+
+    if (cardInformes) {
+      cardInformes.style.display = 'none';
+    }
+
+  }
+
   // =========================
   // REFERENCIAS A TARJETAS
   // =========================
 
   const cardSegtec = document.getElementById('cardSegtec');
-  const cardTRD = document.getElementById('cardTRD');
   const cardTRDAI_nav = document.getElementById('cardTRDAI');
   const cardAdmin_nav = document.getElementById('cardAdmin');
-  const cardInformes = document.getElementById('cardInformes');
 
   // =========================
   // NAVEGACIÓN
   // =========================
 
-  // SEGTEC
+  // SEGTEC / ICAF
   if (cardSegtec) {
     cardSegtec.addEventListener('click', () => {
       window.location.href = '/segtec/segtec.html';
