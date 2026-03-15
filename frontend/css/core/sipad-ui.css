@@ -284,12 +284,13 @@ button{
 
 .table{
   width:100%;
-  border-collapse:collapse;
+  border-collapse:separate;
+  border-spacing:0;
   background:#fff;
-  border-radius:var(--radius-md);
-  overflow:hidden;
   box-shadow:var(--shadow-sm);
   table-layout:auto;
+  position:relative;
+  overflow:visible;
 }
 
 .table thead{
@@ -306,6 +307,7 @@ button{
   padding:12px 16px;
   border-bottom:1px solid var(--color-border);
   font-size:13px;
+  position:relative; /* necesario para dropdowns internos */
 }
 
 .table tbody tr{
@@ -314,6 +316,29 @@ button{
 
 .table tbody tr:hover{
   background:#f5f9ff;
+}
+
+/* Evita que contenedores internos bloqueen dropdowns */
+.table tbody,
+.table tr{
+  overflow:visible;
+}
+
+/* Bordes redondeados sin usar overflow hidden */
+.table thead tr:first-child th:first-child{
+  border-top-left-radius:var(--radius-md);
+}
+
+.table thead tr:first-child th:last-child{
+  border-top-right-radius:var(--radius-md);
+}
+
+.table tbody tr:last-child td:first-child{
+  border-bottom-left-radius:var(--radius-md);
+}
+
+.table tbody tr:last-child td:last-child{
+  border-bottom-right-radius:var(--radius-md);
 }
 
 /* ======================================================
