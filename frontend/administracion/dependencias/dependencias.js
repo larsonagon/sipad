@@ -9,6 +9,7 @@ let modal
 let inputNombre
 let form
 let inputBuscar
+let tabla
 
 let dependenciasCache = []
 
@@ -64,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   inputNombre = document.getElementById('inputNombre')
   form = document.getElementById('formDependencia')
   inputBuscar = document.getElementById('inputBuscarDependencia')
+  tabla = document.getElementById('tablaDependencias')
 
   document.getElementById('btnNueva')
     .addEventListener('click', abrirModalNueva)
@@ -79,9 +81,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  /* IMPORTANTE
-     Capturing phase para compatibilidad Chrome/Edge */
-  document.addEventListener('click', manejarClicksGlobales, true)
+  /* Delegación estable SOLO en la tabla */
+  tabla.addEventListener('click', manejarClicksTabla)
 
   await cargarDependencias()
 })
@@ -225,15 +226,14 @@ function cerrarMenus(){
 
 
 /* =========================================
-   MANEJADOR GLOBAL
+   MANEJO DE CLICKS EN TABLA
 ========================================= */
 
-function manejarClicksGlobales(e){
+function manejarClicksTabla(e){
 
   const actionBtn = e.target.closest('[data-action]')
 
   if(!actionBtn){
-    cerrarMenus()
     return
   }
 
