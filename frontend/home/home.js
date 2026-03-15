@@ -48,20 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const nivel = user.nivel_acceso || 0;
   const esMaster = user.es_master_admin === true;
 
-  // 👇 NUEVO: detectar rol General
-  const esRolGeneral =
-    (user?.rol || '').toLowerCase().includes('general');
-
   // =========================
-  // CONTROL DE VISIBILIDAD
+  // DETECTAR ROL GENERAL (ROBUSTO)
   // =========================
 
+  const rolUsuario = JSON.stringify(user).toLowerCase();
+  const esRolGeneral = rolUsuario.includes('general');
+
+  // =========================
+  // REFERENCIAS A TARJETAS
+  // =========================
+
+  const cardSegtec = document.getElementById('cardSegtec');
   const cardTRD = document.getElementById('cardTRD');
   const cardTRDAI = document.getElementById('cardTRDAI');
   const cardAdmin = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
 
-  // Regla existente (nivel de acceso)
+  // =========================
+  // CONTROL DE VISIBILIDAD
+  // =========================
+
+  // Regla original por nivel de acceso
   if (nivel < 80 && !esMaster) {
 
     if (cardTRDAI) {
@@ -96,18 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =========================
-  // REFERENCIAS A TARJETAS
-  // =========================
-
-  const cardSegtec = document.getElementById('cardSegtec');
-  const cardTRDAI_nav = document.getElementById('cardTRDAI');
-  const cardAdmin_nav = document.getElementById('cardAdmin');
-
-  // =========================
   // NAVEGACIÓN
   // =========================
 
-  // SEGTEC / ICAF
+  // ICAF (antes SEGTEC)
   if (cardSegtec) {
     cardSegtec.addEventListener('click', () => {
       window.location.href = '/segtec/segtec.html';
@@ -122,15 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // TRD-AI
-  if (cardTRDAI_nav) {
-    cardTRDAI_nav.addEventListener('click', () => {
+  if (cardTRDAI) {
+    cardTRDAI.addEventListener('click', () => {
       window.location.href = '/trd-ai/trd-ai-dashboard.html';
     });
   }
 
   // ADMINISTRACIÓN
-  if (cardAdmin_nav) {
-    cardAdmin_nav.addEventListener('click', () => {
+  if (cardAdmin) {
+    cardAdmin.addEventListener('click', () => {
       window.location.href = '/administracion/index.html';
     });
   }
