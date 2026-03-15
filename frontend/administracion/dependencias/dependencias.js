@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
-  modal = document.getElementById('modal')
+  modal = document.getElementById('modalDependencia')
   inputNombre = document.getElementById('inputNombre')
   form = document.getElementById('formDependencia')
   inputBuscar = document.getElementById('inputBuscarDependencia')
@@ -81,10 +81,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  /* Delegación en la tabla: maneja menú y acciones */
   tabla.addEventListener('click', manejarClicksTabla)
 
-  /* Cerrar dropdown al hacer click fuera */
   document.addEventListener('click', (e)=>{
     if(!e.target.closest('.acciones-menu')){
       cerrarMenus()
@@ -202,6 +200,7 @@ function manejarClicksTabla(e){
 
   const btnMenu = e.target.closest('.btn-menu')
   if(btnMenu){
+
     e.stopPropagation()
 
     const id = btnMenu.dataset.menu
