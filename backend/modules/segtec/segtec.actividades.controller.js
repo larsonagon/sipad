@@ -65,7 +65,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // NORMALIZAR CAMPOS (COMPATIBLE MODELO NUEVO/VIEJO)
+  // NORMALIZAR CAMPOS (ALINEADO CON TABLA)
   // =====================================================
 
   function normalizarCampos(data = {}) {
@@ -74,44 +74,48 @@ export function SEGTECActividadesController(service) {
 
       ...data,
 
-      // volumen
-      volumen_categoria:
-        data.volumen_categoria ??
+      volumen_documental:
         data.volumen_documental ??
-        data.volumenCategoria,
+        data.volumen_categoria ??
+        data.volumenCategoria ??
+        null,
 
-      // custodia
-      custodia_tipo:
-        data.custodia_tipo ??
+      responsable_custodia:
         data.responsable_custodia ??
-        data.custodiaTipo,
+        data.custodia_tipo ??
+        data.custodiaTipo ??
+        null,
 
       cargo_custodia:
         data.cargo_custodia ??
-        data.cargoCustodia,
+        data.cargoCustodia ??
+        null,
 
       dependencia_custodia:
         data.dependencia_custodia ??
-        data.dependenciaCustodia,
+        data.dependenciaCustodia ??
+        null,
 
-      // localización
-      localizacion_tipo:
-        data.localizacion_tipo ??
+      localizacion_documentos:
         data.localizacion_documentos ??
-        data.localizacionTipo,
+        data.localizacion_tipo ??
+        data.localizacionTipo ??
+        null,
 
       localizacion_otro:
         data.localizacion_otro ??
-        data.localizacionOtro,
+        data.localizacionOtro ??
+        null,
 
-      // plazo
       tiene_plazo:
         data.tiene_plazo ??
-        data.tienePlazo,
+        data.tienePlazo ??
+        null,
 
       genera_expediente_propio:
         data.genera_expediente_propio ??
-        data.generaExpediente
+        data.generaExpediente ??
+        null
 
     }
   }
@@ -258,12 +262,10 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      const estado =
-        await service.actualizarBloque1(id, data)
+      await service.actualizarBloque1(id, data)
 
       return res.status(200).json({
-        ok: true,
-        estado_general: estado
+        ok: true
       })
 
     } catch (err) {
@@ -293,12 +295,10 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      const estado =
-        await service.actualizarBloque2(id, data)
+      await service.actualizarBloque2(id, data)
 
       return res.status(200).json({
-        ok: true,
-        estado_general: estado
+        ok: true
       })
 
     } catch (err) {
@@ -328,12 +328,10 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      const estado =
-        await service.actualizarBloque3(id, data)
+      await service.actualizarBloque3(id, data)
 
       return res.status(200).json({
-        ok: true,
-        estado_general: estado
+        ok: true
       })
 
     } catch (err) {
