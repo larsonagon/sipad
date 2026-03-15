@@ -11,10 +11,10 @@ function crearModalSiNoExiste() {
   const modal = document.createElement('div')
 
   modal.id = 'modalPassword'
-  modal.className = 'modal hidden'
+  modal.className = 'password-modal hidden'
 
   modal.innerHTML = `
-    <div class="modal-content small">
+    <div class="password-modal-content small">
 
       <h3>Cambiar contraseña</h3>
 
@@ -150,14 +150,9 @@ form?.addEventListener('submit', async (e) => {
       return
     }
 
-    // =====================================================
-    // CERRAR MODAL CORRECTAMENTE
-    // =====================================================
-
     form.reset()
     modal.classList.add('hidden')
 
-    // Mostrar mensaje después de cerrar
     setTimeout(() => {
       alert('Contraseña actualizada correctamente')
     }, 150)
