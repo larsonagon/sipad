@@ -79,8 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  /* Delegación global segura */
-  document.addEventListener('click', manejarClicksGlobales)
+  /* IMPORTANTE
+     Capturing phase para compatibilidad Chrome/Edge */
+  document.addEventListener('click', manejarClicksGlobales, true)
 
   await cargarDependencias()
 })
@@ -235,6 +236,8 @@ function manejarClicksGlobales(e){
     cerrarMenus()
     return
   }
+
+  cerrarMenus()
 
   const action = actionBtn.dataset.action
 
