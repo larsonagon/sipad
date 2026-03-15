@@ -50,6 +50,9 @@ export function SEGTECActividadesRepository(db) {
       volumen_documental: row.volumen_documental ?? '',
 
       responsable_custodia: row.responsable_custodia ?? '',
+      cargo_custodia: row.cargo_custodia ?? '',
+      dependencia_custodia: row.dependencia_custodia ?? '',
+
       localizacion_documentos: row.localizacion_documentos ?? '',
 
       dependencias_relacionadas: dependencias,
@@ -246,6 +249,8 @@ export function SEGTECActividadesRepository(db) {
       recepcion_externa=?,
       volumen_documental=?,
       responsable_custodia=?,
+      cargo_custodia=?,
+      dependencia_custodia=?,
       localizacion_documentos=?,
       updated_at=?
       WHERE id=?
@@ -256,6 +261,8 @@ export function SEGTECActividadesRepository(db) {
       nullIfEmpty(data.recepcion_externa),
       nullIfEmpty(data.volumen_documental),
       nullIfEmpty(data.responsable_custodia),
+      intOrNull(data.cargo_custodia),
+      intOrNull(data.dependencia_custodia),
       nullIfEmpty(data.localizacion_documentos),
       nowISO(),
       id
