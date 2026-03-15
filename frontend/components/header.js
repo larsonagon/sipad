@@ -239,8 +239,9 @@ export function renderHeader(activeModule) {
   const btnUserMenu = document.getElementById('btnUserMenu')
   const dropdown = document.getElementById('userDropdown')
 
-  btnUserMenu?.addEventListener('click', () => {
-    dropdown.classList.toggle('show')
+  btnUserMenu?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    dropdown?.classList.toggle('show')
   })
 
   document.addEventListener('click', (e) => {
@@ -249,6 +250,12 @@ export function renderHeader(activeModule) {
       dropdown?.classList.remove('show')
     }
 
+  })
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      dropdown?.classList.remove('show')
+    }
   })
 
 }
