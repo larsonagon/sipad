@@ -36,6 +36,61 @@
 #tablaUsuarios th:nth-child(6){min-width:120px;} /* nivel */
 #tablaUsuarios th:nth-child(7){min-width:180px;} /* dependencia */
 
+
+/* ======================================================
+   AJUSTE MODAL USUARIOS (NO AFECTA OTROS MODALES)
+====================================================== */
+
+#modalUsuario{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+#modalUsuario .modal-content{
+  width:100%;
+  max-width:720px;
+  background:#fff;
+  border-radius:8px;
+  padding:28px;
+  box-shadow:0 10px 30px rgba(0,0,0,.15);
+  max-height:90vh;
+  overflow-y:auto;
+}
+
+/* grid del formulario */
+
+#modalUsuario .form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin-top:20px;
+}
+
+/* campos completos */
+
+#modalUsuario .form-group.full{
+  grid-column:1 / -1;
+}
+
+/* inputs controlados */
+
+#modalUsuario input,
+#modalUsuario select{
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* acciones del modal */
+
+#modalUsuario .modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:10px;
+}
+
 </style>
 
 </head>
