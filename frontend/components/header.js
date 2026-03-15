@@ -61,6 +61,13 @@ export function renderHeader(activeModule) {
   const puedeVerInformes =
     nivelAcceso >= 80
 
+  // ======================================================
+  // NUEVO CONTROL DE ROL GENERAL
+  // ======================================================
+
+  const esRolGeneral =
+    (user?.rol || '').toLowerCase() === 'general'
+
   const header = document.createElement('header')
   header.className = 'pig-header'
 
@@ -98,7 +105,7 @@ export function renderHeader(activeModule) {
           </button>
 
           ${
-            esAdmin
+            !esRolGeneral && esAdmin
               ? `
               <button type="button" id="btnAdmin"
                 ${modulo === 'Administración' ? 'class="active"' : ''}>
@@ -113,13 +120,19 @@ export function renderHeader(activeModule) {
             ICAF
           </button>
 
-          <button type="button" id="btnTRDAI"
-            ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
-            TRD-AI
-          </button>
+          ${
+            !esRolGeneral
+              ? `
+              <button type="button" id="btnTRDAI"
+                ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
+                TRD-AI
+              </button>
+              `
+              : ''
+          }
 
           ${
-            puedeVerInformes
+            !esRolGeneral && puedeVerInformes
               ? `
               <button type="button" id="btnInformes"
                 ${modulo === 'Informes' ? 'class="active"' : ''}>
