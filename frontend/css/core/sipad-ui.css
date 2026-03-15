@@ -284,13 +284,12 @@ button{
 
 .table{
   width:100%;
-  border-collapse:separate;
-  border-spacing:0;
+  border-collapse:collapse;
   background:#fff;
+  border-radius:var(--radius-md);
+  overflow:hidden;
   box-shadow:var(--shadow-sm);
   table-layout:auto;
-  position:relative;
-  overflow:visible;
 }
 
 .table thead{
@@ -307,7 +306,6 @@ button{
   padding:12px 16px;
   border-bottom:1px solid var(--color-border);
   font-size:13px;
-  position:relative;
 }
 
 .table tbody tr{
@@ -316,6 +314,40 @@ button{
 
 .table tbody tr:hover{
   background:#f5f9ff;
+}
+
+/* ======================================================
+   BOTONES DE ACCIONES
+====================================================== */
+
+.table td{
+  vertical-align:middle;
+}
+
+.table td button{
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:6px;
+  font-weight:500;
+  line-height:1.2;
+}
+
+.table td .btn-primary{
+  background:#1f4e79;
+}
+
+.table td .btn-secondary{
+  background:#f3f4f6;
+}
+
+.table td .btn-secondary:hover{
+  background:#e5e7eb;
+}
+
+.table td[style*="flex"]{
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
 
 /* ======================================================
@@ -330,13 +362,28 @@ button{
   font-weight:600;
 }
 
+.badge-neutral{
+  background:#eef2f6;
+  color:#4b5563;
+}
+
+.badge-warning{
+  background:#fff7ed;
+  color:#b45309;
+}
+
+.badge-info{
+  background:#e0f2fe;
+  color:#0369a1;
+}
+
 .badge-success{
   background:#d1fae5;
   color:#065f46;
 }
 
 /* ======================================================
-   MODAL ORIGINAL (se mantiene para módulos antiguos)
+   MODAL
 ====================================================== */
 
 .modal{
@@ -359,43 +406,83 @@ button{
 }
 
 /* ======================================================
-   NUEVOS MODALES AISLADOS (evitan conflictos)
+   FORMULARIOS
 ====================================================== */
 
-.sipad-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
+.form-group{
+  margin-bottom:18px;
   display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:2100;
+  flex-direction:column;
 }
 
-.sipad-modal-content{
-  background:#fff;
-  width:440px;
-  max-width:92%;
-  padding:28px 32px;
-  border-radius:var(--radius-md);
-  box-shadow:var(--shadow-lg);
+.form-group label{
+  font-size:var(--font-sm);
+  margin-bottom:6px;
 }
 
-.password-modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
+.form-group input,
+.form-group textarea,
+.form-group select{
+  padding:11px 14px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--color-border);
+}
+
+.modal-actions{
   display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:2200;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
 }
 
-.password-modal-content{
+/* ======================================================
+   DASHBOARD MÓDULOS
+====================================================== */
+
+.module-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:28px;
+  margin-top:40px;
+}
+
+.module-card{
   background:#fff;
-  width:440px;
-  max-width:92%;
-  padding:28px 32px;
   border-radius:var(--radius-md);
-  box-shadow:var(--shadow-lg);
+  border:1px solid var(--color-border);
+  box-shadow:var(--shadow-sm);
+  padding:26px;
+  text-align:center;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.module-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-md);
+}
+
+.module-icon{
+  font-size:36px;
+  margin-bottom:12px;
+}
+
+.module-card h3{
+  margin:0;
+  font-size:16px;
+  color:var(--color-primary);
+}
+
+.module-card p{
+  margin-top:6px;
+  font-size:13px;
+  color:var(--color-text-muted);
+}
+
+.text-center{
+  text-align:center;
+}
+
+.table th.text-center{
+  text-align:center;
 }
