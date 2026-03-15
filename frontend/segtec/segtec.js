@@ -143,26 +143,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
 
-      const resp = await apiFetch(`/api/segtec/actividades/${id}/pdf`);
-
-      if (!resp || !resp.ok) {
-        alert('No fue posible generar el PDF.');
-        return;
-      }
-
-      const blob = await resp.blob();
-
-      const url = window.URL.createObjectURL(blob);
+      const url = `/api/segtec/actividades/${id}/pdf`;
 
       const a = document.createElement('a');
       a.href = url;
+      a.target = '_blank';
       a.download = `actividad_${id}.pdf`;
+
       document.body.appendChild(a);
-
       a.click();
-
       a.remove();
-      window.URL.revokeObjectURL(url);
 
     } catch (error) {
 
