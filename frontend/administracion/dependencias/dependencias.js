@@ -61,6 +61,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
+  /* 
+     Safari necesita un ciclo de render después de insertar
+     dinámicamente el header para recalcular el layout
+  */
+  await new Promise(r => requestAnimationFrame(r))
+
   modal = document.getElementById('modalDependencia')
   inputNombre = document.getElementById('inputNombre')
   form = document.getElementById('formDependencia')
