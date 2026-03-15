@@ -9,9 +9,20 @@ export async function generarPDFActividad(actividad) {
 
   const html = construirHTML(actividad)
 
+  // =====================================================
+  // CONFIGURACIÓN CHROMIUM PARA RENDER / SERVIDORES
+  // =====================================================
+
+  const executablePath = await chromium.executablePath()
+
   const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
+    args: [
+      ...chromium.args,
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage'
+    ],
+    executablePath,
     headless: chromium.headless,
     defaultViewport: chromium.defaultViewport
   })
