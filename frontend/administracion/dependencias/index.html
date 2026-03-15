@@ -71,13 +71,9 @@ autocomplete="off"
 <tr>
 
 <th style="width:80px;">ID</th>
-
 <th>Nombre</th>
-
 <th style="width:130px;">Estado</th>
-
 <th style="width:160px;">Fecha de registro</th>
-
 <th style="width:80px;">Acciones</th>
 
 </tr>
@@ -106,13 +102,13 @@ aria-hidden="true"
 
 <div
 class="modal-content"
+role="document"
 tabindex="-1"
 >
 
 <h3 id="modalTitle">Nueva Dependencia</h3>
 
 <form id="formDependencia" autocomplete="off">
-
 
 <div class="form-group">
 
@@ -121,6 +117,7 @@ tabindex="-1"
 <input
 type="text"
 id="inputNombre"
+name="nombre"
 placeholder="Nombre de la dependencia u oficina"
 required
 >
@@ -135,7 +132,6 @@ required
 type="button"
 id="btnCancelar"
 class="btn-secondary"
-data-action="cancelar"
 >
 Cancelar
 </button>
