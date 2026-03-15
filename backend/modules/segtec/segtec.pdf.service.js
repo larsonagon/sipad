@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
 
 export async function generarPDFActividad(actividad) {
 
@@ -9,12 +10,10 @@ export async function generarPDFActividad(actividad) {
   const html = construirHTML(actividad)
 
   const browser = await puppeteer.launch({
-    headless: 'new',
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--font-render-hinting=none'
-    ]
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport
   })
 
   const page = await browser.newPage()
