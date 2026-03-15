@@ -436,32 +436,42 @@ act.recepcion_externa ?? ""
 // SELECTS SEGUROS
 // ===============================
 
-const vol =
-act.volumen_documental ?? act.volumen_categoria ?? ""
-if([...volumenCategoria.options].some(o=>o.value===vol)){
-volumenCategoria.value = vol
+function setSelect(select, value){
+
+if(!value) return
+
+const opt =
+[...select.options]
+.find(o =>
+o.value.trim().toLowerCase() ===
+String(value).trim().toLowerCase()
+)
+
+if(opt) select.value = opt.value
+
 }
+
+setSelect(volumenCategoria, act.volumen_documental ?? act.volumen_categoria)
 
 volumenAnualPersonalizado.value =
 act.volumen_anual_personalizado ?? ""
 
-const cust =
-act.responsable_custodia ?? act.custodia_tipo ?? ""
-if([...custodiaTipo.options].some(o=>o.value===cust)){
-custodiaTipo.value = cust
-}
+setSelect(custodiaTipo, act.responsable_custodia ?? act.custodia_tipo)
 
-cargoCustodia.value =
-act.cargo_custodia ?? ""
+if(act.cargo_custodia){
+const optCargo =
+[...cargoCustodia.options]
+.find(o => String(o.value) === String(act.cargo_custodia))
+
+if(optCargo){
+cargoCustodia.value = optCargo.value
+}
+}
 
 dependenciaCustodia.value =
 act.dependencia_custodia ?? ""
 
-const loc =
-act.localizacion_documentos ?? act.localizacion_tipo ?? ""
-if([...localizacionTipo.options].some(o=>o.value===loc)){
-localizacionTipo.value = loc
-}
+setSelect(localizacionTipo, act.localizacion_documentos ?? act.localizacion_tipo)
 
 localizacionOtro.value =
 act.localizacion_otro ?? ""
@@ -491,8 +501,21 @@ act.norma_aplicable ?? ""
 // DEPENDENCIAS GUARDADAS
 // ===============================
 
-dependenciasSeleccionadas =
+const depsGuardadas =
 normalizarDependencias(act.dependencias_relacionadas)
+
+dependenciasSeleccionadas = depsGuardadas.map(id => {
+
+const option =
+[...selectDependencia.options]
+.find(o => String(o.value) === String(id))
+
+return {
+id,
+nombre: option ? option.textContent : `Dependencia ${id}`
+}
+
+})
 
 renderTags()
 
