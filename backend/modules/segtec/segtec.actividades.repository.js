@@ -36,23 +36,18 @@ export function SEGTECActividadesRepository(db) {
       documentos_generados: row.documentos_generados ?? '',
       recepcion_externa: row.recepcion_externa ?? '',
 
-      volumen_categoria: row.volumen_categoria ?? '',
-      volumen_anual_personalizado: row.volumen_anual_personalizado ?? null,
+      formato_produccion: row.formato_produccion ?? '',
+      volumen_documental: row.volumen_documental ?? '',
 
-      custodia_tipo: row.custodia_tipo ?? '',
-      cargo_custodia: row.cargo_custodia ?? '',
-      dependencia_custodia: row.dependencia_custodia ?? null,
-
-      localizacion_tipo: row.localizacion_tipo ?? '',
-      localizacion_otro: row.localizacion_otro ?? '',
+      responsable_custodia: row.responsable_custodia ?? '',
+      localizacion_documentos: row.localizacion_documentos ?? '',
 
       dependencias_relacionadas: row.dependencias_relacionadas ?? '[]',
 
       plazo_legal: row.plazo_legal ?? '',
       tiempo_ejecucion: row.tiempo_ejecucion ?? '',
 
-      genera_expediente_propio: row.genera_expediente_propio ?? 0,
-      tiene_plazo: row.tiene_plazo ?? 0
+      genera_expediente_propio: row.genera_expediente_propio ?? 0
     }
   }
 
@@ -239,17 +234,9 @@ export function SEGTECActividadesRepository(db) {
       documentos_generados=?,
       formato_produccion=?,
       recepcion_externa=?,
-
-      volumen_categoria=?,
-      volumen_anual_personalizado=?,
-
-      custodia_tipo=?,
-      cargo_custodia=?,
-      dependencia_custodia=?,
-
-      localizacion_tipo=?,
-      localizacion_otro=?,
-
+      volumen_documental=?,
+      responsable_custodia=?,
+      localizacion_documentos=?,
       updated_at=?
       WHERE id=?
     `,[
@@ -257,17 +244,9 @@ export function SEGTECActividadesRepository(db) {
       nullIfEmpty(data.documentos_generados),
       nullIfEmpty(data.formato_produccion),
       nullIfEmpty(data.recepcion_externa),
-
-      nullIfEmpty(data.volumen_categoria),
-      intOrNull(data.volumen_anual_personalizado),
-
-      nullIfEmpty(data.custodia_tipo),
-      intOrNull(data.cargo_custodia),
-      intOrNull(data.dependencia_custodia),
-
-      nullIfEmpty(data.localizacion_tipo),
-      nullIfEmpty(data.localizacion_otro),
-
+      nullIfEmpty(data.volumen_documental),
+      nullIfEmpty(data.responsable_custodia),
+      nullIfEmpty(data.localizacion_documentos),
       nowISO(),
       id
     ],"BLOQUE2")
@@ -286,30 +265,21 @@ export function SEGTECActividadesRepository(db) {
       requiere_otras_dependencias=?,
       norma_aplicable=?,
       dependencias_relacionadas=?,
-
-      tiene_plazo=?,
       plazo_legal=?,
       tiempo_ejecucion=?,
-
       genera_expediente_propio=?,
-
       updated_at=?
       WHERE id=?
     `,[
       data.tiene_pasos_formales ? 1 : 0,
       data.requiere_otras_dependencias ? 1 : 0,
       nullIfEmpty(data.norma_aplicable),
-
       data.dependencias_relacionadas
         ? JSON.stringify(data.dependencias_relacionadas)
         : null,
-
-      data.tiene_plazo ? 1 : 0,
       nullIfEmpty(data.plazo_legal),
       nullIfEmpty(data.tiempo_ejecucion),
-
       data.genera_expediente_propio ? 1 : 0,
-
       nowISO(),
       id
     ],"BLOQUE3")
