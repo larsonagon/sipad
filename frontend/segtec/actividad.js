@@ -432,14 +432,24 @@ act.formato_produccion ?? ""
 recepcionExterna.value =
 act.recepcion_externa ?? ""
 
-volumenCategoria.value =
+// ===============================
+// SELECTS SEGUROS
+// ===============================
+
+const vol =
 act.volumen_documental ?? act.volumen_categoria ?? ""
+if([...volumenCategoria.options].some(o=>o.value===vol)){
+volumenCategoria.value = vol
+}
 
 volumenAnualPersonalizado.value =
 act.volumen_anual_personalizado ?? ""
 
-custodiaTipo.value =
+const cust =
 act.responsable_custodia ?? act.custodia_tipo ?? ""
+if([...custodiaTipo.options].some(o=>o.value===cust)){
+custodiaTipo.value = cust
+}
 
 cargoCustodia.value =
 act.cargo_custodia ?? ""
@@ -447,8 +457,11 @@ act.cargo_custodia ?? ""
 dependenciaCustodia.value =
 act.dependencia_custodia ?? ""
 
-localizacionTipo.value =
+const loc =
 act.localizacion_documentos ?? act.localizacion_tipo ?? ""
+if([...localizacionTipo.options].some(o=>o.value===loc)){
+localizacionTipo.value = loc
+}
 
 localizacionOtro.value =
 act.localizacion_otro ?? ""
@@ -474,6 +487,13 @@ normalizarBoolean(act.tiene_plazo) ? "si":"no"
 normaAplicable.value =
 act.norma_aplicable ?? ""
 
+// ===============================
+// DEPENDENCIAS GUARDADAS
+// ===============================
+
+dependenciasSeleccionadas =
+normalizarDependencias(act.dependencias_relacionadas)
+
 renderTags()
 
 actualizarDependenciasUI()
@@ -482,7 +502,7 @@ actualizarCustodiaUI()
 actualizarVolumenUI()
 
 badge.innerText =
-estadoActual.toUpperCase()
+(estadoActual || "borrador").toUpperCase()
 
 if(
 estadoActual === "caracterizada" ||
