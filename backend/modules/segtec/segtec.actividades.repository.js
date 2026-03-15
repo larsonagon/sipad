@@ -30,6 +30,16 @@ export function SEGTECActividadesRepository(db) {
 
     if (!row) return row
 
+    let dependencias = []
+
+    try {
+      dependencias = row.dependencias_relacionadas
+        ? JSON.parse(row.dependencias_relacionadas)
+        : []
+    } catch {
+      dependencias = []
+    }
+
     return {
       ...row,
 
@@ -42,7 +52,7 @@ export function SEGTECActividadesRepository(db) {
       responsable_custodia: row.responsable_custodia ?? '',
       localizacion_documentos: row.localizacion_documentos ?? '',
 
-      dependencias_relacionadas: row.dependencias_relacionadas ?? '[]',
+      dependencias_relacionadas: dependencias,
 
       plazo_legal: row.plazo_legal ?? '',
       tiempo_ejecucion: row.tiempo_ejecucion ?? '',
@@ -274,12 +284,16 @@ export function SEGTECActividadesRepository(db) {
       data.tiene_pasos_formales ? 1 : 0,
       data.requiere_otras_dependencias ? 1 : 0,
       nullIfEmpty(data.norma_aplicable),
+
       data.dependencias_relacionadas
         ? JSON.stringify(data.dependencias_relacionadas)
         : null,
+
       nullIfEmpty(data.plazo_legal),
       nullIfEmpty(data.tiempo_ejecucion),
+
       data.genera_expediente_propio ? 1 : 0,
+
       nowISO(),
       id
     ],"BLOQUE3")
