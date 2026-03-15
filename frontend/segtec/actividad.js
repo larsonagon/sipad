@@ -433,13 +433,13 @@ recepcionExterna.value =
 act.recepcion_externa ?? ""
 
 volumenCategoria.value =
-act.volumen_categoria ?? act.volumen_documental ?? ""
+act.volumen_documental ?? act.volumen_categoria ?? ""
 
 volumenAnualPersonalizado.value =
 act.volumen_anual_personalizado ?? ""
 
 custodiaTipo.value =
-act.custodia_tipo ?? act.responsable_custodia ?? ""
+act.responsable_custodia ?? act.custodia_tipo ?? ""
 
 cargoCustodia.value =
 act.cargo_custodia ?? ""
@@ -448,7 +448,7 @@ dependenciaCustodia.value =
 act.dependencia_custodia ?? ""
 
 localizacionTipo.value =
-act.localizacion_tipo ?? act.localizacion_documentos ?? ""
+act.localizacion_documentos ?? act.localizacion_tipo ?? ""
 
 localizacionOtro.value =
 act.localizacion_otro ?? ""
@@ -473,20 +473,6 @@ normalizarBoolean(act.tiene_plazo) ? "si":"no"
 
 normaAplicable.value =
 act.norma_aplicable ?? ""
-
-dependenciasSeleccionadas = []
-
-const deps = normalizarDependencias(act.dependencias_relacionadas)
-
-deps.forEach(id=>{
-const opt = selectDependencia.querySelector(`option[value="${id}"]`)
-if(opt){
-dependenciasSeleccionadas.push({
-id: opt.value,
-nombre: opt.textContent
-})
-}
-})
 
 renderTags()
 
@@ -536,14 +522,14 @@ documentos_generados:documentosGenerados.value,
 formato_produccion:formato.value,
 recepcion_externa:recepcionExterna.value || null,
 
-volumen_categoria:volumenCategoria.value,
+volumen_documental:volumenCategoria.value,
 volumen_anual_personalizado:volumenAnualPersonalizado.value,
 
-custodia_tipo:custodiaTipo.value,
+responsable_custodia:custodiaTipo.value,
 cargo_custodia:cargoCustodia.value,
 dependencia_custodia:dependenciaCustodia.value,
 
-localizacion_tipo:localizacionTipo.value,
+localizacion_documentos:localizacionTipo.value,
 localizacion_otro:localizacionOtro.value
 
 })

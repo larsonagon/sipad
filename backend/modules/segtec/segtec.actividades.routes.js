@@ -294,19 +294,11 @@ export function buildSEGTECRouter(db, trdAIService) {
             actividad.validacion.genera_expediente_propio
         }
 
-        // =====================================================
-        // DEPENDENCIAS → NOMBRES
-        // =====================================================
-
         const depsIds =
           normalizarDependencias(actividad.dependencias_relacionadas)
 
         actividad.dependencias_relacionadas =
           await resolverDependencias(depsIds)
-
-        // =====================================================
-        // CARGO CUSTODIA → NOMBRE
-        // =====================================================
 
         if (actividad.cargo_custodia) {
 
@@ -321,10 +313,6 @@ export function buildSEGTECRouter(db, trdAIService) {
           }
 
         }
-
-        // =====================================================
-        // COMPATIBILIDAD MODELO NUEVO / VIEJO
-        // =====================================================
 
         actividad.volumen_categoria =
           actividad.volumen_categoria ||
@@ -344,15 +332,16 @@ export function buildSEGTECRouter(db, trdAIService) {
         actividad.tiene_plazo =
           actividad.tiene_plazo ?? 0
 
-        // =====================================================
-
         const pdfBuffer = await generarPDFActividad(actividad)
 
         res.setHeader('Content-Type', 'application/pdf')
+
         res.setHeader(
           'Content-Disposition',
-          `inline; filename="actividad-segtec-${req.params.id}.pdf"`
+          `attachment; filename="actividad-segtec-${req.params.id}.pdf"`
         )
+
+        res.setHeader('Content-Length', pdfBuffer.length)
 
         res.send(pdfBuffer)
 

@@ -65,7 +65,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // NORMALIZAR CAMPOS NUEVOS (FORMULARIO)
+  // NORMALIZAR CAMPOS (COMPATIBLE MODELO NUEVO/VIEJO)
   // =====================================================
 
   function normalizarCampos(data = {}) {
@@ -74,29 +74,44 @@ export function SEGTECActividadesController(service) {
 
       ...data,
 
+      // volumen
       volumen_categoria:
-        data.volumen_categoria ?? data.volumenCategoria,
+        data.volumen_categoria ??
+        data.volumen_documental ??
+        data.volumenCategoria,
 
+      // custodia
       custodia_tipo:
-        data.custodia_tipo ?? data.custodiaTipo,
+        data.custodia_tipo ??
+        data.responsable_custodia ??
+        data.custodiaTipo,
 
       cargo_custodia:
-        data.cargo_custodia ?? data.cargoCustodia,
+        data.cargo_custodia ??
+        data.cargoCustodia,
 
       dependencia_custodia:
-        data.dependencia_custodia ?? data.dependenciaCustodia,
+        data.dependencia_custodia ??
+        data.dependenciaCustodia,
 
+      // localización
       localizacion_tipo:
-        data.localizacion_tipo ?? data.localizacionTipo,
+        data.localizacion_tipo ??
+        data.localizacion_documentos ??
+        data.localizacionTipo,
 
       localizacion_otro:
-        data.localizacion_otro ?? data.localizacionOtro,
+        data.localizacion_otro ??
+        data.localizacionOtro,
 
+      // plazo
       tiene_plazo:
-        data.tiene_plazo ?? data.tienePlazo,
+        data.tiene_plazo ??
+        data.tienePlazo,
 
       genera_expediente_propio:
-        data.genera_expediente_propio ?? data.generaExpediente
+        data.genera_expediente_propio ??
+        data.generaExpediente
 
     }
   }
