@@ -109,8 +109,8 @@ export function renderHeader(activeModule) {
           }
 
           <button type="button" id="btnSegtec"
-            ${modulo === 'SEG-TEC' ? 'class="active"' : ''}>
-            SEG-TEC
+            ${modulo === 'ICAF' ? 'class="active"' : ''}>
+            ICAF
           </button>
 
           <button type="button" id="btnTRDAI"
