@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const user = JSON.parse(userRaw)
 
-  // 🔥 FORZAR A NÚMERO
   const nivel = Number(user?.nivel_acceso ?? user?.nivel ?? 0)
 
   console.log("Usuario:", user)
@@ -80,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  document.addEventListener('click', cerrarMenus)
+  document.addEventListener('click', manejarAccionesGlobales)
 
   await cargarDependencias()
 })
@@ -166,11 +165,11 @@ function renderTabla(data){
 
           <div class="menu-dropdown" id="menu-${dep.id}">
 
-            <button onclick="editar(${dep.id}, '${dep.nombre.replace(/'/g,"\\'")}')">
+            <button data-action="editar" data-id="${dep.id}" data-nombre="${escapeHTML(dep.nombre)}">
               Editar
             </button>
 
-            <button onclick="toggleEstado(${dep.id}, ${activa})">
+            <button data-action="toggle" data-id="${dep.id}" data-activa="${activa}">
               ${activa ? 'Desactivar' : 'Activar'}
             </button>
 
@@ -221,6 +220,41 @@ function cerrarMenus(){
 
 
 /* =========================================
+   ACCIONES GLOBALES (delegación)
+========================================= */
+
+function manejarAccionesGlobales(e){
+
+  const action = e.target.dataset.action
+
+  if(!action){
+    cerrarMenus()
+    return
+  }
+
+  e.stopPropagation()
+
+  if(action === 'editar'){
+
+    const id = Number(e.target.dataset.id)
+    const nombre = e.target.dataset.nombre
+
+    editar(id,nombre)
+  }
+
+  if(action === 'toggle'){
+
+    const id = Number(e.target.dataset.id)
+    const activa = e.target.dataset.activa === 'true'
+
+    toggleEstado(id,activa)
+  }
+
+}
+
+
+
+/* =========================================
    BUSCAR
 ========================================= */
 
@@ -264,7 +298,7 @@ function cerrarModal(){
    EDITAR
 ========================================= */
 
-window.editar = function(id,nombre){
+function editar(id,nombre){
 
   modoEdicion = true
   idEditando = id
@@ -332,7 +366,7 @@ async function guardarDependencia(e){
    ESTADO
 ========================================= */
 
-window.toggleEstado = async function(id,activaActual){
+async function toggleEstado(id,activaActual){
 
   try{
 
