@@ -81,8 +81,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  /* Delegación estable SOLO en la tabla */
+  /* Delegación en la tabla: maneja menú y acciones */
   tabla.addEventListener('click', manejarClicksTabla)
+
+  /* Cerrar dropdown al hacer click fuera */
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('.acciones-menu')){
+      cerrarMenus()
+    }
+  })
 
   await cargarDependencias()
 })
@@ -159,7 +166,6 @@ function renderTabla(data){
       <td>${formatearFecha(dep.created_at || dep.creado_en)}</td>
 
       <td>
-
         <div class="acciones-menu">
 
           <button class="btn-menu" data-menu="${dep.id}">
@@ -168,7 +174,7 @@ function renderTabla(data){
 
           <div class="menu-dropdown" id="menu-${dep.id}">
 
-            <button data-action="editar" data-id="${dep.id}" data-nombre="${escapeHTML(dep.nombre)}">
+            <button data-action="editar" data-id="${dep.id}">
               Editar
             </button>
 
@@ -179,84 +185,70 @@ function renderTabla(data){
           </div>
 
         </div>
-
       </td>
     `
 
     tbody.appendChild(tr)
   })
-
-  activarMenus()
 }
 
 
 
 /* =========================================
-   MENÚ ⋮
-========================================= */
-
-function activarMenus(){
-
-  document.querySelectorAll('.btn-menu').forEach(btn => {
-
-    btn.addEventListener('click', e => {
-
-      e.stopPropagation()
-
-      const id = btn.dataset.menu
-      const menu = document.getElementById(`menu-${id}`)
-
-      cerrarMenus()
-
-      if(menu){
-        menu.classList.toggle('show')
-      }
-
-    })
-
-  })
-}
-
-function cerrarMenus(){
-
-  document.querySelectorAll('.menu-dropdown')
-    .forEach(m => m.classList.remove('show'))
-}
-
-
-
-/* =========================================
-   MANEJO DE CLICKS EN TABLA
+   MENÚ Y ACCIONES
 ========================================= */
 
 function manejarClicksTabla(e){
 
-  const actionBtn = e.target.closest('[data-action]')
+  const btnMenu = e.target.closest('.btn-menu')
+  if(btnMenu){
+    e.stopPropagation()
 
-  if(!actionBtn){
+    const id = btnMenu.dataset.menu
+    const menu = document.getElementById(`menu-${id}`)
+
+    cerrarMenus()
+
+    if(menu){
+      menu.classList.toggle('show')
+    }
+
     return
   }
+
+  const actionBtn = e.target.closest('[data-action]')
+  if(!actionBtn) return
 
   cerrarMenus()
 
   const action = actionBtn.dataset.action
+  const id = Number(actionBtn.dataset.id)
 
   if(action === 'editar'){
 
-    const id = Number(actionBtn.dataset.id)
-    const nombre = actionBtn.dataset.nombre
+    const dep = dependenciasCache.find(d => d.id === id)
+    if(dep){
+      editar(dep.id, dep.nombre)
+    }
 
-    editar(id,nombre)
+    return
   }
 
   if(action === 'toggle'){
 
-    const id = Number(actionBtn.dataset.id)
     const activa = Number(actionBtn.dataset.activa)
-
     toggleEstado(id,activa)
+
+    return
   }
 
+}
+
+
+
+function cerrarMenus(){
+  document.querySelectorAll('.menu-dropdown')
+    .forEach(m => m.classList.remove('show'))
 }
 
 
@@ -295,7 +287,6 @@ function abrirModalNueva(){
 }
 
 function cerrarModal(){
-
   modal.classList.add('hidden')
 }
 
