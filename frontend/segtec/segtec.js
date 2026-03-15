@@ -20,8 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const rolesAnalisis = [
     'Super Admin',
-    'Archivista',
-    'Profesional 1'
+    'Archivista'
   ];
 
   const puedeAnalizar = rolesAnalisis.includes(user.rol);
