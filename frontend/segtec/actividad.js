@@ -440,14 +440,15 @@ function setSelect(select, value){
 
 if(!value) return
 
+const val = String(value).trim().toLowerCase()
+
 const opt =
 [...select.options]
-.find(o =>
-o.value.trim().toLowerCase() ===
-String(value).trim().toLowerCase()
-)
+.find(o => o.value.trim().toLowerCase() === val)
 
-if(opt) select.value = opt.value
+if(opt){
+select.value = opt.value
+}
 
 }
 
@@ -504,15 +505,22 @@ act.norma_aplicable ?? ""
 const depsGuardadas =
 normalizarDependencias(act.dependencias_relacionadas)
 
-dependenciasSeleccionadas = depsGuardadas.map(id => {
+dependenciasSeleccionadas = depsGuardadas.map(dep => {
+
+if(typeof dep === "object"){
+return {
+id: dep.id,
+nombre: dep.nombre
+}
+}
 
 const option =
 [...selectDependencia.options]
-.find(o => String(o.value) === String(id))
+.find(o => String(o.value) === String(dep))
 
 return {
-id,
-nombre: option ? option.textContent : `Dependencia ${id}`
+id: dep,
+nombre: option ? option.textContent : `Dependencia ${dep}`
 }
 
 })
