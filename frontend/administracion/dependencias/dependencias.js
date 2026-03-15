@@ -79,7 +79,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Escape') cerrarModal()
   })
 
-  document.addEventListener('click', manejarAccionesGlobales)
+  /* Delegación global segura */
+  document.addEventListener('click', manejarClicksGlobales)
 
   await cargarDependencias()
 })
@@ -169,7 +170,7 @@ function renderTabla(data){
               Editar
             </button>
 
-            <button data-action="toggle" data-id="${dep.id}" data-activa="${activa}">
+            <button data-action="toggle" data-id="${dep.id}" data-activa="${dep.activa}">
               ${activa ? 'Desactivar' : 'Activar'}
             </button>
 
@@ -205,7 +206,10 @@ function activarMenus(){
 
       cerrarMenus()
 
-      menu.classList.toggle('show')
+      if(menu){
+        menu.classList.toggle('show')
+      }
+
     })
 
   })
@@ -220,32 +224,32 @@ function cerrarMenus(){
 
 
 /* =========================================
-   ACCIONES GLOBALES (delegación)
+   MANEJADOR GLOBAL
 ========================================= */
 
-function manejarAccionesGlobales(e){
+function manejarClicksGlobales(e){
 
-  const action = e.target.dataset.action
+  const actionBtn = e.target.closest('[data-action]')
 
-  if(!action){
+  if(!actionBtn){
     cerrarMenus()
     return
   }
 
-  e.stopPropagation()
+  const action = actionBtn.dataset.action
 
   if(action === 'editar'){
 
-    const id = Number(e.target.dataset.id)
-    const nombre = e.target.dataset.nombre
+    const id = Number(actionBtn.dataset.id)
+    const nombre = actionBtn.dataset.nombre
 
     editar(id,nombre)
   }
 
   if(action === 'toggle'){
 
-    const id = Number(e.target.dataset.id)
-    const activa = e.target.dataset.activa === 'true'
+    const id = Number(actionBtn.dataset.id)
+    const activa = Number(actionBtn.dataset.activa)
 
     toggleEstado(id,activa)
   }
