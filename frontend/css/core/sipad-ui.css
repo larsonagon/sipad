@@ -572,3 +572,25 @@ button{
 .table th.text-center{
   text-align:center;
 }
+
+/* ===================================== */
+/* FIX MODALES CHROME */
+/* ===================================== */
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+.modal-content{
+  overflow:hidden;
+}
+
+/* evitar desbordes en formularios */
+.modal-content .form-group{
+  width:100%;
+  min-width:0;
+}
