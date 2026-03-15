@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = JSON.parse(userRaw);
 
   renderHeader({
-    modulo: 'SEG-TEC',
+    modulo: 'ICAF',
     seccion: 'Actividades técnicas',
     usuario: user.nombre
   });
