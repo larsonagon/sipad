@@ -247,6 +247,39 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
+  // LISTAR ANÁLISIS (AGREGADO)
+  // =====================================================
+
+  async function listarAnalisis(req, res) {
+
+    try {
+
+      const usuarioId = validarUsuario(req, res)
+      if (!usuarioId) return
+
+      const { id } = req.params
+      if (!validarId(id, res)) return
+
+      const analisis =
+        await service.obtenerAnalisisPorActividad(id)
+
+      return res.status(200).json({
+        ok: true,
+        data: analisis || []
+      })
+
+    } catch (err) {
+
+      console.error('SEGTEC listar analisis error:', err)
+
+      return res.status(500).json({
+        ok: false,
+        error: err.message
+      })
+    }
+  }
+
+  // =====================================================
   // BLOQUE 1
   // =====================================================
 
@@ -279,10 +312,6 @@ export function SEGTECActividadesController(service) {
     }
   }
 
-  // =====================================================
-  // BLOQUE 2
-  // =====================================================
-
   async function actualizarBloque2(req, res) {
 
     try {
@@ -311,10 +340,6 @@ export function SEGTECActividadesController(service) {
       })
     }
   }
-
-  // =====================================================
-  // BLOQUE 3
-  // =====================================================
 
   async function actualizarBloque3(req, res) {
 
@@ -492,6 +517,8 @@ export function SEGTECActividadesController(service) {
     listar,
     eliminar,
     analizar,
+    listarAnalisis,
     marcarCompleta
   }
+
 }
