@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('user', JSON.stringify(json.user));
         sessionStorage.setItem('lastActivity', Date.now());
 
-        window.location.href = '/home/index.html';
+        window.location.href = '/home/index.html'
 
       } else {
 

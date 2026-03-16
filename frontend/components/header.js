@@ -44,7 +44,11 @@ function iniciarControlInactividad() {
 function getUserFromToken() {
 
   const token = sessionStorage.getItem('token')
-  if (!token) return null
+
+  if (!token) {
+    console.warn('No existe token en sessionStorage')
+    return null
+  }
 
   try {
 
@@ -78,7 +82,7 @@ export function renderHeader(activeModule) {
   const user = getUserFromToken()
 
   // ======================================================
-  // CONTROL DE SESIÓN (ANTI LOOP)
+  // CONTROL DE SESIÓN (SIN BUCLES)
   // ======================================================
 
   if (!user) {
@@ -276,11 +280,7 @@ export function renderHeader(activeModule) {
   // ======================================================
 
   document.getElementById('btnSalir')
-    ?.addEventListener('click', () => {
-
-      cerrarSesion()
-
-    })
+    ?.addEventListener('click', cerrarSesion)
 
   // ======================================================
   // MENÚ USUARIO
