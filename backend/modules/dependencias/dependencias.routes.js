@@ -34,7 +34,6 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 
   } catch (err) {
 
-    // La auditoría nunca debe romper el flujo
     console.error('⚠️ Error registrando auditoría:', err)
 
   }
@@ -44,11 +43,12 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 // =====================================================
 // LISTAR DEPENDENCIAS
 // =====================================================
+// 🔹 Todos los usuarios institucionales pueden ver dependencias
 
 router.get(
   '/',
   verificarJWT,
-  requireLevel(80),
+  requireLevel(50),
   async (req, res) => {
 
     try {
@@ -74,11 +74,12 @@ router.get(
 // =====================================================
 // CREAR DEPENDENCIA
 // =====================================================
+// 🔹 Solo administración institucional
 
 router.post(
   '/',
   verificarJWT,
-  requireLevel(80),
+  requireLevel(100),
   async (req, res) => {
 
     try {
@@ -150,7 +151,7 @@ router.post(
 router.patch(
   '/:id',
   verificarJWT,
-  requireLevel(80),
+  requireLevel(100),
   async (req, res) => {
 
     try {
@@ -207,7 +208,7 @@ router.patch(
 router.patch(
   '/:id/estado',
   verificarJWT,
-  requireLevel(80),
+  requireLevel(100),
   async (req, res) => {
 
     try {
