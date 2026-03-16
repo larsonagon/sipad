@@ -65,7 +65,6 @@ function getUserFromToken() {
 
     console.error('Error decodificando token:', error)
 
-    // limpiar token corrupto
     sessionStorage.clear()
 
     return null
@@ -78,11 +77,18 @@ export function renderHeader(activeModule) {
 
   const user = getUserFromToken()
 
+  // ======================================================
+  // CONTROL DE SESIÓN (ANTI LOOP)
+  // ======================================================
+
   if (!user) {
 
-    // evitar loop infinito
+    console.warn('Sesión inválida o token corrupto')
+
+    sessionStorage.clear()
+
     if (window.location.pathname !== '/') {
-      window.location.href = '/'
+      window.location.replace('/')
     }
 
     return
@@ -125,19 +131,11 @@ export function renderHeader(activeModule) {
         <div class="pig-title">
           SIPAD
           <span class="pig-module">
-            ${
-              modulo === 'home'
-                ? 'Panel Principal'
-                : modulo
-            }
+            ${modulo === 'home' ? 'Panel Principal' : modulo}
           </span>
         </div>
 
-        ${
-          seccion
-            ? `<div class="pig-sub">${seccion}</div>`
-            : ''
-        }
+        ${seccion ? `<div class="pig-sub">${seccion}</div>` : ''}
 
       </div>
 
@@ -200,11 +198,7 @@ export function renderHeader(activeModule) {
 
             <div class="pig-user-meta">
               ${user.rol || ''}
-              ${
-                user.dependencia
-                  ? ' – ' + user.dependencia
-                  : ''
-              }
+              ${user.dependencia ? ' – ' + user.dependencia : ''}
             </div>
 
           </div>
