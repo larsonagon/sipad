@@ -194,7 +194,7 @@ return null
 }
 
 // ===================================================
-// SCORE LÉXICO (CORREGIDO)
+// SCORE LÉXICO
 // ===================================================
 
 function calcularScore(tokensTexto,palabras){
@@ -239,6 +239,10 @@ ${actividad.documentos_generados||''}
 
 const tokensTexto=tokenizar(texto)
 
+console.log('\n========== TRD-AI DEBUG ==========')
+console.log('Texto analizado:', texto)
+console.log('Tokens actividad:', tokensTexto)
+
 const tipologias=extraerTipologias(
 actividad.documentos_generados
 )
@@ -252,6 +256,8 @@ for(const tipologia of tipologias){
 const patron=detectarPatronDocumental(tipologia)
 
 if(patron){
+
+console.log('Clasificación por tipología detectada:', patron.serie)
 
 return{
 serie_sugerida:{nombre:patron.serie},
@@ -276,6 +282,15 @@ for(const regla of serie.reglas){
 
 const score=calcularScore(tokensTexto,regla.palabras)
 
+console.log(
+'Regla evaluada:',
+serie.serie,
+'→',
+regla.subserie,
+'Score:',
+score
+)
+
 if(score>mejorScore){
 
 mejorScore=score
@@ -289,6 +304,9 @@ subserie:regla.subserie
 }
 
 }
+
+console.log('Mejor coincidencia:', mejor)
+console.log('Score final:', mejorScore)
 
 // ---------------------------------------------------
 // resultado
@@ -307,6 +325,8 @@ confianza:Number((0.65+mejorScore*0.25).toFixed(2))
 // ---------------------------------------------------
 // fallback
 // ---------------------------------------------------
+
+console.log('No se encontró coincidencia suficiente')
 
 return{
 serie_sugerida:{nombre:'DOCUMENTACION GENERAL'},
