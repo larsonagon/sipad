@@ -43,7 +43,7 @@ S:'seleccion'
 }
 
 // ===================================================
-// MATRIZ ARCHIVÍSTICA (AMPLIADA)
+// MATRIZ ARCHIVÍSTICA
 // ===================================================
 
 const MATRIZ_SERIES=[
@@ -131,13 +131,14 @@ reglas:[
 // NORMALIZACIÓN TEXTO
 // ===================================================
 
-function normalizar(texto){
+function normalizar(texto=''){
 
 return texto
 .toLowerCase()
 .normalize('NFD')
 .replace(/[\u0300-\u036f]/g,'')
-.replace(/[^\w\s]/g,'')
+.replace(/[^\w\s]/g,' ')
+.replace(/\s+/g,' ')
 .trim()
 
 }
@@ -149,7 +150,7 @@ return texto
 function tokenizar(texto){
 
 return normalizar(texto)
-.split(/\s+/)
+.split(' ')
 .map(t=>{
 if(t.endsWith('s') && t.length>4){
 return t.slice(0,-1)
@@ -182,44 +183,35 @@ function detectarPatronDocumental(tipologia){
 
 const t=normalizar(tipologia)
 
-if(t.startsWith('certificado de'))
-return{serie:'CERTIFICADOS'}
-
-if(t.startsWith('acta de'))
-return{serie:'ACTAS'}
-
-if(t.startsWith('informe de'))
-return{serie:'INFORMES'}
-
-if(t.startsWith('registro de'))
-return{serie:'REGISTROS'}
-
-if(t.startsWith('concepto '))
-return{serie:'CONCEPTOS'}
+if(t.startsWith('certificado de')) return{serie:'CERTIFICADOS'}
+if(t.startsWith('acta de')) return{serie:'ACTAS'}
+if(t.startsWith('informe de')) return{serie:'INFORMES'}
+if(t.startsWith('registro de')) return{serie:'REGISTROS'}
+if(t.startsWith('concepto ')) return{serie:'CONCEPTOS'}
 
 return null
 
 }
 
 // ===================================================
-// CALCULAR SCORE LÉXICO
+// SCORE LÉXICO
 // ===================================================
 
 function calcularScore(tokensTexto,palabras){
 
-let score=0
+let coincidencias=0
 
 for(const palabra of palabras){
 
-const p=tokenizar(palabra)[0]
+const token=tokenizar(palabra)[0]
 
-if(tokensTexto.includes(p)){
-score++
+if(tokensTexto.includes(token)){
+coincidencias++
 }
 
 }
 
-return score/palabras.length
+return coincidencias/palabras.length
 
 }
 
@@ -229,12 +221,12 @@ return score/palabras.length
 
 export function sugerirSerieDesdeActividad(actividad={}){
 
-const texto=`
+const texto=normalizar(`
 ${actividad.nombre||''}
 ${actividad.descripcion||''}
 ${actividad.descripcion_funcional||''}
 ${actividad.documentos_generados||''}
-`
+`)
 
 const tokensTexto=tokenizar(texto)
 
@@ -263,7 +255,7 @@ confianza:0.92
 }
 
 // ---------------------------------------------------
-// 2️⃣ matriz archivística con score
+// 2️⃣ matriz archivística
 // ---------------------------------------------------
 
 let mejor=null
@@ -293,12 +285,12 @@ subserie:regla.subserie
 // resultado
 // ---------------------------------------------------
 
-if(mejorScore>=0.5){
+if(mejorScore>=0.4){
 
 return{
 serie_sugerida:{nombre:mejor.serie},
 subserie_sugerida:{nombre:mejor.subserie},
-confianza:Number((0.7+mejorScore*0.2).toFixed(2))
+confianza:Number((0.65+mejorScore*0.25).toFixed(2))
 }
 
 }
@@ -388,48 +380,29 @@ let confianza=resultado.nivel_confianza
 
 let justificaciones=[resultado.justificacion]
 
-// impacto juridico
-
 if(impacto_juridico==='alto'){
-
 gestion+=2
 central+=5
 confianza+=0.1
-
 justificaciones.push('Ajuste por impacto jurídico alto')
-
 }
-
-// actividad permanente
 
 if(funcion_permanente==='si'){
-
 disposicion='seleccion'
 confianza+=0.05
-
 justificaciones.push('Actividad permanente')
-
 }
 
-// conservación requerida
-
 if(requiere_conservacion==='si'){
-
 disposicion='conservacion_total'
 central+=5
 confianza+=0.1
-
 justificaciones.push('Conservación requerida')
-
 }
-
-// soporte físico
 
 if(soporte_principal==='fisico'){
 gestion+=1
 }
-
-// confianza léxica
 
 if(confianza_lexica>=0.6){
 confianza+=0.1
@@ -442,9 +415,7 @@ return{
 gestion,
 central,
 disposicion,
-
 justificacion:justificaciones.join('. '),
-
 nivel_confianza:Number(confianza.toFixed(2))
 
 }
