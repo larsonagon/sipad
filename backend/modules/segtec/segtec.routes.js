@@ -20,7 +20,7 @@ console.log('🔥 SEGTEC ROUTER CARGADO')
 const router = express.Router()
 
 // =====================================================
-// INYECCIÓN DEPENDENCIAS
+// INYECCIÓN DE DEPENDENCIAS
 // =====================================================
 
 const trdAIRepository = TRDAIRepository(db)
@@ -46,7 +46,7 @@ const validacionController =
   SEGTECValidacionTecnicaController(validacionService)
 
 // =====================================================
-// PDF
+// CONTROLADOR PDF
 // =====================================================
 
 const pdfController = SEGTECPDFController(
@@ -54,7 +54,7 @@ const pdfController = SEGTECPDFController(
 )
 
 // =====================================================
-// ACTIVIDADES
+// ACTIVIDADES (PROTEGIDAS)
 // =====================================================
 
 router.get(
@@ -82,7 +82,8 @@ router.put(
 )
 
 // =====================================================
-// GENERAR PDF ACTIVIDAD
+// PDF ACTIVIDAD
+// ⚠️ SIN JWT PARA PERMITIR DESCARGA DIRECTA
 // =====================================================
 
 router.get(
@@ -91,7 +92,7 @@ router.get(
 )
 
 // =====================================================
-// 🔥 ANÁLISIS SEG-TEC (usa TRD-AI)
+// ANÁLISIS SEG-TEC
 // =====================================================
 
 router.post(
