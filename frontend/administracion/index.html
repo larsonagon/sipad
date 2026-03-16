@@ -37,7 +37,7 @@
           <p>Funciones y cargos oficiales dentro de la entidad.</p>
         </div>
 
-        <!-- NIVELES (NUEVO) -->
+        <!-- NIVELES -->
         <div class="module-card" id="btnNiveles">
           <div class="module-icon">📊</div>
           <h3>Niveles</h3>
@@ -63,8 +63,62 @@
 
   </main>
 
+
+  <!-- ===================================== -->
+  <!-- MODAL CAMBIAR PASSWORD (MISMO QUE HOME) -->
+  <!-- ===================================== -->
+
+  <div id="modalPassword" class="modal hidden">
+
+    <div class="modal-content small">
+
+      <h3>Cambiar contraseña</h3>
+
+      <form id="formCambiarPassword">
+
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input type="password" id="passwordActual" required>
+        </div>
+
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input type="password" id="passwordNueva" required>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input type="password" id="passwordConfirmar" required>
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            type="button"
+            id="btnCancelarPassword"
+            class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn-primary">
+            Actualizar contraseña
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
   <script type="module" src="./administracion.js"></script>
+
   <!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
   <script src="/components/password-modal.js"></script>
+
 </body>
 </html>
