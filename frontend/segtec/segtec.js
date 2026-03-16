@@ -135,23 +135,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   /* ======================================================
-     DESCARGAR PDF
+     DESCARGAR PDF (CORREGIDO)
   ====================================================== */
 
   async function descargarPDFActividad(id) {
 
     try {
 
-      const url = `/api/segtec/actividades/${id}/pdf`;
+      const resp = await fetch(`/api/segtec/actividades/${id}/pdf`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!resp.ok) {
+        throw new Error('Error generando PDF');
+      }
+
+      const blob = await resp.blob();
+
+      const url = window.URL.createObjectURL(blob);
 
       const a = document.createElement('a');
       a.href = url;
-      a.target = '_blank';
       a.download = `actividad_${id}.pdf`;
 
       document.body.appendChild(a);
       a.click();
+
       a.remove();
+      window.URL.revokeObjectURL(url);
 
     } catch (error) {
 
