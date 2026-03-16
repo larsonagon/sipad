@@ -265,10 +265,14 @@ export function SEGTECActividadesService(
     if (!actividadesProceso?.length)
       throw new Error('El proceso no tiene actividades registradas')
 
+    // =====================================================
+    // CONTEXTO PARA TRD-AI
+    // =====================================================
+
     const contexto = {
       actividades: actividadesProceso.map(a => ({
         nombre: a.nombre,
-        descripcion: a.descripcion_funcional
+        descripcion_funcional: a.descripcion_funcional
       }))
     }
 
