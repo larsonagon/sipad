@@ -1,5 +1,5 @@
 // backend/modules/segtec/segtec.analisis.controller.js
-// SEG-TEC – Controller Análisis Técnico (Análisis por Proceso)
+// SEG-TEC – Controller Análisis Técnico (Proceso o Actividad)
 
 export function SEGTECAnalisisController({
   actividadRepository,
@@ -7,14 +7,12 @@ export function SEGTECAnalisisController({
   trdAIService
 }) {
 
-  // ======================================================
-  // POST /api/segtec/procesos/:procesoId/analizar
-  // ======================================================
-
   async function analizar(req, res) {
+
     try {
 
-      const { procesoId } = req.params
+      const procesoId = req.params.procesoId || null
+      const actividadId = req.params.id || req.params.actividadId || null
 
       const usuarioId =
         req.user?.sub ||
@@ -29,48 +27,72 @@ export function SEGTECAnalisisController({
         })
       }
 
-      if (!procesoId) {
+      let actividades = []
+
+      // ==================================================
+      // 1️⃣ ANÁLISIS POR ACTIVIDAD
+      // ==================================================
+
+      if (actividadId) {
+
+        const actividad =
+          await actividadRepository.obtenerPorId(actividadId)
+
+        if (!actividad) {
+          return res.status(404).json({
+            ok: false,
+            error: 'Actividad no encontrada'
+          })
+        }
+
+        actividades = [actividad]
+
+      }
+
+      // ==================================================
+      // 2️⃣ ANÁLISIS POR PROCESO
+      // ==================================================
+
+      else if (procesoId) {
+
+        const proceso =
+          await procesoRepository.obtenerPorId(procesoId)
+
+        if (!proceso) {
+          return res.status(404).json({
+            ok: false,
+            error: 'Proceso no encontrado'
+          })
+        }
+
+        actividades =
+          await actividadRepository.obtenerPorProcesoId(procesoId)
+
+        if (!actividades || actividades.length === 0) {
+          return res.status(400).json({
+            ok: false,
+            error: 'El proceso no tiene actividades registradas'
+          })
+        }
+
+      }
+
+      else {
+
         return res.status(400).json({
           ok: false,
-          error: 'Proceso no válido'
+          error: 'Parámetro de análisis no válido'
         })
+
       }
 
       // ==================================================
-      // 1️⃣ Obtener proceso
-      // ==================================================
-
-      const proceso =
-        await procesoRepository.obtenerPorId(procesoId)
-
-      if (!proceso) {
-        return res.status(404).json({
-          ok: false,
-          error: 'Proceso no encontrado'
-        })
-      }
-
-      // ==================================================
-      // 2️⃣ Obtener TODAS las actividades del proceso
-      // ==================================================
-
-      const actividades =
-        await actividadRepository.obtenerPorProcesoId(procesoId)
-
-      if (!actividades || actividades.length === 0) {
-        return res.status(400).json({
-          ok: false,
-          error: 'El proceso no tiene actividades registradas'
-        })
-      }
-
-      // ==================================================
-      // 3️⃣ Construir contexto para TRD-AI
+      // 3️⃣ CONTEXTO PARA TRD-AI
       // ==================================================
 
       const contexto = {
         actividades: actividades.map(a => ({
-          nombre: a.nombre,
+          nombre: a.nombre || '',
           descripcion: a.descripcion || '',
           descripcion_funcional: a.descripcion_funcional || '',
           documentos_generados: a.documentos_generados || ''
@@ -78,32 +100,34 @@ export function SEGTECAnalisisController({
       }
 
       // ==================================================
-      // 4️⃣ Ejecutar Motor TRD-AI
+      // 4️⃣ EJECUTAR MOTOR
       // ==================================================
 
       const resultadoMotor =
         await trdAIService.ejecutarMotorInteligente(contexto)
 
       if (!resultadoMotor || !resultadoMotor.length) {
-        return res.status(400).json({
-          ok: false,
-          error: 'No fue posible generar sugerencia'
+
+        return res.json({
+          ok: true,
+          data: {
+            serie: null,
+            subserie: null,
+            confianza: 0
+          }
         })
+
       }
 
       const resultado = resultadoMotor[0] || {}
 
-      // ==================================================
-      // 5️⃣ Extraer Serie y Subserie
-      // ==================================================
-
       const serie =
-        resultado.serie ||
+        resultado?.serie ||
         resultado?.serie_sugerida?.nombre ||
         null
 
       const subserie =
-        resultado.subserie ||
+        resultado?.subserie ||
         resultado?.subserie_sugerida?.nombre ||
         null
 
@@ -114,7 +138,7 @@ export function SEGTECAnalisisController({
       }
 
       // ==================================================
-      // 6️⃣ Generar retención automática
+      // 5️⃣ RETENCIÓN AUTOMÁTICA
       // ==================================================
 
       let retencion = null
@@ -128,25 +152,22 @@ export function SEGTECAnalisisController({
             )
 
         retencion = regla || null
+
       }
 
       // ==================================================
-      // 7️⃣ Respuesta al Frontend
+      // 6️⃣ RESPUESTA
       // ==================================================
 
       return res.json({
+
         ok: true,
+
         data: {
 
-          proceso_id: procesoId,
+          serie,
+          subserie,
 
-          actividades_analizadas: actividades.length,
-
-          // 🔹 CAMPOS PRINCIPALES PARA EL MODAL
-          serie: serie,
-          subserie: subserie,
-
-          // 🔹 compatibilidad con versiones anteriores
           serie_propuesta: serie,
           subserie_propuesta: subserie,
 
@@ -171,10 +192,14 @@ export function SEGTECAnalisisController({
             retencion?.fundamento_normativo ??
             resultado.justificacion ??
             'Retención sugerida automáticamente por TRD-AI'
+
         }
+
       })
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error('Error en análisis SEG-TEC:', error)
 
@@ -182,11 +207,11 @@ export function SEGTECAnalisisController({
         ok: false,
         error: 'Error ejecutando análisis técnico'
       })
+
     }
+
   }
 
-  return {
-    analizar
-  }
+  return { analizar }
 
 }
