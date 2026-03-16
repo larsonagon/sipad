@@ -210,7 +210,7 @@ btnGuardar.style.display="none"
 }
 
 // ======================================================
-// CARGO DESDE TOKEN
+// CARGO DESDE TOKEN (AJUSTADO)
 // ======================================================
 
 function cargarCargoUsuarioLocal(){
@@ -224,9 +224,6 @@ const cargo =
 payload.cargo ||
 payload.cargo_nombre ||
 payload.nombre_cargo ||
-payload.rol ||
-payload.role ||
-payload.perfil ||
 ""
 
 if(cargo){
