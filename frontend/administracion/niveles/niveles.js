@@ -16,6 +16,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
+  /* =========================================
+     FIX GLOBAL MODALES CHROME
+  ========================================= */
+
+  await new Promise(r => requestAnimationFrame(r))
+  await new Promise(r => requestAnimationFrame(r))
+
+  document.body.offsetHeight
+
+
   modal = document.getElementById('modal')
   inputNombre = document.getElementById('inputNombre')
   form = document.getElementById('formNivel')

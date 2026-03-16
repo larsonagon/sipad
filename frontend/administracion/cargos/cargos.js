@@ -16,6 +16,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
+  /* =========================================
+     FIX MODALES CHROME
+  ========================================= */
+
+  document.querySelectorAll('.modal').forEach(modal => {
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal)
+    }
+  })
+
   modal = document.getElementById('modal')
   inputNombre = document.getElementById('inputNombre')
   form = document.getElementById('formCargo')

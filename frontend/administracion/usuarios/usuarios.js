@@ -12,6 +12,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
+  /* =========================================
+     FIX GLOBAL MODALES CHROME
+  ========================================= */
+
+  await new Promise(r => requestAnimationFrame(r))
+  await new Promise(r => requestAnimationFrame(r))
+
+  document.body.offsetHeight
+
+
   await cargarUsuarios()
   await cargarRoles()
   await cargarDependencias()

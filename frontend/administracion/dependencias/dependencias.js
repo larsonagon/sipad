@@ -61,11 +61,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('Administración')
 
-  /* 
-     Safari necesita un ciclo de render después de insertar
-     dinámicamente el header para recalcular el layout
-  */
+  /* =========================================
+     FIX GLOBAL MODALES CHROME
+     (Chrome no recalcula layout tras header dinámico)
+  ========================================= */
+
   await new Promise(r => requestAnimationFrame(r))
+  await new Promise(r => requestAnimationFrame(r))
+
+  document.body.offsetHeight
+
+
 
   modal = document.getElementById('modalDependencia')
   inputNombre = document.getElementById('inputNombre')
