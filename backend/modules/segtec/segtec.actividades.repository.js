@@ -8,8 +8,41 @@ export function SEGTECActividadesRepository(db) {
 
   const nowISO = () => new Date().toISOString()
 
-  const nullIfEmpty = v => (v === "" || v === undefined ? null : v)
-  const intOrNull = v => (v === "" || v === undefined || v === null ? null : Number(v))
+  const nullIfEmpty = v =>
+    (v === "" || v === undefined ? null : v)
+
+  const intOrNull = v =>
+    (v === "" || v === undefined || v === null
+      ? null
+      : Number(v))
+
+  const boolToInt = v =>
+    (v === true || v === 1 || v === "si" || v === "true") ? 1 : 0
+
+  function normalizarDependencias(valor){
+
+    if(!valor) return null
+
+    let arr = []
+
+    if(Array.isArray(valor)){
+      arr = valor
+    }
+    else if(typeof valor === "string"){
+      try{
+        arr = JSON.parse(valor)
+      }catch{
+        arr = []
+      }
+    }
+
+    if(!Array.isArray(arr)) arr = []
+
+    const limpio =
+      [...new Set(arr.map(v=>Number(v)).filter(v=>!isNaN(v)))]
+
+    return limpio.length ? JSON.stringify(limpio) : null
+  }
 
   async function ejecutarUpdate(query, params, contexto) {
 
@@ -83,16 +116,16 @@ export function SEGTECActividadesRepository(db) {
       LEFT JOIN dependencias d ON a.dependencia_id = d.id
       LEFT JOIN cargos c ON u.id_cargo = c.id
       WHERE a.id = ?
-    `, [id])
+    `,[id])
 
     if (!row) return null
 
     return normalizarActividad(row)
   }
 
-  async function obtenerActividadPorIdYUsuario(id, usuarioId) {
+  async function obtenerActividadPorIdYUsuario(id,usuarioId){
 
-    if (!id || !usuarioId) return null
+    if(!id || !usuarioId) return null
 
     const row = await db.get(`
       SELECT
@@ -106,9 +139,9 @@ export function SEGTECActividadesRepository(db) {
       LEFT JOIN cargos c ON u.id_cargo = c.id
       WHERE a.id = ?
       AND a.usuario_id = ?
-    `, [id, usuarioId])
+    `,[id,usuarioId])
 
-    if (!row) return null
+    if(!row) return null
 
     return normalizarActividad(row)
   }
@@ -117,24 +150,24 @@ export function SEGTECActividadesRepository(db) {
   // PROCESO
   // =====================================================
 
-  async function obtenerPorProcesoId(procesoId) {
+  async function obtenerPorProcesoId(procesoId){
 
-    if (!procesoId) return []
+    if(!procesoId) return []
 
     return db.all(`
       SELECT id,nombre,descripcion_funcional,proceso_id
       FROM segtec_actividades
       WHERE proceso_id = ?
       ORDER BY created_at ASC
-    `, [procesoId])
+    `,[procesoId])
   }
 
-  async function asignarProcesoActividad(id, procesoId) {
+  async function asignarProcesoActividad(id,procesoId){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
-      SET proceso_id = ?, updated_at = ?
-      WHERE id = ?
+      SET proceso_id=?,updated_at=?
+      WHERE id=?
     `,[procesoId,nowISO(),id],"ASIGNAR PROCESO")
   }
 
@@ -142,7 +175,7 @@ export function SEGTECActividadesRepository(db) {
   // CREAR
   // =====================================================
 
-  async function crearActividad(data = {}) {
+  async function crearActividad(data={}){
 
     const id = crypto.randomUUID()
     const now = nowISO()
@@ -175,9 +208,9 @@ export function SEGTECActividadesRepository(db) {
   // LISTAR
   // =====================================================
 
-  async function listarPorUsuario(usuarioId, esAdmin = false) {
+  async function listarPorUsuario(usuarioId,esAdmin=false){
 
-    const queryBase = `
+    const base = `
       SELECT
         a.*,
         u.nombre_completo AS funcionario,
@@ -191,21 +224,20 @@ export function SEGTECActividadesRepository(db) {
 
     let rows = []
 
-    if (esAdmin === true) {
+    if(esAdmin){
 
       rows = await db.all(`
-        ${queryBase}
+        ${base}
         ORDER BY a.created_at DESC
       `)
 
-    } else {
+    }else{
 
-      if (!usuarioId) {
-        throw new Error('usuarioId requerido para listar actividades')
-      }
+      if(!usuarioId)
+        throw new Error('usuarioId requerido')
 
       rows = await db.all(`
-        ${queryBase}
+        ${base}
         WHERE a.usuario_id = ?
         ORDER BY a.created_at DESC
       `,[usuarioId])
@@ -218,7 +250,7 @@ export function SEGTECActividadesRepository(db) {
   // BLOQUE 1
   // =====================================================
 
-  async function actualizarBloque1(id,data={}) {
+  async function actualizarBloque1(id,data={}){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -238,7 +270,7 @@ export function SEGTECActividadesRepository(db) {
   // BLOQUE 2
   // =====================================================
 
-  async function actualizarBloque2(id,data={}) {
+  async function actualizarBloque2(id,data={}){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -255,7 +287,7 @@ export function SEGTECActividadesRepository(db) {
       updated_at=?
       WHERE id=?
     `,[
-      data.genera_documentos ? 1 : 0,
+      boolToInt(data.genera_documentos),
       nullIfEmpty(data.documentos_generados),
       nullIfEmpty(data.formato_produccion),
       nullIfEmpty(data.recepcion_externa),
@@ -273,7 +305,7 @@ export function SEGTECActividadesRepository(db) {
   // BLOQUE 3
   // =====================================================
 
-  async function actualizarBloque3(id,data={}) {
+  async function actualizarBloque3(id,data={}){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -288,18 +320,16 @@ export function SEGTECActividadesRepository(db) {
       updated_at=?
       WHERE id=?
     `,[
-      data.tiene_pasos_formales ? 1 : 0,
-      data.requiere_otras_dependencias ? 1 : 0,
+      boolToInt(data.tiene_pasos_formales),
+      boolToInt(data.requiere_otras_dependencias),
       nullIfEmpty(data.norma_aplicable),
 
-      data.dependencias_relacionadas
-        ? JSON.stringify(data.dependencias_relacionadas)
-        : null,
+      normalizarDependencias(data.dependencias_relacionadas),
 
       nullIfEmpty(data.plazo_legal),
       nullIfEmpty(data.tiempo_ejecucion),
 
-      data.genera_expediente_propio ? 1 : 0,
+      boolToInt(data.genera_expediente_propio),
 
       nowISO(),
       id

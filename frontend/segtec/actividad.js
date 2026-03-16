@@ -76,6 +76,40 @@ let dependenciasSeleccionadas = []
 let estadoActual = "borrador"
 
 // ======================================================
+// VALIDACIÓN FORMULARIO
+// ======================================================
+
+function validarFormulario(){
+
+if(!nombre.value.trim()){
+notifySafe("Debe ingresar el nombre de la actividad","warning")
+nombre.focus()
+return false
+}
+
+if(!clasificacion.value){
+notifySafe("Debe seleccionar la clasificación funcional","warning")
+clasificacion.focus()
+return false
+}
+
+if(!periodicidad.value){
+notifySafe("Debe seleccionar la periodicidad","warning")
+periodicidad.focus()
+return false
+}
+
+if(!descripcion.value.trim()){
+notifySafe("Debe ingresar la descripción de la actividad","warning")
+descripcion.focus()
+return false
+}
+
+return true
+
+}
+
+// ======================================================
 // CONTROL DEPENDENCIAS
 // ======================================================
 
@@ -551,6 +585,8 @@ bloquearFormulario()
 btnGuardar?.addEventListener('click',async()=>{
 
 try{
+
+if(!validarFormulario()) return
 
 await asegurarActividad()
 
