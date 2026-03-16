@@ -194,16 +194,21 @@ return null
 }
 
 // ===================================================
-// SCORE LÉXICO
+// SCORE LÉXICO (CORREGIDO)
 // ===================================================
 
 function calcularScore(tokensTexto,palabras){
 
 let coincidencias=0
+let totalTokens=0
 
 for(const palabra of palabras){
 
-const token=tokenizar(palabra)[0]
+const tokensRegla = tokenizar(palabra)
+
+for(const token of tokensRegla){
+
+totalTokens++
 
 if(tokensTexto.includes(token)){
 coincidencias++
@@ -211,7 +216,11 @@ coincidencias++
 
 }
 
-return coincidencias/palabras.length
+}
+
+if(totalTokens===0) return 0
+
+return coincidencias/totalTokens
 
 }
 
@@ -235,7 +244,7 @@ actividad.documentos_generados
 )
 
 // ---------------------------------------------------
-// 1️⃣ detectar por tipologías
+// detectar por tipologías
 // ---------------------------------------------------
 
 for(const tipologia of tipologias){
@@ -255,7 +264,7 @@ confianza:0.92
 }
 
 // ---------------------------------------------------
-// 2️⃣ matriz archivística
+// matriz archivística
 // ---------------------------------------------------
 
 let mejor=null
