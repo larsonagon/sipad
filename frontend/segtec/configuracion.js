@@ -2,7 +2,7 @@ import { renderHeader } from '/components/header.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  const token = sessionStorage.getItem('token')
+  const token = sessionStorage.getItem('token');
   const userRaw = localStorage.getItem('user');
 
   if (!token || !userRaw) {
@@ -18,9 +18,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const form = document.getElementById('formConfiguracion');
   const btnCancelar = document.getElementById('btnCancelar');
 
-  // ===============================
-  // BOTÓN CANCELAR
-  // ===============================
+  if (!form) {
+    console.error('Formulario formConfiguracion no encontrado');
+    return;
+  }
+
+  /* ===============================
+     BOTÓN CANCELAR
+  =============================== */
 
   if (btnCancelar) {
 
@@ -32,9 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   }
 
-  // ===============================
-  // TOAST
-  // ===============================
+  /* ===============================
+     TOAST
+  =============================== */
 
   function showToast(message, type = 'success') {
 
@@ -71,9 +76,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 1600);
   }
 
-  // ===============================
-  // NORMALIZAR TEXTO
-  // ===============================
+  /* ===============================
+     NORMALIZAR TEXTO
+  =============================== */
 
   function normalizar(valor){
 
@@ -88,9 +93,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   }
 
-  // ===============================
-  // CARGAR CONFIGURACIÓN
-  // ===============================
+  /* ===============================
+     CARGAR CONFIGURACIÓN
+  =============================== */
 
   async function cargarConfiguracion() {
 
@@ -102,17 +107,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
 
+      if (resp.status === 401) {
+
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+
+      }
+
       if (!resp.ok) return;
 
       const json = await resp.json();
 
-      if (!json.ok || !json.configuracion) return;
+      if (!json || !json.ok || !json.configuracion) return;
 
       const config = json.configuracion;
 
-      // ===============================
-      // TIPO FUNCIÓN
-      // ===============================
+      /* ===============================
+         TIPO FUNCIÓN
+      =============================== */
 
       const selectTipo = form.querySelector('select[name="tipo_funcion"]');
 
@@ -130,9 +144,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       }
 
-      // ===============================
-      // NIVEL DECISORIO
-      // ===============================
+      /* ===============================
+         NIVEL DECISORIO
+      =============================== */
 
       const selectNivel = form.querySelector('select[name="nivel_decisorio"]');
 
@@ -150,9 +164,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       }
 
-      // ===============================
-      // CHECKBOX BOOLEANOS
-      // ===============================
+      /* ===============================
+         CHECKBOX BOOLEANOS
+      =============================== */
 
       ['recibe_solicitudes','emite_actos','produce_decisiones']
       .forEach(field => {
@@ -176,9 +190,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       });
 
-      // ===============================
-      // TEXTAREAS
-      // ===============================
+      /* ===============================
+         TEXTAREAS
+      =============================== */
 
       [
         'procesos_principales',
@@ -198,9 +212,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       });
 
-      // ===============================
-      // TIPOS DOCUMENTALES
-      // ===============================
+      /* ===============================
+         TIPOS DOCUMENTALES
+      =============================== */
 
       if (config.tipos_documentales) {
 
@@ -240,9 +254,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   }
 
-  // ===============================
-  // GUARDAR CONFIGURACIÓN
-  // ===============================
+  /* ===============================
+     GUARDAR CONFIGURACIÓN
+  =============================== */
 
   form.addEventListener('submit', async (e) => {
 
@@ -252,19 +266,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const data = {
 
-      tipo_funcion: formData.get('tipo_funcion'),
+      tipo_funcion: formData.get('tipo_funcion') || null,
 
-      nivel_decisorio: formData.get('nivel_decisorio'),
+      nivel_decisorio: formData.get('nivel_decisorio') || null,
 
-      procesos_principales: formData.get('procesos_principales'),
+      procesos_principales: formData.get('procesos_principales') || '',
 
-      tramites_frecuentes: formData.get('tramites_frecuentes'),
+      tramites_frecuentes: formData.get('tramites_frecuentes') || '',
 
-      tipo_decisiones: formData.get('tipo_decisiones'),
+      tipo_decisiones: formData.get('tipo_decisiones') || '',
 
-      otros_documentos: formData.get('otros_documentos'),
+      otros_documentos: formData.get('otros_documentos') || '',
 
-      descripcion_funcional: formData.get('descripcion_funcional'),
+      descripcion_funcional: formData.get('descripcion_funcional') || '',
 
       recibe_solicitudes:
         form.querySelector('input[name="recibe_solicitudes"]')?.checked || false,
@@ -294,6 +308,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         body: JSON.stringify(data)
 
       });
+
+      if (resp.status === 401) {
+
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+
+      }
 
       const json = await resp.json();
 
