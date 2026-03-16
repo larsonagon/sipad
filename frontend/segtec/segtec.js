@@ -231,6 +231,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const a = json.data || {};
 
+      /* 🔧 AJUSTE MÍNIMO: fallback de campos */
+
+      const serie =
+        a.serie ||
+        a.serie_propuesta ||
+        '-';
+
+      const subserie =
+        a.subserie ||
+        a.subserie_propuesta ||
+        '-';
+
       modalBody.innerHTML = `
         <h3>Análisis técnico de la actividad</h3>
 
@@ -238,12 +250,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <div>
             <label>Serie documental sugerida</label>
-            <strong>${a.serie || '-'}</strong>
+            <strong>${serie}</strong>
           </div>
 
           <div>
             <label>Subserie sugerida</label>
-            <strong>${a.subserie || '-'}</strong>
+            <strong>${subserie}</strong>
           </div>
 
           <div>
