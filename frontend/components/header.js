@@ -271,4 +271,20 @@ export function renderHeader(activeModule) {
     }
   })
 
+  // ======================================================
+  // FOOTER INSTITUCIONAL SIPAD
+  // ======================================================
+
+  const footer = document.createElement('footer')
+  footer.className = 'sipad-footer'
+
+  footer.innerHTML = `
+    <div class="sipad-footer-inner">
+      <span>SIPAD – Sistema Inteligente para la Planeación Archivística Documental</span>
+      <span class="sipad-dev">© ${new Date().getFullYear()} · Desarrollado por Larson Agón</span>
+    </div>
+  `
+
+  document.body.appendChild(footer)
+
 }

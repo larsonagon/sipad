@@ -610,3 +610,31 @@ button{
   margin: 0 auto;
 
 }
+
+.sipad-footer{
+  width:100%;
+  background:#0f2e4d;
+  color:#fff;
+  font-size:13px;
+  text-align:center;
+  padding:10px 15px;
+  position:fixed;
+  bottom:0;
+  left:0;
+  z-index:999;
+}
+
+.sipad-footer-inner{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.sipad-dev{
+  font-weight:600;
+}
+
+body{
+  padding-bottom:55px;
+}
