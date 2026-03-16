@@ -12,9 +12,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   let user = {};
 
   try {
-    user = JSON.parse(localStorage.getItem('user')) || {};
-  } catch {
+
+    const payload = JSON.parse(
+      atob(token.split('.')[1])
+    );
+
+    user = payload || {};
+
+  } catch (error) {
+
+    console.error('Error leyendo token', error);
     user = {};
+
   }
 
   renderHeader({
@@ -30,11 +39,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const rolNormalizado =
     (user?.rol || '')
     .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, '');
 
   const puedeAnalizar =
-    rolNormalizado === 'super admin' ||
+    rolNormalizado === 'superadmin' ||
     rolNormalizado === 'archivista';
 
   /* ======================================================
@@ -415,8 +423,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       </div>
     `;
 
-    /* ABRIR */
-
     tablaContainer
     .querySelectorAll('.abrir-btn')
     .forEach(btn=>{
@@ -427,8 +433,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    /* PDF */
-
     tablaContainer
     .querySelectorAll('.pdf-btn')
     .forEach(btn=>{
@@ -437,8 +441,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         descargarPDFActividad(id);
       });
     });
-
-    /* ANALIZAR */
 
     tablaContainer
     .querySelectorAll('.analizar-btn')
