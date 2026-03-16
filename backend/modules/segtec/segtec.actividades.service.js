@@ -265,10 +265,6 @@ export function SEGTECActividadesService(
     if (!actividadesProceso?.length)
       throw new Error('El proceso no tiene actividades registradas')
 
-    // =====================================================
-    // CONTEXTO PARA TRD-AI
-    // =====================================================
-
     const contexto = {
       actividades: actividadesProceso.map(a => ({
         nombre: a.nombre,
@@ -282,21 +278,24 @@ export function SEGTECActividadesService(
     if (!resultadoMotor?.length)
       throw new Error('No fue posible generar sugerencia')
 
-    const resultado = resultadoMotor[0]
+    const resultado = resultadoMotor[0] || {}
+
+    const serieDetectada =
+      resultado.serie ||
+      resultado?.serie_sugerida?.nombre ||
+      resultado?.serie_sugerida ||
+      null
+
+    const subserieDetectada =
+      resultado.subserie ||
+      resultado?.subserie_sugerida?.nombre ||
+      resultado?.subserie_sugerida ||
+      null
 
     const resultadoFinal = {
 
-      serie_propuesta:
-        resultado?.serie ||
-        resultado?.serie_sugerida?.nombre ||
-        resultado?.serie_sugerida ||
-        'Serie Sugerida',
-
-      subserie_propuesta:
-        resultado?.subserie ||
-        resultado?.subserie_sugerida?.nombre ||
-        resultado?.subserie_sugerida ||
-        'Subserie sugerida',
+      serie_propuesta: serieDetectada,
+      subserie_propuesta: subserieDetectada,
 
       retencion_gestion:
         resultado.retencion_gestion || 3,
