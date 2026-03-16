@@ -3,12 +3,11 @@ import { renderHeader } from '/components/header.js';
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = sessionStorage.getItem('token');
-  const userRaw = localStorage.getItem('user');
 
-  if (!token || !userRaw) {
-    window.location.href = '/';
-    return;
-  }
+  if (!token) {
+  window.location.href = '/';
+  return;
+}
 
   renderHeader({
     modulo: 'SEG-TEC',
