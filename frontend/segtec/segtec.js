@@ -28,7 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     'Archivista'
   ];
 
-  const puedeAnalizar = rolesAnalisis.includes(user?.rol);
+  // AJUSTE: normalizar rol para aceptar variaciones como "superadmin"
+  const rolNormalizado = (user?.rol || '').toLowerCase().replace(/\s/g, '');
+
+  const puedeAnalizar =
+    rolesAnalisis.includes(user?.rol) ||
+    rolNormalizado === 'superadmin' ||
+    rolNormalizado === 'archivista';
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
   const tablaContainer = document.getElementById('tablaRegistros');
