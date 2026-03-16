@@ -94,7 +94,6 @@ Motor inteligente para generación asistida de Tablas de Retención Documental.
 Ver propuestas
 </button>
 
-
 </div>
 
 
@@ -151,6 +150,58 @@ Ver propuestas
 </div>
 
 </main>
+
+
+<!-- ===================================== -->
+<!-- MODAL CAMBIAR PASSWORD (GLOBAL) -->
+<!-- ===================================== -->
+
+<div id="modalPassword" class="modal hidden">
+
+<div class="modal-content small">
+
+<h3>Cambiar contraseña</h3>
+
+<form id="formCambiarPassword">
+
+<div class="form-group">
+<label>Contraseña actual</label>
+<input type="password" id="passwordActual" required>
+</div>
+
+<div class="form-group">
+<label>Nueva contraseña</label>
+<input type="password" id="passwordNueva" required>
+</div>
+
+<div class="form-group">
+<label>Confirmar nueva contraseña</label>
+<input type="password" id="passwordConfirmar" required>
+</div>
+
+<div class="modal-actions">
+
+<button
+type="button"
+id="btnCancelarPassword"
+class="btn-secondary">
+Cancelar
+</button>
+
+<button
+type="submit"
+class="btn-primary">
+Actualizar contraseña
+</button>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
 
 <script type="module" src="/trd-ai/trd-ai-dashboard.js"></script>
 
