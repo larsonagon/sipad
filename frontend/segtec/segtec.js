@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     'Archivista'
   ];
 
-  // AJUSTE: normalizar rol para aceptar variaciones como "superadmin"
   const rolNormalizado = (user?.rol || '').toLowerCase().replace(/\s/g, '');
 
   const puedeAnalizar =
@@ -124,11 +123,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '/segtec/actividad.html';
   });
 
-
-  /* ======================================================
-     DESCARGAR PDF (COMPATIBLE SAFARI)
-  ====================================================== */
-
   async function descargarPDFActividad(id) {
 
     try {
@@ -183,11 +177,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   }
-
-
-  /* ======================================================
-     MARCO FUNCIONAL
-  ====================================================== */
 
   async function cargarMarcoFuncional() {
 
@@ -278,11 +267,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-
-  /* ======================================================
-     CARGAR ACTIVIDADES
-  ====================================================== */
-
   async function cargarActividades() {
 
     try {
@@ -321,17 +305,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-
-  /* ======================================================
-     TABLA
-  ====================================================== */
-
   function renderTabla(actividades) {
 
     const filas = actividades.map(a => {
 
       const fecha = formatearFecha(a.created_at);
-      const estado = (a.estado_general || '').toLowerCase();
+
+      const estado = (a.estado_general || '').toLowerCase().trim();
 
       let botonAnalizar = '';
 
