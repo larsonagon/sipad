@@ -2,20 +2,25 @@ import { renderHeader } from '/components/header.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  const token = sessionStorage.getItem('token')
-  const userRaw = localStorage.getItem('user');
+  const token = sessionStorage.getItem('token');
 
-  if (!token || !userRaw) {
+  if (!token) {
     window.location.href = '/';
     return;
   }
 
-  const user = JSON.parse(userRaw);
+  let user = {};
+
+  try {
+    user = JSON.parse(localStorage.getItem('user')) || {};
+  } catch {
+    user = {};
+  }
 
   renderHeader({
     modulo: 'ICAF',
     seccion: 'Actividades técnicas',
-    usuario: user.nombre
+    usuario: user?.nombre || 'Usuario'
   });
 
   const rolesAnalisis = [
@@ -23,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     'Archivista'
   ];
 
-  const puedeAnalizar = rolesAnalisis.includes(user.rol);
+  const puedeAnalizar = rolesAnalisis.includes(user?.rol);
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
   const tablaContainer = document.getElementById('tablaRegistros');
@@ -53,7 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       headers
     });
 
-    // 🔴 Si el backend responde 401 → sesión inválida
     if (resp.status === 401) {
 
       sessionStorage.clear();
