@@ -177,7 +177,7 @@ body{
 .module-page{
   max-width:1000px;
   width:100%;
-  margin:60px auto;
+  margin:60px auto 120px auto;
   padding:0 24px;
   box-sizing:border-box;
 }
@@ -638,3 +638,4 @@ button{
 body{
   padding-bottom:55px;
 }
+
