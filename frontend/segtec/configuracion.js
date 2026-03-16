@@ -2,7 +2,7 @@ import { renderHeader } from '/components/header.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token')
   const userRaw = localStorage.getItem('user');
 
   if (!token || !userRaw) {

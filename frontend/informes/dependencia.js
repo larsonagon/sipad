@@ -1,7 +1,7 @@
 import { renderHeader } from '../components/header.js'
 
 function getToken(){
-  return localStorage.getItem('token')
+  return sessionStorage.getItem('token')
 }
 
 function getUserFromToken(){

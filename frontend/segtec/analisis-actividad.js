@@ -4,7 +4,7 @@ let actividadId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token')
   if (!token) {
     window.location.href = '/';
     return;
@@ -86,7 +86,7 @@ function updateWizardUI() {
 
 async function cargarValidacionExistente() {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   try {
 
@@ -133,7 +133,7 @@ async function cargarValidacionExistente() {
 
 async function guardarValidacionTecnica() {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   const payload = {
     soporte_principal: document.getElementById('vt_soporte_principal').value,
@@ -179,11 +179,10 @@ async function guardarValidacionTecnica() {
 
 async function ejecutarAnalisis() {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   try {
 
-    // 🔎 Verificar validación obligatoria
     const respValidacion = await fetch(
       `/api/segtec/actividades/${actividadId}/validacion-tecnica`,
       {
@@ -200,7 +199,6 @@ async function ejecutarAnalisis() {
       return;
     }
 
-    // 🔥 Ejecutar análisis
     const resp = await fetch(
       `/api/segtec/actividades/${actividadId}/analizar`,
       {
@@ -235,7 +233,7 @@ async function ejecutarAnalisis() {
 
 async function cargarUltimoAnalisis() {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   try {
 
