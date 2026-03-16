@@ -41,6 +41,19 @@ function iniciarControlInactividad() {
 
 }
 
+// ------------------------------------------------------
+// DECODIFICAR TOKEN JWT (compatible Base64URL)
+// ------------------------------------------------------
+
+function base64UrlToBase64(input) {
+  // JWT usa Base64URL: - y _ en lugar de + y /
+  let base64 = input.replace(/-/g, '+').replace(/_/g, '/')
+  // Padding si falta
+  const pad = base64.length % 4
+  if (pad) base64 += '='.repeat(4 - pad)
+  return base64
+}
+
 function getUserFromToken() {
 
   const token = sessionStorage.getItem('token')
@@ -52,7 +65,13 @@ function getUserFromToken() {
 
   try {
 
-    const base64 = token.split('.')[1]
+    const parts = token.split('.')
+    if (parts.length < 2) {
+      console.warn('Token no es JWT válido')
+      return null
+    }
+
+    const base64 = base64UrlToBase64(parts[1])
 
     const jsonPayload = decodeURIComponent(
       atob(base64)
@@ -69,8 +88,10 @@ function getUserFromToken() {
 
     console.error('Error decodificando token:', error)
 
-    sessionStorage.clear()
-
+    // IMPORTANTE:
+    // No limpiamos sessionStorage aquí para no romper
+    // páginas que ya tienen token válido pero payload distinto.
+    // Simplemente tratamos la sesión como inválida.
     return null
 
   }
@@ -89,7 +110,10 @@ export function renderHeader(activeModule) {
 
     console.warn('Sesión inválida o token corrupto')
 
-    sessionStorage.clear()
+    // Solo limpiar si realmente no hay token
+    if (!sessionStorage.getItem('token')) {
+      sessionStorage.clear()
+    }
 
     if (window.location.pathname !== '/') {
       window.location.replace('/')
