@@ -64,6 +64,10 @@ function getUserFromToken() {
   } catch (error) {
 
     console.error('Error decodificando token:', error)
+
+    // limpiar token corrupto
+    sessionStorage.clear()
+
     return null
 
   }
@@ -75,7 +79,12 @@ export function renderHeader(activeModule) {
   const user = getUserFromToken()
 
   if (!user) {
-    window.location.href = '/'
+
+    // evitar loop infinito
+    if (window.location.pathname !== '/') {
+      window.location.href = '/'
+    }
+
     return
   }
 
