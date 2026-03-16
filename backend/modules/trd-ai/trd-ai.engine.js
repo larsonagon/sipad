@@ -137,6 +137,25 @@ return texto
 .toLowerCase()
 .normalize('NFD')
 .replace(/[\u0300-\u036f]/g,'')
+.replace(/[^\w\s]/g,'')
+.trim()
+
+}
+
+// ===================================================
+// TOKENIZAR TEXTO
+// ===================================================
+
+function tokenizar(texto){
+
+return normalizar(texto)
+.split(/\s+/)
+.map(t=>{
+if(t.endsWith('s') && t.length>4){
+return t.slice(0,-1)
+}
+return t
+})
 
 }
 
@@ -161,7 +180,7 @@ return texto
 
 function detectarPatronDocumental(tipologia){
 
-const t=tipologia.toLowerCase()
+const t=normalizar(tipologia)
 
 if(t.startsWith('certificado de'))
 return{serie:'CERTIFICADOS'}
@@ -183,17 +202,41 @@ return null
 }
 
 // ===================================================
+// CALCULAR SCORE LÉXICO
+// ===================================================
+
+function calcularScore(tokensTexto,palabras){
+
+let score=0
+
+for(const palabra of palabras){
+
+const p=tokenizar(palabra)[0]
+
+if(tokensTexto.includes(p)){
+score++
+}
+
+}
+
+return score/palabras.length
+
+}
+
+// ===================================================
 // MOTOR DE CLASIFICACIÓN
 // ===================================================
 
 export function sugerirSerieDesdeActividad(actividad={}){
 
-const texto=normalizar(`
+const texto=`
 ${actividad.nombre||''}
 ${actividad.descripcion||''}
 ${actividad.descripcion_funcional||''}
 ${actividad.documentos_generados||''}
-`)
+`
+
+const tokensTexto=tokenizar(texto)
 
 const tipologias=extraerTipologias(
 actividad.documentos_generados
@@ -220,25 +263,42 @@ confianza:0.92
 }
 
 // ---------------------------------------------------
-// 2️⃣ matriz archivística
+// 2️⃣ matriz archivística con score
 // ---------------------------------------------------
+
+let mejor=null
+let mejorScore=0
 
 for(const serie of MATRIZ_SERIES){
 
 for(const regla of serie.reglas){
 
-const coincide=regla.palabras.every(p=>texto.includes(p))
+const score=calcularScore(tokensTexto,regla.palabras)
 
-if(coincide){
+if(score>mejorScore){
+
+mejorScore=score
+mejor={
+serie:serie.serie,
+subserie:regla.subserie
+}
+
+}
+
+}
+
+}
+
+// ---------------------------------------------------
+// resultado
+// ---------------------------------------------------
+
+if(mejorScore>=0.5){
 
 return{
-serie_sugerida:{nombre:serie.serie},
-subserie_sugerida:{nombre:regla.subserie},
-confianza:0.85
-}
-
-}
-
+serie_sugerida:{nombre:mejor.serie},
+subserie_sugerida:{nombre:mejor.subserie},
+confianza:Number((0.7+mejorScore*0.2).toFixed(2))
 }
 
 }
@@ -369,7 +429,7 @@ if(soporte_principal==='fisico'){
 gestion+=1
 }
 
-// confianza
+// confianza léxica
 
 if(confianza_lexica>=0.6){
 confianza+=0.1
