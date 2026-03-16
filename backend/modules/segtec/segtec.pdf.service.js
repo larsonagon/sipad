@@ -9,44 +9,59 @@ export async function generarPDFActividad(actividad) {
 
   const html = construirHTML(actividad)
 
-  // =====================================================
-  // CONFIGURACIÓN CHROMIUM PARA RENDER / SERVIDORES
-  // =====================================================
+  let browser
 
-  const executablePath = await chromium.executablePath()
+  try {
 
-  const browser = await puppeteer.launch({
-    args: [
-      ...chromium.args,
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage'
-    ],
-    executablePath,
-    headless: chromium.headless,
-    defaultViewport: chromium.defaultViewport
-  })
+    // =====================================================
+    // CONFIGURACIÓN CHROMIUM PARA RENDER / SERVIDORES
+    // =====================================================
 
-  const page = await browser.newPage()
+    const executablePath = await chromium.executablePath()
 
-  await page.setContent(html, {
-    waitUntil: 'domcontentloaded'
-  })
+    browser = await puppeteer.launch({
+      args: [
+        ...chromium.args,
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage'
+      ],
+      executablePath,
+      headless: chromium.headless,
+      defaultViewport: chromium.defaultViewport
+    })
 
-  const pdf = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: {
-      top: '40px',
-      bottom: '60px',
-      left: '40px',
-      right: '40px'
+    const page = await browser.newPage()
+
+    await page.setContent(html, {
+      waitUntil: 'networkidle0'
+    })
+
+    const pdf = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '40px',
+        bottom: '60px',
+        left: '40px',
+        right: '40px'
+      }
+    })
+
+    return pdf
+
+  } catch (error) {
+
+    console.error('Error generando PDF ICAF:', error)
+    throw new Error('No fue posible generar el PDF')
+
+  } finally {
+
+    if (browser) {
+      await browser.close()
     }
-  })
 
-  await browser.close()
-
-  return pdf
+  }
 }
 
 ////////////////////////////////////////////////////////
