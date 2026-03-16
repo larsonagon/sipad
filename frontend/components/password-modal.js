@@ -1,10 +1,10 @@
 // =====================================================
-// PASSWORD MODAL GLOBAL
+// GLOBAL PASSWORD MODAL
 // =====================================================
 
 const token = localStorage.getItem('token')
 
-function crearModalSiNoExiste() {
+function crearModalPassword() {
 
   if (document.getElementById('modalPassword')) return
 
@@ -14,7 +14,7 @@ function crearModalSiNoExiste() {
   modal.className = 'modal hidden'
 
   modal.innerHTML = `
-    <div class="password-content small">
+    <div class="modal-content small">
 
       <h3>Cambiar contraseña</h3>
 
@@ -37,15 +37,13 @@ function crearModalSiNoExiste() {
 
         <div class="modal-actions">
 
-          <button
-            type="button"
+          <button type="button"
             id="btnCancelarPassword"
             class="btn-secondary">
             Cancelar
           </button>
 
-          <button
-            type="submit"
+          <button type="submit"
             class="btn-primary">
             Actualizar contraseña
           </button>
@@ -61,11 +59,10 @@ function crearModalSiNoExiste() {
 
 }
 
-crearModalSiNoExiste()
-
+crearModalPassword()
 
 // =====================================================
-// ELEMENTOS
+// REFERENCIAS
 // =====================================================
 
 const modal = document.getElementById('modalPassword')
@@ -80,35 +77,58 @@ let enviando = false
 
 
 // =====================================================
+// ABRIR MODAL GLOBAL
+// =====================================================
+
+window.abrirModalPassword = function(){
+
+  if(!modal) return
+
+  modal.classList.remove('hidden')
+
+}
+
+
+// =====================================================
 // CERRAR MODAL
 // =====================================================
 
-btnCancelar?.addEventListener('click', () => {
+function cerrarModal(){
 
-  if (!modal) return
-
-  modal.classList.add('hidden')
+  modal?.classList.add('hidden')
   form?.reset()
+
+}
+
+btnCancelar?.addEventListener('click', cerrarModal)
+
+
+// cerrar haciendo click fuera
+
+modal?.addEventListener('click',(e)=>{
+
+  if(e.target === modal){
+    cerrarModal()
+  }
 
 })
 
 
 // =====================================================
-// SUBMIT CAMBIAR PASSWORD
+// SUBMIT CAMBIO PASSWORD
 // =====================================================
 
-form?.addEventListener('submit', async (e) => {
+form?.addEventListener('submit', async (e)=>{
 
   e.preventDefault()
-  e.stopPropagation()
 
-  if (enviando) return
+  if(enviando) return
   enviando = true
 
-  try {
+  try{
 
-    if (!token) {
-      alert('Sesión no válida. Inicie sesión nuevamente.')
+    if(!token){
+      alert('Sesión no válida')
       return
     }
 
@@ -116,53 +136,60 @@ form?.addEventListener('submit', async (e) => {
     const nueva = inputNueva.value.trim()
     const confirmar = inputConfirmar.value.trim()
 
-    if (!actual || !nueva || !confirmar) {
+    if(!actual || !nueva || !confirmar){
       alert('Debe completar todos los campos')
       return
     }
 
-    if (nueva.length < 8) {
+    if(nueva.length < 8){
       alert('La nueva contraseña debe tener mínimo 8 caracteres')
       return
     }
 
-    if (nueva !== confirmar) {
+    if(nueva !== confirmar){
       alert('Las contraseñas no coinciden')
       return
     }
 
-    const res = await fetch('/api/usuarios/cambiar-password', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+    const res = await fetch('/api/usuarios/cambiar-password',{
+
+      method:'PUT',
+
+      headers:{
+        'Content-Type':'application/json',
+        Authorization:`Bearer ${token}`
       },
-      body: JSON.stringify({
-        password_actual: actual,
-        password_nueva: nueva
+
+      body:JSON.stringify({
+        password_actual:actual,
+        password_nueva:nueva
       })
+
     })
 
     const json = await res.json()
 
-    if (!res.ok) {
+    if(!res.ok){
       alert(json.error || 'Error cambiando contraseña')
       return
     }
 
-    form.reset()
-    modal.classList.add('hidden')
+    cerrarModal()
 
-    setTimeout(() => {
+    setTimeout(()=>{
       alert('Contraseña actualizada correctamente')
-    }, 150)
+    },150)
 
-  } catch (error) {
+  }
+
+  catch(error){
 
     console.error(error)
-    alert('Error de conexión con el servidor')
+    alert('Error de conexión')
 
-  } finally {
+  }
+
+  finally{
 
     enviando = false
 
