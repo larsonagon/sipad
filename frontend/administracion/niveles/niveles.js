@@ -60,7 +60,7 @@ async function cargarNiveles(){
 
   try{
 
-    const token = localStorage.getItem('token')
+    const token = sessionStorage.getItem('token')
 
     const res = await fetch(API,{
       headers:{ 'Authorization':`Bearer ${token}` }
@@ -251,7 +251,7 @@ async function guardarNivel(e){
 
   e.preventDefault()
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   const nombre = inputNombre.value.trim()
 
@@ -292,7 +292,7 @@ async function guardarNivel(e){
 
 window.toggleEstado = async function(id,activoActual){
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   try{
 

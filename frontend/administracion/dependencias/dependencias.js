@@ -19,7 +19,7 @@ let dependenciasCache = []
 
 function getToken(){
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   if(!token){
     window.location.href = '/'
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   console.log("dependencias.js cargado")
 
-  const token = localStorage.getItem('token')
-  const userRaw = localStorage.getItem('user')
+  const token = sessionStorage.getItem('token')
+  const userRaw = sessionStorage.getItem('user')
 
   if (!token || !userRaw) {
     window.location.href = '/'
@@ -121,8 +121,12 @@ async function cargarDependencias(){
     })
 
     if(res.status === 401 || res.status === 403){
-      localStorage.clear()
+
+      sessionStorage.removeItem('token')
+      sessionStorage.removeItem('user')
+
       alert('Sesión expirada')
+
       window.location.href = '/'
       return
     }

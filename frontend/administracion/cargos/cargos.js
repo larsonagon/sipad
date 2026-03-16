@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarCargos(){
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   const res = await fetch(API,{
     headers:{ 'Authorization':`Bearer ${token}` }
@@ -236,7 +236,7 @@ async function guardarCargo(e){
 
   e.preventDefault()
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   const nombre = inputNombre.value.trim()
 
@@ -270,7 +270,7 @@ async function guardarCargo(e){
 
 window.toggleEstado = async function(id,activoActual){
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
 
   await fetch(`${API}/${id}/estado`,{
     method:'PATCH',

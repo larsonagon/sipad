@@ -1,7 +1,7 @@
 import { renderHeader } from '../../components/header.js'
 
 const API_URL = '/api/roles'
-const token = localStorage.getItem('token')
+const token = sessionStorage.getItem('token')
 
 if (!token) {
   window.location.href = '/'
