@@ -2,7 +2,7 @@ import { renderHeader } from '../components/header.js';
 
 function getUserFromToken() {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return null;
 
   try {
@@ -15,7 +15,7 @@ function getUserFromToken() {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
 
   // 🔐 Si no hay token → volver al login
   if (!token) {
@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!user) {
 
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
 
     window.location.href = '/';
     return;
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const esMaster = user.es_master_admin === true;
 
   // =========================
-  // DETECTAR ROL GENERAL (ROBUSTO)
+  // DETECTAR ROL GENERAL
   // =========================
 
   const rolUsuario = JSON.stringify(user).toLowerCase();
@@ -69,37 +69,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // CONTROL DE VISIBILIDAD
   // =========================
 
-  // Regla original por nivel de acceso
   if (nivel < 80 && !esMaster) {
 
-    if (cardTRDAI) {
-      cardTRDAI.style.display = 'none';
-    }
-
-    if (cardAdmin) {
-      cardAdmin.style.display = 'none';
-    }
+    if (cardTRDAI) cardTRDAI.style.display = 'none';
+    if (cardAdmin) cardAdmin.style.display = 'none';
 
   }
 
-  // 👇 NUEVA REGLA PARA ROL GENERAL
   if (esRolGeneral) {
 
-    if (cardTRD) {
-      cardTRD.style.display = 'none';
-    }
-
-    if (cardTRDAI) {
-      cardTRDAI.style.display = 'none';
-    }
-
-    if (cardAdmin) {
-      cardAdmin.style.display = 'none';
-    }
-
-    if (cardInformes) {
-      cardInformes.style.display = 'none';
-    }
+    if (cardTRD) cardTRD.style.display = 'none';
+    if (cardTRDAI) cardTRDAI.style.display = 'none';
+    if (cardAdmin) cardAdmin.style.display = 'none';
+    if (cardInformes) cardInformes.style.display = 'none';
 
   }
 
@@ -107,35 +89,30 @@ document.addEventListener('DOMContentLoaded', () => {
   // NAVEGACIÓN
   // =========================
 
-  // ICAF (antes SEGTEC)
   if (cardSegtec) {
     cardSegtec.addEventListener('click', () => {
       window.location.href = '/segtec/segtec.html';
     });
   }
 
-  // TRD (manual)
   if (cardTRD) {
     cardTRD.addEventListener('click', () => {
       alert('TRD en construcción');
     });
   }
 
-  // TRD-AI
   if (cardTRDAI) {
     cardTRDAI.addEventListener('click', () => {
       window.location.href = '/trd-ai/trd-ai-dashboard.html';
     });
   }
 
-  // ADMINISTRACIÓN
   if (cardAdmin) {
     cardAdmin.addEventListener('click', () => {
       window.location.href = '/administracion/index.html';
     });
   }
 
-  // INFORMES
   if (cardInformes) {
     cardInformes.addEventListener('click', () => {
       window.location.href = '/informes/index.html';
