@@ -73,6 +73,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         nombre: user.nombre_completo,
         rol: user.role,
+        cargo: user.cargo_nombre, // ← agregado
 
         nivel_acceso: nivelAcceso,
 
@@ -129,6 +130,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         nombre: user.nombre_completo,
         rol: user.role,
+        cargo: user.cargo_nombre, // ← agregado
 
         nivel_acceso: nivelAcceso,
 
@@ -177,6 +179,7 @@ router.post('/refresh', async (req, res) => {
         u.username,
         u.nombre_completo,
         r.nombre AS rol_nombre,
+        c.nombre AS cargo_nombre, -- agregado
         r.nivel_acceso,
         u.id_entidad,
         u.id_dependencia,
@@ -186,6 +189,7 @@ router.post('/refresh', async (req, res) => {
       FROM refresh_tokens rt
       JOIN usuarios u ON u.id = rt.user_id
       JOIN roles r ON r.id = u.id_rol
+      LEFT JOIN cargos c ON c.id = u.id_cargo -- agregado
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
       WHERE rt.token = ?
       `,
@@ -212,6 +216,7 @@ router.post('/refresh', async (req, res) => {
         username: row.username,
         nombre: row.nombre_completo,
         rol: row.rol_nombre,
+        cargo: row.cargo_nombre, // ← agregado
 
         nivel_acceso: nivelAcceso,
 
