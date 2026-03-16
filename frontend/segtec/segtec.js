@@ -208,38 +208,70 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   /* ======================================================
-     ABRIR MODAL DE ANÁLISIS (AGREGADO)
+     MODAL DE ANÁLISIS
   ====================================================== */
 
   async function abrirModalAnalisis(id){
 
     try{
 
-      const resp = await apiFetch(`/api/segtec/actividades/${id}`);
+      const resp = await apiFetch(`/api/segtec/actividades/${id}/analisis`);
 
       if(!resp) return;
 
       const json = await resp.json();
 
       if(!json.ok){
-        alert('No se pudo cargar la información.');
+        alert('No se pudo generar el análisis.');
         return;
       }
 
-      const actividad = json.data;
+      const a = json.data;
 
       modalBody.innerHTML = `
-        <h3>Análisis de actividad</h3>
-        <p><strong>Actividad:</strong> ${actividad.nombre || '-'}</p>
-        <p><strong>Frecuencia:</strong> ${actividad.frecuencia || '-'}</p>
-        <p><strong>Estado:</strong> ${capitalizar(actividad.estado_general)}</p>
+        <h3>Análisis técnico de la actividad</h3>
+
+        <div class="segtec-analisis-grid">
+
+          <div>
+            <label>Serie documental sugerida</label>
+            <strong>${a.serie || '-'}</strong>
+          </div>
+
+          <div>
+            <label>Subserie sugerida</label>
+            <strong>${a.subserie || '-'}</strong>
+          </div>
+
+          <div>
+            <label>Tipo documental</label>
+            <strong>${a.tipo_documental || '-'}</strong>
+          </div>
+
+          <div>
+            <label>Retención archivo de gestión</label>
+            <strong>${a.retencion_gestion || '-'} años</strong>
+          </div>
+
+          <div>
+            <label>Retención archivo central</label>
+            <strong>${a.retencion_central || '-'} años</strong>
+          </div>
+
+          <div>
+            <label>Disposición final</label>
+            <strong>${a.disposicion_final || '-'}</strong>
+          </div>
+
+        </div>
       `;
 
       modalFooter.innerHTML = `
         <button class="btn-secondary" id="btnCerrarAnalisis">Cerrar</button>
       `;
 
-      document.getElementById('btnCerrarAnalisis')
+      document
+        .getElementById('btnCerrarAnalisis')
         ?.addEventListener('click', cerrarModal);
 
       modal.classList.remove('hidden');
@@ -247,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }catch(error){
 
       console.error(error);
-      alert('Error cargando análisis.');
+      alert('Error generando análisis.');
 
     }
 
