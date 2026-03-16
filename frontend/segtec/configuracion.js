@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const token = sessionStorage.getItem('token');
 
   if (!token) {
-  window.location.href = '/';
-  return;
-}
+    window.location.href = '/';
+    return;
+  }
 
   renderHeader({
     modulo: 'SEG-TEC',
