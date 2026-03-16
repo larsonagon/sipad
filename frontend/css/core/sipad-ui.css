@@ -576,3 +576,37 @@ button{
   position:relative;
   z-index:3001;
 }
+
+/* ===================================== */
+/* MODAL AISLADO DEL LAYOUT */
+/* ===================================== */
+
+.modal{
+
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+}
+
+/* fuerza tamaño real del modal */
+
+.modal-content{
+
+  position: relative;
+
+  width: 440px;
+  max-width: 92vw;
+
+  display: block;
+
+  margin: 0 auto;
+
+}
