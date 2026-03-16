@@ -280,7 +280,7 @@ export function renderHeader(activeModule) {
 
   footer.innerHTML = `
     <div class="sipad-footer-inner">
-      <span>SIPAD – Sistema Inteligente para la Planeación Archivística Documental</span>
+      <span>SIPAD – Sistema inteligente para la planeación archivística documental</span>
       <span class="sipad-dev">© ${new Date().getFullYear()} · Desarrollado por Larson Agón</span>
     </div>
   `
