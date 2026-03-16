@@ -1,116 +1,94 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ======================================================
-  // VALIDAR TOKEN EXISTENTE
-  // ======================================================
-
-  const existingToken = sessionStorage.getItem('token');
-
-  if (existingToken) {
+  function tokenValido(token) {
 
     try {
 
-      const payload = JSON.parse(atob(existingToken.split('.')[1]));
+      const payload = JSON.parse(atob(token.split('.')[1]))
 
-      const exp = payload.exp ? payload.exp * 1000 : null;
-      const now = Date.now();
+      if (!payload) return false
 
-      // Si el token sigue vigente
-      if (!exp || exp > now) {
-        window.location.href = '/home';
-        return;
+      if (payload.exp) {
+
+        const ahora = Date.now() / 1000
+
+        if (payload.exp < ahora) return false
+
       }
 
-      // Token expirado
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('lastActivity');
+      return true
 
     } catch {
-
-      // Token corrupto
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('lastActivity');
-
+      return false
     }
 
   }
 
-  // ======================================================
-  // ELEMENTOS
-  // ======================================================
+  const existingToken = sessionStorage.getItem('token')
 
-  const form = document.getElementById('loginForm');
-  const mensaje = document.getElementById('mensaje');
+  if (existingToken && tokenValido(existingToken)) {
 
-  if (!form) return;
+    if (!window.location.pathname.startsWith('/home')) {
+      window.location.href = '/home'
+    }
 
-  // ======================================================
-  // LOGIN
-  // ======================================================
+    return
+  }
+
+  const form = document.getElementById('loginForm')
+  const mensaje = document.getElementById('mensaje')
+
+  if (!form) return
 
   form.addEventListener('submit', async (e) => {
 
-    e.preventDefault();
+    e.preventDefault()
 
-    const username = document.getElementById('usuario').value.trim();
-    const password = document.getElementById('password').value.trim();
+    const username = document.getElementById('usuario').value.trim()
+    const password = document.getElementById('password').value.trim()
 
-    mensaje.textContent = '';
-    mensaje.style.color = 'red';
+    mensaje.textContent = ''
+    mensaje.style.color = 'red'
 
     if (!username || !password) {
 
-      mensaje.textContent = 'Debe ingresar usuario y contraseña';
-      return;
+      mensaje.textContent = 'Debe ingresar usuario y contraseña'
+      return
 
     }
 
     try {
 
       const resp = await fetch('/api/auth/login', {
-
         method: 'POST',
-
         headers: {
           'Content-Type': 'application/json'
         },
-
         body: JSON.stringify({ username, password })
+      })
 
-      });
-
-      const json = await resp.json();
+      const json = await resp.json()
 
       if (resp.ok && json.token) {
 
-        // ======================================================
-        // GUARDAR SESIÓN
-        // ======================================================
+        sessionStorage.setItem('token', json.token)
+        sessionStorage.setItem('user', JSON.stringify(json.user))
+        sessionStorage.setItem('lastActivity', Date.now())
 
-        sessionStorage.setItem('token', json.token);
-        sessionStorage.setItem('user', JSON.stringify(json.user));
-        sessionStorage.setItem('lastActivity', Date.now());
-
-        // ======================================================
-        // REDIRECCIÓN
-        // ======================================================
-
-        window.location.href = '/home';
+        window.location.href = '/home'
 
       } else {
 
-        mensaje.textContent = json.error || 'Credenciales inválidas';
+        mensaje.textContent = json.error || 'Credenciales inválidas'
 
       }
 
-    } catch (err) {
+    } catch {
 
-      mensaje.textContent = 'Error de conexión con el servidor';
+      mensaje.textContent = 'Error de conexión con el servidor'
 
     }
 
-  });
+  })
 
-});
+})
