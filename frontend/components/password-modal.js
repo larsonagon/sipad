@@ -11,10 +11,10 @@ function crearModalSiNoExiste() {
   const modal = document.createElement('div')
 
   modal.id = 'modalPassword'
-  modal.className = 'password-modal hidden'
+  modal.className = 'modal hidden'
 
   modal.innerHTML = `
-    <div class="password-modal-content small">
+    <div class="password-content small">
 
       <h3>Cambiar contraseña</h3>
 
