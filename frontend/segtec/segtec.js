@@ -276,27 +276,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div class="segtec-analisis-grid">
 
           <div>
-            <label>Serie documental sugerida</label>
+            <label>Serie documental sugerida: </label>
             <strong>${serie}</strong>
           </div>
 
           <div>
-            <label>Subserie sugerida</label>
+            <label>Subserie sugerida: </label>
             <strong>${subserie}</strong>
           </div>
 
           <div>
-            <label>Retención archivo de gestión</label>
+            <label>Retención archivo de gestión: </label>
             <strong>${a.retencion_gestion || '-'} años</strong>
           </div>
 
           <div>
-            <label>Retención archivo central</label>
+            <label>Retención archivo central: </label>
             <strong>${a.retencion_central || '-'} años</strong>
           </div>
 
           <div>
-            <label>Disposición final</label>
+            <label>Disposición final: </label>
             <strong>${formatearDisposicion(a.disposicion_final)}</strong>
           </div>
 
