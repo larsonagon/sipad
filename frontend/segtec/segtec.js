@@ -91,11 +91,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return new Date(fechaISO).toLocaleDateString('es-CO');
   }
 
-  function formatearTexto(texto) {
-    if (!texto) return '-';
-    return capitalizar(texto.replaceAll('_', ' '));
-  }
-
   function badgeEstado(estado) {
 
     const normalizado = (estado || 'borrador').toLowerCase();
@@ -135,7 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
   /* ======================================================
-     DESCARGAR PDF (CORREGIDO)
+     DESCARGAR PDF (COMPATIBLE SAFARI)
   ====================================================== */
 
   async function descargarPDFActividad(id) {
@@ -153,18 +148,29 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const blob = await resp.blob();
-
       const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `actividad_${id}.pdf`;
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-      document.body.appendChild(a);
-      a.click();
+      if (isSafari) {
 
-      a.remove();
-      window.URL.revokeObjectURL(url);
+        window.open(url, '_blank');
+
+      } else {
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `actividad_${id}.pdf`;
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+      }
+
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 1000);
 
     } catch (error) {
 
@@ -388,19 +394,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           window.location.href =
             `/segtec/actividad.html?id=${id}`;
-
-        });
-
-      });
-
-    tablaContainer.querySelectorAll('.analizar-btn')
-      .forEach(btn => {
-
-        btn.addEventListener('click', () => {
-
-          const id = btn.dataset.id;
-
-          analizarActividad(id, btn);
 
         });
 
