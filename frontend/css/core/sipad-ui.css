@@ -70,6 +70,9 @@ body{
 .pig-header{
   background:#1f4e79;
   color:#fff;
+
+  position:relative;
+  z-index:100;
 }
 
 .pig-header-inner{
@@ -373,7 +376,7 @@ button{
   display:none;
   flex-direction:column;
   min-width:150px;
-  z-index:9999;
+  z-index:2000;
 }
 
 .menu-dropdown.show{
@@ -398,29 +401,48 @@ button{
 ====================================================== */
 
 .modal{
+
   position:fixed;
-  inset:0;
+
+  top:0;
+  left:0;
+
+  width:100vw;
+  height:100vh;
+
   background:rgba(0,0,0,.45);
 
   display:flex;
   align-items:center;
   justify-content:center;
 
-  padding-top:60px;   /* evita que el header lo tape */
+  padding:20px;
+
   box-sizing:border-box;
 
-  z-index:3000;
+  z-index:9999;
+
 }
 
 .modal-content{
+
   background:#fff;
+
   width:440px;
   max-width:92%;
+
   padding:28px 32px;
+
   border-radius:var(--radius-md);
+
   box-shadow:var(--shadow-lg);
+
   position:relative;
-  z-index:3001;
+
+  max-height:90vh;
+
+  overflow:auto;
+
 }
 
 /* ======================================================
@@ -513,12 +535,7 @@ button{
 .modal-content select,
 .modal-content textarea{
   width:100%;
-  max-width:100%;
   box-sizing:border-box;
-}
-
-.modal-content{
-  overflow:hidden;
 }
 
 .modal-content .form-group{
