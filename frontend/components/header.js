@@ -2,7 +2,7 @@
 // HEADER INSTITUCIONAL SIPAD
 // ======================================================
 
-const TIEMPO_INACTIVIDAD = 15 * 60 * 1000 // 15 minutos
+const TIEMPO_INACTIVIDAD = 5 * 60 * 1000 // 5 minutos
 let temporizadorSesion = null
 
 function cerrarSesion() {
