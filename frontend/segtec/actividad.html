@@ -52,7 +52,7 @@ Instrumento técnico para identificación funcional y producción documental
 <span class="form-hint">
 Denomine clara y específicamente la actividad desarrollada.
 </span>
-<input type="text" id="nombre" name="nombre" class="form-control" required maxlength="200">
+<input type="text" id="nombre" name="nombre" class="form-control">
 </div>
 
 <div class="form-group">
@@ -65,8 +65,11 @@ Perfil institucional responsable de su ejecución.
 
 <div class="form-group">
 <label>3. Clasificación funcional *</label>
+<span class="form-hint">
+Seleccione a qué tipo de proceso corresponde.
+</span>
 
-<select id="clasificacion" name="clasificacion" class="form-control" required>
+<select id="clasificacion" name="clasificacion" class="form-control">
 <option value="">Seleccione...</option>
 <option value="misional">Misional</option>
 <option value="estrategica">Estratégica</option>
@@ -77,8 +80,11 @@ Perfil institucional responsable de su ejecución.
 
 <div class="form-group">
 <label>4. Periodicidad *</label>
+<span class="form-hint">
+Señale la frecuencia con la cual se desarrolla la actividad.
+</span>
 
-<select id="periodicidad" name="periodicidad" class="form-control" required>
+<select id="periodicidad" name="periodicidad" class="form-control">
 <option value="">Seleccione...</option>
 <option value="diaria">Diaria</option>
 <option value="semanal">Semanal</option>
@@ -90,13 +96,13 @@ Perfil institucional responsable de su ejecución.
 
 <div class="form-group full">
 <label>5. Descripción detallada *</label>
+<span class="form-hint">
+Explique el procedimiento, alcance, propósito y resultado esperado.
+</span>
 
-<textarea
-id="descripcion"
+<textarea id="descripcion"
 name="descripcion"
-class="form-control"
-required
-maxlength="2000"></textarea>
+class="form-control"></textarea>
 
 </div>
 
@@ -132,12 +138,13 @@ maxlength="2000"></textarea>
 <div class="form-group full">
 
 <label>7. Registre los documentos generados.</label>
+<span class="form-hint">
+Relacione los documentos producidos.
+</span>
 
-<textarea
-id="documentosGenerados"
+<textarea id="documentosGenerados"
 name="documentosGenerados"
 class="form-control"
-maxlength="2000"
 placeholder="Registre un documento por línea."></textarea>
 
 </div>
@@ -160,12 +167,13 @@ placeholder="Registre un documento por línea."></textarea>
 <div class="form-group full">
 
 <label>9. Documentos requeridos para iniciar la actividad</label>
+<span class="form-hint">
+Relacione los documentos provenientes de terceros o de otras dependencias necesarios para la actividad.
+</span>
 
-<textarea
-id="recepcionExterna"
+<textarea id="recepcionExterna"
 name="recepcionExterna"
 class="form-control"
-maxlength="2000"
 placeholder="Registre un documento por línea"></textarea>
 
 </div>
@@ -174,6 +182,9 @@ placeholder="Registre un documento por línea"></textarea>
 <div class="form-group">
 
 <label>10. Volumen documental estimado</label>
+<span class="form-hint">
+Indique aproximadamente cuántos documentos produce esta actividad.
+</span>
 
 <select id="volumenCategoria" name="volumenCategoria" class="form-control">
 
@@ -195,8 +206,7 @@ placeholder="Registre un documento por línea"></textarea>
 <input type="number"
 id="volumenAnualPersonalizado"
 name="volumenAnualPersonalizado"
-class="form-control"
-min="1">
+class="form-control">
 
 </div>
 
@@ -204,6 +214,9 @@ min="1">
 <div class="form-group">
 
 <label>11. Responsabilidad de custodia</label>
+<span class="form-hint">
+Indique quién conserva el documento original o principal.
+</span>
 
 <select id="custodiaTipo" name="custodiaTipo" class="form-control">
 
@@ -221,6 +234,9 @@ min="1">
 <div class="form-group">
 
 <label>11a. Cargo responsable de custodia</label>
+<span class="form-hint">
+Seleccione el cargo del funcionario responsable de la custodia.
+</span>
 
 <select id="cargoCustodia" name="cargoCustodia" class="form-control">
 <option value="">Seleccione cargo...</option>
@@ -249,6 +265,9 @@ class="form-control">
 <div class="form-group">
 
 <label>12. Localización actual de los documentos</label>
+<span class="form-hint">
+Indique dónde se encuentran actualmente almacenados.
+</span>
 
 <select id="localizacionTipo"
 name="localizacionTipo"
@@ -276,13 +295,13 @@ style="display:none">
 <input type="text"
 id="localizacionOtro"
 name="localizacionOtro"
-class="form-control"
-maxlength="200">
+class="form-control">
 
 </div>
 
 </div>
 </section>
+
 
 
 <!-- ====================================================== -->
@@ -300,6 +319,9 @@ maxlength="200">
 <div class="form-group full">
 
 <label>13. ¿Tiene pasos formales que deben seguirse?</label>
+<span class="form-hint">
+(Ejemplo: un procedimiento definido, un trámite establecido o un proceso que siempre se hace de la misma manera).
+</span>
 
 <select id="pasosFormales"
 name="pasosFormales"
@@ -350,9 +372,14 @@ class="tags-container"></div>
 </div>
 
 
+
 <div class="form-group full">
 
 <label>15. ¿Tiene un tiempo límite para cumplirse?</label>
+
+<span class="form-hint">
+(Ejemplo: plazos legales, fechas máximas de respuesta o términos obligatorios).
+</span>
 
 <select id="tienePlazo"
 name="tienePlazo"
@@ -371,12 +398,15 @@ class="form-control">
 
 <label>15a. Plazo legal establecido</label>
 
+<span class="form-hint">
+(Norma, ley o término formal definido)
+</span>
+
 <input
 type="text"
 id="plazoLegal"
 name="plazoLegal"
 class="form-control"
-maxlength="200"
 placeholder="Ej: Ley 1437 de 2011 – 15 días">
 
 </div>
@@ -386,12 +416,15 @@ placeholder="Ej: Ley 1437 de 2011 – 15 días">
 
 <label>15b. Tiempo promedio real de ejecución</label>
 
+<span class="form-hint">
+(Tiempo que usualmente tarda la actividad en la práctica administrativa)
+</span>
+
 <input
 type="text"
 id="tiempoPromedio"
 name="tiempoPromedio"
 class="form-control"
-maxlength="100"
 placeholder="Ej: 3 días">
 
 </div>
@@ -399,7 +432,11 @@ placeholder="Ej: 3 días">
 
 <div class="form-group">
 
-<label>16. ¿Genera expediente?</label>
+<label>16. ¿Genera un conjunto de documentos que se organizan por caso o asunto?</label>
+
+<span class="form-hint">
+Expediente
+</span>
 
 <select id="generaExpediente"
 name="generaExpediente"
@@ -418,11 +455,9 @@ class="form-control">
 
 <label>17. Norma aplicable</label>
 
-<textarea
-id="normaAplicable"
+<textarea id="normaAplicable"
 name="normaAplicable"
-class="form-control"
-maxlength="2000"></textarea>
+class="form-control"></textarea>
 
 </div>
 
@@ -431,6 +466,7 @@ maxlength="2000"></textarea>
 </section>
 
 </div>
+
 
 
 <section class="segtec-signature">
@@ -450,6 +486,7 @@ Funcionario responsable
 </section>
 
 
+
 <footer class="sipad-footer">
 
 <div>
@@ -463,14 +500,14 @@ Instrumento de caracterización de actividades funcionales
 </footer>
 
 
+
 <div class="module-actions">
 
-<button type="button" class="btn-secondary" id="btnCancelar">
+<button class="btn-secondary" id="btnCancelar">
 Cancelar
 </button>
 
-<button type="button"
-id="guardarActividadCompleta"
+<button id="guardarActividadCompleta"
 class="btn-primary btn-xl">
 Guardar
 </button>
@@ -484,6 +521,7 @@ Guardar
 
 <script type="module" src="/components/notifications.js"></script>
 <script type="module" src="/segtec/actividad.js"></script>
+
 
 <script>
 
@@ -501,6 +539,6 @@ firma.innerText = cargo.value || ""
 })
 
 </script>
-
+<script type="module" src="/components/notifications.js"></script>
 </body>
 </html>

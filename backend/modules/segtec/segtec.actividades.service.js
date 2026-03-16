@@ -20,43 +20,6 @@ export function SEGTECActividadesService(
     throw new Error('TRDAIService no proporcionado')
 
   // =====================================================
-  // HELPERS
-  // =====================================================
-
-  function normalizarBoolean(valor) {
-
-    if (valor === true || valor === 1) return true
-    if (valor === false || valor === 0) return false
-
-    if (valor === "si") return true
-    if (valor === "no") return false
-
-    if (valor === "true") return true
-    if (valor === "false") return false
-
-    return valor
-  }
-
-  function normalizarDependencias(valor) {
-
-    if (!valor) return []
-
-    if (Array.isArray(valor)) {
-      return [...new Set(valor)]
-    }
-
-    if (typeof valor === "string") {
-      try {
-        const parsed = JSON.parse(valor)
-        if (Array.isArray(parsed))
-          return [...new Set(parsed)]
-      } catch {}
-    }
-
-    return []
-  }
-
-  // =====================================================
   // VALIDAR SI ES EDITABLE
   // =====================================================
 
@@ -182,29 +145,9 @@ export function SEGTECActividadesService(
   // ACTUALIZACIÓN COMPLETA
   // =====================================================
 
-  async function actualizarCompleto(id, data = {}) {
+  async function actualizarCompleto(id, data) {
 
     await validarEditable(id)
-
-    data.genera_documentos =
-      normalizarBoolean(data.genera_documentos)
-
-    data.tiene_pasos_formales =
-      normalizarBoolean(data.tiene_pasos_formales)
-
-    data.requiere_otras_dependencias =
-      normalizarBoolean(data.requiere_otras_dependencias)
-
-    data.tiene_plazo =
-      normalizarBoolean(data.tiene_plazo)
-
-    data.genera_expediente_propio =
-      normalizarBoolean(data.genera_expediente_propio)
-
-    data.dependencias_relacionadas =
-      normalizarDependencias(data.dependencias_relacionadas)
-
-    // BLOQUE 1
 
     if (
       data.nombre ||
@@ -212,38 +155,29 @@ export function SEGTECActividadesService(
       data.tipo_funcion ||
       data.descripcion_funcional
     ) {
-
-      if (!data.nombre || data.nombre.trim() === '')
-        throw new Error('Nombre de actividad obligatorio')
-
       await actividadesRepository.actualizarBloque1(id, data)
     }
-
-    // BLOQUE 2
 
     if (
       data.genera_documentos !== undefined ||
       data.formato_produccion ||
+      data.volumen_categoria ||
       data.volumen_documental ||
-      data.responsable_custodia ||
-      data.localizacion_documentos
+      data.custodia_tipo ||
+      data.localizacion_tipo
     ) {
-
       await actividadesRepository.actualizarBloque2(id, data)
     }
-
-    // BLOQUE 3
 
     if (
       data.tiene_pasos_formales !== undefined ||
       data.requiere_otras_dependencias !== undefined ||
       data.norma_aplicable ||
-      data.dependencias_relacionadas?.length ||
+      data.dependencias_relacionadas ||
       data.tiene_plazo !== undefined ||
       data.plazo_legal ||
       data.tiempo_ejecucion
     ) {
-
       await actividadesRepository.actualizarBloque3(id, data)
     }
 
@@ -270,33 +204,19 @@ export function SEGTECActividadesService(
   // =====================================================
 
   async function actualizarBloque1(id, data) {
-
     await validarEditable(id)
-
-    if (!data.nombre)
-      throw new Error('Nombre obligatorio')
-
     await actividadesRepository.actualizarBloque1(id, data)
-
     return recalcularEstadoActividad(id)
   }
 
   async function actualizarBloque2(id, data) {
-
     await validarEditable(id)
-
     await actividadesRepository.actualizarBloque2(id, data)
-
     return recalcularEstadoActividad(id)
   }
 
   async function actualizarBloque3(id, data) {
-
     await validarEditable(id)
-
-    data.dependencias_relacionadas =
-      normalizarDependencias(data.dependencias_relacionadas)
-
     await actividadesRepository.actualizarBloque3(id, data)
 
     if (data.genera_expediente_propio !== undefined) {
