@@ -1,66 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIPAD – Sistema inteligente para la planeación archivística documental</title>
 
-  <!-- SOLO CSS DEL LOGIN -->
-  <link rel="stylesheet" href="/auth/index.css">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SIPAD – Sistema inteligente para la planeación archivística documental</title>
+
+<link rel="stylesheet" href="/auth/index.css">
+
 </head>
 
 <body>
 
-  <div class="login-page">
+<div class="login-page">
 
-    <div class="login-wrapper">
+<div class="login-wrapper">
 
-      <div class="login-brand">
-        <h1>SIPAD</h1>
-        <span>Sistema inteligente para la planeación archivística documental</span>
-      </div>
+<div class="login-brand">
+<h1>SIPAD</h1>
+<span>Sistema inteligente para la planeación archivística documental</span>
+</div>
 
-      <div class="login-card">
+<div class="login-card">
 
-        <h2 class="login-title">Ingreso al sistema</h2>
+<h2 class="login-title">Ingreso al sistema</h2>
 
-        <form id="loginForm">
+<form id="loginForm">
 
-          <div class="login-field">
-            <input 
-              type="text" 
-              id="usuario" 
-              placeholder="Usuario"
-              required
-            >
-          </div>
+<div class="login-field">
 
-          <div class="login-field">
-            <input 
-              type="password" 
-              id="password" 
-              placeholder="Contraseña"
-              required
-            >
-          </div>
+<input
+type="text"
+id="usuario"
+placeholder="Usuario"
+required>
 
-          <button type="submit" class="login-button">
-            Ingresar
-          </button>
+</div>
 
-          <div id="mensaje" class="login-message"></div>
+<div class="login-field">
 
-        </form>
+<input
+type="password"
+id="password"
+placeholder="Contraseña"
+required>
 
-      </div>
+</div>
 
-    </div>
+<button type="submit" class="login-button">
+Ingresar
+</button>
 
-  </div>
+<div id="mensaje" class="login-message"></div>
 
-  <script src="/auth/index.js"></script>
-  <!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
-<script src="/components/password-modal.js"></script>
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+<script src="/auth/index.js" defer></script>
+
+<script src="/components/password-modal.js" defer></script>
 
 </body>
+
 </html>
