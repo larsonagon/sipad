@@ -208,6 +208,52 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   /* ======================================================
+     ABRIR MODAL DE ANÁLISIS (AGREGADO)
+  ====================================================== */
+
+  async function abrirModalAnalisis(id){
+
+    try{
+
+      const resp = await apiFetch(`/api/segtec/actividades/${id}`);
+
+      if(!resp) return;
+
+      const json = await resp.json();
+
+      if(!json.ok){
+        alert('No se pudo cargar la información.');
+        return;
+      }
+
+      const actividad = json.data;
+
+      modalBody.innerHTML = `
+        <h3>Análisis de actividad</h3>
+        <p><strong>Actividad:</strong> ${actividad.nombre || '-'}</p>
+        <p><strong>Frecuencia:</strong> ${actividad.frecuencia || '-'}</p>
+        <p><strong>Estado:</strong> ${capitalizar(actividad.estado_general)}</p>
+      `;
+
+      modalFooter.innerHTML = `
+        <button class="btn-secondary" id="btnCerrarAnalisis">Cerrar</button>
+      `;
+
+      document.getElementById('btnCerrarAnalisis')
+        ?.addEventListener('click', cerrarModal);
+
+      modal.classList.remove('hidden');
+
+    }catch(error){
+
+      console.error(error);
+      alert('Error cargando análisis.');
+
+    }
+
+  }
+
+  /* ======================================================
      MARCO FUNCIONAL
   ====================================================== */
 
@@ -446,9 +492,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     .querySelectorAll('.analizar-btn')
     .forEach(btn=>{
       btn.addEventListener('click',()=>{
-        const id=btn.dataset.id;
-        window.location.href=
-        `/segtec/analisis.html?id=${id}`;
+        const id = btn.dataset.id;
+        abrirModalAnalisis(id);
       });
     });
 
