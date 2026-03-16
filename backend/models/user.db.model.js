@@ -100,11 +100,13 @@ export async function findUserByUsernameDB(username) {
     nombre_completo: row.nombre_completo,
     passwordHash: row.password_hash,
 
-    // 🔥 Normalización institucional
+    // 🔹 Normalización institucional
     role: row.rol_nombre,
     nivel_acceso: Number(row.nivel_acceso),
 
+    // 🔹 Cargo (compatibilidad completa)
     cargo: row.cargo_nombre,
+    cargo_nombre: row.cargo_nombre,
 
     id_entidad: row.id_entidad ? Number(row.id_entidad) : null,
     id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
