@@ -108,6 +108,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     return new Date(fechaISO).toLocaleDateString('es-CO');
   }
 
+  /* 🔧 NUEVO: normalizador de disposición final según AGN */
+
+  function formatearDisposicion(valor){
+
+    if(!valor) return '-';
+
+    const mapa = {
+
+      conservacion_total: 'Conservación total',
+      eliminacion: 'Eliminación',
+      seleccion: 'Selección',
+      medio_tecnico: 'Medio técnico (Microfilmación o digitalización)'
+
+    };
+
+    const clave = valor
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g,'_')
+      .trim();
+
+    if(mapa[clave]){
+      return mapa[clave];
+    }
+
+    return 'Eliminación';
+
+  }
+
   function badgeEstado(estado){
 
     const normalizado = (estado || 'borrador').toLowerCase();
@@ -231,8 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const a = json.data || {};
 
-      /* 🔧 AJUSTE MÍNIMO: fallback de campos */
-
       const serie =
         a.serie ||
         a.serie_propuesta ||
@@ -259,11 +286,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
 
           <div>
-            <label>Tipo documental</label>
-            <strong>${a.tipo_documental || '-'}</strong>
-          </div>
-
-          <div>
             <label>Retención archivo de gestión</label>
             <strong>${a.retencion_gestion || '-'} años</strong>
           </div>
@@ -275,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <div>
             <label>Disposición final</label>
-            <strong>${a.disposicion_final || '-'}</strong>
+            <strong>${formatearDisposicion(a.disposicion_final)}</strong>
           </div>
 
         </div>
