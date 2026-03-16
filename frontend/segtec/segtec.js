@@ -53,32 +53,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       headers
     });
 
+    // 🔴 Si el backend responde 401 → sesión inválida
     if (resp.status === 401) {
 
-      const clone = resp.clone();
-      let texto = '';
+      sessionStorage.clear();
+      localStorage.clear();
 
-      try {
-        texto = await clone.text();
-      } catch {
-        texto = '';
-      }
-
-      if (
-        texto.includes('Token expirado') ||
-        texto.includes('Token inválido') ||
-        texto.includes('Token malformado')
-      ) {
-
-        // LIMPIEZA COMPLETA DE SESIÓN
-        sessionStorage.clear();
-        localStorage.clear();
-
-        window.location.href = '/';
-        return null;
-      }
-
-      return resp;
+      window.location.href = '/';
+      return null;
     }
 
     return resp;
@@ -146,6 +128,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           Authorization: `Bearer ${token}`
         }
       });
+
+      if (resp.status === 401) {
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
 
       if (!resp.ok) {
         throw new Error('Error generando PDF');
