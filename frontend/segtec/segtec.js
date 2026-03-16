@@ -215,7 +215,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try{
 
-      const resp = await apiFetch(`/api/segtec/actividades/${id}/analisis`);
+      const resp = await apiFetch(
+        `/api/segtec/actividades/${id}/analizar`,
+        { method:'POST' }
+      );
 
       if(!resp) return;
 
@@ -226,7 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const a = json.data;
+      const a = json.data || {};
 
       modalBody.innerHTML = `
         <h3>Análisis técnico de la actividad</h3>
