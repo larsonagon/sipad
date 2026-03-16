@@ -2,9 +2,48 @@
 // HEADER INSTITUCIONAL SIPAD
 // ======================================================
 
+const TIEMPO_INACTIVIDAD = 15 * 60 * 1000 // 15 minutos
+let temporizadorSesion = null
+
+function cerrarSesion() {
+
+  sessionStorage.clear()
+  window.location.href = '/'
+
+}
+
+function reiniciarTemporizadorSesion() {
+
+  if (temporizadorSesion) {
+    clearTimeout(temporizadorSesion)
+  }
+
+  sessionStorage.setItem('lastActivity', Date.now())
+
+  temporizadorSesion = setTimeout(() => {
+
+    alert('La sesión ha expirado por inactividad.')
+    cerrarSesion()
+
+  }, TIEMPO_INACTIVIDAD)
+
+}
+
+function iniciarControlInactividad() {
+
+  const eventos = ['mousemove', 'keydown', 'click', 'scroll']
+
+  eventos.forEach(e =>
+    document.addEventListener(e, reiniciarTemporizadorSesion)
+  )
+
+  reiniciarTemporizadorSesion()
+
+}
+
 function getUserFromToken() {
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
   if (!token) return null
 
   try {
@@ -40,6 +79,8 @@ export function renderHeader(activeModule) {
     return
   }
 
+  iniciarControlInactividad()
+
   let modulo = 'home'
   let seccion = ''
 
@@ -60,10 +101,6 @@ export function renderHeader(activeModule) {
 
   const puedeVerInformes =
     nivelAcceso >= 80
-
-  // ======================================================
-  // NUEVO CONTROL DE ROL GENERAL
-  // ======================================================
 
   const esRolGeneral =
     (user?.rol || '').toLowerCase() === 'general'
@@ -238,10 +275,7 @@ export function renderHeader(activeModule) {
   document.getElementById('btnSalir')
     ?.addEventListener('click', () => {
 
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-
-      window.location.href = '/'
+      cerrarSesion()
 
     })
 

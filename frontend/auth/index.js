@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // 🔐 Si ya existe token → ir directo a /home
-  const existingToken = localStorage.getItem('token');
+  const existingToken = sessionStorage.getItem('token');
   if (existingToken) {
     window.location.href = '/home';
     return;
@@ -40,9 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (resp.ok && json.token) {
 
-        // ✅ Guardar sesión
-        localStorage.setItem('token', json.token);
-        localStorage.setItem('user', JSON.stringify(json.user));
+        // ✅ Guardar sesión (SE BORRA AL CERRAR NAVEGADOR)
+        sessionStorage.setItem('token', json.token);
+        sessionStorage.setItem('user', JSON.stringify(json.user));
+
+        // 🕒 Registrar actividad inicial
+        sessionStorage.setItem('lastActivity', Date.now());
 
         // 🚀 Redirección correcta
         window.location.href = '/home';
