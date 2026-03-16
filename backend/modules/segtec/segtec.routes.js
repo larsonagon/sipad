@@ -87,7 +87,6 @@ router.put(
 
 router.get(
   '/actividades/:id/pdf',
-  verificarJWT,
   pdfController.generar
 )
 
