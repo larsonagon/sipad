@@ -71,7 +71,9 @@ export function SEGTECAnalisisController({
       const contexto = {
         actividades: actividades.map(a => ({
           nombre: a.nombre,
-          descripcion: a.descripcion
+          descripcion: a.descripcion || '',
+          descripcion_funcional: a.descripcion_funcional || '',
+          documentos_generados: a.documentos_generados || ''
         }))
       }
 
@@ -89,13 +91,23 @@ export function SEGTECAnalisisController({
         })
       }
 
-      const resultado = resultadoMotor[0]
+      const resultado = resultadoMotor[0] || {}
+
+      // ==================================================
+      // 5️⃣ Extraer Serie y Subserie
+      // ==================================================
+
+      const serie =
+        resultado.serie ||
+        resultado?.serie_sugerida?.nombre ||
+        null
+
+      const subserie =
+        resultado.subserie ||
+        resultado?.subserie_sugerida?.nombre ||
+        null
 
       let propuestaId = null
-
-      // ==================================================
-      // 5️⃣ Crear propuesta si es nueva serie
-      // ==================================================
 
       if (resultado.propuesta_creada?.id) {
         propuestaId = resultado.propuesta_creada.id
@@ -115,7 +127,7 @@ export function SEGTECAnalisisController({
               propuestaId
             )
 
-        retencion = regla?.regla
+        retencion = regla || null
       }
 
       // ==================================================
@@ -130,25 +142,34 @@ export function SEGTECAnalisisController({
 
           actividades_analizadas: actividades.length,
 
-          serie_propuesta:
-            resultado.serie_sugerida?.nombre ||
-            resultado.propuesta_creada?.nombre_sugerido ||
-            'Serie Sugerida',
+          // 🔹 CAMPOS PRINCIPALES PARA EL MODAL
+          serie: serie,
+          subserie: subserie,
+
+          // 🔹 compatibilidad con versiones anteriores
+          serie_propuesta: serie,
+          subserie_propuesta: subserie,
 
           confianza: resultado.confianza ?? 0,
 
           retencion_gestion:
-            retencion?.tiempo_gestion ?? 2,
+            retencion?.retencion_gestion ??
+            resultado.retencion_gestion ??
+            2,
 
           retencion_central:
-            retencion?.tiempo_central ?? 3,
+            retencion?.retencion_central ??
+            resultado.retencion_central ??
+            3,
 
           disposicion_final:
             retencion?.disposicion_final ??
+            resultado.disposicion_final ??
             'eliminacion',
 
           justificacion:
             retencion?.fundamento_normativo ??
+            resultado.justificacion ??
             'Retención sugerida automáticamente por TRD-AI'
         }
       })
