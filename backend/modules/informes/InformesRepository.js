@@ -12,16 +12,12 @@ export default class InformesRepository {
 
     if (!fecha) return null
 
-    // Si viene en formato dd/mm/yyyy → convertir a yyyy-mm-dd
     if (fecha.includes('/')) {
-
       const [d, m, y] = fecha.split('/')
       return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-
     }
 
     return fecha
-
   }
 
   // ======================================
@@ -52,18 +48,10 @@ export default class InformesRepository {
 
     const params = []
 
-    // ======================================
-    // FUNCIONARIO
-    // ======================================
-
     if (filtros.funcionario && !isNaN(filtros.funcionario)) {
       sql += ` AND a.usuario_id = ?`
       params.push(Number(filtros.funcionario))
     }
-
-    // ======================================
-    // DEPENDENCIA
-    // ======================================
 
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
 
@@ -77,10 +65,6 @@ export default class InformesRepository {
       `
       params.push(dep, dep)
     }
-
-    // ======================================
-    // FECHAS
-    // ======================================
 
     const fechaInicio = this.normalizarFecha(filtros.fechaInicio)
     const fechaFin = this.normalizarFecha(filtros.fechaFin)
@@ -160,14 +144,11 @@ export default class InformesRepository {
         ON d.id = a.dependencia_id
       LEFT JOIN dependencias du
         ON du.id = u.id_dependencia
-      WHERE a.genera_documentos = 1
+      WHERE a.genera_documentos IS NOT NULL
+      AND a.genera_documentos <> ''
     `
 
     const params = []
-
-    // ======================================
-    // DEPENDENCIA
-    // ======================================
 
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
 
@@ -187,10 +168,6 @@ export default class InformesRepository {
 
     const rows = await this.db.all(sql, params)
 
-    // ======================================
-    // FORMATEAR RESULTADO
-    // ======================================
-
     const data = rows.map(row => {
 
       const docs = row.documentos_generados || ""
@@ -200,23 +177,17 @@ export default class InformesRepository {
         .map(d => d.trim())
         .filter(d => d.length > 0)
 
-      // -------- FORMATO --------
-
       let formato = row.formato_produccion
 
       if (formato === 'digital') formato = 'Digital'
       if (formato === 'fisico') formato = 'Físico'
       if (formato === 'ambos') formato = 'Físico y digital'
 
-      // -------- VOLUMEN --------
-
       let volumen = row.volumen_documental
 
       if (volumen === 'menos_10') volumen = 'Menos de 10'
       if (volumen === 'entre_10_50') volumen = 'Entre 10 y 50'
       if (volumen === 'mas_50') volumen = 'Más de 50'
-
-      // -------- FRECUENCIA --------
 
       let frecuencia = row.frecuencia
 
