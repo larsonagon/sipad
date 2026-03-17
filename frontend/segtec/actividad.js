@@ -367,13 +367,19 @@ dependenciaCustodia.appendChild(opt2)
 
 }
 
+// ======================================================
+// CARGOS
+// ======================================================
+
 async function cargarCargos(){
 
 const resp = await fetchSeguro('/api/cargos')
-const data = resp.data || resp
+const data = resp.data || resp.cargos || resp
 
 cargoCustodia.innerHTML =
 '<option value="">Seleccione cargo...</option>'
+
+if(!Array.isArray(data)) return
 
 data.forEach(cargo=>{
 
@@ -381,10 +387,13 @@ if(cargo.activo === 0 || cargo.estado === 0) return
 
 const opt=document.createElement('option')
 opt.value = cargo.id
+
 opt.textContent =
 cargo.nombre ||
 cargo.nombre_cargo ||
 cargo.descripcion ||
+cargo.cargo ||
+cargo.titulo ||
 `Cargo ${cargo.id}`
 
 cargoCustodia.appendChild(opt)
