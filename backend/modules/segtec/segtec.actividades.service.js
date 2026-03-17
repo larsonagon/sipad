@@ -20,6 +20,63 @@ export function SEGTECActividadesService(
     throw new Error('TRDAIService no proporcionado')
 
   // =====================================================
+  // 🔒 VALIDACIÓN CENTRAL
+  // =====================================================
+
+  function validarActividad(data){
+
+    const errores = []
+
+    if(!data.nombre)
+      errores.push('1. Nombre de la actividad es obligatorio')
+
+    if(!data.tipo_funcion)
+      errores.push('2. Clasificación funcional es obligatoria')
+
+    if(!data.frecuencia)
+      errores.push('3. Periodicidad es obligatoria')
+
+    if(data.genera_documentos === null || data.genera_documentos === undefined)
+      errores.push('5. Debe indicar si genera documentos')
+
+    if(!data.formato_produccion)
+      errores.push('7. Formato de producción es obligatorio')
+
+    if(!data.responsable_custodia)
+      errores.push('10. Responsabilidad de custodia es obligatoria')
+
+    if(!data.cargo_custodia)
+      errores.push('10a. Cargo responsable de custodia es obligatorio')
+
+    if(!data.localizacion_documentos)
+      errores.push('11. Localización de documentos es obligatoria')
+
+    if(data.tiene_pasos_formales === null || data.tiene_pasos_formales === undefined)
+      errores.push('13. Debe indicar si tiene pasos formales')
+
+    if(data.requiere_otras_dependencias === null || data.requiere_otras_dependencias === undefined)
+      errores.push('14. Debe indicar si requiere otras dependencias')
+
+    if(data.tiene_plazo === null || data.tiene_plazo === undefined)
+      errores.push('15. Debe indicar si tiene plazo')
+
+    if(data.genera_expediente_propio === null || data.genera_expediente_propio === undefined)
+      errores.push('16. Debe indicar si genera expediente')
+
+    // Condicionales
+    if(data.genera_documentos == 1 && !data.documentos_generados)
+      errores.push('6. Debe especificar los documentos generados')
+
+    if(data.requiere_otras_dependencias == 1 && !data.dependencias_relacionadas)
+      errores.push('14a. Debe indicar las dependencias relacionadas')
+
+    if(errores.length > 0){
+      throw new Error(errores.join(' | '))
+    }
+
+  }
+
+  // =====================================================
   // VALIDAR SI ES EDITABLE
   // =====================================================
 
@@ -83,13 +140,14 @@ export function SEGTECActividadesService(
       await actividadesRepository.crearActividad({
         dependencia_id: dependenciaId,
         usuario_id: usuarioId,
-        proceso_id: procesoId
+        proceso_id: procesoId,
+        estado_general: 'caracterizada' // 🔥 ya no existe borrador
       })
 
     return {
       id: actividad.id,
       proceso_id: procesoId,
-      estado_general: 'borrador'
+      estado_general: 'caracterizada'
     }
   }
 
@@ -148,6 +206,9 @@ export function SEGTECActividadesService(
   async function actualizarCompleto(id, data) {
 
     await validarEditable(id)
+
+    // 🔥 VALIDACIÓN TOTAL AQUÍ
+    validarActividad(data)
 
     if (
       data.nombre ||
@@ -280,40 +341,15 @@ export function SEGTECActividadesService(
 
     const resultado = resultadoMotor[0] || {}
 
-    const serieDetectada =
-      resultado.serie ||
-      resultado?.serie_sugerida?.nombre ||
-      resultado?.serie_sugerida ||
-      null
-
-    const subserieDetectada =
-      resultado.subserie ||
-      resultado?.subserie_sugerida?.nombre ||
-      resultado?.subserie_sugerida ||
-      null
-
     const resultadoFinal = {
-
-      serie_propuesta: serieDetectada,
-      subserie_propuesta: subserieDetectada,
-
-      retencion_gestion:
-        resultado.retencion_gestion || 3,
-
-      retencion_central:
-        resultado.retencion_central || 5,
-
-      disposicion_final:
-        resultado.disposicion_final || 'conservacion_parcial',
-
-      justificacion:
-        resultado.justificacion ||
-        'Resultado automático generado por TRD-AI',
-
+      serie_propuesta: resultado.serie || null,
+      subserie_propuesta: resultado.subserie || null,
+      retencion_gestion: resultado.retencion_gestion || 3,
+      retencion_central: resultado.retencion_central || 5,
+      disposicion_final: resultado.disposicion_final || 'conservacion_parcial',
+      justificacion: resultado.justificacion || 'Resultado automático generado por TRD-AI',
       motor_version: '1.2',
-
-      actividades_analizadas:
-        actividadesProceso.length
+      actividades_analizadas: actividadesProceso.length
     }
 
     await actividadesRepository.guardarAnalisisActividad(
