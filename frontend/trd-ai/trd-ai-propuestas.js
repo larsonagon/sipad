@@ -33,16 +33,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function apiFetch(url, options = {}) {
 
-  const token = localStorage.getItem('token')
+  const token = sessionStorage.getItem('token')
+
+  const headers = {
+    Authorization:`Bearer ${token}`,
+    ...(options.headers || {})
+  }
+
+  if(options.body){
+    headers['Content-Type'] = 'application/json'
+  }
 
   const resp = await fetch(url,{
     ...options,
-    headers:{
-      Authorization:`Bearer ${token}`,
-      'Content-Type':'application/json',
-      ...(options.headers || {})
-    }
+    headers
   })
+
+  if(resp.status === 401){
+
+    sessionStorage.clear()
+    localStorage.clear()
+    window.location.href = '/'
+    return null
+
+  }
 
   return resp
 
@@ -59,6 +73,8 @@ async function cargarPropuestas(){
   try{
 
     const resp = await apiFetch('/api/trd-ai/series-propuestas')
+
+    if(!resp) return
 
     if(!resp.ok){
       throw new Error('Error cargando propuestas')
@@ -245,6 +261,8 @@ async function generarPropuestas(){
       { method:'POST' }
     )
 
+    if(!resp) return
+
     if(!resp.ok){
       throw new Error('Error ejecutando el motor')
     }
@@ -283,6 +301,8 @@ window.aprobar = async function(id){
       { method:'PATCH' }
     )
 
+    if(!resp) return
+
     if(!resp.ok){
       throw new Error('Error aprobando propuesta')
     }
@@ -317,6 +337,8 @@ window.rechazar = async function(id){
       { method:'PATCH' }
     )
 
+    if(!resp) return
+
     if(!resp.ok){
       throw new Error('Error rechazando propuesta')
     }
@@ -349,6 +371,8 @@ window.retencion = async function(id){
     const resp = await apiFetch(
       `/api/trd-ai/series-propuestas/${id}/retencion-automatica`
     )
+
+    if(!resp) return
 
     if(!resp.ok){
       throw new Error('Error generando retención')
