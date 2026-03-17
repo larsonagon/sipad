@@ -15,6 +15,48 @@ console.log(message)
 }
 
 // ======================================================
+// TOAST (MISMO SISTEMA QUE CONFIGURACION.JS)
+// ======================================================
+
+function showToast(message, type = 'success') {
+
+const toast = document.createElement('div');
+toast.innerText = message;
+
+toast.style.position = 'fixed';
+toast.style.top = '50%';
+toast.style.left = '50%';
+toast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+toast.style.padding = '16px 22px';
+toast.style.borderRadius = '8px';
+toast.style.fontSize = '15px';
+toast.style.fontWeight = '500';
+toast.style.color = 'white';
+toast.style.opacity = '0';
+toast.style.transition = 'all 0.25s ease';
+toast.style.zIndex = '9999';
+toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
+toast.style.background =
+type === 'error' ? '#c82333' :
+type === 'warning' ? '#e0a800' :
+'#1e7e34';
+
+document.body.appendChild(toast);
+
+setTimeout(() => {
+toast.style.opacity = '1';
+toast.style.transform = 'translate(-50%, -50%) scale(1)';
+}, 10);
+
+setTimeout(() => {
+toast.style.opacity = '0';
+toast.style.transform = 'translate(-50%, -50%) scale(0.95)';
+setTimeout(() => toast.remove(), 300);
+}, 1600);
+
+}
+
+// ======================================================
 
 const token = sessionStorage.getItem('token')
 
@@ -210,7 +252,7 @@ btnGuardar.style.display="none"
 }
 
 // ======================================================
-// CARGO DESDE TOKEN (AJUSTADO)
+// CARGO DESDE TOKEN
 // ======================================================
 
 function cargarCargoUsuarioLocal(){
@@ -331,27 +373,26 @@ dependenciaCustodia.appendChild(opt2)
 
 async function cargarCargos(){
 
-    const data = await fetchSeguro('/api/cargos')
+const data = await fetchSeguro('/api/cargos')
 
-    cargoCustodia.innerHTML =
-    '<option value="">Seleccione cargo...</option>'
+cargoCustodia.innerHTML =
+'<option value="">Seleccione cargo...</option>'
 
-    data.forEach(cargo=>{
+data.forEach(cargo=>{
 
-    // compatibilidad con distintas estructuras
-    if(cargo.activo === 0 || cargo.estado === 0) return
+if(cargo.activo === 0 || cargo.estado === 0) return
 
-    const opt=document.createElement('option')
-    opt.value = cargo.id
-    opt.textContent =
-    cargo.nombre ||
-    cargo.nombre_cargo ||
-    cargo.descripcion ||
-    `Cargo ${cargo.id}`
+const opt=document.createElement('option')
+opt.value = cargo.id
+opt.textContent =
+cargo.nombre ||
+cargo.nombre_cargo ||
+cargo.descripcion ||
+`Cargo ${cargo.id}`
 
-    cargoCustodia.appendChild(opt)
+cargoCustodia.appendChild(opt)
 
-    })
+})
 
 }
 
@@ -433,10 +474,6 @@ act.formato_produccion ?? ""
 recepcionExterna.value =
 act.recepcion_externa ?? ""
 
-// ===============================
-// SELECTS SEGUROS
-// ===============================
-
 function setSelect(select, value){
 
 if(!value) return
@@ -498,10 +535,6 @@ normalizarBoolean(act.tiene_plazo) ? "si":"no"
 
 normaAplicable.value =
 act.norma_aplicable ?? ""
-
-// ===============================
-// DEPENDENCIAS GUARDADAS
-// ===============================
 
 const depsGuardadas =
 normalizarDependencias(act.dependencias_relacionadas)
@@ -609,16 +642,16 @@ dependenciasSeleccionadas.map(d=>d.id)
 })
 })
 
-notifySafe("Actividad guardada correctamente")
+showToast("Actividad guardada correctamente")
 
 setTimeout(()=>{
 window.location.href='/segtec/segtec.html'
-},1000)
+},1700)
 
 }catch(err){
 
 console.error(err)
-notifySafe("Error al guardar","warning")
+showToast("Error al guardar","error")
 
 }
 
