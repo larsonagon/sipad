@@ -310,7 +310,10 @@ class="form-control">
 
 <div class="form-group full">
 
-<label>12. ¿Tiene pasos formales que deben seguirse?</label>
+<label>13. ¿Tiene pasos formales que deben seguirse?</label>
+<span class="form-hint">
+(Ejemplo: un procedimiento definido, un trámite establecido o un proceso que siempre se hace de la misma manera).
+</span>
 
 <select id="pasosFormales"
 name="pasosFormales"
@@ -327,7 +330,7 @@ class="form-control campo-corto">
 
 <div class="form-group">
 
-<label>13. ¿Requiere apoyo de otras dependencias?</label>
+<label>14. ¿Requiere apoyo de otras dependencias?</label>
 
 <select id="otrasDep"
 name="otrasDep"
@@ -344,7 +347,7 @@ class="form-control">
 
 <div class="form-group">
 
-<label>13a. Dependencias que apoyan</label>
+<label>14a. Dependencias que apoyan</label>
 
 <select id="selectDependencia"
 name="selectDependencia"
@@ -364,7 +367,11 @@ class="tags-container"></div>
 
 <div class="form-group full">
 
-<label>14. ¿Tiene un tiempo límite para cumplirse?</label>
+<label>15. ¿Tiene un tiempo límite para cumplirse?</label>
+
+<span class="form-hint">
+(Ejemplo: plazos legales, fechas máximas de respuesta o términos obligatorios).
+</span>
 
 <select id="tienePlazo"
 name="tienePlazo"
@@ -381,33 +388,47 @@ class="form-control">
 
 <div class="form-group">
 
-<label>14a. Plazo legal establecido</label>
+<label>15a. Plazo legal establecido</label>
+
+<span class="form-hint">
+(Norma, ley o término formal definido)
+</span>
 
 <input
 type="text"
 id="plazoLegal"
 name="plazoLegal"
-class="form-control">
+class="form-control"
+placeholder="Ej: Ley 1437 de 2011 – 15 días">
 
 </div>
 
 
 <div class="form-group">
 
-<label>14b. Tiempo promedio real de ejecución</label>
+<label>15b. Tiempo promedio real de ejecución</label>
+
+<span class="form-hint">
+(Tiempo que usualmente tarda la actividad en la práctica administrativa)
+</span>
 
 <input
 type="text"
 id="tiempoPromedio"
 name="tiempoPromedio"
-class="form-control">
+class="form-control"
+placeholder="Ej: 3 días">
 
 </div>
 
 
 <div class="form-group">
 
-<label>15. ¿Genera expediente?</label>
+<label>16. ¿Genera un conjunto de documentos que se organizan por caso o asunto?</label>
+
+<span class="form-hint">
+Expediente
+</span>
 
 <select id="generaExpediente"
 name="generaExpediente"
@@ -424,31 +445,12 @@ class="form-control">
 
 <div class="form-group full">
 
-<label>16. Norma aplicable</label>
+<label>17. Norma aplicable</label>
 
 <textarea id="normaAplicable"
 name="normaAplicable"
 class="form-control"></textarea>
 
-</div>
-
-</div>
-
-</section>
-
-</div>
-
-
-<section class="segtec-signature">
-
-<div class="firma-linea"></div>
-
-<div class="firma-info">
-
-<div id="firmaFuncionario"></div>
-
-<div class="firma-cargo">
-Funcionario responsable
 </div>
 
 </div>
