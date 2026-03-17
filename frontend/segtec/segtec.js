@@ -181,60 +181,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function descargarPDFActividad(id){
 
-    try{
+      try{
 
-      const resp = await fetch(`/api/segtec/actividades/${id}/pdf`,{
-        headers:{
-          Authorization:`Bearer ${token}`
+        const resp = await fetch(`/api/segtec/actividades/${id}/pdf`,{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
+
+        if(resp.status===401){
+          sessionStorage.clear();
+          localStorage.clear();
+          window.location.href='/';
+          return;
         }
-      });
 
-      if(resp.status===401){
-        sessionStorage.clear();
-        localStorage.clear();
-        window.location.href='/';
-        return;
+        /* 🔧 CAMBIO IMPORTANTE:
+          NO lanzar error inmediatamente si resp.ok es false
+          porque algunos servidores devuelven 500 pero
+          sí envían el PDF en el body
+        */
+
+        const contentType = resp.headers.get("content-type") || "";
+
+        if(!contentType.includes("pdf")){
+          throw new Error("Respuesta inválida del servidor");
+        }
+
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
+
+        const isSafari =
+          /^((?!chrome|android).)*safari/i
+          .test(navigator.userAgent);
+
+        if(isSafari){
+
+          window.open(url,'_blank');
+
+        }else{
+
+          const a=document.createElement('a');
+          a.href=url;
+          a.download=`actividad_${id}.pdf`;
+
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+
+        }
+
+        setTimeout(()=>{
+          window.URL.revokeObjectURL(url);
+        },1500);
+
+      }catch(error){
+
+        console.error(error);
+        alert('Error generando el PDF.');
+
       }
-
-      if(!resp.ok){
-        throw new Error('Error generando PDF');
-      }
-
-      const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const isSafari =
-        /^((?!chrome|android).)*safari/i
-        .test(navigator.userAgent);
-
-      if(isSafari){
-
-        window.open(url,'_blank');
-
-      }else{
-
-        const a=document.createElement('a');
-        a.href=url;
-        a.download=`actividad_${id}.pdf`;
-
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-
-      }
-
-      setTimeout(()=>{
-        window.URL.revokeObjectURL(url);
-      },1000);
-
-    }catch(error){
-
-      console.error(error);
-      alert('Error generando el PDF.');
 
     }
-
-  }
 
   /* ======================================================
      MODAL DE ANÁLISIS
