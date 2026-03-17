@@ -367,13 +367,10 @@ dependenciaCustodia.appendChild(opt2)
 
 }
 
-// ======================================================
-// CARGAR CARGOS
-// ======================================================
-
 async function cargarCargos(){
 
-const data = await fetchSeguro('/api/cargos')
+const resp = await fetchSeguro('/api/cargos')
+const data = resp.data || resp
 
 cargoCustodia.innerHTML =
 '<option value="">Seleccione cargo...</option>'
