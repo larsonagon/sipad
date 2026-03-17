@@ -374,18 +374,21 @@ dependenciaCustodia.appendChild(opt2)
 async function cargarCargos(){
 
 const resp = await fetchSeguro('/api/cargos')
-const data = resp.data || resp.cargos || resp
+
+let data = []
+
+// distintos formatos posibles de respuesta
+if(Array.isArray(resp)) data = resp
+else if(Array.isArray(resp.data)) data = resp.data
+else if(Array.isArray(resp.cargos)) data = resp.cargos
 
 cargoCustodia.innerHTML =
 '<option value="">Seleccione cargo...</option>'
 
-if(!Array.isArray(data)) return
-
 data.forEach(cargo=>{
 
-if(cargo.activo === 0 || cargo.estado === 0) return
+const opt = document.createElement('option')
 
-const opt=document.createElement('option')
 opt.value = cargo.id
 
 opt.textContent =
