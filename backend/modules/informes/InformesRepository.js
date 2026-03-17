@@ -5,6 +5,26 @@ export default class InformesRepository {
   }
 
   // ======================================
+  // UTILIDAD: NORMALIZAR FECHA
+  // ======================================
+
+  normalizarFecha(fecha) {
+
+    if (!fecha) return null
+
+    // Si viene en formato dd/mm/yyyy → convertir a yyyy-mm-dd
+    if (fecha.includes('/')) {
+
+      const [d, m, y] = fecha.split('/')
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+
+    }
+
+    return fecha
+
+  }
+
+  // ======================================
   // INFORME 1
   // REGISTRO COMPLETO DE ACTIVIDADES
   // ======================================
@@ -32,12 +52,20 @@ export default class InformesRepository {
 
     const params = []
 
-    if (filtros.funcionario) {
+    // ======================================
+    // FUNCIONARIO
+    // ======================================
+
+    if (filtros.funcionario && !isNaN(filtros.funcionario)) {
       sql += ` AND a.usuario_id = ?`
       params.push(Number(filtros.funcionario))
     }
 
-    if (filtros.dependencia) {
+    // ======================================
+    // DEPENDENCIA
+    // ======================================
+
+    if (filtros.dependencia && !isNaN(filtros.dependencia)) {
 
       const dep = Number(filtros.dependencia)
 
@@ -50,14 +78,21 @@ export default class InformesRepository {
       params.push(dep, dep)
     }
 
-    if (filtros.fechaInicio) {
-      sql += ` AND a.created_at >= ?`
-      params.push(filtros.fechaInicio)
+    // ======================================
+    // FECHAS
+    // ======================================
+
+    const fechaInicio = this.normalizarFecha(filtros.fechaInicio)
+    const fechaFin = this.normalizarFecha(filtros.fechaFin)
+
+    if (fechaInicio) {
+      sql += ` AND date(a.created_at) >= date(?)`
+      params.push(fechaInicio)
     }
 
-    if (filtros.fechaFin) {
-      sql += ` AND a.created_at <= ?`
-      params.push(filtros.fechaFin)
+    if (fechaFin) {
+      sql += ` AND date(a.created_at) <= date(?)`
+      params.push(fechaFin)
     }
 
     sql += ` ORDER BY a.created_at DESC`
@@ -130,7 +165,11 @@ export default class InformesRepository {
 
     const params = []
 
-    if (filtros.dependencia) {
+    // ======================================
+    // DEPENDENCIA
+    // ======================================
+
+    if (filtros.dependencia && !isNaN(filtros.dependencia)) {
 
       const dep = Number(filtros.dependencia)
 
@@ -187,18 +226,13 @@ export default class InformesRepository {
       if (frecuencia === 'eventual') frecuencia = 'Eventual'
 
       return {
-
         actividad: row.actividad,
         dependencia: row.dependencia,
-
         documentos_generados: tipos.join(', '),
-
         total_tipos_documentales: tipos.length,
-
         formato,
         volumen,
         frecuencia
-
       }
 
     })
