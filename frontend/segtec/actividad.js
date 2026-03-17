@@ -331,15 +331,27 @@ dependenciaCustodia.appendChild(opt2)
 
 async function cargarCargos(){
 
-// Ya no consultamos /api/cargos
-// porque el cargo del funcionario ejecutor
-// se obtiene desde el JWT
+    const data = await fetchSeguro('/api/cargos')
 
-cargoCustodia.innerHTML =
-'<option value="">Seleccione cargo...</option>'
+    cargoCustodia.innerHTML =
+    '<option value="">Seleccione cargo...</option>'
 
-// El select queda inicializado vacío
-// para no romper la lógica del formulario
+    data.forEach(cargo=>{
+
+    // compatibilidad con distintas estructuras
+    if(cargo.activo === 0 || cargo.estado === 0) return
+
+    const opt=document.createElement('option')
+    opt.value = cargo.id
+    opt.textContent =
+    cargo.nombre ||
+    cargo.nombre_cargo ||
+    cargo.descripcion ||
+    `Cargo ${cargo.id}`
+
+    cargoCustodia.appendChild(opt)
+
+    })
 
 }
 
