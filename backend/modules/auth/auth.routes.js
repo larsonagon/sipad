@@ -22,6 +22,11 @@ const router = express.Router()
 
 router.post('/login', async (req, res) => {
 
+  const requestId = Date.now().toString(36)
+
+  console.log(`\n[AUTH][${requestId}] ===== LOGIN =====`)
+  console.log(`[AUTH][${requestId}] JWT_SECRET LOGIN:`, JWT_SECRET)
+
   try {
 
     const { username, password } = req.body || {}
@@ -35,6 +40,7 @@ router.post('/login', async (req, res) => {
     const user = await findUserByUsernameDB(username)
 
     if (!user) {
+      console.warn(`[AUTH][${requestId}] Usuario no encontrado`)
       return res.status(401).json({
         error: 'Credenciales inválidas'
       })
@@ -43,20 +49,17 @@ router.post('/login', async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash)
 
     if (!valid) {
+      console.warn(`[AUTH][${requestId}] Password inválido`)
       return res.status(401).json({
         error: 'Credenciales inválidas'
       })
     }
 
-    // =========================
-    // VALIDACIÓN CRÍTICA
-    // =========================
-
     const nivelAcceso = Number(user.nivel_acceso ?? 0)
 
     if (Number.isNaN(nivelAcceso) || nivelAcceso <= 0) {
 
-      console.error('[AUTH] Usuario sin nivel de acceso válido:', user.username)
+      console.error(`[AUTH][${requestId}] Usuario sin nivel válido`)
 
       return res.status(500).json({
         error: 'Usuario sin nivel de acceso válido'
@@ -67,25 +70,33 @@ router.post('/login', async (req, res) => {
     // ACCESS TOKEN
     // =========================
 
+    const payload = {
+      sub: Number(user.id),
+      username: user.username,
+      nombre: user.nombre_completo,
+      rol: user.role,
+      cargo: user.cargo_nombre,
+
+      nivel_acceso: nivelAcceso,
+
+      id_entidad: Number(user.id_entidad ?? 0),
+      id_dependencia: Number(user.id_dependencia ?? 0),
+      dependencia: user.dependencia_nombre,
+
+      es_master_admin: Boolean(user.es_master_admin),
+      es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
+    }
+
+    console.log(`[AUTH][${requestId}] PAYLOAD TOKEN:`, payload)
+
     const accessToken = jwt.sign(
-      {
-        sub: Number(user.id),
-        username: user.username,
-        nombre: user.nombre_completo,
-        rol: user.role,
-        cargo: user.cargo_nombre, // ← agregado
-
-        nivel_acceso: nivelAcceso,
-
-        id_entidad: Number(user.id_entidad ?? 0),
-        id_dependencia: Number(user.id_dependencia ?? 0),
-        dependencia: user.dependencia_nombre,
-
-        es_master_admin: Boolean(user.es_master_admin),
-        es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
-      },
+      payload,
       JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
+    )
+
+    console.log(`[AUTH][${requestId}] TOKEN GENERADO (inicio):`,
+      accessToken.substring(0, 30) + '...'
     )
 
     // =========================
@@ -118,10 +129,6 @@ router.post('/login', async (req, res) => {
       ]
     )
 
-    // =========================
-    // RESPUESTA LOGIN
-    // =========================
-
     return res.json({
       token: accessToken,
       refreshToken,
@@ -130,7 +137,7 @@ router.post('/login', async (req, res) => {
         username: user.username,
         nombre: user.nombre_completo,
         rol: user.role,
-        cargo: user.cargo_nombre, // ← agregado
+        cargo: user.cargo_nombre,
 
         nivel_acceso: nivelAcceso,
 
@@ -145,7 +152,7 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
 
-    console.error('Error login institucional:', err)
+    console.error(`[AUTH][${requestId}] ERROR LOGIN:`, err)
 
     return res.status(500).json({
       error: 'Error interno'
@@ -160,6 +167,11 @@ router.post('/login', async (req, res) => {
 // =========================
 
 router.post('/refresh', async (req, res) => {
+
+  const requestId = Date.now().toString(36)
+
+  console.log(`\n[AUTH][${requestId}] ===== REFRESH =====`)
+  console.log(`[AUTH][${requestId}] JWT_SECRET REFRESH:`, JWT_SECRET)
 
   try {
 
@@ -179,7 +191,7 @@ router.post('/refresh', async (req, res) => {
         u.username,
         u.nombre_completo,
         r.nombre AS rol_nombre,
-        c.nombre AS cargo_nombre, -- agregado
+        c.nombre AS cargo_nombre,
         r.nivel_acceso,
         u.id_entidad,
         u.id_dependencia,
@@ -189,7 +201,7 @@ router.post('/refresh', async (req, res) => {
       FROM refresh_tokens rt
       JOIN usuarios u ON u.id = rt.user_id
       JOIN roles r ON r.id = u.id_rol
-      LEFT JOIN cargos c ON c.id = u.id_cargo -- agregado
+      LEFT JOIN cargos c ON c.id = u.id_cargo
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
       WHERE rt.token = ?
       `,
@@ -210,25 +222,31 @@ router.post('/refresh', async (req, res) => {
 
     const nivelAcceso = Number(row.nivel_acceso ?? 0)
 
+    const payload = {
+      sub: Number(row.user_id),
+      username: row.username,
+      nombre: row.nombre_completo,
+      rol: row.rol_nombre,
+      cargo: row.cargo_nombre,
+
+      nivel_acceso: nivelAcceso,
+
+      id_entidad: Number(row.id_entidad ?? 0),
+      id_dependencia: Number(row.id_dependencia ?? 0),
+      dependencia: row.dependencia_nombre,
+
+      es_master_admin: Boolean(row.es_master_admin),
+      es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
+    }
+
     const newAccessToken = jwt.sign(
-      {
-        sub: Number(row.user_id),
-        username: row.username,
-        nombre: row.nombre_completo,
-        rol: row.rol_nombre,
-        cargo: row.cargo_nombre, // ← agregado
-
-        nivel_acceso: nivelAcceso,
-
-        id_entidad: Number(row.id_entidad ?? 0),
-        id_dependencia: Number(row.id_dependencia ?? 0),
-        dependencia: row.dependencia_nombre,
-
-        es_master_admin: Boolean(row.es_master_admin),
-        es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
-      },
+      payload,
       JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_TTL }
+    )
+
+    console.log(`[AUTH][${requestId}] NEW TOKEN (inicio):`,
+      newAccessToken.substring(0, 30) + '...'
     )
 
     return res.json({
@@ -237,7 +255,7 @@ router.post('/refresh', async (req, res) => {
 
   } catch (err) {
 
-    console.error('Error refresh:', err)
+    console.error(`[AUTH][${requestId}] ERROR REFRESH:`, err)
 
     return res.status(500).json({
       error: 'Error interno'
