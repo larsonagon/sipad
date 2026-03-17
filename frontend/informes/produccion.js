@@ -107,14 +107,17 @@ async function consultar(){
   const dependencia =
   document.getElementById('dependencia').value
 
-  const params = new URLSearchParams({
-    dependencia
-  })
+  const params = new URLSearchParams()
+
+  // ✅ SOLO enviar si tiene valor
+  if(dependencia){
+    params.append('dependencia', dependencia)
+  }
 
   try{
 
     const json =
-    await apiFetch(`/api/informes/produccion-documental?${params}`)
+    await apiFetch(`/api/informes/produccion-documental?${params.toString()}`)
 
     const data = json.data || []
 
@@ -123,6 +126,12 @@ async function consultar(){
   }catch(error){
 
     console.error('Error generando informe:',error)
+
+    const tbody =
+    document.querySelector('#tablaResultados tbody')
+
+    tbody.innerHTML =
+    `<tr><td colspan="7">Error generando informe</td></tr>`
 
   }
 
