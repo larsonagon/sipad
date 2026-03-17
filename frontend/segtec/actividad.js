@@ -374,29 +374,23 @@ dependenciaCustodia.appendChild(opt2)
 async function cargarCargos(){
 
 const resp = await fetchSeguro('/api/cargos')
-
-let data = []
-
-// distintos formatos posibles de respuesta
-if(Array.isArray(resp)) data = resp
-else if(Array.isArray(resp.data)) data = resp.data
-else if(Array.isArray(resp.cargos)) data = resp.cargos
+const data = resp.data || resp
 
 cargoCustodia.innerHTML =
 '<option value="">Seleccione cargo...</option>'
 
 data.forEach(cargo=>{
 
-const opt = document.createElement('option')
+// mismo filtro que el código que sí funcionaba
+if(cargo.estado !== 1) return
+
+const opt=document.createElement('option')
 
 opt.value = cargo.id
-
 opt.textContent =
 cargo.nombre ||
 cargo.nombre_cargo ||
 cargo.descripcion ||
-cargo.cargo ||
-cargo.titulo ||
 `Cargo ${cargo.id}`
 
 cargoCustodia.appendChild(opt)
