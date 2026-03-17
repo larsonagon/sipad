@@ -373,12 +373,12 @@ dependenciaCustodia.appendChild(opt2)
 
 async function cargarCargos(){
 
-cargoCustodia.innerHTML = `
-<option value="">Seleccione cargo...</option>
-<option value="1">PRUEBA CARGO 1</option>
-<option value="2">PRUEBA CARGO 2</option>
-<option value="3">PRUEBA CARGO 3</option>
-`
+const resp = await fetchSeguro('/api/cargos')
+
+console.log("RESPUESTA CARGOS:", resp)
+
+cargoCustodia.innerHTML =
+'<option value="">Seleccione cargo...</option>'
 
 }
 
