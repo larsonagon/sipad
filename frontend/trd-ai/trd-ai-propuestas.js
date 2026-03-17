@@ -91,7 +91,7 @@ async function cargarPropuestas(){
   }catch(err){
 
     console.error(err)
-    alert('No fue posible cargar las propuestas')
+    mostrarToast('No fue posible cargar las propuestas','error')
 
   }
 
@@ -204,7 +204,7 @@ function renderTabla(lista){
 </td>
 
 <td class="subserie">
-${p.subserie || '-'}
+${(p.subserie || '-').replace(/\\n/g,'<br>')}
 </td>
 
 <td>
@@ -273,14 +273,14 @@ async function generarPropuestas(){
       throw new Error(json.error)
     }
 
-    alert('Motor TRD-AI ejecutado correctamente')
+    mostrarToast('Motor TRD-AI ejecutado correctamente','success')
 
     await cargarPropuestas()
 
   }catch(err){
 
     console.error(err)
-    alert('No fue posible ejecutar el motor TRD-AI')
+    mostrarToast('No fue posible ejecutar el motor TRD-AI','error')
 
   }
 
@@ -313,14 +313,14 @@ window.aprobar = async function(id){
       throw new Error(json.error)
     }
 
-    alert('Propuesta aprobada')
+    mostrarToast('Propuesta aprobada','success')
 
     await cargarPropuestas()
 
   }catch(err){
 
     console.error(err)
-    alert('No fue posible aprobar la propuesta')
+    mostrarToast('No fue posible aprobar la propuesta','error')
 
   }
 
@@ -349,14 +349,14 @@ window.rechazar = async function(id){
       throw new Error(json.error)
     }
 
-    alert('Propuesta rechazada')
+    mostrarToast('Propuesta rechazada','warning')
 
     await cargarPropuestas()
 
   }catch(err){
 
     console.error(err)
-    alert('No fue posible rechazar la propuesta')
+    mostrarToast('No fue posible rechazar la propuesta','error')
 
   }
 
@@ -391,21 +391,16 @@ window.retencion = async function(id){
     const disposicion = regla.disposicion_final ?? '-'
     const norma = regla.fundamento_normativo ?? 'No especificado'
 
-    alert(
-`RETENCIÓN DOCUMENTAL SUGERIDA
-
-Archivo de Gestión: ${gestion} años
-Archivo Central: ${central} años
-Disposición final: ${disposicion}
-
-Fundamento normativo:
-${norma}`
+    mostrarToast(
+`Retención sugerida:
+Gestión: ${gestion} años | Central: ${central} años | Disposición: ${disposicion}`,
+'success'
     )
 
   }catch(err){
 
     console.error(err)
-    alert('No fue posible generar la retención automática')
+    mostrarToast('No fue posible generar la retención automática','error')
 
   }
 
