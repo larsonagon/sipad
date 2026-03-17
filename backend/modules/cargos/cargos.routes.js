@@ -11,11 +11,12 @@ const router = express.Router()
 // =====================================================
 // LISTAR CARGOS
 // =====================================================
+// ⚠️ Cualquier usuario autenticado puede consultar cargos
+// porque es un catálogo institucional
 
 router.get(
   '/',
   verificarJWT,
-  requireLevel(80),
   async (req, res) => {
     try {
 
@@ -37,6 +38,7 @@ router.get(
 // =====================================================
 // CREAR CARGO
 // =====================================================
+// ⚠️ Solo nivel alto puede crear
 
 router.post(
   '/',
