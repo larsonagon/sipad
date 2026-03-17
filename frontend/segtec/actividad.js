@@ -377,8 +377,23 @@ const resp = await fetchSeguro('/api/cargos')
 
 console.log("RESPUESTA CARGOS:", resp)
 
+const data = resp.data || resp
+
 cargoCustodia.innerHTML =
 '<option value="">Seleccione cargo...</option>'
+
+data.forEach(cargo => {
+
+if(cargo.estado === 0) return
+
+const opt = document.createElement('option')
+
+opt.value = cargo.id
+opt.textContent = cargo.nombre
+
+cargoCustodia.appendChild(opt)
+
+})
 
 }
 
