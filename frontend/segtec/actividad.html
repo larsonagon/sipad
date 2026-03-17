@@ -47,7 +47,7 @@ Instrumento técnico para identificación funcional y producción documental
 
 <div class="card-body form-grid">
 
-<div class="form-group">
+<div class="form-group full">
 <label>1. Nombre de la actividad *</label>
 <span class="form-hint">
 Denomine clara y específicamente la actividad desarrollada.
@@ -56,15 +56,7 @@ Denomine clara y específicamente la actividad desarrollada.
 </div>
 
 <div class="form-group">
-<label>2. Cargo del funcionario</label>
-<span class="form-hint">
-Perfil institucional responsable de su ejecución.
-</span>
-<input type="text" id="cargoEjecutor" name="cargoEjecutor" class="form-control" disabled>
-</div>
-
-<div class="form-group">
-<label>3. Clasificación funcional *</label>
+<label>2. Clasificación funcional *</label>
 <span class="form-hint">
 Seleccione a qué tipo de proceso corresponde.
 </span>
@@ -79,7 +71,7 @@ Seleccione a qué tipo de proceso corresponde.
 </div>
 
 <div class="form-group">
-<label>4. Periodicidad *</label>
+<label>3. Periodicidad *</label>
 <span class="form-hint">
 Señale la frecuencia con la cual se desarrolla la actividad.
 </span>
@@ -95,7 +87,7 @@ Señale la frecuencia con la cual se desarrolla la actividad.
 </div>
 
 <div class="form-group full">
-<label>5. Descripción detallada *</label>
+<label>4. Descripción detallada *</label>
 <span class="form-hint">
 Explique el procedimiento, alcance, propósito y resultado esperado.
 </span>
@@ -124,7 +116,7 @@ class="form-control"></textarea>
 
 <div class="form-group">
 
-<label>6. ¿La actividad genera documentos?</label>
+<label>5. ¿La actividad genera documentos?</label>
 
 <select id="generaDoc" name="generaDoc" class="form-control">
 <option value="">Seleccione...</option>
@@ -137,7 +129,7 @@ class="form-control"></textarea>
 
 <div class="form-group full">
 
-<label>7. Registre los documentos generados.</label>
+<label>6. Registre los documentos generados.</label>
 <span class="form-hint">
 Relacione los documentos producidos.
 </span>
@@ -152,7 +144,7 @@ placeholder="Registre un documento por línea."></textarea>
 
 <div class="form-group">
 
-<label>8. Formato de producción</label>
+<label>7. Formato de producción</label>
 
 <select id="formato" name="formato" class="form-control">
 <option value="">Seleccione...</option>
@@ -166,7 +158,7 @@ placeholder="Registre un documento por línea."></textarea>
 
 <div class="form-group full">
 
-<label>9. Documentos requeridos para iniciar la actividad</label>
+<label>8. Documentos requeridos para iniciar la actividad</label>
 <span class="form-hint">
 Relacione los documentos provenientes de terceros o de otras dependencias necesarios para la actividad.
 </span>
@@ -181,7 +173,7 @@ placeholder="Registre un documento por línea"></textarea>
 
 <div class="form-group">
 
-<label>10. Volumen documental estimado</label>
+<label>9. Volumen documental estimado</label>
 <span class="form-hint">
 Indique aproximadamente cuántos documentos produce esta actividad.
 </span>
@@ -213,7 +205,7 @@ class="form-control">
 
 <div class="form-group">
 
-<label>11. Responsabilidad de custodia</label>
+<label>10. Responsabilidad de custodia</label>
 <span class="form-hint">
 Indique quién conserva el documento original o principal.
 </span>
@@ -233,7 +225,7 @@ Indique quién conserva el documento original o principal.
 
 <div class="form-group">
 
-<label>11a. Cargo responsable de custodia</label>
+<label>10a. Cargo responsable de custodia</label>
 <span class="form-hint">
 Seleccione el cargo del funcionario responsable de la custodia.
 </span>
@@ -245,7 +237,7 @@ Seleccione el cargo del funcionario responsable de la custodia.
 </div>
 
 
-<div class="form-group full"
+<div class="form-group"
 id="grupoDependenciaCustodia"
 style="display:none">
 
@@ -264,10 +256,7 @@ class="form-control">
 
 <div class="form-group">
 
-<label>12. Localización actual de los documentos</label>
-<span class="form-hint">
-Indique dónde se encuentran actualmente almacenados.
-</span>
+<label>11. Localización actual de los documentos</label>
 
 <select id="localizacionTipo"
 name="localizacionTipo"
@@ -318,10 +307,7 @@ class="form-control">
 
 <div class="form-group full">
 
-<label>13. ¿Tiene pasos formales que deben seguirse?</label>
-<span class="form-hint">
-(Ejemplo: un procedimiento definido, un trámite establecido o un proceso que siempre se hace de la misma manera).
-</span>
+<label>12. ¿Tiene pasos formales que deben seguirse?</label>
 
 <select id="pasosFormales"
 name="pasosFormales"
@@ -338,7 +324,7 @@ class="form-control campo-corto">
 
 <div class="form-group">
 
-<label>14. ¿Requiere apoyo de otras dependencias?</label>
+<label>13. ¿Requiere apoyo de otras dependencias?</label>
 
 <select id="otrasDep"
 name="otrasDep"
@@ -355,7 +341,7 @@ class="form-control">
 
 <div class="form-group">
 
-<label>14a. Dependencias que apoyan</label>
+<label>13a. Dependencias que apoyan</label>
 
 <select id="selectDependencia"
 name="selectDependencia"
@@ -375,11 +361,7 @@ class="tags-container"></div>
 
 <div class="form-group full">
 
-<label>15. ¿Tiene un tiempo límite para cumplirse?</label>
-
-<span class="form-hint">
-(Ejemplo: plazos legales, fechas máximas de respuesta o términos obligatorios).
-</span>
+<label>14. ¿Tiene un tiempo límite para cumplirse?</label>
 
 <select id="tienePlazo"
 name="tienePlazo"
@@ -396,47 +378,33 @@ class="form-control">
 
 <div class="form-group">
 
-<label>15a. Plazo legal establecido</label>
-
-<span class="form-hint">
-(Norma, ley o término formal definido)
-</span>
+<label>14a. Plazo legal establecido</label>
 
 <input
 type="text"
 id="plazoLegal"
 name="plazoLegal"
-class="form-control"
-placeholder="Ej: Ley 1437 de 2011 – 15 días">
+class="form-control">
 
 </div>
 
 
 <div class="form-group">
 
-<label>15b. Tiempo promedio real de ejecución</label>
-
-<span class="form-hint">
-(Tiempo que usualmente tarda la actividad en la práctica administrativa)
-</span>
+<label>14b. Tiempo promedio real de ejecución</label>
 
 <input
 type="text"
 id="tiempoPromedio"
 name="tiempoPromedio"
-class="form-control"
-placeholder="Ej: 3 días">
+class="form-control">
 
 </div>
 
 
 <div class="form-group">
 
-<label>16. ¿Genera un conjunto de documentos que se organizan por caso o asunto?</label>
-
-<span class="form-hint">
-Expediente
-</span>
+<label>15. ¿Genera expediente?</label>
 
 <select id="generaExpediente"
 name="generaExpediente"
@@ -453,7 +421,7 @@ class="form-control">
 
 <div class="form-group full">
 
-<label>17. Norma aplicable</label>
+<label>16. Norma aplicable</label>
 
 <textarea id="normaAplicable"
 name="normaAplicable"
@@ -502,7 +470,7 @@ Guardar
 
 
 <footer class="sipad-footer">
-  SIPAD – Sistema inteligente para la planeación archivística documental © 2026 · Desarrollado por Larson Agón
+SIPAD – Sistema inteligente para la planeación archivística documental © 2026
 </footer>
 
 <div id="sipad-notifications"></div>
@@ -514,13 +482,22 @@ Guardar
 
 window.addEventListener("load", () => {
 
-const cargo = document.getElementById("cargoEjecutor")
+const token = sessionStorage.getItem("token")
 const firma = document.getElementById("firmaFuncionario")
 
-if(cargo && firma){
-setTimeout(()=>{
-firma.innerText = cargo.value || ""
-},200)
+if(!token || !firma) return
+
+try{
+
+const payload = JSON.parse(atob(token.split('.')[1]))
+
+const nombre = payload.nombre || ""
+const cargo = payload.cargo || ""
+
+firma.innerText = `${nombre} – ${cargo}`
+
+}catch(e){
+console.warn("No se pudo leer el JWT")
 }
 
 })
