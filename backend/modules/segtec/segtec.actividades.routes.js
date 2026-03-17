@@ -268,7 +268,7 @@ export function buildSEGTECRouter(db, trdAIService) {
   router.post('/actividades/:id/completar', verificarJWT, attachContext, asyncHandler(controller.marcarCompleta))
 
   // =====================================================
-  // PDF
+  // PDF (CORREGIDO)
   // =====================================================
 
   router.get(
@@ -277,84 +277,71 @@ export function buildSEGTECRouter(db, trdAIService) {
     attachContext,
     asyncHandler(async (req, res) => {
 
-      try {
+      const actividad =
+        await service.obtenerPorId(req.params.id, req.usuarioId)
 
-        const actividad =
-          await service.obtenerPorId(req.params.id, req.usuarioId)
-
-        if (!actividad) {
-          return res.status(404).json({
-            ok: false,
-            error: 'Actividad no encontrada'
-          })
-        }
-
-        if (actividad.validacion) {
-          actividad.genera_expediente_propio =
-            actividad.validacion.genera_expediente_propio
-        }
-
-        const depsIds =
-          normalizarDependencias(actividad.dependencias_relacionadas)
-
-        actividad.dependencias_relacionadas =
-          await resolverDependencias(depsIds)
-
-        if (actividad.cargo_custodia) {
-
-          const cargo = await db.get(`
-            SELECT nombre
-            FROM cargos
-            WHERE id = ?
-          `, [actividad.cargo_custodia])
-
-          if (cargo) {
-            actividad.cargo_custodia = cargo.nombre
-          }
-
-        }
-
-        actividad.volumen_categoria =
-          actividad.volumen_categoria ||
-          actividad.volumen_documental ||
-          ''
-
-        actividad.custodia_tipo =
-          actividad.custodia_tipo ||
-          actividad.responsable_custodia ||
-          ''
-
-        actividad.localizacion_tipo =
-          actividad.localizacion_tipo ||
-          actividad.localizacion_documentos ||
-          ''
-
-        actividad.tiene_plazo =
-          actividad.tiene_plazo ?? 0
-
-        const pdfBuffer = await generarPDFActividad(actividad)
-
-        res.setHeader('Content-Type', 'application/pdf')
-
-        res.setHeader(
-          'Content-Disposition',
-          `attachment; filename="actividad-segtec-${req.params.id}.pdf"`
-        )
-
-        res.setHeader('Content-Length', pdfBuffer.length)
-
-        res.send(pdfBuffer)
-
-      } catch (err) {
-
-        console.error('Error generando PDF SEGTEC:', err)
-
-        res.status(500).json({
+      if (!actividad) {
+        return res.status(404).json({
           ok: false,
-          error: 'Error generando PDF'
+          error: 'Actividad no encontrada'
         })
+      }
+
+      if (actividad.validacion) {
+        actividad.genera_expediente_propio =
+          actividad.validacion.genera_expediente_propio
+      }
+
+      const depsIds =
+        normalizarDependencias(actividad.dependencias_relacionadas)
+
+      actividad.dependencias_relacionadas =
+        await resolverDependencias(depsIds)
+
+      if (actividad.cargo_custodia) {
+
+        const cargo = await db.get(`
+          SELECT nombre
+          FROM cargos
+          WHERE id = ?
+        `, [actividad.cargo_custodia])
+
+        if (cargo) {
+          actividad.cargo_custodia = cargo.nombre
+        }
 
       }
+
+      actividad.volumen_categoria =
+        actividad.volumen_categoria ||
+        actividad.volumen_documental ||
+        ''
+
+      actividad.custodia_tipo =
+        actividad.custodia_tipo ||
+        actividad.responsable_custodia ||
+        ''
+
+      actividad.localizacion_tipo =
+        actividad.localizacion_tipo ||
+        actividad.localizacion_documentos ||
+        ''
+
+      actividad.tiene_plazo =
+        actividad.tiene_plazo ?? 0
+
+      const pdfBuffer = await generarPDFActividad(actividad)
+
+      res.setHeader('Content-Type', 'application/pdf')
+
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="actividad-segtec-${req.params.id}.pdf"`
+      )
+
+      res.setHeader('Content-Length', pdfBuffer.length)
+
+      return res.send(pdfBuffer)
 
     })
   )

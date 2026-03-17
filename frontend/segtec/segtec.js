@@ -181,68 +181,60 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function descargarPDFActividad(id){
 
-      try{
+    try{
 
-        const resp = await fetch(`/api/segtec/actividades/${id}/pdf`,{
-          headers:{
-            Authorization:`Bearer ${token}`
-          }
-        });
-
-        if(resp.status===401){
-          sessionStorage.clear();
-          localStorage.clear();
-          window.location.href='/';
-          return;
+      const resp = await fetch(`/api/segtec/actividades/${id}/pdf`,{
+        headers:{
+          Authorization:`Bearer ${token}`
         }
+      });
 
-        /* 🔧 CAMBIO IMPORTANTE:
-          NO lanzar error inmediatamente si resp.ok es false
-          porque algunos servidores devuelven 500 pero
-          sí envían el PDF en el body
-        */
+      if(resp.status===401){
+        sessionStorage.clear();
+        localStorage.clear();
+        window.location.href='/';
+        return;
+      }
 
-        const contentType = resp.headers.get("content-type") || "";
+      if(!resp.ok){
+        const text = await resp.text();
+        throw new Error(text || 'Error generando PDF');
+      }
 
-        if(!contentType.includes("pdf")){
-          throw new Error("Respuesta inválida del servidor");
-        }
+      const blob = await resp.blob();
+      const url = window.URL.createObjectURL(blob);
 
-        const blob = await resp.blob();
-        const url = window.URL.createObjectURL(blob);
+      const isSafari =
+        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-        const isSafari =
-          /^((?!chrome|android).)*safari/i
-          .test(navigator.userAgent);
+      if(isSafari){
 
-        if(isSafari){
+        window.open(url,'_blank');
 
-          window.open(url,'_blank');
+      }else{
 
-        }else{
+        const a=document.createElement('a');
+        a.href=url;
+        a.download=`actividad_${id}.pdf`;
 
-          const a=document.createElement('a');
-          a.href=url;
-          a.download=`actividad_${id}.pdf`;
-
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-
-        }
-
-        setTimeout(()=>{
-          window.URL.revokeObjectURL(url);
-        },1500);
-
-      }catch(error){
-
-        console.error(error);
-        alert('Error generando el PDF.');
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
       }
 
+      setTimeout(()=>{
+        window.URL.revokeObjectURL(url);
+      },1500);
+
+    }catch(error){
+
+      console.error(error);
+      alert('Error generando el PDF.');
+
     }
+
+  }
 
   /* ======================================================
      MODAL DE ANÁLISIS
