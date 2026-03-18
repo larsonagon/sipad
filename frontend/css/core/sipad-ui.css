@@ -674,7 +674,9 @@ body{
 /* ============================= */
 
 .module-page{
-  margin:40px auto !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:30px auto !important;
   padding:0 16px !important;
 }
 
@@ -753,5 +755,24 @@ button{
 }
 
 html, body{
+  max-width:100%;
   overflow-x:hidden;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+.home-grid,
+.module-grid{
+  grid-template-columns:1fr !important;
+  gap:18px;
+}
+
+.pig-header-inner{
+  padding:10px 12px !important;
+}
+
+.pig-title{
+  font-size:14px;
 }
