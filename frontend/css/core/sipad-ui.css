@@ -76,17 +76,13 @@ body{
 }
 
 .pig-header-inner{
-  max-width:1400px;
+  max-width:1200px;
   margin:0 auto;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:10px 24px;
-}
-
-.pig-title{
-  font-weight:700;
-  font-size:16px;
+  padding:8px 16px;
+  height:56px;
 }
 
 .pig-module{
@@ -107,10 +103,10 @@ body{
 .pig-nav button{
   background:#e6edf6;
   border:none;
-  padding:6px 12px;
+  padding:5px 10px;
   border-radius:6px;
-  font-size:13px;
-  cursor:pointer;
+  font-size:12px;
+  line-height:1;
 }
 
 .pig-nav button.active{
@@ -639,18 +635,9 @@ body{
   padding-bottom:55px;
 }
 
-/* ======================================================
-   FIX RESPONSIVE MOBILE – SIPAD (NO ROMPE BASE)
-====================================================== */
-
 /* ============================= */
 /* HEADER RESPONSIVE */
 /* ============================= */
-
-.pig-header-inner{
-  flex-wrap:wrap;
-  gap:10px;
-}
 
 .pig-nav{
   display:flex;
@@ -755,6 +742,7 @@ html, body{
 
 
 .pig-title{
+  font-weight:600;
   font-size:14px;
 }
 
@@ -813,10 +801,7 @@ html, body{
   .pig-header-inner{
     padding:8px 20px;
   }
-
-  .pig-title{
-    font-size:14px;
-  }
+  
 
   .pig-nav button{
     padding:5px 10px;
