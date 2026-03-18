@@ -802,3 +802,62 @@ html, body{
   }
 
 }
+
+/* ======================================================
+   AJUSTE FINO DESKTOP (ESCALA PROFESIONAL)
+====================================================== */
+
+@media (min-width:1024px){
+
+  /* HEADER MÁS COMPACTO */
+  .pig-header-inner{
+    padding:8px 20px;
+  }
+
+  .pig-title{
+    font-size:14px;
+  }
+
+  .pig-nav button{
+    padding:5px 10px;
+    font-size:12px;
+  }
+
+  /* TARJETAS MÁS COMPACTAS */
+  .module-card{
+    padding:18px;
+  }
+
+  .module-icon{
+    font-size:28px;
+    margin-bottom:8px;
+  }
+
+  .module-card h3{
+    font-size:14px;
+  }
+
+  .module-card p{
+    font-size:12px;
+  }
+
+  /* GRID MÁS ELEGANTE */
+  .module-grid{
+    gap:20px;
+  }
+
+  /* BOTONES MÁS PROFESIONALES */
+  button{
+    padding:6px 12px;
+    font-size:12px;
+    min-height:auto;
+  }
+
+  /* TABLAS MÁS COMPACTAS */
+  .table th,
+  .table td{
+    padding:10px 12px;
+    font-size:12px;
+  }
+
+}
