@@ -753,16 +753,52 @@ html, body{
   box-sizing:border-box;
 }
 
-.home-grid,
-.module-grid{
-  grid-template-columns:1fr !important;
-  gap:18px;
-}
-
-.pig-header-inner{
-  padding:10px 12px !important;
-}
 
 .pig-title{
   font-size:14px;
+}
+
+/* ======================================================
+   MOBILE REAL (AISLADO)
+====================================================== */
+
+@media (max-width:768px){
+
+  /* HEADER */
+  .pig-header-inner{
+    flex-wrap:wrap;
+    gap:10px;
+    padding:10px 12px;
+  }
+
+  .pig-nav{
+    overflow-x:auto;
+    width:100%;
+  }
+
+  .pig-nav button{
+    flex:0 0 auto;
+    font-size:12px;
+    padding:6px 10px;
+  }
+
+  /* GRID */
+  .home-grid,
+  .module-grid{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+
+  /* CONTENEDOR */
+  .module-page{
+    max-width:100% !important;
+    margin:30px auto !important;
+    padding:0 16px !important;
+  }
+
+  /* BOTONES */
+  button{
+    min-height:44px;
+  }
+
 }
