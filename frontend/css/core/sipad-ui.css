@@ -182,6 +182,12 @@ body{
   box-sizing:border-box;
 }
 
+@media (max-width:768px){
+  .module-page{
+    max-width:100% !important;
+  }
+}
+
 .module-header{
   margin-bottom:32px;
   text-align:center;
@@ -775,4 +781,22 @@ html, body{
 
 .pig-title{
   font-size:14px;
+}
+
+/* ============================= */
+/* HEADER MOBILE PRO */
+/* ============================= */
+
+@media (max-width:768px){
+
+  .pig-nav button{
+    padding:6px 10px;
+    font-size:12px;
+    border-radius:8px;
+  }
+
+  .pig-nav{
+    gap:6px;
+  }
+
 }
