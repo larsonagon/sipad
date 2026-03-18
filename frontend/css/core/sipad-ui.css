@@ -639,3 +639,119 @@ body{
   padding-bottom:55px;
 }
 
+/* ======================================================
+   FIX RESPONSIVE MOBILE – SIPAD (NO ROMPE BASE)
+====================================================== */
+
+/* ============================= */
+/* HEADER RESPONSIVE */
+/* ============================= */
+
+.pig-header-inner{
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.pig-nav{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  width:100%;
+  padding-bottom:4px;
+}
+
+.pig-nav::-webkit-scrollbar{
+  display:none;
+}
+
+.pig-nav button{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
+/* ============================= */
+/* CONTENEDOR GENERAL */
+/* ============================= */
+
+.module-page{
+  margin:40px auto !important;
+  padding:0 16px !important;
+}
+
+/* ============================= */
+/* FORMULARIOS MOBILE */
+/* ============================= */
+
+.form-group input,
+.form-group textarea,
+.form-group select{
+  width:100%;
+  font-size:16px; /* evita zoom iOS */
+  box-sizing:border-box;
+}
+
+/* ============================= */
+/* TABLAS RESPONSIVE */
+/* ============================= */
+
+.table-container{
+  overflow-x:auto;
+}
+
+.table{
+  min-width:600px;
+}
+
+/* ============================= */
+/* FOOTER CORRECTO (SIN FIXED) */
+/* ============================= */
+
+body{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  padding-bottom:0 !important; /* elimina hack anterior */
+}
+
+main{
+  flex:1;
+}
+
+.sipad-footer{
+  position:relative !important;
+  width:100%;
+}
+
+/* ============================= */
+/* BOTONES TOUCH */
+/* ============================= */
+
+button{
+  min-height:44px;
+}
+
+/* ============================= */
+/* MODALES MOBILE */
+/* ============================= */
+
+.modal-content{
+  width:100%;
+  max-width:95%;
+  padding:20px;
+}
+
+/* ============================= */
+/* TEXTO AJUSTE */
+/* ============================= */
+
+.module-header h1{
+  font-size:1.4rem;
+}
+
+.module-subtext{
+  font-size:0.85rem;
+}
+
+html, body{
+  overflow-x:hidden;
+}
