@@ -669,16 +669,6 @@ body{
   white-space:nowrap;
 }
 
-/* ============================= */
-/* CONTENEDOR GENERAL */
-/* ============================= */
-
-.module-page{
-  width:100% !important;
-  max-width:100% !important;
-  margin:30px auto !important;
-  padding:0 16px !important;
-}
 
 /* ============================= */
 /* FORMULARIOS MOBILE */
