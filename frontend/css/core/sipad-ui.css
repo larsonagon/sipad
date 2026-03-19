@@ -413,15 +413,23 @@ button{
 
 .modal-content{
 
-  background: #eff1f6;
+  background:#fff;
+
   width:440px;
   max-width:92%;
+
   padding:28px 32px;
+
   border-radius:var(--radius-md);
+
   box-shadow:var(--shadow-lg);
+
   position:relative;
+
   max-height:90vh;
+
   overflow:auto;
+
 }
 
 /* ======================================================
