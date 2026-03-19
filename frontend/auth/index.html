@@ -8,7 +8,11 @@
 
 <title>SIPAD – Sistema inteligente para la planeación archivística documental</title>
 
+<!-- CSS LOGIN -->
 <link rel="stylesheet" href="/auth/index.css">
+
+<!-- CSS GLOBAL SIPAD (CRÍTICO) -->
+<link rel="stylesheet" href="/css/sipad-ui.css">
 
 </head>
 
@@ -16,60 +20,60 @@
 
 <div class="login-page">
 
-<div class="login-wrapper">
+  <div class="login-wrapper">
 
-<div class="login-brand">
-<h1>SIPAD</h1>
-<span>Sistema inteligente para la planeación archivística documental</span>
-</div>
+    <div class="login-brand">
+      <h1>SIPAD</h1>
+      <span>Sistema inteligente para la planeación archivística documental</span>
+    </div>
 
-<div class="login-card">
+    <div class="login-card">
 
-<h2 class="login-title">Ingreso al sistema</h2>
+      <h2 class="login-title">Ingreso al sistema</h2>
 
-<form id="loginForm">
+      <form id="loginForm">
 
-<div class="login-field">
+        <div class="login-field">
+          <input
+            type="text"
+            id="usuario"
+            placeholder="Usuario"
+            required>
+        </div>
 
-<input
-type="text"
-id="usuario"
-placeholder="Usuario"
-required>
+        <div class="login-field">
+          <input
+            type="password"
+            id="password"
+            placeholder="Contraseña"
+            required>
+        </div>
 
-</div>
+        <button type="submit" class="login-button">
+          Ingresar
+        </button>
 
-<div class="login-field">
+        <div id="mensaje" class="login-message"></div>
 
-<input
-type="password"
-id="password"
-placeholder="Contraseña"
-required>
+      </form>
 
-</div>
+    </div>
 
-<button type="submit" class="login-button">
-Ingresar
-</button>
-
-<div id="mensaje" class="login-message"></div>
-
-</form>
-
-</div>
+  </div>
 
 </div>
 
-</div>
+<!-- FOOTER GLOBAL -->
 <footer class="sipad-footer">
   <div class="sipad-footer-inner">
     <span class="sipad-dev">SIPAD</span>
     <span>© 2026</span>
   </div>
 </footer>
+
+<!-- JS -->
 <script src="/auth/index.js" defer></script>
 <script src="/components/password-modal.js" defer></script>
-</body>
 
+</body>
 </html>
