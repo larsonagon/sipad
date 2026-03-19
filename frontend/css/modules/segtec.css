@@ -673,7 +673,7 @@ textarea.form-control{
 .modal-analisis{
 
   width:100%;
-  max-width:650px;   /* 🔥 control real */
+  max-width:30px;   /* 🔥 control real */
   
   background:#fff;
   border-radius:14px;
