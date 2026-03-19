@@ -550,6 +550,13 @@ textarea.form-control{
     width:100%;
     margin-top:6px;
     overflow-x:auto;
+    padding-right:16px;   /* 🔥 espacio al final */
+    padding-left:4px;     /* opcional, mejora inicio */
+  }
+
+  .pig-nav button{
+    flex:0 0 auto;
+    white-space:nowrap;
   }
 
   /* TIPOGRAFÍA */
@@ -616,10 +623,11 @@ textarea.form-control{
   }
 
   .table td:last-child button{
-    flex:1 1 calc(33.33% - 6px);
-    min-width:0;
+    flex:1;
+    min-width:90px;
     font-size:13px;
     padding:10px;
+    text-align:center;
   }
 
   /* TOUCH */
