@@ -15,7 +15,7 @@ console.log(message)
 }
 
 // ======================================================
-// TOAST (MISMO SISTEMA QUE CONFIGURACION.JS)
+// TOAST
 // ======================================================
 
 function showToast(message, type = 'success') {
@@ -116,6 +116,69 @@ const generaExpediente = $('generaExpediente')
 
 let dependenciasSeleccionadas = []
 let estadoActual = "borrador"
+
+// ======================================================
+// VALIDACIÓN (NUEVO – NO INTRUSIVO)
+// ======================================================
+
+function validarActividad(){
+
+  const errores = []
+  const v = (el) => el?.value?.trim()
+
+  if(!v(nombre))
+    errores.push('1. Nombre de la actividad es obligatorio')
+
+  if(!v(clasificacion))
+    errores.push('2. Clasificación funcional es obligatoria')
+
+  if(!v(periodicidad))
+    errores.push('3. Periodicidad es obligatoria')
+
+  if(!v(generaDoc))
+    errores.push('5. Debe indicar si genera documentos')
+
+  if(!v(formato))
+    errores.push('7. Formato de producción es obligatorio')
+
+  if(!v(custodiaTipo))
+    errores.push('10. Responsabilidad de custodia es obligatoria')
+
+  if(!v(cargoCustodia))
+    errores.push('10a. Cargo responsable de custodia es obligatorio')
+
+  if(!v(localizacionTipo))
+    errores.push('11. Localización de documentos es obligatoria')
+
+  if(!v(pasosFormales))
+    errores.push('13. Debe indicar si tiene pasos formales')
+
+  if(!v(otrasDep))
+    errores.push('14. Debe indicar si requiere otras dependencias')
+
+  if(!v(tienePlazo))
+    errores.push('15. Debe indicar si tiene plazo')
+
+  if(!v(generaExpediente))
+    errores.push('16. Debe indicar si genera expediente')
+
+  if(generaDoc.value === 'si'){
+    if(!v(documentosGenerados))
+      errores.push('6. Debe especificar los documentos generados')
+  }
+
+  if(otrasDep.value === 'si'){
+    if(dependenciasSeleccionadas.length === 0)
+      errores.push('14a. Debe indicar las dependencias relacionadas')
+  }
+
+  if(errores.length > 0){
+    showToast(errores.join('\n'), 'warning')
+    return false
+  }
+
+  return true
+}
 
 // ======================================================
 // CONTROL DEPENDENCIAS
@@ -375,8 +438,6 @@ async function cargarCargos(){
 
 const resp = await fetchSeguro('/api/cargos')
 
-console.log("RESPUESTA CARGOS:", resp)
-
 const data = resp.data || resp
 
 cargoCustodia.innerHTML =
@@ -584,6 +645,8 @@ bloquearFormulario()
 // ======================================================
 
 btnGuardar?.addEventListener('click',async()=>{
+
+if(!validarActividad()) return
 
 try{
 
