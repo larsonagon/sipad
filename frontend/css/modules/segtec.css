@@ -741,3 +741,25 @@ textarea.form-control{
   }
 
 }
+
+/* ======================================================
+   FIX HEADER MOBILE SEGTec (REAL)
+====================================================== */
+
+@media (max-width:768px){
+
+  .pig-header-inner{
+    width:100%;
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 16px;
+    box-sizing:border-box;
+  }
+
+  .pig-nav{
+    width:100%;
+    margin:0 auto;
+    padding-left:0;
+  }
+
+}
