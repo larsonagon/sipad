@@ -12,6 +12,7 @@
   max-width:960px;
   margin:40px auto 80px auto;
   padding:32px 24px 40px 24px;
+  width:100%;
 
   background:
     radial-gradient(circle at 15% 10%, rgba(13,63,119,0.04), transparent 40%),
@@ -19,6 +20,14 @@
 
   border-radius:var(--radius-lg);
 
+}
+
+
+/* 🔧 AJUSTE QUIRÚRGICO – EVITA EFECTO “PÁGINA MINIATURA” */
+@media (min-width:1200px){
+  .segtec-premium{
+    max-width:1200px;
+  }
 }
 
 
@@ -181,11 +190,9 @@
   grid-template-columns:repeat(2,1fr);
   gap:18px 22px;
 
-  align-items:start;   /* 🔧 CORRECCIÓN ALINEACIÓN */
+  align-items:start;
 
 }
-
-/* 🔧 garantiza estructura vertical del campo */
 
 .form-group{
   display:flex;
@@ -197,7 +204,6 @@
 }
 
 
-
 /* ======================================================
    TABLA DE ACTIVIDADES
 ====================================================== */
@@ -206,6 +212,7 @@
 
   width:100%;
   margin:0;
+  overflow-x:auto; /* 🔧 evita que se comprima */
 
 }
 
@@ -213,6 +220,7 @@
 
   width:100%;
   font-size:14px;
+  min-width:900px; /* 🔧 evita efecto mini */
 
 }
 
@@ -264,6 +272,14 @@
   align-items:center;
   justify-content:center;
 
+}
+
+/* 🔧 mejora visibilidad botones sin romper */
+@media (min-width:1024px){
+  .segtec-premium .table td button{
+    font-size:12px;
+    height:32px;
+  }
 }
 
 .segtec-premium .table td .btn-primary{
@@ -410,6 +426,13 @@
 
   margin-top:18px;
 
+}
+
+/* 🔧 evita que se vea comprimido en desktop */
+@media (min-width:1200px){
+  .segtec-marco-grid{
+    grid-template-columns:repeat(3, minmax(300px,1fr));
+  }
 }
 
 .segtec-marco-item{

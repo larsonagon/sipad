@@ -2,6 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+
+  <!-- 🔥 CLAVE PARA MOBILE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>ICAF – SIPAD</title>
 
   <!-- CORE VISUAL -->
@@ -45,7 +49,7 @@
       </p>
     </div>
 
-    <!-- CONTENEDOR PRINCIPAL (MISMO ANCHO PARA TODO) -->
+    <!-- CONTENEDOR PRINCIPAL -->
     <div class="module-content">
 
       <!-- MARCO FUNCIONAL -->
@@ -68,28 +72,18 @@
 
   </main>
 
-
   <!-- MODAL BASE -->
   <div id="modalBase" class="modal hidden">
-
     <div class="modal-content">
-
       <h3 id="modalTitle"></h3>
-
       <div id="modalBody"></div>
-
       <div class="modal-actions" id="modalFooter"></div>
-
       <button id="cerrarModal" class="hidden"></button>
-
     </div>
-
   </div>
-
 
   <!-- MODAL PASSWORD -->
   <div id="modalPassword" class="modal hidden">
-
     <div class="modal-content small">
 
       <h3>Cambiar contraseña</h3>
@@ -112,28 +106,19 @@
         </div>
 
         <div class="modal-actions">
-
-          <button
-            type="button"
-            id="btnCancelarPassword"
-            class="btn-secondary">
+          <button type="button" id="btnCancelarPassword" class="btn-secondary">
             Cancelar
           </button>
 
-          <button
-            type="submit"
-            class="btn-primary">
+          <button type="submit" class="btn-primary">
             Actualizar contraseña
           </button>
-
         </div>
 
       </form>
 
     </div>
-
   </div>
-
 
   <!-- JS -->
   <script type="module" src="/segtec/segtec.js"></script>
