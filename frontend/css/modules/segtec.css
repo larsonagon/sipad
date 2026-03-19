@@ -650,3 +650,48 @@ textarea.form-control{
   }
 
 }
+
+/* ======================================================
+   MODAL ANÁLISIS – FIX DESKTOP
+====================================================== */
+
+.modal-analisis{
+
+  max-width:800px;
+  width:90%;
+
+  margin:0 auto;
+
+  border-radius:14px;
+
+  padding:24px 28px;
+
+}
+
+/* CENTRADO REAL */
+.modal-overlay{
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  padding:20px;
+
+}
+
+/* CONTENIDO MÁS LEGIBLE */
+.modal-analisis p{
+  line-height:1.6;
+  font-size:14px;
+}
+
+/* BOTÓN CERRAR */
+.modal-analisis .modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:20px;
+}
+
+.modal-analisis{
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+}
