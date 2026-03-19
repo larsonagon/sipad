@@ -29,8 +29,9 @@ body{
 
 .login-page {
   flex: 1;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ================================
