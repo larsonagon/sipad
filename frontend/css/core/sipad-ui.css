@@ -698,14 +698,6 @@ main{
 
 
 /* ============================= */
-/* BOTONES TOUCH */
-/* ============================= */
-
-button{
-  min-height:44px;
-}
-
-/* ============================= */
 /* MODALES MOBILE */
 /* ============================= */
 
@@ -833,6 +825,7 @@ html, body{
     font-size:12px;
     min-height:auto;
   }
+  
 
   /* TABLAS MÁS COMPACTAS */
   .table th,
