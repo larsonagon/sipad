@@ -280,9 +280,11 @@
 
 /* 🔧 mejora visibilidad botones sin romper */
 @media (min-width:1024px){
+
   .segtec-premium .table td button{
     font-size:12px;
-    height:32px;
+    padding:6px 10px;
+    min-height:32px;
   }
 }
 
@@ -470,20 +472,16 @@
 }
 
 .segtec-premium .analizar-btn{
-  width:90px;
+  width:auto;
   text-align:center;
 }
 
 .segtec-premium .pdf-btn{
-
   background:#dc2626;
   color:#fff;
-
   font-size:10px;
-
-  width:70px;
+  width:auto;
   text-align:center;
-
 }
 
 .segtec-premium .pdf-btn:hover{
@@ -633,6 +631,22 @@ textarea.form-control{
   /* TOUCH */
   button{
     min-height:44px;
+  }
+
+  .pig-user-info{
+    width:100%;
+    text-align:left;
+    white-space:normal;
+    word-break:break-word;
+  }
+
+  .pig-header{
+    overflow:hidden;
+  }
+
+  .pig-user-meta{
+    font-size:11px;
+    line-height:1.2;
   }
 
 }
