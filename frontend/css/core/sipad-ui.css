@@ -835,3 +835,18 @@ html, body{
   }
 
 }
+
+/* ======================================================
+   FIX GLOBAL MODALES SIPAD (CRÍTICO)
+====================================================== */
+
+.modal,
+.modal-content{
+  width:auto !important;
+  max-width:600px;
+  margin:0 auto;
+}
+
+.modal-content{
+  display:block !important;
+}
