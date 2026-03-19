@@ -671,23 +671,24 @@ textarea.form-control{
 
 /* Caja del modal */
 .modal-analisis{
-    width:90%;
-    max-width:650px;
-    margin:auto;
+  width:90%;
+  max-width:600px;
 
-    background:#fff;
-    border-radius:14px;
+  background:#fff;
+  border-radius:14px;
 
-    padding:32px; /* 🔥 MÁS AIRE */
+  padding:28px;
 
-    box-shadow:0 20px 60px rgba(0,0,0,.2);
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
 
-    display:flex;
-    flex-direction:column;
-    gap:12px; /* 🔥 separación natural */
-  }
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
 
-.modal-analisis{
+  /* 🔥 FIX CLAVE */
+  max-height:70vh;
+  overflow-y:auto;
+
   word-break:break-word;
 }
 
@@ -695,7 +696,9 @@ textarea.form-control{
 .modal-analisis p{
   font-size:14px;
   line-height:1.6;
-  max-width:520px;   /* 🔥 ESTE ES EL CAMBIO CLAVE */
+
+  max-width:520px;
+  margin:0 auto; /* 🔥 CENTRA EL TEXTO */
 }
 
 /* Acciones */
@@ -705,6 +708,7 @@ textarea.form-control{
   margin-top:20px;
 }
 
+/* Título */
 .modal-analisis h3{
   margin-bottom:6px;
 }
