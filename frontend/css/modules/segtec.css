@@ -673,7 +673,7 @@ textarea.form-control{
 .modal-analisis{
 
   width:100%;
-  max-width:800px;   /* 🔥 control real */
+  max-width:650px;   /* 🔥 control real */
   
   background:#fff;
   border-radius:14px;
@@ -681,6 +681,10 @@ textarea.form-control{
   padding:24px 28px;
 
   box-shadow:0 20px 60px rgba(0,0,0,.2);
+}
+
+.modal-analisis{
+  word-break:break-word;
 }
 
 /* Texto */
