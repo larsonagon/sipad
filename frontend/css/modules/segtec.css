@@ -671,17 +671,21 @@ textarea.form-control{
 
 /* Caja del modal */
 .modal-analisis{
+    width:90%;
+    max-width:650px;
+    margin:auto;
 
-  width:100%;
-  max-width:30px;   /* 🔥 control real */
-  
-  background:#fff;
-  border-radius:14px;
+    background:#fff;
+    border-radius:14px;
 
-  padding:24px 28px;
+    padding:32px; /* 🔥 MÁS AIRE */
 
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
-}
+    box-shadow:0 20px 60px rgba(0,0,0,.2);
+
+    display:flex;
+    flex-direction:column;
+    gap:12px; /* 🔥 separación natural */
+  }
 
 .modal-analisis{
   word-break:break-word;
@@ -691,6 +695,7 @@ textarea.form-control{
 .modal-analisis p{
   font-size:14px;
   line-height:1.6;
+  max-width:520px;   /* 🔥 ESTE ES EL CAMBIO CLAVE */
 }
 
 /* Acciones */
@@ -698,4 +703,8 @@ textarea.form-control{
   display:flex;
   justify-content:flex-end;
   margin-top:20px;
+}
+
+.modal-analisis h3{
+  margin-bottom:6px;
 }
