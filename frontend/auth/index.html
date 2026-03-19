@@ -18,6 +18,10 @@
 
 <body>
 
+<!-- ========================= -->
+<!-- CONTENIDO LOGIN -->
+<!-- ========================= -->
+
 <div class="login-page">
 
   <div class="login-wrapper">
@@ -38,6 +42,7 @@
             type="text"
             id="usuario"
             placeholder="Usuario"
+            autocomplete="username"
             required>
         </div>
 
@@ -46,6 +51,7 @@
             type="password"
             id="password"
             placeholder="Contraseña"
+            autocomplete="current-password"
             required>
         </div>
 
@@ -63,13 +69,19 @@
 
 </div>
 
+<!-- ========================= -->
 <!-- FOOTER DINÁMICO -->
+<!-- ========================= -->
+
 <script type="module">
   import { renderFooter } from '/components/footer.js'
   renderFooter()
 </script>
 
-<!-- JS -->
+<!-- ========================= -->
+<!-- JS LOGIN -->
+<!-- ========================= -->
+
 <script src="/auth/index.js" defer></script>
 <script src="/components/password-modal.js" defer></script>
 
