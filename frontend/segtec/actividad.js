@@ -787,6 +787,31 @@ showToast("Error al guardar","error")
 })
 
 // ======================================================
+// LIMPIEZA AUTOMÁTICA DE ERRORES (EN VIVO)
+// ======================================================
+
+    document.querySelectorAll('input, textarea, select')
+    .forEach(el => {
+
+    const limpiar = () => {
+
+    const valor = el.value
+
+    if(valor !== null && valor !== undefined && valor !== ""){
+        el.classList.remove('input-error')
+
+        const error = el.closest('.form-group')?.querySelector('.error-msg')
+        if(error) error.remove()
+    }
+
+    }
+
+    el.addEventListener('input', limpiar)
+    el.addEventListener('change', limpiar)
+
+    })
+
+// ======================================================
 // CANCELAR
 // ======================================================
 
