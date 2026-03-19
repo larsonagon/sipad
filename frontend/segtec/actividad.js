@@ -117,67 +117,132 @@ const generaExpediente = $('generaExpediente')
 let dependenciasSeleccionadas = []
 let estadoActual = "borrador"
 
+
+// ======================================================
+// VALIDACIÓN VISUAL
+// ======================================================
+
+function limpiarErrores(){
+
+    document.querySelectorAll('.input-error')
+    .forEach(el => el.classList.remove('input-error'))
+
+    document.querySelectorAll('.error-msg')
+    .forEach(el => el.remove())
+
+    }
+
+    function marcarError(elemento, mensaje){
+
+    if(!elemento) return
+
+    elemento.classList.add('input-error')
+
+    const msg = document.createElement('div')
+    msg.className = 'error-msg'
+    msg.style.color = '#c82333'
+    msg.style.fontSize = '12px'
+    msg.style.marginTop = '4px'
+    msg.innerText = mensaje
+
+    elemento.parentElement.appendChild(msg)
+
+}
+
+
 // ======================================================
 // VALIDACIÓN (NUEVO – NO INTRUSIVO)
 // ======================================================
 
 function validarActividad(){
 
-  const errores = []
-  const v = (el) => el?.value?.trim()
+    limpiarErrores()
 
-  if(!v(nombre))
-    errores.push('1. Nombre de la actividad es obligatorio')
+    let hayErrores = false
+    const v = (el) => el?.value?.trim()
 
-  if(!v(clasificacion))
-    errores.push('2. Clasificación funcional es obligatoria')
+    if(!v(nombre)){
+    marcarError(nombre,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(periodicidad))
-    errores.push('3. Periodicidad es obligatoria')
+    if(!v(clasificacion)){
+    marcarError(clasificacion,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(generaDoc))
-    errores.push('5. Debe indicar si genera documentos')
+    if(!v(periodicidad)){
+    marcarError(periodicidad,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(formato))
-    errores.push('7. Formato de producción es obligatorio')
+    if(!v(generaDoc)){
+    marcarError(generaDoc,'Seleccione una opción')
+    hayErrores = true
+    }
 
-  if(!v(custodiaTipo))
-    errores.push('10. Responsabilidad de custodia es obligatoria')
+    if(!v(formato)){
+    marcarError(formato,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(cargoCustodia))
-    errores.push('10a. Cargo responsable de custodia es obligatorio')
+    if(!v(custodiaTipo)){
+    marcarError(custodiaTipo,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(localizacionTipo))
-    errores.push('11. Localización de documentos es obligatoria')
+    if(!v(cargoCustodia)){
+    marcarError(cargoCustodia,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(pasosFormales))
-    errores.push('13. Debe indicar si tiene pasos formales')
+    if(!v(localizacionTipo)){
+    marcarError(localizacionTipo,'Campo obligatorio')
+    hayErrores = true
+    }
 
-  if(!v(otrasDep))
-    errores.push('14. Debe indicar si requiere otras dependencias')
+    if(!v(pasosFormales)){
+    marcarError(pasosFormales,'Seleccione una opción')
+    hayErrores = true
+    }
 
-  if(!v(tienePlazo))
-    errores.push('15. Debe indicar si tiene plazo')
+    if(!v(otrasDep)){
+    marcarError(otrasDep,'Seleccione una opción')
+    hayErrores = true
+    }
 
-  if(!v(generaExpediente))
-    errores.push('16. Debe indicar si genera expediente')
+    if(!v(tienePlazo)){
+    marcarError(tienePlazo,'Seleccione una opción')
+    hayErrores = true
+    }
 
-  if(generaDoc.value === 'si'){
-    if(!v(documentosGenerados))
-      errores.push('6. Debe especificar los documentos generados')
-  }
+    if(!v(generaExpediente)){
+    marcarError(generaExpediente,'Seleccione una opción')
+    hayErrores = true
+    }
 
-  if(otrasDep.value === 'si'){
-    if(dependenciasSeleccionadas.length === 0)
-      errores.push('14a. Debe indicar las dependencias relacionadas')
-  }
+    // CONDICIONALES
 
-  if(errores.length > 0){
-    showToast(errores.join('\n'), 'warning')
+    if(generaDoc.value === 'si'){
+    if(!v(documentosGenerados)){
+    marcarError(documentosGenerados,'Debe especificar los documentos')
+    hayErrores = true
+    }
+    }
+
+    if(otrasDep.value === 'si'){
+    if(dependenciasSeleccionadas.length === 0){
+    marcarError(selectDependencia,'Seleccione al menos una dependencia')
+    hayErrores = true
+    }
+    }
+
+    if(hayErrores){
+    showToast("Verifique los campos obligatorios", "warning")
     return false
-  }
+    }
 
-  return true
+return true
 }
 
 // ======================================================
