@@ -14,11 +14,23 @@ html, body {
 }
 
 /* ================================
-   PAGE (CENTRADO ABSOLUTO)
+   LAYOUT GLOBAL (CLAVE)
+================================ */
+
+body{
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+}
+
+/* ================================
+   PAGE (CENTRADO REAL)
 ================================ */
 
 .login-page {
   flex: 1;
+  display: grid;
+  place-items: center;
 }
 
 /* ================================
@@ -136,4 +148,20 @@ html, body {
   font-size: 12px;
   text-align: center;
   color: #6c757d;
+}
+
+/* ================================
+   MOBILE (FINO)
+================================ */
+
+@media (max-width:768px){
+
+  .login-card{
+    padding:24px;
+  }
+
+  .login-brand h1{
+    font-size:28px;
+  }
+
 }

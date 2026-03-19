@@ -11,7 +11,7 @@
 <!-- CSS LOGIN -->
 <link rel="stylesheet" href="/auth/index.css">
 
-<!-- CSS GLOBAL SIPAD (CRÍTICO) -->
+<!-- CSS GLOBAL SIPAD -->
 <link rel="stylesheet" href="/css/sipad-ui.css">
 
 </head>
@@ -63,13 +63,11 @@
 
 </div>
 
-<!-- FOOTER GLOBAL -->
-<footer class="sipad-footer">
-  <div class="sipad-footer-inner">
-    <span class="sipad-dev">SIPAD</span>
-    <span>© 2026</span>
-  </div>
-</footer>
+<!-- FOOTER DINÁMICO -->
+<script type="module">
+  import { renderFooter } from '/components/footer.js'
+  renderFooter()
+</script>
 
 <!-- JS -->
 <script src="/auth/index.js" defer></script>
