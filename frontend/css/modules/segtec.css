@@ -217,11 +217,15 @@
 }
 
 .table-container table{
-
   width:100%;
   font-size:14px;
-  min-width:900px; /* 🔧 evita efecto mini */
+}
 
+/* SOLO DESKTOP */
+@media (min-width:1024px){
+  .table-container table{
+    min-width:900px;
+  }
 }
 
 .table-container table th,
@@ -400,19 +404,6 @@
 
 
 /* ======================================================
-   RESPONSIVE
-====================================================== */
-
-@media (max-width:768px){
-
-  .form-grid{
-    grid-template-columns:1fr;
-  }
-
-}
-
-
-/* ======================================================
    MARCO FUNCIONAL VIGENTE
 ====================================================== */
 
@@ -539,10 +530,7 @@ textarea.form-control{
 
 @media (max-width:768px){
 
-  /* ============================= */
-  /* CONTENEDOR PRINCIPAL */
-  /* ============================= */
-
+  /* CONTENEDOR */
   .module-page{
     max-width:100% !important;
     width:100%;
@@ -550,10 +538,7 @@ textarea.form-control{
     padding:0 16px !important;
   }
 
-  /* ============================= */
-  /* HEADER CORREGIDO */
-  /* ============================= */
-
+  /* HEADER */
   .pig-header-inner{
     flex-direction:column;
     align-items:flex-start;
@@ -567,10 +552,7 @@ textarea.form-control{
     overflow-x:auto;
   }
 
-  /* ============================= */
-  /* TIPOGRAFÍA LEGIBLE */
-  /* ============================= */
-
+  /* TIPOGRAFÍA */
   body{
     font-size:16px;
   }
@@ -584,18 +566,17 @@ textarea.form-control{
     font-size:0.95rem;
   }
 
-  /* ============================= */
-  /* TARJETAS MÁS USABLES */
-  /* ============================= */
+  /* GRID FORM */
+  .form-grid{
+    grid-template-columns:1fr;
+  }
 
+  /* TARJETAS */
   .module-card{
     padding:20px;
   }
 
-  /* ============================= */
-  /* TABLA → FORMATO APP (CARDS) */
-  /* ============================= */
-
+  /* TABLA COMO CARDS */
   .table thead{
     display:none;
   }
@@ -626,15 +607,22 @@ textarea.form-control{
     font-size:14px;
   }
 
-  /* ============================= */
-  /* BOTONES LIMPIOS */
-  /* ============================= */
-
-  .table td button{
-    width:100%;
-    margin-top:6px;
+  /* BOTONES MOBILE (FIX REAL) */
+  .table td:last-child{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
   }
 
+  .table td:last-child button{
+    flex:1 1 calc(33.33% - 6px);
+    min-width:0;
+    font-size:13px;
+    padding:10px;
+  }
+
+  /* TOUCH */
   button{
     min-height:44px;
   }
