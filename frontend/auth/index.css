@@ -18,7 +18,7 @@ html, body {
 ================================ */
 
 .login-page {
-  height: 100vh;
+  flex: 1;
   display: grid;
   place-items: center;
 }
