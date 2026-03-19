@@ -399,46 +399,29 @@ button{
 .modal{
 
   position:fixed;
-
   top:0;
   left:0;
-
   width:100vw;
   height:100vh;
-
-  background:rgba(0,0,0,.45);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   padding:20px;
-
   box-sizing:border-box;
-
   z-index:9999;
-
 }
 
 .modal-content{
 
-  background:#fff;
-
+  background: #eff1f6;
   width:440px;
   max-width:92%;
-
   padding:28px 32px;
-
   border-radius:var(--radius-md);
-
   box-shadow:var(--shadow-lg);
-
   position:relative;
-
   max-height:90vh;
-
   overflow:auto;
-
 }
 
 /* ======================================================
