@@ -711,11 +711,6 @@ html, body{
   overflow-x:hidden;
 }
 
-*{
-  box-sizing:border-box;
-}
-
-
 .pig-title{
   font-weight:600;
   font-size:14px;
