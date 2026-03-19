@@ -285,7 +285,6 @@ button{
   width:100%;
   border-collapse:separate;
   border-spacing:0;
-  background:#fff;
   box-shadow:var(--shadow-sm);
   table-layout:auto;
   position:relative;
