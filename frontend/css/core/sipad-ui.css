@@ -397,9 +397,9 @@ button{
 
 .modal{
 
-  position:fixed;
+  
   top:0;
-  left:0;
+  
   width:100vw;
   height:100vh;
   display:flex;
@@ -534,7 +534,7 @@ button{
 /* ===================================== */
 
 .password-modal{
-  position:fixed;
+  
   inset:0;
   background:rgba(0,0,0,.45);
 
@@ -601,9 +601,9 @@ button{
   font-size:13px;
   text-align:center;
   padding:10px 15px;
-  position:fixed;
-  bottom:0;
-  left:0;
+  
+  
+  
   z-index:999;
 }
 
@@ -839,4 +839,21 @@ html, body{
 
 .modal-content{
   display:block !important;
+}
+
+/* ===== FIX GLOBAL OVERFLOW ===== */
+*{
+  box-sizing:border-box;
+}
+
+html, body{
+  overflow-x:hidden;
+}
+
+/* ===== HEADER MOBILE CENTER ===== */
+@media (max-width:768px){
+  .pig-header-inner{
+    justify-content:center;
+    text-align:center;
+  }
 }
