@@ -761,3 +761,24 @@ textarea.form-control{
   }
 
 }
+
+/* ======================================================
+   FIX HEADER DESBORDE (CRÍTICO)
+====================================================== */
+
+.pig-header{
+  width:100%;
+  max-width:100vw;
+  overflow:hidden;
+}
+
+.pig-header-inner{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+
+.pig-nav{
+  max-width:100%;
+  overflow-x:auto;
+}
