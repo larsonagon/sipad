@@ -782,3 +782,27 @@ textarea.form-control{
   max-width:100%;
   overflow-x:auto;
 }
+
+/* ======================================================
+   FIX ESTRUCTURA HEADER MOBILE (CORRECTO)
+====================================================== */
+
+@media (max-width:768px){
+
+  .pig-header-inner{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px; /* un poco más natural */
+  }
+
+  .pig-header-title{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .pig-user{
+    margin-top:6px;
+  }
+
+}
