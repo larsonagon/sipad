@@ -721,91 +721,43 @@ textarea.form-control{
 }
 
 /* ======================================================
-   FIX CENTRADO GLOBAL SEGTec (NO INTRUSIVO)
+   FIX HEADER MOBILE – ALINEACIÓN REAL (DEFINITIVO)
 ====================================================== */
-
-.module-page{
-  width:100%;
-  max-width:1100px;
-  margin:0 auto;
-  padding:20px;
-  box-sizing:border-box;
-}
 
 @media (max-width:768px){
 
-  .module-page{
-    max-width:100% !important;
-    margin:0 auto !important;
-    padding:0 16px !important;
+  /* CONTENEDOR DEL HEADER */
+  .pig-header{
+    padding:0 16px;   /* 🔥 margen lateral real */
   }
 
-}
-
-/* ======================================================
-   FIX HEADER MOBILE – ESCALA REAL (SEGTec)
-====================================================== */
-
-@media (max-width:768px){
-
-  /* HEADER CONTENEDOR */
+  /* WRAPPER INTERNO */
   .pig-header-inner{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:6px;
+    max-width:1100px;
+    margin:0 auto;
 
-    padding:10px 16px;
-    height:auto;
+    padding:10px 0;   /* 🔥 ya no lateral aquí */
+    box-sizing:border-box;
   }
 
-  /* TÍTULO */
-  .pig-header h1{
-    font-size:18px;
-    line-height:1.2;
-  }
-
+  /* SUBTÍTULO */
   .pig-header span{
-    font-size:12px;
-  }
-
-  /* NAV (BOTONES) */
-  .pig-nav{
-    width:100%;
-    overflow-x:auto;
-
-    display:flex;
-    gap:8px;
-
-    padding-bottom:6px;
-  }
-
-  /* BOTONES */
-  .pig-nav button{
-    flex:0 0 auto;
-
-    font-size:13px;
-    padding:8px 12px;
-
-    min-height:34px;     /* 🔥 baja altura */
-    border-radius:10px;
-
-    white-space:nowrap;
+    display:block;
+    margin-left:0;    /* 🔥 elimina desfase */
   }
 
   /* USUARIO */
   .pig-user-info{
-    width:100%;
-
-    font-size:13px;
-    line-height:1.2;
-
-    margin-top:4px;
+    margin-left:0;    /* 🔥 alinea con título */
   }
 
-  .pig-user-meta{
-    font-size:11px;
-    opacity:.85;
+  /* NAV */
+  .pig-nav{
+    width:100%;
+
+    overflow-x:auto;
+    padding-left:0;
+    padding-right:16px;   /* 🔥 espacio para que no corte "Informes" */
   }
 
 }
-
