@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer-core'
+import puppeteer from 'puppeteer'
 import chromium from '@sparticuz/chromium'
 
 export async function generarPDFActividad(actividad) {
@@ -13,29 +13,44 @@ export async function generarPDFActividad(actividad) {
 
   try {
 
+    const isLocal = process.env.NODE_ENV !== 'production'
+
     // =====================================================
-    // CONFIGURACIÓN CHROMIUM PARA RENDER / SERVIDORES
+    // CONFIGURACIÓN SEGÚN ENTORNO
     // =====================================================
 
-    const executablePath = await chromium.executablePath()
+    if (isLocal) {
 
-    browser = await puppeteer.launch({
-      args: [
-        ...chromium.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage'
-      ],
-      executablePath,
-      headless: chromium.headless,
-      defaultViewport: chromium.defaultViewport
-    })
+      // 🔥 LOCAL (MAC / DEV) → evita ENOEXEC
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+      })
+
+    } else {
+
+      // 🚀 PRODUCCIÓN (Render / Serverless)
+      const executablePath = await chromium.executablePath()
+
+      browser = await puppeteer.launch({
+        args: [
+          ...chromium.args,
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage'
+        ],
+        executablePath,
+        headless: chromium.headless,
+        defaultViewport: chromium.defaultViewport
+      })
+
+    }
 
     const page = await browser.newPage()
 
-      await page.setContent(html, {
-        waitUntil: 'domcontentloaded'
-      })
+    await page.setContent(html, {
+      waitUntil: 'domcontentloaded'
+    })
 
     const pdf = await page.pdf({
       format: 'A4',
@@ -182,10 +197,6 @@ function construirHTML(a) {
   const fecha =
     formatearFecha(a.created_at)
 
-  //////////////////////////////////////////////////////
-  // Dependencias involucradas
-  //////////////////////////////////////////////////////
-
   let dependenciasInvolucradas = texto(a.dependencias_relacionadas)
 
   if (!dependenciasInvolucradas) {
@@ -198,10 +209,6 @@ function construirHTML(a) {
       dependenciasInvolucradas = 'No especificadas'
     }
   }
-
-  //////////////////////////////////////////////////////
-  // Compatibilidad modelo
-  //////////////////////////////////////////////////////
 
   const volumen =
     a.volumen_categoria ||
@@ -218,10 +225,6 @@ function construirHTML(a) {
     a.localizacion_tipo ||
     a.localizacion_documentos
 
-  //////////////////////////////////////////////////////
-  // PLAZOS
-  //////////////////////////////////////////////////////
-
   const tienePlazo = siNo(a.tiene_plazo)
 
   const plazoLegal =
@@ -233,10 +236,6 @@ function construirHTML(a) {
     a.tiene_plazo == 1
       ? texto(a.tiempo_ejecucion)
       : 'No aplica'
-
-  //////////////////////////////////////////////////////
-  // HTML
-  //////////////////////////////////////////////////////
 
   return `
 <!DOCTYPE html>
