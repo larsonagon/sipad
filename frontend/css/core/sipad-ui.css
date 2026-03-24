@@ -962,7 +962,7 @@ html, body{
 
 .btn-primary,
 .btn-secondary{
-  height:20px;
+  height:23px;
   padding:0 12px;
   display:inline-flex;
   align-items:center;
@@ -974,4 +974,25 @@ html, body{
 .module-actions.space-between{
   justify-content:space-between;
   align-items:center;
+}
+
+/* ===================================== */
+/* GRID DE FORMULARIOS (REEMPLAZO SEGTEC) */
+/* ===================================== */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:20px;
+}
+
+.form-group.full{
+  grid-column:1 / -1;
+}
+
+/* RESPONSIVE */
+@media (max-width:768px){
+  .form-grid{
+    grid-template-columns:1fr;
+  }
 }
