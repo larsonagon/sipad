@@ -857,3 +857,99 @@ html, body{
     text-align:center;
   }
 }
+
+/* ===================================== */
+/* COMPONENTES REUTILIZABLES */
+/* ===================================== */
+
+.table-container{
+  width:100%;
+  overflow-x:auto;
+}
+
+.module-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.empty-state{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--color-text-muted);
+}
+
+.alert-error{
+  background:var(--color-danger-bg);
+  color:var(--color-danger);
+  padding:12px;
+  border-radius:8px;
+  margin-bottom:15px;
+}
+
+/* ===================================== */
+/* TARJETAS */
+/* ===================================== */
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:24px;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--color-border);
+  margin-bottom:20px;
+}
+
+/* ===================================== */
+/* GRID RESPONSIVO */
+/* ===================================== */
+
+.grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+
+@media (max-width:768px){
+  .grid-3{
+    grid-template-columns:1fr;
+  }
+}
+
+/* ===================================== */
+/* ITEM DE GRID */
+/* ===================================== */
+
+.grid-item{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.grid-item label{
+  font-size:11px;
+  text-transform:uppercase;
+  color:#64748b;
+}
+
+.grid-item span{
+  font-size:14px;
+  font-weight:500;
+}
+
+/* ===================================== */
+/* TABLA */
+/* ===================================== */
+
+.table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.table th,
+.table td{
+  padding:10px;
+  text-align:left;
+  border-bottom:1px solid #eee;
+}
