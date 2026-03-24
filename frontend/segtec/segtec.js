@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const user = JSON.parse(userRaw);
 
-  // 🔥 FIX REAL — HEADER UNIFICADO
   renderHeader('ICAF');
 
   /* ======================================================
@@ -65,12 +64,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     if (resp.status === 401) {
-
       sessionStorage.clear();
       localStorage.clear();
       window.location.href = '/';
       return null;
-
     }
 
     return resp;
@@ -96,12 +93,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!valor) return '-';
 
     const mapa = {
-
       conservacion_total: 'Conservación total',
       eliminacion: 'Eliminación',
       seleccion: 'Selección',
       medio_tecnico: 'Medio técnico (Microfilmación o digitalización)'
-
     };
 
     const clave = valor
@@ -110,12 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .replace(/\s+/g,'_')
       .trim();
 
-    if(mapa[clave]){
-      return mapa[clave];
-    }
-
-    return 'Eliminación';
-
+    return mapa[clave] || 'Eliminación';
   }
 
   function badgeEstado(estado){
@@ -144,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function mostrarError(texto){
-
     mensaje.innerHTML=`
       <div class="alert-error">
         ${texto}
@@ -204,16 +193,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       },1500);
 
     }catch(error){
-
       console.error(error);
       alert('Error generando el PDF.');
-
     }
 
   }
 
   /* ======================================================
-     MODAL DE ANÁLISIS
+     MODAL DE ANÁLISIS (AJUSTE)
   ====================================================== */
 
   async function abrirModalAnalisis(id){
@@ -236,43 +223,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const a = json.data || {};
 
-      const serie =
-        a.serie ||
-        a.serie_propuesta ||
-        '-';
-
-      const subserie =
-        a.subserie ||
-        a.subserie_propuesta ||
-        '-';
+      const serie = a.serie || a.serie_propuesta || '-';
+      const subserie = a.subserie || a.subserie_propuesta || '-';
 
       modalBody.innerHTML = `
         <h3>Análisis técnico de la actividad</h3>
 
-        <div class="segtec-analisis-grid">
+        <div class="grid-3">
 
-          <div>
-            <label>Serie documental sugerida: </label>
+          <div class="grid-item">
+            <label>Serie documental sugerida:</label>
             <strong>${serie}</strong>
           </div>
 
-          <div>
-            <label>Subserie sugerida: </label>
+          <div class="grid-item">
+            <label>Subserie sugerida:</label>
             <strong>${subserie}</strong>
           </div>
 
-          <div>
-            <label>Retención archivo de gestión: </label>
+          <div class="grid-item">
+            <label>Retención archivo de gestión:</label>
             <strong>${a.retencion_gestion || '-'} años</strong>
           </div>
 
-          <div>
-            <label>Retención archivo central: </label>
+          <div class="grid-item">
+            <label>Retención archivo central:</label>
             <strong>${a.retencion_central || '-'} años</strong>
           </div>
 
-          <div>
-            <label>Disposición final: </label>
+          <div class="grid-item">
+            <label>Disposición final:</label>
             <strong>${formatearDisposicion(a.disposicion_final)}</strong>
           </div>
 
@@ -290,16 +270,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       modal.classList.remove('hidden');
 
     }catch(error){
-
       console.error(error);
       alert('Error generando análisis.');
-
     }
 
   }
 
   /* ======================================================
-     MARCO FUNCIONAL
+     MARCO FUNCIONAL (AJUSTE)
   ====================================================== */
 
   async function cargarMarcoFuncional(){
@@ -341,37 +319,35 @@ document.addEventListener('DOMContentLoaded', async () => {
       const c=json.configuracion;
 
       panelMarco.innerHTML=`
-        <div class="segtec-card">
+        <div class="card">
 
-          <div class="segtec-block-header">
-
+          <div class="module-actions" style="justify-content:space-between;">
             <h2>Marco funcional vigente</h2>
 
             <button class="btn-secondary"
               onclick="window.location.href='/segtec/configuracion.html'">
               Editar estructura funcional
             </button>
-
           </div>
 
-          <div class="segtec-marco-grid">
+          <div class="grid-3">
 
-            <div class="segtec-marco-item">
+            <div class="grid-item">
               <label>Versión</label>
               <span>${c.version}</span>
             </div>
 
-            <div class="segtec-marco-item">
+            <div class="grid-item">
               <label>Tipo de función</label>
               <span>${capitalizar(c.tipo_funcion)}</span>
             </div>
 
-            <div class="segtec-marco-item">
+            <div class="grid-item">
               <label>Nivel decisorio</label>
               <span>${capitalizar(c.nivel_decisorio)}</span>
             </div>
 
-            <div class="segtec-marco-item">
+            <div class="grid-item">
               <label>Fecha de definición</label>
               <span>${formatearFecha(c.created_at)}</span>
             </div>
@@ -384,11 +360,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       return true;
 
     }catch(err){
-
       console.error(err);
       mostrarError('Error cargando configuración funcional.');
       return false;
-
     }
 
   }
@@ -428,16 +402,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       renderTabla(actividades);
 
     }catch(error){
-
       console.error(error);
       mostrarError('Error de conexión con el servidor.');
-
     }
 
   }
 
   /* ======================================================
-     TABLA
+     TABLA (SIN CAMBIOS)
   ====================================================== */
 
   function renderTabla(actividades){
