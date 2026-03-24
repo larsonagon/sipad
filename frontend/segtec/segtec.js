@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       panelMarco.innerHTML=`
         <div class="card">
 
-          <div class="module-actions" style="justify-content:space-between;">
+          <div class="module-actions space-between">
             <h2>Marco funcional vigente</h2>
 
             <button class="btn-secondary"
