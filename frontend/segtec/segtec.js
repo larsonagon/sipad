@@ -3,34 +3,17 @@ import { renderHeader } from '/components/header.js';
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = sessionStorage.getItem('token');
+  const userRaw = sessionStorage.getItem('user');
 
-  if (!token) {
+  if (!token || !userRaw) {
     window.location.href = '/';
     return;
   }
 
-  let user = {};
+  const user = JSON.parse(userRaw);
 
-  try {
-
-    const payload = JSON.parse(
-      atob(token.split('.')[1])
-    );
-
-    user = payload || {};
-
-  } catch (error) {
-
-    console.error('Error leyendo token', error);
-    user = {};
-
-  }
-
-  renderHeader({
-    modulo: 'ICAF',
-    seccion: 'Actividades técnicas',
-    usuario: user?.nombre || 'Usuario'
-  });
+  // 🔥 FIX REAL — HEADER UNIFICADO
+  renderHeader('ICAF');
 
   /* ======================================================
      CONTROL DE ROLES
@@ -107,8 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!fechaISO) return '-';
     return new Date(fechaISO).toLocaleDateString('es-CO');
   }
-
-  /* 🔧 NUEVO: normalizador de disposición final según AGN */
 
   function formatearDisposicion(valor){
 
@@ -208,19 +189,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
       if(isSafari){
-
         window.open(url,'_blank');
-
       }else{
-
         const a=document.createElement('a');
         a.href=url;
         a.download=`actividad_${id}.pdf`;
-
         document.body.appendChild(a);
         a.click();
         a.remove();
-
       }
 
       setTimeout(()=>{
