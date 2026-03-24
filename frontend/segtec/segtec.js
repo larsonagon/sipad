@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         botonAnalizar=`
           <button
-            class="btn-outline btn-sm analizar-btn"
+            class="btn-warning btn-sm analizar-btn"
             data-id="${a.id}">
             ${textoBoton}
           </button>
