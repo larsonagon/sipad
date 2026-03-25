@@ -1,11 +1,12 @@
 {
   "name": "sipad-backend",
   "version": "1.0.0",
-  "description": "Backend SIPAD - Sistema Inteligente de Procesos Archivísticos Digitales",
+  "description": "Backend SIPAD - Sistema inteligente para la planeación archivística documental",
   "type": "module",
   "main": "server.js",
   "private": true,
   "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome",
     "start": "DB_ENGINE=postgres node server.js",
     "dev": "DB_ENGINE=postgres nodemon server.js",
     "dev:sqlite": "DB_ENGINE=sqlite nodemon server.js",
