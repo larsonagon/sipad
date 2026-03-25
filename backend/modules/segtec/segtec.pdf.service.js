@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
 
 export async function generarPDFActividad(actividad) {
 
@@ -14,21 +15,14 @@ export async function generarPDFActividad(actividad) {
 
     console.log('🚀 Iniciando Puppeteer...')
 
-    // 🔥 CONFIGURACIÓN LIMPIA Y ESTABLE (Render + Local)
+    // 🔥 CONFIGURACIÓN REAL PARA RENDER
     const launchOptions = {
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu'
-      ]
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     }
 
-    // ❌ ELIMINADO: executablePath dinámico (esto estaba rompiendo Render)
-    // Puppeteer usará SU PROPIO Chrome interno
-
-    console.log('📌 Usando Chrome interno de Puppeteer')
+    console.log('📌 Usando Chromium de @sparticuz')
 
     browser = await puppeteer.launch(launchOptions)
 
