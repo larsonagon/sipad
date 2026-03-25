@@ -1,5 +1,4 @@
 import puppeteer from 'puppeteer'
-import chromium from '@sparticuz/chromium'
 
 export async function generarPDFActividad(actividad) {
 
@@ -13,44 +12,19 @@ export async function generarPDFActividad(actividad) {
 
   try {
 
-    const isLocal = process.env.NODE_ENV !== 'production'
-
-    // =====================================================
-    // CONFIGURACIÓN SEGÚN ENTORNO
-    // =====================================================
-
-    if (isLocal) {
-
-      // 🔥 LOCAL (MAC / DEV) → evita ENOEXEC
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-      })
-
-    } else {
-
-      // 🚀 PRODUCCIÓN (Render / Serverless)
-      const executablePath = await chromium.executablePath()
-
-      browser = await puppeteer.launch({
-        args: [
-          ...chromium.args,
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage'
-        ],
-        executablePath,
-        headless: chromium.headless,
-        defaultViewport: chromium.defaultViewport
-      })
-
-    }
+    // 🔥 UNA SOLA CONFIGURACIÓN (estable en local + render)
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    })
 
     const page = await browser.newPage()
 
     await page.setContent(html, {
       waitUntil: 'domcontentloaded'
     })
+
+    await new Promise(resolve => setTimeout(resolve, 300))
 
     const pdf = await page.pdf({
       format: 'A4',
