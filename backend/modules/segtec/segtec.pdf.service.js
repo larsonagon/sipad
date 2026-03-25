@@ -44,10 +44,12 @@ export async function generarPDFActividad(actividad) {
 
     return pdf
 
-  } catch (error) {
+  } catch(error){
+      console.error('🔥 ERROR REAL PDF:', error);
 
-    console.error('Error generando PDF ICAF:', error)
-    throw new Error('No fue posible generar el PDF')
+      throw new Error(
+        error?.message || 'Error generando PDF'
+      );
 
   } finally {
 
