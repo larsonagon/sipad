@@ -230,13 +230,13 @@ async function init() {
     })
 
     // ==================================================
-    // SERVER
+    // SERVER (AJUSTE PARA RENDER)
     // ==================================================
 
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
 
       console.log(`🔥 Servidor en puerto ${PORT}`)
-      console.log(`👉 http://localhost:${PORT}`)
+      console.log(`🌐 URL interna: http://0.0.0.0:${PORT}`)
 
     })
 
