@@ -61,11 +61,15 @@
 
 <div id="header"></div>
 
-<main class="module-page">
+<main class="module-page" id="reporte">
 
 <div class="module-header centered">
 <h1>Actividades por dependencia</h1>
 <p>Resumen estadístico de actividades registradas</p>
+</div>
+
+<div class="module-actions" style="text-align:center;margin-bottom:20px;">
+<button class="btn-primary" id="btnExportar">Exportar PDF</button>
 </div>
 
 <!-- KPI -->
@@ -73,7 +77,6 @@
 
 <!-- GRAFICO -->
 <div class="card" style="margin-bottom:20px">
-
 <div class="card-header">
 <h3>Comparativo por dependencia</h3>
 </div>
@@ -83,14 +86,11 @@
 <canvas id="graficoDependencias"></canvas>
 </div>
 </div>
-
 </div>
 
 <!-- TABLA -->
 <div class="card">
-
 <div class="table-container">
-
 <table class="table" id="tablaDependencias">
 
 <thead>
@@ -110,14 +110,16 @@
 </tbody>
 
 </table>
-
 </div>
-
 </div>
 
 </main>
 
+<!-- LIBRERÍAS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
+
 <script type="module" src="/informes/dependencia.js"></script>
 <script src="/components/password-modal.js"></script>
 
