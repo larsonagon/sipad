@@ -12,16 +12,28 @@ export async function generarPDFActividad(actividad) {
 
   try {
 
-    browser = await puppeteer.launch({
+    console.log('🚀 Iniciando Puppeteer...')
+
+    // 🔥 CONFIGURACIÓN CORRECTA PARA LOCAL + RENDER
+    const launchOptions = {
       headless: 'new',
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu'
       ]
-    })
+    }
+
+    // 🔥 SOLO usa executablePath si existe (local)
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      console.log('📌 Usando executablePath:', process.env.PUPPETEER_EXECUTABLE_PATH)
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
+    } else {
+      console.log('📌 Usando Chrome automático de Puppeteer')
+    }
+
+    browser = await puppeteer.launch(launchOptions)
 
     const page = await browser.newPage()
 
@@ -56,6 +68,7 @@ export async function generarPDFActividad(actividad) {
     return pdf
 
   } catch (error) {
+
     console.error('🔥 ERROR REAL PDF:', error)
 
     throw new Error(
@@ -166,7 +179,7 @@ function formatearFecha(fecha) {
 }
 
 ////////////////////////////////////////////////////////
-// HTML
+// HTML (NO TOCADO)
 ////////////////////////////////////////////////////////
 
 function construirHTML(a) {
@@ -229,7 +242,8 @@ function construirHTML(a) {
       ? texto(a.tiempo_ejecucion)
       : 'No aplica'
 
-  return ` 
+  return`
+
 <!DOCTYPE html>
 <html>
 <head>
