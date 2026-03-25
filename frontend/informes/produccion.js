@@ -123,7 +123,7 @@ async function consultar(){
     const data = json.data || []
 
     renderTabla(data)
-    renderGrafico(data) // 🔥 AQUÍ ESTABA LO QUE FALTABA
+    renderGrafico(data)
 
   }catch(error){
 
@@ -165,19 +165,11 @@ function renderTabla(data){
     tr.innerHTML=`
 
       <td>${row.actividad || ''}</td>
-
       <td>${row.dependencia || ''}</td>
-
       <td>${row.documentos_generados || ''}</td>
-
-      <td class="text-center">
-        ${row.total_tipos_documentales || 0}
-      </td>
-
+      <td class="text-center">${row.total_tipos_documentales || 0}</td>
       <td>${row.formato || ''}</td>
-
       <td>${row.volumen || ''}</td>
-
       <td>${row.frecuencia || ''}</td>
 
     `
@@ -196,8 +188,7 @@ function renderGrafico(data){
 
   const canvas = document.getElementById('graficoDependencias')
 
-  if(!canvas) return
-  if(!data || !data.length) return
+  if(!canvas || !data || !data.length) return
 
   const agrupado = {}
 
@@ -205,11 +196,15 @@ function renderGrafico(data){
     const dep = row.dependencia || 'Sin dependencia'
     const valor = Number(row.documentos_generados || 0)
 
-    agrupado[dep] = (agrupado[dep] || 0) + valor
+    if(valor > 0){
+      agrupado[dep] = (agrupado[dep] || 0) + valor
+    }
   })
 
   const labels = Object.keys(agrupado)
   const values = Object.values(agrupado)
+
+  if(!labels.length) return
 
   const ctx = canvas.getContext('2d')
 
@@ -227,6 +222,7 @@ function renderGrafico(data){
     },
     options:{
       responsive:true,
+      maintainAspectRatio:true,
       plugins:{
         legend:{
           position:'bottom'

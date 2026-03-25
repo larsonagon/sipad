@@ -73,8 +73,12 @@ Generar informe
 <h3>Distribución de documentos por dependencia</h3>
 </div>
 
-<div class="card-body">
-<canvas id="graficoDependencias" height="120"></canvas>
+<div class="card-body" style="display:flex;justify-content:center">
+
+<div style="width:100%;max-width:420px">
+<canvas id="graficoDependencias"></canvas>
+</div>
+
 </div>
 
 </section>
@@ -121,7 +125,7 @@ Generar informe
 
 </main>
 
-<!-- 🔥 IMPORTANTE: Chart.js ANTES del JS -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script type="module" src="/informes/produccion.js"></script>
