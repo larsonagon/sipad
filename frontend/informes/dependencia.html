@@ -53,6 +53,35 @@
   color:#1e293b;
 }
 
+/* 🔥 CLAVE PARA PDF LIMPIO */
+@media print {
+
+  /* Oculta TODO */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Solo muestra el reporte */
+  #reporte, #reporte * {
+    visibility: visible;
+  }
+
+  #reporte {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+}
+
+/* Opcional: ocultar botón en PDF */
+@media print {
+  #btnExportar {
+    display: none !important;
+  }
+}
+
 </style>
 
 </head>
@@ -61,64 +90,72 @@
 
 <div id="header"></div>
 
-<main class="module-page" id="reporte">
+<main class="module-page">
 
-<div class="module-header centered">
-<h1>Actividades por dependencia</h1>
-<p>Resumen estadístico de actividades registradas</p>
-</div>
+<!-- 🔥 SOLO ESTO SE EXPORTA -->
+<div id="reporte">
 
-<div class="module-actions" style="text-align:center;margin-bottom:20px;">
-<button class="btn-primary" id="btnExportar">Exportar PDF</button>
-</div>
+  <div class="module-header centered">
+    <h1>Actividades por dependencia</h1>
+    <p>Resumen estadístico de actividades registradas</p>
+  </div>
 
-<!-- KPI -->
-<div class="kpi-container" id="kpis"></div>
+  <!-- BOTÓN (NO SALE EN PDF) -->
+  <div class="module-actions" style="text-align:center;margin-bottom:20px;">
+    <button class="btn-primary" id="btnExportar">Exportar PDF</button>
+  </div>
 
-<!-- GRAFICO -->
-<div class="card" style="margin-bottom:20px">
-<div class="card-header">
-<h3>Comparativo por dependencia</h3>
-</div>
+  <!-- KPI -->
+  <div class="kpi-container" id="kpis"></div>
 
-<div class="card-body" style="display:flex;justify-content:center">
-<div style="width:100%;max-width:700px">
-<canvas id="graficoDependencias"></canvas>
-</div>
-</div>
-</div>
+  <!-- GRAFICO -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-header">
+      <h3>Comparativo por dependencia</h3>
+    </div>
 
-<!-- TABLA -->
-<div class="card">
-<div class="table-container">
-<table class="table" id="tablaDependencias">
+    <div class="card-body" style="display:flex;justify-content:center">
+      <div style="width:100%;max-width:700px">
+        <canvas id="graficoDependencias"></canvas>
+      </div>
+    </div>
+  </div>
 
-<thead>
-<tr>
-<th>Dependencia</th>
-<th class="text-center">Total actividades</th>
-<th class="text-center">Funcionarios</th>
-<th class="text-center">Analizadas</th>
-<th class="text-center">% Cumplimiento</th>
-</tr>
-</thead>
+  <!-- TABLA -->
+  <div class="card">
+    <div class="table-container">
+      <table class="table" id="tablaDependencias">
 
-<tbody>
-<tr>
-<td colspan="5" class="text-center">Cargando...</td>
-</tr>
-</tbody>
+        <thead>
+          <tr>
+            <th>Dependencia</th>
+            <th class="text-center">Total actividades</th>
+            <th class="text-center">Funcionarios</th>
+            <th class="text-center">Analizadas</th>
+            <th class="text-center">% Cumplimiento</th>
+          </tr>
+        </thead>
 
-</table>
-</div>
+        <tbody>
+          <tr>
+            <td colspan="5" class="text-center">Cargando...</td>
+          </tr>
+        </tbody>
+
+      </table>
+    </div>
+  </div>
+
 </div>
 
 </main>
 
-<!-- LIBRERÍAS -->
+<!-- SOLO CHART (esto sí lo necesitas) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf"></script>
+
+<!-- ❌ ELIMINADOS (causaban tu error) -->
+<!-- html2canvas -->
+<!-- jsPDF -->
 
 <script type="module" src="/informes/dependencia.js"></script>
 <script src="/components/password-modal.js"></script>

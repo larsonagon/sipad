@@ -45,7 +45,10 @@ export function buildInformesRouter(db) {
     controller.obtenerResumenDependencias
   )
 
-  // 🔥 PDF DEPENDENCIAS (PUPPETEER)
+  // ======================================
+  // PDF DEPENDENCIAS (PUPPETEER LIMPIO)
+  // ======================================
+
   router.get('/dependencias/pdf', async (req, res) => {
 
     let browser = null
@@ -61,20 +64,37 @@ export function buildInformesRouter(db) {
 
       const page = await browser.newPage()
 
-      // 🔥 Inyectar token en sessionStorage antes de cargar
+      // 🔐 Inyectar token antes de cargar
       if (token) {
         await page.evaluateOnNewDocument((token) => {
           sessionStorage.setItem('token', token)
         }, token)
       }
 
-      // ⚠️ AJUSTA ESTA URL SI ESTÁS EN PRODUCCIÓN
+      // ⚠️ AJUSTAR EN PRODUCCIÓN
       await page.goto('http://localhost:3001/informes/dependencia.html', {
         waitUntil: 'networkidle0'
       })
 
-      // Esperar que cargue la tabla (datos reales)
-      await page.waitForSelector('#tablaDependencias')
+      // ⏳ Esperar datos reales (NO solo el DOM)
+      await page.waitForFunction(() => {
+        const filas = document.querySelectorAll('#tablaDependencias tbody tr')
+        return filas.length > 0 && !filas[0].innerText.includes('Cargando')
+      })
+
+      // 🔥 Ocultar elementos innecesarios
+      await page.evaluate(() => {
+
+        const header = document.getElementById('header')
+        if (header) header.style.display = 'none'
+
+        const btn = document.getElementById('btnExportar')
+        if (btn) btn.style.display = 'none'
+
+      })
+
+      // 🎯 EXTRAER SOLO EL REPORTE
+      const reporte = await page.$('#reporte')
 
       const pdf = await page.pdf({
         format: 'A4',

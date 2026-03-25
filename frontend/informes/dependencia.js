@@ -46,15 +46,18 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   renderHeader('informes',user)
 
-  cargarDatos()
+  await cargarDatos()
 
-  // ✅ BOTÓN EXPORTAR (SEGURO)
   const btn = document.getElementById('btnExportar')
   if(btn){
     btn.addEventListener('click',exportarPDF)
   }
 
 })
+
+/* ============================= */
+/* CARGA GENERAL */
+/* ============================= */
 
 async function cargarDatos(){
 
@@ -179,25 +182,65 @@ function renderGrafico(data){
     data:{
       labels: normal.map(x=>x.dep),
       datasets:[
-        { label:'Total', data:normal.map(x=>x.total), backgroundColor:'#2563eb' },
-        { label:'Analizadas', data:normal.map(x=>x.analizadas), backgroundColor:'#cbd5f5' }
+        {
+          label:'Total',
+          data:normal.map(x=>x.total),
+          backgroundColor:'#2563eb',
+          borderRadius:6
+        },
+        {
+          label:'Analizadas',
+          data:normal.map(x=>x.analizadas),
+          backgroundColor:'#cbd5f5',
+          borderRadius:6
+        }
       ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{
+            font:{ size:12 }
+          }
+        }
+      },
+      scales:{
+        x:{
+          ticks:{
+            font:{ size:11 },
+            maxRotation:0,
+            minRotation:0
+          }
+        },
+        y:{
+          beginAtZero:true,
+          ticks:{
+            stepSize:1,
+            font:{ size:11 }
+          }
+        }
+      }
     }
   })
 
 }
 
 /* ============================= */
-/* EXPORTAR PDF (PUPPETEER) */
+/* EXPORTAR PDF (BACKEND) */
 /* ============================= */
 
 async function exportarPDF(){
 
   try{
 
+    const token = getToken()
+
     const res = await fetch('/api/informes/dependencias/pdf',{
       headers:{
-        Authorization:`Bearer ${getToken()}`
+        Authorization:`Bearer ${token}`
       }
     })
 
@@ -211,13 +254,16 @@ async function exportarPDF(){
     const a = document.createElement('a')
     a.href = url
     a.download = 'informe_dependencias.pdf'
+    document.body.appendChild(a)
     a.click()
+    a.remove()
 
     window.URL.revokeObjectURL(url)
 
   }catch(error){
 
     console.error('Error exportando PDF:',error)
+    alert('No se pudo generar el PDF')
 
   }
 
