@@ -123,7 +123,7 @@ async function consultar(){
     const data = json.data || []
 
     renderTabla(data)
-    renderGrafico(data)
+    renderGrafico(data) // 🔥 AQUÍ ESTABA LO QUE FALTABA
 
   }catch(error){
 
