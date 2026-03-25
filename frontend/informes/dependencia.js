@@ -1,5 +1,7 @@
 import { renderHeader } from '../components/header.js'
 
+let chart = null
+
 function getToken(){
   return sessionStorage.getItem('token')
 }
@@ -70,6 +72,7 @@ async function cargarDatos(){
     const data = json.data || []
 
     renderTabla(data)
+    renderGrafico(data)
 
   }catch(error){
 
@@ -107,6 +110,49 @@ function renderTabla(data){
 
     tbody.appendChild(tr)
 
+  })
+
+}
+
+function renderGrafico(data){
+
+  const canvas = document.getElementById('graficoDependencias')
+  if(!canvas || !data.length) return
+
+  const ctx = canvas.getContext('2d')
+
+  if(chart){
+    chart.destroy()
+  }
+
+  const labels = data.map(x => x.dependencia)
+  const actividades = data.map(x => x.total_actividades)
+  const analizadas = data.map(x => x.actividades_analizadas)
+
+  chart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'Total actividades',
+          data:actividades
+        },
+        {
+          label:'Analizadas',
+          data:analizadas
+        }
+      ]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      scales:{
+        y:{
+          beginAtZero:true
+        }
+      }
+    }
   })
 
 }

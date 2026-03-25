@@ -11,19 +11,15 @@
 <link rel="stylesheet" href="/css/core/sipad-ui.css">
 
 <style>
-
-/* Asegura alineación consistente */
 .table th,
 .table td {
   vertical-align: middle;
 }
 
-/* Columnas numéricas centradas */
 .table th.text-center,
 .table td.text-center {
   text-align: center;
 }
-
 </style>
 
 </head>
@@ -39,6 +35,22 @@
 <p>Resumen estadístico de actividades registradas</p>
 </div>
 
+<!-- 🔥 GRAFICO -->
+<div class="card" style="margin-bottom:20px">
+
+<div class="card-header">
+<h3>Comparativo por dependencia</h3>
+</div>
+
+<div class="card-body" style="display:flex;justify-content:center">
+<div style="width:100%;max-width:600px">
+<canvas id="graficoDependencias"></canvas>
+</div>
+</div>
+
+</div>
+
+<!-- TABLA -->
 <div class="card">
 
 <div class="table-container">
@@ -64,6 +76,7 @@
 
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
 <script type="module" src="/informes/dependencia.js"></script>
 <script src="/components/password-modal.js"></script>
 
