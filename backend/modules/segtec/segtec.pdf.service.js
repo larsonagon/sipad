@@ -12,10 +12,9 @@ export async function generarPDFActividad(actividad) {
 
   try {
 
-    // 🔥 CONFIGURACIÓN CORRECTA LOCAL + RENDER
     browser = await puppeteer.launch({
       headless: 'new',
-        args: [
+      args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -26,10 +25,21 @@ export async function generarPDFActividad(actividad) {
     const page = await browser.newPage()
 
     await page.setContent(html, {
-      waitUntil: 'domcontentloaded'
+      waitUntil: 'networkidle0'
     })
 
-    await new Promise(resolve => setTimeout(resolve, 300))
+    // 🔥 Espera robusta para Render
+    await page.evaluate(() => {
+      return new Promise(resolve => {
+        if (document.readyState === 'complete') {
+          resolve()
+        } else {
+          window.addEventListener('load', resolve)
+        }
+      })
+    })
+
+    await page.emulateMediaType('screen')
 
     const pdf = await page.pdf({
       format: 'A4',
@@ -44,12 +54,12 @@ export async function generarPDFActividad(actividad) {
 
     return pdf
 
-  } catch(error){
-      console.error('🔥 ERROR REAL PDF:', error);
+  } catch (error) {
+    console.error('🔥 ERROR REAL PDF:', error)
 
-      throw new Error(
-        error?.message || 'Error generando PDF'
-      );
+    throw new Error(
+      error?.message || 'Error generando PDF'
+    )
 
   } finally {
 
@@ -218,8 +228,7 @@ function construirHTML(a) {
       ? texto(a.tiempo_ejecucion)
       : 'No aplica'
 
-  return ` // 🔴 AQUÍ SIGUE EXACTAMENTE TU HTML SIN TOCAR
-
+  return ` 
 <!DOCTYPE html>
 <html>
 <head>
