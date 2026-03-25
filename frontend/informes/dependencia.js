@@ -76,7 +76,7 @@ async function cargarDatos(){
 }
 
 /* ============================= */
-/* KPI */
+/* KPI (CORREGIDO TIPOS) */
 /* ============================= */
 
 function renderKPI(data){
@@ -84,10 +84,10 @@ function renderKPI(data){
   const container = document.getElementById('kpis')
 
   const totalActividades =
-    data.reduce((acc,x)=>acc + x.total_actividades,0)
+    data.reduce((acc,x)=>acc + Number(x.total_actividades || 0),0)
 
   const totalAnalizadas =
-    data.reduce((acc,x)=>acc + x.actividades_analizadas,0)
+    data.reduce((acc,x)=>acc + Number(x.actividades_analizadas || 0),0)
 
   const totalDependencias = data.length
 
@@ -132,9 +132,9 @@ function renderTabla(data){
 
     tr.innerHTML=`
       <td>${row.dependencia || ''}</td>
-      <td class="text-center">${row.total_actividades}</td>
-      <td class="text-center">${row.total_funcionarios}</td>
-      <td class="text-center">${row.actividades_analizadas}</td>
+      <td class="text-center">${Number(row.total_actividades || 0)}</td>
+      <td class="text-center">${Number(row.total_funcionarios || 0)}</td>
+      <td class="text-center">${Number(row.actividades_analizadas || 0)}</td>
     `
 
     tbody.appendChild(tr)
@@ -158,17 +158,24 @@ function renderGrafico(data){
     chart.destroy()
   }
 
-  // 🔥 ordenar de mayor a menor
-  data.sort((a,b)=>b.total_actividades - a.total_actividades)
+  // 🔥 NORMALIZAR DATOS (CRÍTICO)
+  const normalizado = data.map(x => ({
+    dependencia: x.dependencia || 'Sin dependencia',
+    total: Number(x.total_actividades || 0),
+    analizadas: Number(x.actividades_analizadas || 0)
+  }))
 
-  const labels = data.map(x =>
+  // 🔥 ordenar de mayor a menor
+  normalizado.sort((a,b)=>b.total - a.total)
+
+  const labels = normalizado.map(x =>
     x.dependencia.length > 18
       ? x.dependencia.substring(0,18) + '...'
       : x.dependencia
   )
 
-  const actividades = data.map(x => x.total_actividades)
-  const analizadas = data.map(x => x.actividades_analizadas)
+  const actividades = normalizado.map(x => x.total)
+  const analizadas = normalizado.map(x => x.analizadas)
 
   chart = new Chart(ctx,{
     type:'bar',
