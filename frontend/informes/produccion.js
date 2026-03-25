@@ -145,7 +145,7 @@ function renderGrafico(data){
     chartDependencias.destroy()
   }
 
-  if(!data.length){
+  if(!data || !data.length){
     return
   }
 
@@ -155,16 +155,19 @@ function renderGrafico(data){
     const dep = row.dependencia || 'Sin dependencia'
     const valor = Number(row.total_tipos_documentales || 0)
 
-    if(valor > 0){
-      agrupado[dep] = (agrupado[dep] || 0) + valor
-    }
+    // 🔥 SIEMPRE incluir
+    agrupado[dep] = (agrupado[dep] || 0) + valor
   })
 
-  const labels = Object.keys(agrupado)
-  const values = Object.values(agrupado)
+  let labels = Object.keys(agrupado)
+  let values = Object.values(agrupado)
 
-  if(!labels.length){
-    return
+  // 🔥 SI TODO ES 0 → mostrar dummy
+  const total = values.reduce((a,b)=>a+b,0)
+
+  if(total === 0){
+    labels = ['Sin datos']
+    values = [1]
   }
 
   chartDependencias = new Chart(ctx,{
