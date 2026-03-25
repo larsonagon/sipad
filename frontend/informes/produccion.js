@@ -134,17 +134,25 @@ function renderTabla(data){
   })
 }
 
-/* 🔥 CORREGIDO AQUÍ */
 function renderGrafico(data){
 
   const canvas = document.getElementById('graficoDependencias')
-  if(!canvas || !data.length) return
+  if(!canvas) return
+
+  const ctx = canvas.getContext('2d')
+
+  if(chartDependencias){
+    chartDependencias.destroy()
+  }
+
+  if(!data.length){
+    return
+  }
 
   const agrupado = {}
 
   data.forEach(row=>{
     const dep = row.dependencia || 'Sin dependencia'
-
     const valor = Number(row.total_tipos_documentales || 0)
 
     if(valor > 0){
@@ -155,12 +163,8 @@ function renderGrafico(data){
   const labels = Object.keys(agrupado)
   const values = Object.values(agrupado)
 
-  if(!labels.length) return
-
-  const ctx = canvas.getContext('2d')
-
-  if(chartDependencias){
-    chartDependencias.destroy()
+  if(!labels.length){
+    return
   }
 
   chartDependencias = new Chart(ctx,{
@@ -174,6 +178,7 @@ function renderGrafico(data){
     options:{
       responsive:true,
       maintainAspectRatio:true,
+      cutout:'65%',
       plugins:{
         legend:{
           position:'bottom'
