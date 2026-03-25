@@ -76,7 +76,7 @@ async function cargarDatos(){
 }
 
 /* ============================= */
-/* KPI (CORREGIDO TIPOS) */
+/* KPI */
 /* ============================= */
 
 function renderKPI(data){
@@ -91,6 +91,11 @@ function renderKPI(data){
 
   const totalDependencias = data.length
 
+  const cumplimientoPromedio =
+    totalActividades === 0
+      ? 0
+      : Math.round((totalAnalizadas / totalActividades) * 100)
+
   container.innerHTML = `
     <div class="kpi">
       <h4>Dependencias</h4>
@@ -104,11 +109,15 @@ function renderKPI(data){
       <h4>Analizadas</h4>
       <span>${totalAnalizadas}</span>
     </div>
+    <div class="kpi">
+      <h4>% Cumplimiento</h4>
+      <span>${cumplimientoPromedio}%</span>
+    </div>
   `
 }
 
 /* ============================= */
-/* TABLA */
+/* TABLA + SEMÁFORO */
 /* ============================= */
 
 function renderTabla(data){
@@ -121,20 +130,40 @@ function renderTabla(data){
   if(!data.length){
 
     tbody.innerHTML =
-    `<tr><td colspan="4">Sin resultados</td></tr>`
+    `<tr><td colspan="5">Sin resultados</td></tr>`
 
     return
   }
 
   data.forEach(row=>{
 
+    const total = Number(row.total_actividades || 0)
+    const analizadas = Number(row.actividades_analizadas || 0)
+
+    const porcentaje =
+      total === 0 ? 0 : Math.round((analizadas / total) * 100)
+
+    const color = getColor(porcentaje)
+
     const tr=document.createElement('tr')
 
     tr.innerHTML=`
       <td>${row.dependencia || ''}</td>
-      <td class="text-center">${Number(row.total_actividades || 0)}</td>
+      <td class="text-center">${total}</td>
       <td class="text-center">${Number(row.total_funcionarios || 0)}</td>
-      <td class="text-center">${Number(row.actividades_analizadas || 0)}</td>
+      <td class="text-center">${analizadas}</td>
+      <td class="text-center">
+        <span style="
+          padding:4px 10px;
+          border-radius:20px;
+          font-size:12px;
+          font-weight:600;
+          color:white;
+          background:${color};
+        ">
+          ${porcentaje}%
+        </span>
+      </td>
     `
 
     tbody.appendChild(tr)
@@ -144,7 +173,19 @@ function renderTabla(data){
 }
 
 /* ============================= */
-/* GRAFICO PROFESIONAL */
+/* SEMÁFORO */
+/* ============================= */
+
+function getColor(valor){
+
+  if(valor >= 80) return '#16a34a'   // verde
+  if(valor >= 50) return '#f59e0b'   // amarillo
+  return '#dc2626'                   // rojo
+
+}
+
+/* ============================= */
+/* GRAFICO */
 /* ============================= */
 
 function renderGrafico(data){
@@ -158,14 +199,12 @@ function renderGrafico(data){
     chart.destroy()
   }
 
-  // 🔥 NORMALIZAR DATOS (CRÍTICO)
   const normalizado = data.map(x => ({
     dependencia: x.dependencia || 'Sin dependencia',
     total: Number(x.total_actividades || 0),
     analizadas: Number(x.actividades_analizadas || 0)
   }))
 
-  // 🔥 ordenar de mayor a menor
   normalizado.sort((a,b)=>b.total - a.total)
 
   const labels = normalizado.map(x =>
