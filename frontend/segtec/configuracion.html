@@ -9,6 +9,35 @@
 
 <link rel="stylesheet" href="/css/core/sipad-ui.css">
 
+<style>
+
+/* ========================= */
+/* CHECKBOX SYSTEM SIPAD */
+/* ========================= */
+
+.checkbox-group{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:8px;
+}
+
+.checkbox-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  font-size:14px;
+}
+
+.checkbox-item input{
+  width:16px;
+  height:16px;
+  cursor:pointer;
+}
+
+</style>
+
 </head>
 
 <body>
@@ -75,21 +104,21 @@ Defina la estructura funcional base para la identificación técnica de activida
 
 <label>Características funcionales</label>
 
-<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+<div class="checkbox-group">
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="recibe_solicitudes">
-Recibe solicitudes externas
+<span>Recibe solicitudes externas</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="emite_actos">
-Emite actos administrativos
+<span>Emite actos administrativos</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="produce_decisiones">
-Produce decisiones que afectan terceros
+<span>Produce decisiones que afectan terceros</span>
 </label>
 
 </div>
@@ -149,55 +178,63 @@ Produce decisiones que afectan terceros
 
 <div class="form-group">
 
-<label>
+<div class="checkbox-group">
+
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="actos_administrativos">
-Actos administrativos
+<span>Actos administrativos</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="informes_tecnicos">
-Informes técnicos
+<span>Informes técnicos</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="comunicaciones_oficiales">
-Comunicaciones oficiales
+<span>Comunicaciones oficiales</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="conceptos">
-Conceptos
+<span>Conceptos</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="contratos">
-Contratos
+<span>Contratos</span>
 </label>
+
+</div>
 
 </div>
 
 
 <div class="form-group">
 
-<label>
+<div class="checkbox-group">
+
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="actas">
-Actas
+<span>Actas</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="resoluciones">
-Resoluciones
+<span>Resoluciones</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="memorandos">
-Memorandos
+<span>Memorandos</span>
 </label>
 
-<label>
+<label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="expedientes_administrativos">
-Expedientes administrativos
+<span>Expedientes administrativos</span>
 </label>
+
+</div>
 
 </div>
 
