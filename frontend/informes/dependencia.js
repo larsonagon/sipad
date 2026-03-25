@@ -7,7 +7,9 @@ function getToken(){
 }
 
 function getUserFromToken(){
+
   const token = getToken()
+
   if(!token) return null
 
   try{
@@ -15,6 +17,7 @@ function getUserFromToken(){
   }catch{
     return null
   }
+
 }
 
 async function apiFetch(url){
@@ -34,6 +37,7 @@ async function apiFetch(url){
   }
 
   return res.json()
+
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
@@ -46,18 +50,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   renderHeader('informes',user)
 
-  await cargarDatos()
-
-  const btn = document.getElementById('btnExportar')
-  if(btn){
-    btn.addEventListener('click',exportarPDF)
-  }
+  cargarDatos()
 
 })
-
-/* ============================= */
-/* CARGA GENERAL */
-/* ============================= */
 
 async function cargarDatos(){
 
@@ -96,30 +91,47 @@ function renderKPI(data){
 
   const totalDependencias = data.length
 
-  const cumplimiento =
+  const cumplimientoPromedio =
     totalActividades === 0
       ? 0
       : Math.round((totalAnalizadas / totalActividades) * 100)
 
   container.innerHTML = `
-    <div class="kpi"><h4>Dependencias</h4><span>${totalDependencias}</span></div>
-    <div class="kpi"><h4>Total actividades</h4><span>${totalActividades}</span></div>
-    <div class="kpi"><h4>Analizadas</h4><span>${totalAnalizadas}</span></div>
-    <div class="kpi"><h4>% Cumplimiento</h4><span>${cumplimiento}%</span></div>
+    <div class="kpi">
+      <h4>Dependencias</h4>
+      <span>${totalDependencias}</span>
+    </div>
+    <div class="kpi">
+      <h4>Total actividades</h4>
+      <span>${totalActividades}</span>
+    </div>
+    <div class="kpi">
+      <h4>Analizadas</h4>
+      <span>${totalAnalizadas}</span>
+    </div>
+    <div class="kpi">
+      <h4>% Cumplimiento</h4>
+      <span>${cumplimientoPromedio}%</span>
+    </div>
   `
 }
 
 /* ============================= */
-/* TABLA */
+/* TABLA + SEMÁFORO */
 /* ============================= */
 
 function renderTabla(data){
 
-  const tbody = document.querySelector('#tablaDependencias tbody')
+  const tbody =
+  document.querySelector('#tablaDependencias tbody')
+
   tbody.innerHTML=''
 
   if(!data.length){
-    tbody.innerHTML = `<tr><td colspan="5">Sin resultados</td></tr>`
+
+    tbody.innerHTML =
+    `<tr><td colspan="5">Sin resultados</td></tr>`
+
     return
   }
 
@@ -131,20 +143,24 @@ function renderTabla(data){
     const porcentaje =
       total === 0 ? 0 : Math.round((analizadas / total) * 100)
 
-    const color =
-      porcentaje >= 80 ? '#16a34a' :
-      porcentaje >= 50 ? '#f59e0b' :
-      '#dc2626'
+    const color = getColor(porcentaje)
 
     const tr=document.createElement('tr')
 
     tr.innerHTML=`
-      <td>${row.dependencia}</td>
+      <td>${row.dependencia || ''}</td>
       <td class="text-center">${total}</td>
       <td class="text-center">${Number(row.total_funcionarios || 0)}</td>
       <td class="text-center">${analizadas}</td>
       <td class="text-center">
-        <span style="background:${color};color:white;padding:4px 10px;border-radius:20px">
+        <span style="
+          padding:4px 10px;
+          border-radius:20px;
+          font-size:12px;
+          font-weight:600;
+          color:white;
+          background:${color};
+        ">
           ${porcentaje}%
         </span>
       </td>
@@ -153,6 +169,18 @@ function renderTabla(data){
     tbody.appendChild(tr)
 
   })
+
+}
+
+/* ============================= */
+/* SEMÁFORO */
+/* ============================= */
+
+function getColor(valor){
+
+  if(valor >= 80) return '#16a34a'   // verde
+  if(valor >= 50) return '#f59e0b'   // amarillo
+  return '#dc2626'                   // rojo
 
 }
 
@@ -167,30 +195,41 @@ function renderGrafico(data){
 
   const ctx = canvas.getContext('2d')
 
-  if(chart) chart.destroy()
+  if(chart){
+    chart.destroy()
+  }
 
-  const normal = data.map(x => ({
-    dep: x.dependencia,
+  const normalizado = data.map(x => ({
+    dependencia: x.dependencia || 'Sin dependencia',
     total: Number(x.total_actividades || 0),
     analizadas: Number(x.actividades_analizadas || 0)
   }))
 
-  normal.sort((a,b)=>b.total - a.total)
+  normalizado.sort((a,b)=>b.total - a.total)
+
+  const labels = normalizado.map(x =>
+    x.dependencia.length > 18
+      ? x.dependencia.substring(0,18) + '...'
+      : x.dependencia
+  )
+
+  const actividades = normalizado.map(x => x.total)
+  const analizadas = normalizado.map(x => x.analizadas)
 
   chart = new Chart(ctx,{
     type:'bar',
     data:{
-      labels: normal.map(x=>x.dep),
+      labels,
       datasets:[
         {
           label:'Total',
-          data:normal.map(x=>x.total),
+          data:actividades,
           backgroundColor:'#2563eb',
           borderRadius:6
         },
         {
           label:'Analizadas',
-          data:normal.map(x=>x.analizadas),
+          data:analizadas,
           backgroundColor:'#cbd5f5',
           borderRadius:6
         }
@@ -203,68 +242,33 @@ function renderGrafico(data){
         legend:{
           position:'top',
           labels:{
-            font:{ size:12 }
+            font:{
+              size:12
+            }
           }
         }
       },
       scales:{
         x:{
           ticks:{
-            font:{ size:11 },
             maxRotation:0,
-            minRotation:0
+            minRotation:0,
+            font:{
+              size:11
+            }
           }
         },
         y:{
           beginAtZero:true,
           ticks:{
             stepSize:1,
-            font:{ size:11 }
+            font:{
+              size:11
+            }
           }
         }
       }
     }
   })
-
-}
-
-/* ============================= */
-/* EXPORTAR PDF (BACKEND) */
-/* ============================= */
-
-async function exportarPDF(){
-
-  try{
-
-    const token = getToken()
-
-    const res = await fetch('/api/informes/dependencias/pdf',{
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    })
-
-    if(!res.ok){
-      throw new Error('Error generando PDF')
-    }
-
-    const blob = await res.blob()
-    const url = window.URL.createObjectURL(blob)
-
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'informe_dependencias.pdf'
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-
-    window.URL.revokeObjectURL(url)
-
-  }catch(error){
-
-    console.error('Error exportando PDF:',error)
-    alert('No se pudo generar el PDF')
-
-  }
 
 }
