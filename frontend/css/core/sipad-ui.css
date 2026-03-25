@@ -869,7 +869,7 @@ html, body{
 
 .module-actions{
   display:flex;
-  justify-content:flex-end;
+  justify-content:center;
   gap:12px;
   margin-bottom:20px;
 }
@@ -1103,8 +1103,8 @@ select.form-control{
 }
 
 .btn-secondary{
-  background:#e5e7eb;
-  color:#f51804;
+  background:#f3f4f6;
+  color:#374151;
 }
 
 .btn-success{
