@@ -1,5 +1,7 @@
 import { renderHeader } from '../components/header.js'
 
+let chartDependencias = null
+
 function getToken(){
   return sessionStorage.getItem('token')
 }
@@ -109,7 +111,6 @@ async function consultar(){
 
   const params = new URLSearchParams()
 
-  // ✅ SOLO enviar si tiene valor
   if(dependencia){
     params.append('dependencia', dependencia)
   }
@@ -122,6 +123,7 @@ async function consultar(){
     const data = json.data || []
 
     renderTabla(data)
+    renderGrafico(data)
 
   }catch(error){
 
@@ -182,6 +184,55 @@ function renderTabla(data){
 
     tbody.appendChild(tr)
 
+  })
+
+}
+
+/* ============================= */
+/* RENDER GRAFICO */
+/* ============================= */
+
+function renderGrafico(data){
+
+  const canvas = document.getElementById('graficoDependencias')
+
+  if(!canvas) return
+  if(!data || !data.length) return
+
+  const agrupado = {}
+
+  data.forEach(row=>{
+    const dep = row.dependencia || 'Sin dependencia'
+    const valor = Number(row.documentos_generados || 0)
+
+    agrupado[dep] = (agrupado[dep] || 0) + valor
+  })
+
+  const labels = Object.keys(agrupado)
+  const values = Object.values(agrupado)
+
+  const ctx = canvas.getContext('2d')
+
+  if(chartDependencias){
+    chartDependencias.destroy()
+  }
+
+  chartDependencias = new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:labels,
+      datasets:[{
+        data:values
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{
+          position:'bottom'
+        }
+      }
+    }
   })
 
 }
