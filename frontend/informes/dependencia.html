@@ -11,6 +11,8 @@
 <link rel="stylesheet" href="/css/core/sipad-ui.css">
 
 <style>
+
+/* Alineación */
 .table th,
 .table td {
   vertical-align: middle;
@@ -20,6 +22,36 @@
 .table td.text-center {
   text-align: center;
 }
+
+/* KPI */
+.kpi-container{
+  display:flex;
+  gap:20px;
+  justify-content:center;
+  margin-bottom:20px;
+}
+
+.kpi{
+  background:#fff;
+  border-radius:10px;
+  padding:16px 24px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  text-align:center;
+  min-width:140px;
+}
+
+.kpi h4{
+  font-size:13px;
+  color:#64748b;
+  margin-bottom:6px;
+}
+
+.kpi span{
+  font-size:22px;
+  font-weight:600;
+  color:#1e293b;
+}
+
 </style>
 
 </head>
@@ -35,7 +67,10 @@
 <p>Resumen estadístico de actividades registradas</p>
 </div>
 
-<!-- 🔥 GRAFICO -->
+<!-- KPI -->
+<div class="kpi-container" id="kpis"></div>
+
+<!-- GRAFICO -->
 <div class="card" style="margin-bottom:20px">
 
 <div class="card-header">
@@ -43,7 +78,7 @@
 </div>
 
 <div class="card-body" style="display:flex;justify-content:center">
-<div style="width:100%;max-width:600px">
+<div style="width:100%;max-width:700px">
 <canvas id="graficoDependencias"></canvas>
 </div>
 </div>

@@ -43,18 +43,10 @@ async function apiFetch(url){
 document.addEventListener('DOMContentLoaded',async()=>{
 
   const token = getToken()
-
-  if(!token){
-    window.location.href='/'
-    return
-  }
+  if(!token) return window.location.href='/'
 
   const user = getUserFromToken()
-
-  if(!user){
-    window.location.href='/'
-    return
-  }
+  if(!user) return window.location.href='/'
 
   renderHeader('informes',user)
 
@@ -72,6 +64,7 @@ async function cargarDatos(){
     const data = json.data || []
 
     renderTabla(data)
+    renderKPI(data)
     renderGrafico(data)
 
   }catch(error){
@@ -81,6 +74,42 @@ async function cargarDatos(){
   }
 
 }
+
+/* ============================= */
+/* KPI */
+/* ============================= */
+
+function renderKPI(data){
+
+  const container = document.getElementById('kpis')
+
+  const totalActividades =
+    data.reduce((acc,x)=>acc + x.total_actividades,0)
+
+  const totalAnalizadas =
+    data.reduce((acc,x)=>acc + x.actividades_analizadas,0)
+
+  const totalDependencias = data.length
+
+  container.innerHTML = `
+    <div class="kpi">
+      <h4>Dependencias</h4>
+      <span>${totalDependencias}</span>
+    </div>
+    <div class="kpi">
+      <h4>Total actividades</h4>
+      <span>${totalActividades}</span>
+    </div>
+    <div class="kpi">
+      <h4>Analizadas</h4>
+      <span>${totalAnalizadas}</span>
+    </div>
+  `
+}
+
+/* ============================= */
+/* TABLA */
+/* ============================= */
 
 function renderTabla(data){
 
@@ -114,6 +143,10 @@ function renderTabla(data){
 
 }
 
+/* ============================= */
+/* GRAFICO PROFESIONAL */
+/* ============================= */
+
 function renderGrafico(data){
 
   const canvas = document.getElementById('graficoDependencias')
@@ -125,7 +158,15 @@ function renderGrafico(data){
     chart.destroy()
   }
 
-  const labels = data.map(x => x.dependencia)
+  // 🔥 ordenar de mayor a menor
+  data.sort((a,b)=>b.total_actividades - a.total_actividades)
+
+  const labels = data.map(x =>
+    x.dependencia.length > 18
+      ? x.dependencia.substring(0,18) + '...'
+      : x.dependencia
+  )
+
   const actividades = data.map(x => x.total_actividades)
   const analizadas = data.map(x => x.actividades_analizadas)
 
@@ -135,21 +176,50 @@ function renderGrafico(data){
       labels,
       datasets:[
         {
-          label:'Total actividades',
-          data:actividades
+          label:'Total',
+          data:actividades,
+          backgroundColor:'#2563eb',
+          borderRadius:6
         },
         {
           label:'Analizadas',
-          data:analizadas
+          data:analizadas,
+          backgroundColor:'#cbd5f5',
+          borderRadius:6
         }
       ]
     },
     options:{
       responsive:true,
       maintainAspectRatio:true,
+      plugins:{
+        legend:{
+          position:'top',
+          labels:{
+            font:{
+              size:12
+            }
+          }
+        }
+      },
       scales:{
+        x:{
+          ticks:{
+            maxRotation:0,
+            minRotation:0,
+            font:{
+              size:11
+            }
+          }
+        },
         y:{
-          beginAtZero:true
+          beginAtZero:true,
+          ticks:{
+            stepSize:1,
+            font:{
+              size:11
+            }
+          }
         }
       }
     }
