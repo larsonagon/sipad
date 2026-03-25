@@ -7,7 +7,6 @@ function getToken(){
 }
 
 function getUserFromToken(){
-
   const token = getToken()
   if(!token) return null
 
@@ -16,7 +15,6 @@ function getUserFromToken(){
   }catch{
     return null
   }
-
 }
 
 async function apiFetch(url){
@@ -36,7 +34,6 @@ async function apiFetch(url){
   }
 
   return res.json()
-
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
@@ -51,10 +48,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
   cargarDatos()
 
-  // 🔥 SAFE LISTENER (NO ROMPE SI NO EXISTE)
-  const btnExportar = document.getElementById('btnExportar')
-  if(btnExportar){
-    btnExportar.addEventListener('click',exportarPDF)
+  // ✅ BOTÓN EXPORTAR (SEGURO)
+  const btn = document.getElementById('btnExportar')
+  if(btn){
+    btn.addEventListener('click',exportarPDF)
   }
 
 })
@@ -163,7 +160,7 @@ function renderTabla(data){
 function renderGrafico(data){
 
   const canvas = document.getElementById('graficoDependencias')
-  if(!canvas) return
+  if(!canvas || !data.length) return
 
   const ctx = canvas.getContext('2d')
 
@@ -191,30 +188,32 @@ function renderGrafico(data){
 }
 
 /* ============================= */
-/* EXPORTAR PDF */
+/* EXPORTAR PDF (PUPPETEER) */
 /* ============================= */
 
 async function exportarPDF(){
 
   try{
 
-    const { jsPDF } = window.jspdf
-    const elemento = document.getElementById('reporte')
-
-    const canvas = await html2canvas(elemento,{
-      scale:2
+    const res = await fetch('/api/informes/dependencias/pdf',{
+      headers:{
+        Authorization:`Bearer ${getToken()}`
+      }
     })
 
-    const img = canvas.toDataURL('image/png')
+    if(!res.ok){
+      throw new Error('Error generando PDF')
+    }
 
-    const pdf = new jsPDF('p','mm','a4')
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
 
-    const width = 210
-    const height = (canvas.height * width) / canvas.width
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'informe_dependencias.pdf'
+    a.click()
 
-    pdf.addImage(img,'PNG',0,10,width,height)
-
-    pdf.save('informe_dependencias.pdf')
+    window.URL.revokeObjectURL(url)
 
   }catch(error){
 
