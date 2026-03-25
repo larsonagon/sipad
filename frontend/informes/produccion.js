@@ -7,7 +7,6 @@ function getToken(){
 }
 
 function getUserFromToken(){
-
   const token = getToken()
   if(!token) return null
 
@@ -16,11 +15,9 @@ function getUserFromToken(){
   }catch{
     return null
   }
-
 }
 
 async function apiFetch(url){
-
   const token = getToken()
 
   const res = await fetch(url,{
@@ -36,24 +33,15 @@ async function apiFetch(url){
   }
 
   return res.json()
-
 }
 
 document.addEventListener('DOMContentLoaded',async()=>{
 
   const token = getToken()
-
-  if(!token){
-    window.location.href='/'
-    return
-  }
+  if(!token) return window.location.href='/'
 
   const user = getUserFromToken()
-
-  if(!user){
-    window.location.href='/'
-    return
-  }
+  if(!user) return window.location.href='/'
 
   renderHeader('informes',user)
 
@@ -65,50 +53,31 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 })
 
-/* ============================= */
-/* CARGAR DEPENDENCIAS */
-/* ============================= */
-
 async function cargarDependencias(){
 
   const select = document.getElementById('dependencia')
-
   select.innerHTML = '<option value="">Todas</option>'
 
   try{
-
     const json = await apiFetch('/api/dependencias')
-
     const dependencias = json.data || json
 
     dependencias.forEach(dep=>{
-
       const option = document.createElement('option')
-
       option.value = dep.id
       option.textContent = dep.nombre
-
       select.appendChild(option)
-
     })
 
   }catch(error){
-
     console.error('Error cargando dependencias:',error)
-
   }
 
 }
 
-/* ============================= */
-/* CONSULTAR INFORME */
-/* ============================= */
-
 async function consultar(){
 
-  const dependencia =
-  document.getElementById('dependencia').value
-
+  const dependencia = document.getElementById('dependencia').value
   const params = new URLSearchParams()
 
   if(dependencia){
@@ -129,32 +98,21 @@ async function consultar(){
 
     console.error('Error generando informe:',error)
 
-    const tbody =
-    document.querySelector('#tablaResultados tbody')
-
-    tbody.innerHTML =
-    `<tr><td colspan="7">Error generando informe</td></tr>`
+    document.querySelector('#tablaResultados tbody').innerHTML =
+      `<tr><td colspan="7">Error generando informe</td></tr>`
 
   }
 
 }
 
-/* ============================= */
-/* RENDER TABLA */
-/* ============================= */
-
 function renderTabla(data){
 
-  const tbody =
-  document.querySelector('#tablaResultados tbody')
-
+  const tbody = document.querySelector('#tablaResultados tbody')
   tbody.innerHTML=''
 
   if(!data.length){
-
     tbody.innerHTML =
-    `<tr><td colspan="7">Sin resultados</td></tr>`
-
+      `<tr><td colspan="7">Sin resultados</td></tr>`
     return
   }
 
@@ -163,7 +121,6 @@ function renderTabla(data){
     const tr=document.createElement('tr')
 
     tr.innerHTML=`
-
       <td>${row.actividad || ''}</td>
       <td>${row.dependencia || ''}</td>
       <td>${row.documentos_generados || ''}</td>
@@ -171,30 +128,24 @@ function renderTabla(data){
       <td>${row.formato || ''}</td>
       <td>${row.volumen || ''}</td>
       <td>${row.frecuencia || ''}</td>
-
     `
 
     tbody.appendChild(tr)
-
   })
-
 }
 
-/* ============================= */
-/* RENDER GRAFICO */
-/* ============================= */
-
+/* 🔥 CORREGIDO AQUÍ */
 function renderGrafico(data){
 
   const canvas = document.getElementById('graficoDependencias')
-
-  if(!canvas || !data || !data.length) return
+  if(!canvas || !data.length) return
 
   const agrupado = {}
 
   data.forEach(row=>{
     const dep = row.dependencia || 'Sin dependencia'
-    const valor = Number(row.documentos_generados || 0)
+
+    const valor = Number(row.total_tipos_documentales || 0)
 
     if(valor > 0){
       agrupado[dep] = (agrupado[dep] || 0) + valor
@@ -215,7 +166,7 @@ function renderGrafico(data){
   chartDependencias = new Chart(ctx,{
     type:'doughnut',
     data:{
-      labels:labels,
+      labels,
       datasets:[{
         data:values
       }]
@@ -230,5 +181,4 @@ function renderGrafico(data){
       }
     }
   })
-
 }

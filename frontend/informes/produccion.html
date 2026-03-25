@@ -73,9 +73,9 @@ Generar informe
 <h3>Distribución de documentos por dependencia</h3>
 </div>
 
-<div class="card-body" style="display:flex;justify-content:center">
+<div class="card-body" style="display:flex;justify-content:center;align-items:center">
 
-<div style="width:100%;max-width:420px">
+<div style="width:100%;max-width:400px;">
 <canvas id="graficoDependencias"></canvas>
 </div>
 
@@ -125,10 +125,13 @@ Generar informe
 
 </main>
 
-<!-- Chart.js -->
+<!-- ✅ Chart.js (obligatorio antes del JS) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- JS del módulo -->
 <script type="module" src="/informes/produccion.js"></script>
+
+<!-- Otros componentes -->
 <script src="/components/password-modal.js"></script>
 
 </body>
