@@ -14,7 +14,7 @@ export async function generarPDFActividad(actividad) {
 
     console.log('🚀 Iniciando Puppeteer...')
 
-    // 🔥 CONFIGURACIÓN CORRECTA PARA LOCAL + RENDER
+    // 🔥 CONFIGURACIÓN LIMPIA Y ESTABLE (Render + Local)
     const launchOptions = {
       headless: 'new',
       args: [
@@ -25,13 +25,10 @@ export async function generarPDFActividad(actividad) {
       ]
     }
 
-    // 🔥 SOLO usa executablePath si existe (local)
-    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-      console.log('📌 Usando executablePath:', process.env.PUPPETEER_EXECUTABLE_PATH)
-      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
-    } else {
-      console.log('📌 Usando Chrome automático de Puppeteer')
-    }
+    // ❌ ELIMINADO: executablePath dinámico (esto estaba rompiendo Render)
+    // Puppeteer usará SU PROPIO Chrome interno
+
+    console.log('📌 Usando Chrome interno de Puppeteer')
 
     browser = await puppeteer.launch(launchOptions)
 
@@ -243,75 +240,61 @@ function construirHTML(a) {
       : 'No aplica'
 
   return`
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-
 <style>
-
 body{
 font-family: Arial, Helvetica, sans-serif;
 font-size:12px;
 color:#000;
 line-height:1.4;
 }
-
 h1{
 text-align:center;
 font-size:18px;
 margin-bottom:15px;
 }
-
 h2{
 font-size:14px;
 margin-top:25px;
 border-bottom:1px solid #ccc;
 padding-bottom:4px;
 }
-
 .campo{
 margin-bottom:10px;
 }
-
 .label{
 font-weight:bold;
 margin-bottom:3px;
 }
-
 .box{
 border:1px solid #ccc;
 padding:8px;
 min-height:18px;
 }
-
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:10px;
 }
-
 .firma{
 margin-top:60px;
 text-align:center;
 }
-
 .linea{
 width:300px;
 border-top:2px solid #000;
 margin:40px auto 10px auto;
 }
-
 .firma-nombre{
 font-weight:bold;
 }
-
 .firma-cargo{
 font-size:11px;
 color:#444;
 }
-
 .footer{
 margin-top:40px;
 border-top:1px solid #ccc;
@@ -321,158 +304,122 @@ color:#666;
 display:flex;
 justify-content:space-between;
 }
-
 </style>
-
 </head>
-
 <body>
-
 <h1>
 INSTRUMENTO DE CARACTERIZACIÓN DE ACTIVIDADES FUNCIONALES
 </h1>
-
 <div class="grid">
-
 <div class="campo">
 <div class="label">Entidad</div>
 <div class="box">${entidad}</div>
 </div>
-
 <div class="campo">
 <div class="label">Dependencia</div>
 <div class="box">${dependencia}</div>
 </div>
-
 <div class="campo">
 <div class="label">Funcionario</div>
 <div class="box">${funcionario}</div>
 </div>
-
 <div class="campo">
 <div class="label">Fecha</div>
 <div class="box">${fecha}</div>
 </div>
-
 </div>
-
 <h2>BLOQUE 1 — Identificación Básica de la Actividad</h2>
-
 <div class="campo">
 <div class="label">1. Nombre de la actividad</div>
 <div class="box">${texto(a.nombre)}</div>
 </div>
-
 <div class="campo">
 <div class="label">2. Cargo responsable</div>
 <div class="box">${cargo}</div>
 </div>
-
 <div class="campo">
 <div class="label">3. Clasificación funcional</div>
 <div class="box">${capitalizar(a.tipo_funcion)}</div>
 </div>
-
 <div class="campo">
 <div class="label">4. Periodicidad</div>
 <div class="box">${capitalizar(a.frecuencia)}</div>
 </div>
-
 <div class="campo">
 <div class="label">5. Descripción detallada</div>
 <div class="box">${texto(a.descripcion_funcional)}</div>
 </div>
-
 <h2>BLOQUE 2 — Producción Documental Asociada</h2>
-
 <div class="campo">
 <div class="label">6. ¿Genera documentos?</div>
 <div class="box">${siNo(a.genera_documentos)}</div>
 </div>
-
 <div class="campo">
 <div class="label">7. Documentos generados</div>
 <div class="box">${texto(a.documentos_generados)}</div>
 </div>
-
 <div class="campo">
 <div class="label">8. Formato de producción</div>
 <div class="box">${etiqueta(a.formato_produccion)}</div>
 </div>
-
 <div class="campo">
 <div class="label">9. Documentos requeridos para iniciar la actividad</div>
 <div class="box">${texto(a.recepcion_externa)}</div>
 </div>
-
 <div class="campo">
 <div class="label">10. Volumen documental</div>
 <div class="box">${volumenPersonalizado || etiqueta(volumen)}</div>
 </div>
-
 <div class="campo">
 <div class="label">11. Responsabilidad de custodia</div>
 <div class="box">${etiqueta(custodia)}</div>
 </div>
-
 <div class="campo">
 <div class="label">11a. Cargo responsable de custodia</div>
 <div class="box">${texto(a.cargo_custodia)}</div>
 </div>
-
 <div class="campo">
 <div class="label">12. Localización de documentos</div>
 <div class="box">${etiqueta(localizacion)}</div>
 </div>
-
 <h2>BLOQUE 3 — Gestión y Trámite</h2>
-
 <div class="campo">
 <div class="label">13. ¿Tiene procedimiento formal?</div>
 <div class="box">${siNo(a.tiene_pasos_formales)}</div>
 </div>
-
 <div class="campo">
 <div class="label">14. Dependencias involucradas</div>
 <div class="box">${dependenciasInvolucradas}</div>
 </div>
-
 <div class="campo">
 <div class="label">15. ¿Tiene plazo para cumplirse?</div>
 <div class="box">${tienePlazo}</div>
 </div>
-
 <div class="campo">
 <div class="label">15a. Plazo legal establecido</div>
 <div class="box">${plazoLegal}</div>
 </div>
-
 <div class="campo">
 <div class="label">15b. Tiempo promedio real de ejecución</div>
 <div class="box">${tiempoPromedio}</div>
 </div>
-
 <div class="campo">
 <div class="label">16. ¿Genera expediente?</div>
 <div class="box">${siNo(a.genera_expediente_propio)}</div>
 </div>
-
 <div class="campo">
 <div class="label">17. Norma que exige la actividad</div>
 <div class="box">${texto(a.norma_aplicable)}</div>
 </div>
-
 <div class="firma">
 <div class="linea"></div>
 <div class="firma-nombre">${funcionario}</div>
 <div class="firma-cargo">${cargo}</div>
 </div>
-
 <div class="footer">
 <div>Sistema inteligente para la planeación archivística documental – SIPAD</div>
 <div>Instrumento de caracterización de actividades funcionales</div>
 </div>
-
 </body>
 </html>
 `
