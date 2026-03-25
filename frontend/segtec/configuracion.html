@@ -15,10 +15,10 @@
 /* CHECKBOX SYSTEM SIPAD */
 /* ========================= */
 
-.checkbox-group{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.checkbox-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px 30px;
   margin-top:8px;
 }
 
@@ -104,7 +104,7 @@ Defina la estructura funcional base para la identificación técnica de activida
 
 <label>Características funcionales</label>
 
-<div class="checkbox-group">
+<div class="checkbox-grid">
 
 <label class="checkbox-item">
 <input type="checkbox" name="recibe_solicitudes">
@@ -176,18 +176,13 @@ Defina la estructura funcional base para la identificación técnica de activida
 
 <div class="card-body form-grid">
 
-<div class="form-group">
+<div class="form-group full">
 
-<div class="checkbox-group">
-
-<label class="checkbox-item">
-<input type="checkbox" name="tipos_documentales" value="actos_administrativos">
-<span>Actos administrativos</span>
-</label>
+<div class="checkbox-grid">
 
 <label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="informes_tecnicos">
-<span>Informes técnicos</span>
+<span>Informes</span>
 </label>
 
 <label class="checkbox-item">
@@ -205,15 +200,6 @@ Defina la estructura funcional base para la identificación técnica de activida
 <span>Contratos</span>
 </label>
 
-</div>
-
-</div>
-
-
-<div class="form-group">
-
-<div class="checkbox-group">
-
 <label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="actas">
 <span>Actas</span>
@@ -227,11 +213,6 @@ Defina la estructura funcional base para la identificación técnica de activida
 <label class="checkbox-item">
 <input type="checkbox" name="tipos_documentales" value="memorandos">
 <span>Memorandos</span>
-</label>
-
-<label class="checkbox-item">
-<input type="checkbox" name="tipos_documentales" value="expedientes_administrativos">
-<span>Expedientes administrativos</span>
 </label>
 
 </div>
