@@ -15,7 +15,7 @@ export async function generarPDFActividad(actividad) {
     // 🔥 CONFIGURACIÓN CORRECTA LOCAL + RENDER
     browser = await puppeteer.launch({
       headless: 'new',
-      args: [
+        args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
