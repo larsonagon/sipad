@@ -14,10 +14,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderHeader('ICAF');
 
-  /* ======================================================
-     CONTROL DE ROLES
-  ====================================================== */
-
   const rolNormalizado =
     (user?.rol || '')
     .toLowerCase()
@@ -26,10 +22,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const puedeAnalizar =
     rolNormalizado === 'superadmin' ||
     rolNormalizado === 'archivista';
-
-  /* ======================================================
-     ELEMENTOS
-  ====================================================== */
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
   const tablaContainer = document.getElementById('tablaRegistros');
@@ -42,10 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cerrarModalBtn = document.getElementById('cerrarModal');
 
   cerrarModalBtn?.addEventListener('click', cerrarModal);
-
-  /* ======================================================
-     FETCH SEGURO
-  ====================================================== */
 
   async function apiFetch(url, options = {}) {
 
@@ -72,10 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     return resp;
   }
-
-  /* ======================================================
-     UTILIDADES
-  ====================================================== */
 
   function capitalizar(texto){
     if(!texto) return '-';
@@ -145,10 +129,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href='/segtec/actividad.html';
   });
 
-  /* ======================================================
-     DESCARGAR PDF
-  ====================================================== */
-
   async function descargarPDFActividad(id){
 
     try{
@@ -198,10 +178,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   }
-
-  /* ======================================================
-     MODAL DE ANÁLISIS (AJUSTE)
-  ====================================================== */
 
   async function abrirModalAnalisis(id){
 
@@ -275,10 +251,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   }
-
-  /* ======================================================
-     MARCO FUNCIONAL (AJUSTE)
-  ====================================================== */
 
   async function cargarMarcoFuncional(){
 
@@ -367,10 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   }
 
-  /* ======================================================
-     ACTIVIDADES
-  ====================================================== */
-
   async function cargarActividades(){
 
     try{
@@ -407,10 +375,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
   }
-
-  /* ======================================================
-     TABLA (SIN CAMBIOS)
-  ====================================================== */
 
   function renderTabla(actividades){
 
@@ -457,7 +421,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ${botonAnalizar}
 
             <button
-              class="btn-secondary btn-sm pdf-btn"
+              class="btn-danger btn-sm pdf-btn"
               data-id="${a.id}">
               PDF
             </button>
