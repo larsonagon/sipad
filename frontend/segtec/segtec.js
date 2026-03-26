@@ -24,16 +24,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     rolNormalizado === 'archivista';
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
-  const tablaContainer = document.getElementById('tablaRegistros');
-  const mensaje = document.getElementById('mensaje');
-  const panelMarco = document.getElementById('panelMarcoFuncional');
+  const tablaContainer   = document.getElementById('tablaRegistros');
+  const mensaje          = document.getElementById('mensaje');
+  const panelMarco       = document.getElementById('panelMarcoFuncional');
 
-  const modal = document.getElementById('modalBase');
-  const modalBody = document.getElementById('modalBody');
-  const modalFooter = document.getElementById('modalFooter');
+  const modal          = document.getElementById('modalBase');
+  const modalBody      = document.getElementById('modalBody');
+  const modalFooter    = document.getElementById('modalFooter');
   const cerrarModalBtn = document.getElementById('cerrarModal');
 
   cerrarModalBtn?.addEventListener('click', cerrarModal);
+
+  // =====================================================
+  // API FETCH
+  // =====================================================
 
   async function apiFetch(url, options = {}) {
 
@@ -46,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       headers['Content-Type'] = 'application/json';
     }
 
-    const resp = await fetch(url,{
+    const resp = await fetch(url, {
       ...options,
       headers
     });
@@ -61,47 +65,51 @@ document.addEventListener('DOMContentLoaded', async () => {
     return resp;
   }
 
-  function capitalizar(texto){
-    if(!texto) return '-';
+  // =====================================================
+  // UTILIDADES
+  // =====================================================
+
+  function capitalizar(texto) {
+    if (!texto) return '-';
     const limpio = texto.toString().toLowerCase().trim();
     return limpio.charAt(0).toUpperCase() + limpio.slice(1);
   }
 
-  function formatearFecha(fechaISO){
-    if(!fechaISO) return '-';
+  function formatearFecha(fechaISO) {
+    if (!fechaISO) return '-';
     return new Date(fechaISO).toLocaleDateString('es-CO');
   }
 
-  function formatearDisposicion(valor){
+  function formatearDisposicion(valor) {
 
-    if(!valor) return '-';
+    if (!valor) return '-';
 
     const mapa = {
-      conservacion_total: 'Conservación total',
-      eliminacion: 'Eliminación',
-      seleccion: 'Selección',
-      medio_tecnico: 'Medio técnico (Microfilmación o digitalización)'
+      conservacion_total : 'Conservación total',
+      eliminacion        : 'Eliminación',
+      seleccion          : 'Selección',
+      medio_tecnico      : 'Medio técnico (Microfilmación o digitalización)'
     };
 
     const clave = valor
       .toString()
       .toLowerCase()
-      .replace(/\s+/g,'_')
+      .replace(/\s+/g, '_')
       .trim();
 
     return mapa[clave] || 'Eliminación';
   }
 
-  function badgeEstado(estado){
+  function badgeEstado(estado) {
 
     const normalizado = (estado || 'borrador').toLowerCase();
 
     const clases = {
-      borrador:'badge-neutral',
-      identificada:'badge-warning',
-      caracterizada:'badge-info',
-      analizada:'badge-success',
-      completa:'badge-success'
+      borrador    : 'badge-neutral',
+      identificada: 'badge-warning',
+      caracterizada: 'badge-info',
+      analizada   : 'badge-success',
+      completa    : 'badge-success'
     };
 
     return `
@@ -111,95 +119,114 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
   }
 
-  function cerrarModal(){
+  function cerrarModal() {
     modal?.classList.add('hidden');
-    if(modalBody) modalBody.innerHTML='';
-    if(modalFooter) modalFooter.innerHTML='';
+    if (modalBody)   modalBody.innerHTML   = '';
+    if (modalFooter) modalFooter.innerHTML = '';
   }
 
-  function mostrarError(texto){
-    mensaje.innerHTML=`
+  function mostrarError(texto) {
+    mensaje.innerHTML = `
       <div class="alert-error">
         ${texto}
       </div>
     `;
   }
 
-  nuevaActividadBtn?.addEventListener('click',()=>{
-    window.location.href='/segtec/actividad.html';
+  // =====================================================
+  // NUEVA ACTIVIDAD
+  // =====================================================
+
+  nuevaActividadBtn?.addEventListener('click', () => {
+    window.location.href = '/segtec/actividad.html';
   });
 
-  async function descargarPDFActividad(id){
+  // =====================================================
+  // DESCARGAR PDF
+  // =====================================================
 
-    try{
+  async function descargarPDFActividad(id) {
 
-      const resp = await fetch(`/api/segtec/actividades/${id}/pdf`,{
-        headers:{
-          Authorization:`Bearer ${token}`
-        }
+    const btn = tablaContainer.querySelector(`.pdf-btn[data-id="${id}"]`);
+
+    if (btn) {
+      btn.disabled     = true;
+      btn.textContent  = 'Generando...';
+    }
+
+    try {
+
+      const resp = await fetch(`/api/segtec/actividades/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      if(resp.status===401){
+      if (resp.status === 401) {
         sessionStorage.clear();
         localStorage.clear();
-        window.location.href='/';
+        window.location.href = '/';
         return;
       }
 
-      if(!resp.ok){
+      if (!resp.ok) {
         const text = await resp.text();
         throw new Error(text || 'Error generando PDF');
       }
 
       const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url  = window.URL.createObjectURL(blob);
 
       const isSafari =
         /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-      if(isSafari){
-        window.open(url,'_blank');
-      }else{
-        const a=document.createElement('a');
-        a.href=url;
-        a.download=`actividad_${id}.pdf`;
+      if (isSafari) {
+        window.open(url, '_blank');
+      } else {
+        const a = document.createElement('a');
+        a.href     = url;
+        a.download = `actividad_${id}.pdf`;
         document.body.appendChild(a);
         a.click();
         a.remove();
       }
 
-      setTimeout(()=>{
-        window.URL.revokeObjectURL(url);
-      },1500);
+      setTimeout(() => window.URL.revokeObjectURL(url), 1500);
 
-    }catch(error){
+    } catch (error) {
       console.error(error);
       alert('Error generando el PDF.');
+    } finally {
+      if (btn) {
+        btn.disabled    = false;
+        btn.textContent = 'PDF';
+      }
     }
-
   }
 
-  async function abrirModalAnalisis(id){
+  // =====================================================
+  // MODAL ANÁLISIS
+  // =====================================================
 
-    try{
+  async function abrirModalAnalisis(id) {
+
+    try {
 
       const resp = await apiFetch(
         `/api/segtec/actividades/${id}/analizar`,
-        { method:'POST' }
+        { method: 'POST' }
       );
 
-      if(!resp) return;
+      if (!resp) return;
 
       const json = await resp.json();
 
-      if(!json.ok){
+      if (!json.ok) {
         alert('No se pudo generar el análisis.');
         return;
       }
 
       const a = json.data || {};
 
-      const serie = a.serie || a.serie_propuesta || '-';
+      const serie    = a.serie    || a.serie_propuesta    || '-';
       const subserie = a.subserie || a.subserie_propuesta || '-';
 
       modalBody.innerHTML = `
@@ -245,25 +272,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       modal.classList.remove('hidden');
 
-    }catch(error){
+    } catch (error) {
       console.error(error);
       alert('Error generando análisis.');
     }
-
   }
 
-  async function cargarMarcoFuncional(){
+  // =====================================================
+  // MARCO FUNCIONAL
+  // =====================================================
 
-    try{
+  async function cargarMarcoFuncional() {
+
+    try {
 
       const resp = await apiFetch('/api/segtec/configuracion');
-      if(!resp) return false;
+      if (!resp) return false;
 
       const json = await resp.json();
 
-      if(!resp.ok || !json.ok || !json.configuracion){
+      if (!resp.ok || !json.ok || !json.configuracion) {
 
-        panelMarco.innerHTML=`
+        panelMarco.innerHTML = `
           <div class="card card-warning">
             <h3>Configuración funcional no definida</h3>
             <p>
@@ -277,20 +307,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         nuevaActividadBtn?.classList.add('hidden');
-        tablaContainer.innerHTML='';
+        tablaContainer.innerHTML = '';
 
         document
-        .getElementById('btnConfigurar')
-        ?.addEventListener('click',()=>{
-          window.location.href='/segtec/configuracion.html';
-        });
+          .getElementById('btnConfigurar')
+          ?.addEventListener('click', () => {
+            window.location.href = '/segtec/configuracion.html';
+          });
 
         return false;
       }
 
-      const c=json.configuracion;
+      const c = json.configuracion;
 
-      panelMarco.innerHTML=`
+      panelMarco.innerHTML = `
         <div class="card">
 
           <div class="module-actions space-between">
@@ -331,33 +361,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       return true;
 
-    }catch(err){
+    } catch (err) {
       console.error(err);
       mostrarError('Error cargando configuración funcional.');
       return false;
     }
-
   }
 
-  async function cargarActividades(){
+  // =====================================================
+  // CARGAR ACTIVIDADES
+  // =====================================================
 
-    try{
+  async function cargarActividades() {
+
+    try {
 
       const resp = await apiFetch('/api/segtec/actividades');
-      if(!resp) return;
+      if (!resp) return;
 
       const json = await resp.json();
 
-      if(!resp.ok || !json.ok){
+      if (!resp.ok || !json.ok) {
         mostrarError('Error cargando actividades.');
         return;
       }
 
       const actividades = json.data || [];
 
-      if(!actividades.length){
+      if (!actividades.length) {
 
-        tablaContainer.innerHTML=`
+        tablaContainer.innerHTML = `
           <div class="empty-state">
             <h3>No hay actividades técnicas registradas aún.</h3>
             <p>Al crear una nueva actividad, iniciará el proceso técnico.</p>
@@ -369,33 +402,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       renderTabla(actividades);
 
-    }catch(error){
+    } catch (error) {
       console.error(error);
       mostrarError('Error de conexión con el servidor.');
     }
-
   }
 
-  function renderTabla(actividades){
+  // =====================================================
+  // RENDER TABLA
+  // =====================================================
 
-    const filas = actividades.map(a=>{
+  function renderTabla(actividades) {
 
-      const fecha = formatearFecha(a.created_at);
+    const filas = actividades.map(a => {
+
+      const fecha  = formatearFecha(a.created_at);
       const estado = (a.estado_general || '').toLowerCase().trim();
 
-      let botonAnalizar='';
+      let botonAnalizar = '';
 
-      if(
-        (estado==='caracterizada' || estado==='analizada')
+      if (
+        (estado === 'caracterizada' || estado === 'analizada')
         && puedeAnalizar
-      ){
+      ) {
 
         const textoBoton =
-          estado==='analizada'
+          estado === 'analizada'
           ? 'Reanalizar'
           : 'Analizar';
 
-        botonAnalizar=`
+        botonAnalizar = `
           <button
             class="btn-warning btn-sm analizar-btn"
             data-id="${a.id}">
@@ -431,7 +467,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     });
 
-    tablaContainer.innerHTML=`
+    tablaContainer.innerHTML = `
       <div style="width:100%;">
         <table class="table" style="width:100%;">
           <thead>
@@ -451,38 +487,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     `;
 
     tablaContainer
-    .querySelectorAll('.abrir-btn')
-    .forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const id=btn.dataset.id;
-        window.location.href=
-        `/segtec/actividad.html?id=${id}`;
+      .querySelectorAll('.abrir-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          window.location.href = `/segtec/actividad.html?id=${id}`;
+        });
       });
-    });
 
     tablaContainer
-    .querySelectorAll('.pdf-btn')
-    .forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const id=btn.dataset.id;
-        descargarPDFActividad(id);
+      .querySelectorAll('.pdf-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          descargarPDFActividad(id);
+        });
       });
-    });
 
     tablaContainer
-    .querySelectorAll('.analizar-btn')
-    .forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const id = btn.dataset.id;
-        abrirModalAnalisis(id);
+      .querySelectorAll('.analizar-btn')
+      .forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          abrirModalAnalisis(id);
+        });
       });
-    });
-
   }
+
+  // =====================================================
+  // INIT
+  // =====================================================
 
   const configuracionOk = await cargarMarcoFuncional();
 
-  if(configuracionOk){
+  if (configuracionOk) {
     await cargarActividades();
   }
 

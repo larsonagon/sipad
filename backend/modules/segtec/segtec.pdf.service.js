@@ -1,5 +1,4 @@
-import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
+import { getBrowser } from './segtec.pdf.browser.js'
 
 export async function generarPDFActividad(actividad) {
 
@@ -9,38 +8,13 @@ export async function generarPDFActividad(actividad) {
 
   const html = construirHTML(actividad)
 
-  let browser
+  const browser = await getBrowser()
+  const page = await browser.newPage()
 
   try {
 
-    console.log('🚀 Iniciando Puppeteer...')
-
-    // 🔥 CONFIGURACIÓN REAL PARA RENDER
-    const launchOptions = {
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: chromium.headless,
-    }
-
-    console.log('📌 Usando Chromium de @sparticuz')
-
-    browser = await puppeteer.launch(launchOptions)
-
-    const page = await browser.newPage()
-
     await page.setContent(html, {
-      waitUntil: 'networkidle0'
-    })
-
-    // 🔥 Espera robusta para Render
-    await page.evaluate(() => {
-      return new Promise(resolve => {
-        if (document.readyState === 'complete') {
-          resolve()
-        } else {
-          window.addEventListener('load', resolve)
-        }
-      })
+      waitUntil: 'domcontentloaded'   // más rápido que networkidle0
     })
 
     await page.emulateMediaType('screen')
@@ -58,20 +32,8 @@ export async function generarPDFActividad(actividad) {
 
     return pdf
 
-  } catch (error) {
-
-    console.error('🔥 ERROR REAL PDF:', error)
-
-    throw new Error(
-      error?.message || 'Error generando PDF'
-    )
-
   } finally {
-
-    if (browser) {
-      await browser.close()
-    }
-
+    await page.close()                // cierra la página, no el browser
   }
 }
 
@@ -170,7 +132,7 @@ function formatearFecha(fecha) {
 }
 
 ////////////////////////////////////////////////////////
-// HTML (NO TOCADO)
+// HTML
 ////////////////////////////////////////////////////////
 
 function construirHTML(a) {
