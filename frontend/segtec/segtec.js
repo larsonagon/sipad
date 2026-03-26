@@ -150,8 +150,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = tablaContainer.querySelector(`.pdf-btn[data-id="${id}"]`);
 
     if (btn) {
-      btn.disabled     = true;
-      btn.textContent  = 'Generando...';
+      btn.disabled    = true;
+      btn.textContent = '⏳';
     }
 
     try {
