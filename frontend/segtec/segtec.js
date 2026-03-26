@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             <button
               class="btn-danger btn-sm pdf-btn"
-              data-id="${a.id}">
+              data-id="${a.id}"
               style="width:70px;">
               PDF
             </button>
