@@ -171,7 +171,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // ACTUALIZAR COMPLETO
+  // ACTUALIZAR COMPLETO (FIX REAL)
   // =====================================================
 
   async function actualizar(req, res) {
@@ -187,10 +187,7 @@ export function SEGTECActividadesController(service) {
       const data = normalizarCampos(req.body || {})
 
       const estado =
-        await service.actualizarCompleto(id, {
-          ...data,
-          usuario_id: usuarioId
-        })
+        await service.actualizarCompleto(id, data, usuarioId)
 
       return res.status(200).json({
         ok: true,
@@ -283,7 +280,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // BLOQUES (FIX MULTI-TENANT)
+  // BLOQUES (FIX REAL)
   // =====================================================
 
   async function actualizarBloque1(req, res) {
@@ -298,10 +295,7 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      await service.actualizarBloque1(id, {
-        ...data,
-        usuario_id: usuarioId
-      })
+      await service.actualizarBloque1(id, data, usuarioId)
 
       return res.status(200).json({ ok: true })
 
@@ -328,10 +322,7 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      await service.actualizarBloque2(id, {
-        ...data,
-        usuario_id: usuarioId
-      })
+      await service.actualizarBloque2(id, data, usuarioId)
 
       return res.status(200).json({ ok: true })
 
@@ -358,10 +349,7 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      await service.actualizarBloque3(id, {
-        ...data,
-        usuario_id: usuarioId
-      })
+      await service.actualizarBloque3(id, data, usuarioId)
 
       return res.status(200).json({ ok: true })
 
@@ -409,7 +397,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // ELIMINAR (FIX)
+  // ELIMINAR
   // =====================================================
 
   async function eliminar(req, res) {
@@ -438,7 +426,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // ANALIZAR
+  // ANALIZAR (FIX REAL)
   // =====================================================
 
   async function analizar(req, res) {
@@ -452,7 +440,7 @@ export function SEGTECActividadesController(service) {
       if (!validarId(id, res)) return
 
       const resultado =
-        await service.analizarActividad(id)
+        await service.analizarActividad(id, usuarioId)
 
       if (!resultado) {
         return res.status(400).json({
@@ -479,7 +467,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // COMPLETAR (FIX)
+  // COMPLETAR
   // =====================================================
 
   async function marcarCompleta(req, res) {

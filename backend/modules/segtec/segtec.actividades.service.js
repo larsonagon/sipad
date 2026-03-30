@@ -98,10 +98,13 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // ESTADO DE ACTIVIDAD
+  // ESTADO DE ACTIVIDAD (🔥 AJUSTADO MULTI-TENANT)
   // =====================================================
 
-  async function recalcularEstadoActividad(id) {
+  async function recalcularEstadoActividad(id, usuarioId) {
+
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
 
     const actividad =
       await actividadesRepository.obtenerActividadPorId(id)
@@ -117,7 +120,7 @@ export function SEGTECActividadesService(
     if (analisis)
       estado = 'analizada'
 
-    await actividadesRepository.actualizarEstadoGeneral(id, estado)
+    await actividadesRepository.actualizarEstadoGeneral(id, estado, usuarioId)
 
     return estado
   }
@@ -141,7 +144,7 @@ export function SEGTECActividadesService(
         dependencia_id: dependenciaId,
         usuario_id: usuarioId,
         proceso_id: procesoId,
-        estado_general: 'caracterizada' // 🔥 ya no existe borrador
+        estado_general: 'caracterizada'
       })
 
     return {
@@ -203,11 +206,10 @@ export function SEGTECActividadesService(
   // ACTUALIZACIÓN COMPLETA
   // =====================================================
 
-  async function actualizarCompleto(id, data) {
+  async function actualizarCompleto(id, data, usuarioId) {
 
     await validarEditable(id)
 
-    // 🔥 VALIDACIÓN TOTAL AQUÍ
     validarActividad(data)
 
     if (
@@ -246,7 +248,7 @@ export function SEGTECActividadesService(
       await validacionRepository.guardar(id, data)
     }
 
-    return recalcularEstadoActividad(id)
+    return recalcularEstadoActividad(id, usuarioId)
   }
 
   // =====================================================
@@ -264,19 +266,19 @@ export function SEGTECActividadesService(
   // BLOQUES
   // =====================================================
 
-  async function actualizarBloque1(id, data) {
+  async function actualizarBloque1(id, data, usuarioId) {
     await validarEditable(id)
     await actividadesRepository.actualizarBloque1(id, data)
-    return recalcularEstadoActividad(id)
+    return recalcularEstadoActividad(id, usuarioId)
   }
 
-  async function actualizarBloque2(id, data) {
+  async function actualizarBloque2(id, data, usuarioId) {
     await validarEditable(id)
     await actividadesRepository.actualizarBloque2(id, data)
-    return recalcularEstadoActividad(id)
+    return recalcularEstadoActividad(id, usuarioId)
   }
 
-  async function actualizarBloque3(id, data) {
+  async function actualizarBloque3(id, data, usuarioId) {
     await validarEditable(id)
     await actividadesRepository.actualizarBloque3(id, data)
 
@@ -284,14 +286,14 @@ export function SEGTECActividadesService(
       await validacionRepository.guardar(id, data)
     }
 
-    return recalcularEstadoActividad(id)
+    return recalcularEstadoActividad(id, usuarioId)
   }
 
   // =====================================================
   // ANALIZAR
   // =====================================================
 
-  async function analizarActividad(id) {
+  async function analizarActividad(id, usuarioId) {
 
     const actividad =
       await actividadesRepository.obtenerActividadPorId(id)
@@ -358,7 +360,7 @@ export function SEGTECActividadesService(
     )
 
     const estado =
-      await recalcularEstadoActividad(id)
+      await recalcularEstadoActividad(id, usuarioId)
 
     return {
       ...resultadoFinal,

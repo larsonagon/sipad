@@ -44,6 +44,9 @@ import cargosRoutes from './backend/modules/cargos/cargos.routes.js'
 import { runEntidadesMigration } from './backend/modules/entidades/entidades.migration.js'
 import { runMultiTenantMigration } from './backend/modules/entidades/entidades.extend.migration.js'
 
+// 🔥 NUEVO: RUTAS ENTIDADES
+import entidadesRoutes from './backend/modules/entidades/entidades.routes.js'
+
 // USUARIOS
 import { runUsuariosMasterMigration } from './backend/modules/usuarios/usuarios.master.migration.js'
 import { runUsuariosExtendMigration } from './backend/modules/usuarios/usuarios.extend.migration.js'
@@ -179,6 +182,10 @@ async function init() {
     app.use('/api/dependencias', dependenciasRoutes)
     app.use('/api/niveles', nivelesRoutes)
     app.use('/api/cargos', cargosRoutes)
+
+    // 🔥 NUEVO: ENTIDADES
+    app.use('/api/entidades', entidadesRoutes)
+
     app.use('/api/usuarios', usuariosRoutes)
     app.use('/api/configuracion', configuracionRoutes)
     app.use('/api/auditoria', auditoriaRoutes)
@@ -230,7 +237,7 @@ async function init() {
     })
 
     // ==================================================
-    // SERVER (AJUSTE PARA RENDER)
+    // SERVER
     // ==================================================
 
     app.listen(PORT, '0.0.0.0', () => {
