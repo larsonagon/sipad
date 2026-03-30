@@ -79,7 +79,6 @@ body{
   max-width:1200px;
   margin:0 auto;
   display:flex;
-  justify-content:space-between;
   align-items:center;
   padding:8px 16px;
   height:56px;
@@ -98,6 +97,7 @@ body{
 .pig-nav{
   display:flex;
   gap:8px;
+  align-items:center;
 }
 
 .pig-nav button{
@@ -1133,4 +1133,15 @@ select.form-control{
   height:40px;
   font-size:14px;
   padding:0 18px;
+}
+
+.pig-header-left{
+  flex:1;
+}
+
+.pig-header-right{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-left:auto; /* 🔥 empuja todo a la derecha */
 }
