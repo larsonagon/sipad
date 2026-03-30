@@ -66,13 +66,15 @@ router.post('/login', async (req, res) => {
       })
     }
 
-    // 🔥 VALIDACIÓN CRÍTICA NUEVA
     if (!user.entidad_id) {
       console.error(`[AUTH][${requestId}] Usuario sin entidad asignada`)
       return res.status(500).json({
         error: 'Usuario sin entidad válida'
       })
     }
+
+    // 🔥 YA NO CONSULTAMOS BD → VIENE DEL MODELO
+    const nombreEntidad = user.entidad_nombre || null
 
     // =========================
     // ACCESS TOKEN
@@ -87,8 +89,8 @@ router.post('/login', async (req, res) => {
 
       nivel_acceso: nivelAcceso,
 
-      // 🔥 CAMBIO CLAVE
       entidad_id: user.entidad_id,
+      entidad_nombre: nombreEntidad, // 🔥 AJUSTADO
 
       id_dependencia: Number(user.id_dependencia ?? 0),
       dependencia: user.dependencia_nombre,
@@ -153,8 +155,8 @@ router.post('/login', async (req, res) => {
 
         dependencia: user.dependencia_nombre,
 
-        // 🔥 CAMBIO CLAVE
         entidad_id: user.entidad_id,
+        entidad_nombre: nombreEntidad, // 🔥 AJUSTADO
 
         id_dependencia: Number(user.id_dependencia ?? 0),
 
@@ -207,6 +209,7 @@ router.post('/refresh', async (req, res) => {
         c.nombre AS cargo_nombre,
         r.nivel_acceso,
         u.entidad_id,
+        e.nombre AS entidad_nombre, -- 🔥 NUEVO
         u.id_dependencia,
         d.nombre AS dependencia_nombre,
         u.es_master_admin,
@@ -216,6 +219,7 @@ router.post('/refresh', async (req, res) => {
       JOIN roles r ON r.id = u.id_rol
       LEFT JOIN cargos c ON c.id = u.id_cargo
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
+      LEFT JOIN entidades e ON e.id = u.entidad_id -- 🔥 NUEVO
       WHERE rt.token = ?
       `,
       [refreshToken]
@@ -235,7 +239,6 @@ router.post('/refresh', async (req, res) => {
 
     const nivelAcceso = Number(row.nivel_acceso ?? 0)
 
-    // 🔥 VALIDACIÓN NUEVA
     if (!row.entidad_id) {
       return res.status(500).json({
         error: 'Usuario sin entidad válida'
@@ -251,8 +254,8 @@ router.post('/refresh', async (req, res) => {
 
       nivel_acceso: nivelAcceso,
 
-      // 🔥 CAMBIO CLAVE
       entidad_id: row.entidad_id,
+      entidad_nombre: row.entidad_nombre || null, // 🔥 AJUSTADO
 
       id_dependencia: Number(row.id_dependencia ?? 0),
       dependencia: row.dependencia_nombre,

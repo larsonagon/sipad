@@ -219,7 +219,11 @@ export function renderHeader(activeModule) {
 
             <div class="pig-user-meta">
               ${user.rol || ''}
-              ${user.dependencia ? ' – ' + user.dependencia : ''}
+              ${
+                user.entidad_nombre
+                  ? ' – ' + user.entidad_nombre
+                  : (user.dependencia ? ' – ' + user.dependencia : '')
+              }
             </div>
 
           </div>

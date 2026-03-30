@@ -76,6 +76,7 @@ export async function findUserByUsernameDB(username) {
       u.password_hash,
       u.nombre_completo,
       u.entidad_id,
+      e.nombre AS entidad_nombre, -- 🔥 NUEVO
       u.id_dependencia,
       u.es_master_admin,
       u.es_responsable_dependencia,
@@ -87,6 +88,7 @@ export async function findUserByUsernameDB(username) {
     JOIN roles r ON r.id = u.id_rol
     LEFT JOIN dependencias d ON d.id = u.id_dependencia
     LEFT JOIN cargos c ON c.id = u.id_cargo
+    LEFT JOIN entidades e ON e.id = u.entidad_id -- 🔥 NUEVO JOIN
     WHERE u.username = ?
       AND u.estado = 1
       AND u.bloqueado = false
@@ -110,8 +112,9 @@ export async function findUserByUsernameDB(username) {
     cargo: row.cargo_nombre,
     cargo_nombre: row.cargo_nombre,
 
-    // 🔥 CAMBIO CLAVE
+    // 🔥 MULTI-TENANT
     entidad_id: row.entidad_id,
+    entidad_nombre: row.entidad_nombre, // 🔥 NUEVO
 
     id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
 
