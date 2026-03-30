@@ -142,7 +142,7 @@ async function init() {
     app.use(express.json())
 
     // ==================================================
-    // 🔥 RATE LIMIT SOLO LOGIN
+    // RATE LIMIT LOGIN
     // ==================================================
 
     app.use('/api/auth/login', loginLimiter)
@@ -197,19 +197,18 @@ async function init() {
     const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
-    // 🔥 MIDDLEWARE GLOBAL MULTI-TENANT
+    // 🔥 MIDDLEWARE GLOBAL CORRECTO
     // ==================================================
 
-    app.use('/api',  multiTenant)
+    app.use('/api', verificarJWT, multiTenant)
 
     // ==================================================
     // RUTAS
     // ==================================================
 
-    // AUTH sin JWT global
+    // AUTH sin protección
     app.use('/api/auth', authRoutes)
 
-    // 🔒 YA NO REPITES MIDDLEWARES
     app.use('/api/roles', rolesRoutes)
     app.use('/api/dependencias', dependenciasRoutes)
     app.use('/api/niveles', nivelesRoutes)
