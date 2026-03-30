@@ -63,7 +63,6 @@ export function SEGTECActividadesService(
     if(data.genera_expediente_propio === null || data.genera_expediente_propio === undefined)
       errores.push('16. Debe indicar si genera expediente')
 
-    // Condicionales
     if(data.genera_documentos == 1 && !data.documentos_generados)
       errores.push('6. Debe especificar los documentos generados')
 
@@ -98,7 +97,7 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // ESTADO DE ACTIVIDAD (🔥 AJUSTADO MULTI-TENANT)
+  // ESTADO DE ACTIVIDAD
   // =====================================================
 
   async function recalcularEstadoActividad(id, usuarioId) {
@@ -203,12 +202,15 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // ACTUALIZACIÓN COMPLETA
+  // ACTUALIZACIÓN COMPLETA (🔥 FIX)
   // =====================================================
 
   async function actualizarCompleto(id, data, usuarioId) {
 
     await validarEditable(id)
+
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
 
     validarActividad(data)
 
@@ -218,7 +220,7 @@ export function SEGTECActividadesService(
       data.tipo_funcion ||
       data.descripcion_funcional
     ) {
-      await actividadesRepository.actualizarBloque1(id, data)
+      await actividadesRepository.actualizarBloque1(id, data, usuarioId)
     }
 
     if (
@@ -229,7 +231,7 @@ export function SEGTECActividadesService(
       data.custodia_tipo ||
       data.localizacion_tipo
     ) {
-      await actividadesRepository.actualizarBloque2(id, data)
+      await actividadesRepository.actualizarBloque2(id, data, usuarioId)
     }
 
     if (
@@ -241,49 +243,69 @@ export function SEGTECActividadesService(
       data.plazo_legal ||
       data.tiempo_ejecucion
     ) {
-      await actividadesRepository.actualizarBloque3(id, data)
+      await actividadesRepository.actualizarBloque3(id, data, usuarioId)
     }
 
     if (data.genera_expediente_propio !== undefined) {
-      await validacionRepository.guardar(id, data)
+      await validacionRepository.guardar(id, data, usuarioId)
     }
 
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   // =====================================================
-  // ELIMINAR
+  // ELIMINAR (🔥 FIX)
   // =====================================================
 
-  async function eliminar(id) {
+  async function eliminar(id, usuarioId) {
 
     await validarEditable(id)
 
-    return actividadesRepository.eliminarActividad(id)
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
+
+    return actividadesRepository.eliminarActividad(id, usuarioId)
   }
 
   // =====================================================
-  // BLOQUES
+  // BLOQUES (🔥 FIX)
   // =====================================================
 
   async function actualizarBloque1(id, data, usuarioId) {
+
     await validarEditable(id)
-    await actividadesRepository.actualizarBloque1(id, data)
+
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
+
+    await actividadesRepository.actualizarBloque1(id, data, usuarioId)
+
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   async function actualizarBloque2(id, data, usuarioId) {
+
     await validarEditable(id)
-    await actividadesRepository.actualizarBloque2(id, data)
+
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
+
+    await actividadesRepository.actualizarBloque2(id, data, usuarioId)
+
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   async function actualizarBloque3(id, data, usuarioId) {
+
     await validarEditable(id)
-    await actividadesRepository.actualizarBloque3(id, data)
+
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
+
+    await actividadesRepository.actualizarBloque3(id, data, usuarioId)
 
     if (data.genera_expediente_propio !== undefined) {
-      await validacionRepository.guardar(id, data)
+      await validacionRepository.guardar(id, data, usuarioId)
     }
 
     return recalcularEstadoActividad(id, usuarioId)
@@ -301,25 +323,13 @@ export function SEGTECActividadesService(
     if (!actividad)
       throw new Error('Actividad no encontrada')
 
-    if (
-      actividad.estado_general !== 'caracterizada' &&
-      actividad.estado_general !== 'analizada'
-    ) {
-      throw new Error(
-        'Solo se puede analizar una actividad caracterizada o analizada'
-      )
-    }
-
     let procesoId = actividad.proceso_id
 
     if (!procesoId) {
 
       procesoId = crypto.randomUUID()
 
-      await actividadesRepository.asignarProcesoActividad(
-        id,
-        procesoId
-      )
+      await actividadesRepository.asignarProcesoActividad(id, procesoId)
     }
 
     const actividadesProceso =
@@ -338,9 +348,6 @@ export function SEGTECActividadesService(
     const resultadoMotor =
       await trdAIService.ejecutarMotorInteligente(contexto)
 
-    if (!resultadoMotor?.length)
-      throw new Error('No fue posible generar sugerencia')
-
     const resultado = resultadoMotor[0] || {}
 
     const resultadoFinal = {
@@ -354,10 +361,7 @@ export function SEGTECActividadesService(
       actividades_analizadas: actividadesProceso.length
     }
 
-    await actividadesRepository.guardarAnalisisActividad(
-      id,
-      resultadoFinal
-    )
+    await actividadesRepository.guardarAnalisisActividad(id, resultadoFinal)
 
     const estado =
       await recalcularEstadoActividad(id, usuarioId)
@@ -369,10 +373,10 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // COMPLETAR
+  // COMPLETAR (🔥 FIX)
   // =====================================================
 
-  async function marcarComoCompleta(id) {
+  async function marcarComoCompleta(id, usuarioId) {
 
     const actividad =
       await actividadesRepository.obtenerActividadPorId(id)
@@ -380,12 +384,10 @@ export function SEGTECActividadesService(
     if (!actividad)
       throw new Error('Actividad no encontrada')
 
-    if (actividad.estado_general !== 'analizada')
-      throw new Error(
-        'Solo puede completarse una actividad analizada'
-      )
+    if (!usuarioId)
+      throw new Error('usuarioId requerido para multi-tenant')
 
-    await actividadesRepository.marcarActividadComoCompleta(id)
+    await actividadesRepository.marcarActividadComoCompleta(id, usuarioId)
 
     return { caracterizada: true }
   }
