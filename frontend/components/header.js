@@ -42,7 +42,7 @@ function iniciarControlInactividad() {
 }
 
 // ------------------------------------------------------
-// DECODIFICAR TOKEN JWT (compatible Base64URL)
+// DECODIFICAR TOKEN JWT (Base64URL)
 // ------------------------------------------------------
 
 function base64UrlToBase64(input) {
@@ -56,18 +56,12 @@ function getUserFromToken() {
 
   const token = sessionStorage.getItem('token')
 
-  if (!token) {
-    console.warn('No existe token en sessionStorage')
-    return null
-  }
+  if (!token) return null
 
   try {
 
     const parts = token.split('.')
-    if (parts.length < 2) {
-      console.warn('Token no es JWT válido')
-      return null
-    }
+    if (parts.length < 2) return null
 
     const base64 = base64UrlToBase64(parts[1])
 
@@ -91,13 +85,15 @@ function getUserFromToken() {
 
 }
 
+// ======================================================
+// RENDER HEADER
+// ======================================================
+
 export function renderHeader(activeModule) {
 
   const user = getUserFromToken()
 
   if (!user) {
-
-    console.warn('Sesión inválida o token corrupto')
 
     if (!sessionStorage.getItem('token')) {
       sessionStorage.clear()
@@ -136,6 +132,12 @@ export function renderHeader(activeModule) {
   const esRolGeneral =
     (user?.rol || '').toLowerCase() === 'general'
 
+  // 🔥 NUEVO: entidad
+  const nombreEntidad =
+    user?.entidad ||
+    user?.nombre_entidad ||
+    'Entidad'
+
   const header = document.createElement('header')
   header.className = 'pig-header'
 
@@ -146,6 +148,9 @@ export function renderHeader(activeModule) {
 
         <div class="pig-title">
           SIPAD
+          <span class="pig-entity">
+            ${nombreEntidad}
+          </span>
           <span class="pig-module">
             ${modulo === 'home' ? 'Panel Principal' : modulo}
           </span>
@@ -206,9 +211,6 @@ export function renderHeader(activeModule) {
 
         <div class="pig-user">
 
-          <!-- 🔥 NUEVO: SELECTOR MULTI-ENTIDAD -->
-          <select id="selectorEntidad" style="display:none; margin-right:10px;"></select>
-
           <div class="pig-user-info" id="btnUserMenu">
 
             <div class="pig-user-name">
@@ -243,6 +245,10 @@ export function renderHeader(activeModule) {
 
   document.body.prepend(header)
 
+  // =========================
+  // NAVEGACIÓN
+  // =========================
+
   document.getElementById('btnInicio')
     ?.addEventListener('click', () => {
       window.location.href = '/home/index.html'
@@ -268,22 +274,31 @@ export function renderHeader(activeModule) {
       window.location.href = '/informes/index.html'
     })
 
+  // =========================
+  // PASSWORD
+  // =========================
+
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', () => {
 
       const modal = document.getElementById('modalPassword')
 
-      if (!modal) {
-        console.warn('Modal de contraseña no encontrado')
-        return
-      }
+      if (!modal) return
 
       modal.classList.remove('hidden')
 
     })
 
+  // =========================
+  // LOGOUT
+  // =========================
+
   document.getElementById('btnSalir')
     ?.addEventListener('click', cerrarSesion)
+
+  // =========================
+  // DROPDOWN
+  // =========================
 
   const btnUserMenu = document.getElementById('btnUserMenu')
   const dropdown = document.getElementById('userDropdown')
@@ -306,6 +321,10 @@ export function renderHeader(activeModule) {
       dropdown?.classList.remove('show')
     }
   })
+
+  // =========================
+  // FOOTER
+  // =========================
 
   const footer = document.createElement('footer')
   footer.className = 'sipad-footer'
