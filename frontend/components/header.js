@@ -2,7 +2,7 @@
 // HEADER INSTITUCIONAL SIPAD
 // ======================================================
 
-const TIEMPO_INACTIVIDAD = 5 * 60 * 1000 // 5 minutos
+const TIEMPO_INACTIVIDAD = 60 * 60 * 1000 // 60 minutos
 let temporizadorSesion = null
 
 function cerrarSesion() {
@@ -46,9 +46,7 @@ function iniciarControlInactividad() {
 // ------------------------------------------------------
 
 function base64UrlToBase64(input) {
-  // JWT usa Base64URL: - y _ en lugar de + y /
   let base64 = input.replace(/-/g, '+').replace(/_/g, '/')
-  // Padding si falta
   const pad = base64.length % 4
   if (pad) base64 += '='.repeat(4 - pad)
   return base64
@@ -87,11 +85,6 @@ function getUserFromToken() {
   } catch (error) {
 
     console.error('Error decodificando token:', error)
-
-    // IMPORTANTE:
-    // No limpiamos sessionStorage aquí para no romper
-    // páginas que ya tienen token válido pero payload distinto.
-    // Simplemente tratamos la sesión como inválida.
     return null
 
   }
@@ -102,15 +95,10 @@ export function renderHeader(activeModule) {
 
   const user = getUserFromToken()
 
-  // ======================================================
-  // CONTROL DE SESIÓN (SIN BUCLES)
-  // ======================================================
-
   if (!user) {
 
     console.warn('Sesión inválida o token corrupto')
 
-    // Solo limpiar si realmente no hay token
     if (!sessionStorage.getItem('token')) {
       sessionStorage.clear()
     }
@@ -218,6 +206,9 @@ export function renderHeader(activeModule) {
 
         <div class="pig-user">
 
+          <!-- 🔥 NUEVO: SELECTOR MULTI-ENTIDAD -->
+          <select id="selectorEntidad" style="display:none; margin-right:10px;"></select>
+
           <div class="pig-user-info" id="btnUserMenu">
 
             <div class="pig-user-name">
@@ -252,10 +243,6 @@ export function renderHeader(activeModule) {
 
   document.body.prepend(header)
 
-  // ======================================================
-  // NAVEGACIÓN
-  // ======================================================
-
   document.getElementById('btnInicio')
     ?.addEventListener('click', () => {
       window.location.href = '/home/index.html'
@@ -281,10 +268,6 @@ export function renderHeader(activeModule) {
       window.location.href = '/informes/index.html'
     })
 
-  // ======================================================
-  // CAMBIAR PASSWORD
-  // ======================================================
-
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', () => {
 
@@ -299,16 +282,8 @@ export function renderHeader(activeModule) {
 
     })
 
-  // ======================================================
-  // LOGOUT
-  // ======================================================
-
   document.getElementById('btnSalir')
     ?.addEventListener('click', cerrarSesion)
-
-  // ======================================================
-  // MENÚ USUARIO
-  // ======================================================
 
   const btnUserMenu = document.getElementById('btnUserMenu')
   const dropdown = document.getElementById('userDropdown')
@@ -331,10 +306,6 @@ export function renderHeader(activeModule) {
       dropdown?.classList.remove('show')
     }
   })
-
-  // ======================================================
-  // FOOTER INSTITUCIONAL SIPAD
-  // ======================================================
 
   const footer = document.createElement('footer')
   footer.className = 'sipad-footer'

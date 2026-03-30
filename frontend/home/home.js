@@ -13,6 +13,66 @@ function getUserFromToken() {
 
 }
 
+// ======================================================
+// 🔥 NUEVO: SELECTOR MULTI-ENTIDAD
+// ======================================================
+
+async function cargarSelectorEntidad(user) {
+
+  if (!user) return;
+
+  // 🔒 Solo superadmin
+  if (!user.es_master_admin && user.rol !== 'Super Admin') {
+    return;
+  }
+
+  const select = document.getElementById('selectorEntidad');
+  if (!select) return;
+
+  select.style.display = 'inline-block';
+
+  try {
+
+    const res = await fetch('/api/entidades');
+    const json = await res.json();
+
+    if (!json.ok) return;
+
+    select.innerHTML = '';
+
+    json.data.forEach(e => {
+
+      const option = document.createElement('option');
+      option.value = e.id;
+      option.textContent = e.nombre;
+
+      select.appendChild(option);
+
+    });
+
+    const entidadActiva =
+      sessionStorage.getItem('entidad_id') || user.id_entidad;
+
+    select.value = entidadActiva;
+
+    select.addEventListener('change', () => {
+
+      sessionStorage.setItem('entidad_id', select.value);
+
+      console.log('Entidad activa:', select.value);
+
+      location.reload();
+
+    });
+
+  } catch (err) {
+
+    console.error('Error cargando entidades:', err);
+
+  }
+
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
   const token = sessionStorage.getItem('token');
@@ -44,6 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
   } catch (error) {
     console.error('Error renderizando header:', error);
   }
+
+  // 🔥 ACTIVAR SELECTOR (AQUÍ EXACTAMENTE)
+  cargarSelectorEntidad(user);
 
   const nivel = user.nivel_acceso || 0;
   const esMaster = user.es_master_admin === true;
