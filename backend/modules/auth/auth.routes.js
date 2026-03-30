@@ -48,6 +48,7 @@ router.post('/login', async (req, res) => {
     }
 
     const user = await findUserByUsernameDB(username)
+    console.log('🧪 USER LOGIN:', user)
 
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' })
@@ -60,7 +61,9 @@ router.post('/login', async (req, res) => {
     if (user.bloqueado === 1) {
       return res.status(403).json({ error: 'Usuario bloqueado' })
     }
-
+    console.log('🧪 PASSWORD INPUT:', password)
+    console.log('🧪 HASH DB:', user.passwordHash)
+    
     const valid = await bcrypt.compare(password, user.passwordHash)
 
     if (!valid) {

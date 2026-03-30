@@ -136,6 +136,10 @@ async function init() {
     const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
     const isSQLite = DB_ENGINE === 'sqlite'
 
+    // 🔥 DEBUG CLAVE (NO BORRAR AÚN)
+    console.log('🧠 DB_ENGINE:', DB_ENGINE)
+    console.log('🧠 DATABASE_URL:', process.env.DATABASE_URL || 'NO DEFINIDA')
+
     app.use(express.json())
 
     // ==================================================

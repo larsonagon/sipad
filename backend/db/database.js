@@ -2,17 +2,45 @@
 
 import sqlite3 from 'sqlite3'
 import { open } from 'sqlite'
-import { pool } from './postgres.js'
+import pkg from 'pg'
 import path from 'path'
 import { fileURLToPath } from 'url'
+
+const { Pool } = pkg
 
 // =======================================
 // CONFIG
 // =======================================
 
 const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
+const DATABASE_URL = process.env.DATABASE_URL
 
 console.log('🗄️ Motor de base de datos:', DB_ENGINE)
+console.log('🔗 DATABASE_URL:', DATABASE_URL ? 'CONFIGURADA ✅' : 'NO CONFIGURADA ❌')
+
+// =======================================
+// POSTGRES (DINÁMICO)
+// =======================================
+
+let pool = null
+
+if (DB_ENGINE === 'postgres') {
+
+  if (!DATABASE_URL) {
+    console.warn('⚠️ DATABASE_URL no definida. Usando configuración local.')
+  }
+
+  pool = new Pool({
+    connectionString: DATABASE_URL || undefined,
+    ssl: DATABASE_URL
+      ? { rejectUnauthorized: false }
+      : false
+  })
+
+  pool.connect()
+    .then(() => console.log('🐘 Conectado a PostgreSQL'))
+    .catch(err => console.error('❌ Error PostgreSQL:', err))
+}
 
 // =======================================
 // SQLITE (solo desarrollo)
@@ -40,7 +68,6 @@ async function initSQLite() {
   await sqliteDb.exec('PRAGMA synchronous = NORMAL')
 }
 
-// Inicializar SQLite sin usar top-level await
 if (DB_ENGINE === 'sqlite') {
   sqliteReady = initSQLite()
 }
@@ -65,10 +92,6 @@ function convertPlaceholders(query) {
 
 const db = {
 
-  // ===============================
-  // GET (una fila)
-  // ===============================
-
   async get(query, params = []) {
 
     if (DB_ENGINE === 'sqlite') {
@@ -84,10 +107,6 @@ const db = {
     return result.rows[0] || null
   },
 
-  // ===============================
-  // ALL (muchas filas)
-  // ===============================
-
   async all(query, params = []) {
 
     if (DB_ENGINE === 'sqlite') {
@@ -102,10 +121,6 @@ const db = {
 
     return result.rows
   },
-
-  // ===============================
-  // RUN (insert/update/delete)
-  // ===============================
 
   async run(query, params = []) {
 
@@ -123,10 +138,6 @@ const db = {
       changes: result.rowCount
     }
   },
-
-  // ===============================
-  // EXEC (migrations / scripts)
-  // ===============================
 
   async exec(query) {
 
