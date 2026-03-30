@@ -244,35 +244,30 @@ export function SEGTECActividadesRepository(db) {
   }
 
   // =====================================================
-  // BLOQUE 1 (🔒 protegido)
+  // BLOQUE 1
   // =====================================================
 
   async function actualizarBloque1(id,data={}) {
 
-    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
-
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET nombre=?,tipo_funcion=?,frecuencia=?,descripcion_funcional=?,updated_at=?
-      WHERE id=? AND entidad_id=?
+      WHERE id=?
     `,[
       nullIfEmpty(data.nombre),
       nullIfEmpty(data.tipo_funcion),
       nullIfEmpty(data.frecuencia),
       nullIfEmpty(data.descripcion_funcional),
       nowISO(),
-      id,
-      entidadId
+      id
     ],"BLOQUE1")
   }
 
   // =====================================================
-  // BLOQUE 2 (🔒 protegido)
+  // BLOQUE 2
   // =====================================================
 
   async function actualizarBloque2(id,data={}) {
-
-    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -287,7 +282,7 @@ export function SEGTECActividadesRepository(db) {
       dependencia_custodia=?,
       localizacion_documentos=?,
       updated_at=?
-      WHERE id=? AND entidad_id=?
+      WHERE id=?
     `,[
       data.genera_documentos ? 1 : 0,
       nullIfEmpty(data.documentos_generados),
@@ -299,18 +294,15 @@ export function SEGTECActividadesRepository(db) {
       intOrNull(data.dependencia_custodia),
       nullIfEmpty(data.localizacion_documentos),
       nowISO(),
-      id,
-      entidadId
+      id
     ],"BLOQUE2")
   }
 
   // =====================================================
-  // BLOQUE 3 (🔒 protegido)
+  // BLOQUE 3
   // =====================================================
 
   async function actualizarBloque3(id,data={}) {
-
-    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -323,7 +315,7 @@ export function SEGTECActividadesRepository(db) {
       tiempo_ejecucion=?,
       genera_expediente_propio=?,
       updated_at=?
-      WHERE id=? AND entidad_id=?
+      WHERE id=?
     `,[
       data.tiene_pasos_formales ? 1 : 0,
       data.requiere_otras_dependencias ? 1 : 0,
@@ -339,8 +331,7 @@ export function SEGTECActividadesRepository(db) {
       data.genera_expediente_propio ? 1 : 0,
 
       nowISO(),
-      id,
-      entidadId
+      id
     ],"BLOQUE3")
   }
 
@@ -396,39 +387,33 @@ export function SEGTECActividadesRepository(db) {
   }
 
   // =====================================================
-  // ESTADO (🔒 protegido)
+  // ESTADO
   // =====================================================
 
-  async function actualizarEstadoGeneral(id,estado,usuarioId){
-
-    const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+  async function actualizarEstadoGeneral(id,estado){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET estado_general=?,updated_at=?
-      WHERE id=? AND entidad_id=?
-    `,[estado,nowISO(),id,entidadId],"ACTUALIZAR ESTADO")
+      WHERE id=?
+    `,[estado,nowISO(),id],"ACTUALIZAR ESTADO")
   }
 
-  async function marcarActividadComoCompleta(id,usuarioId){
-
-    const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+  async function marcarActividadComoCompleta(id){
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET estado_general='caracterizada',updated_at=?
-      WHERE id=? AND entidad_id=?
-    `,[nowISO(),id,entidadId],"MARCAR COMPLETA")
+      WHERE id=?
+    `,[nowISO(),id],"MARCAR COMPLETA")
   }
 
-  async function eliminarActividad(id,usuarioId){
-
-    const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+  async function eliminarActividad(id){
 
     return ejecutarUpdate(`
       DELETE FROM segtec_actividades
-      WHERE id=? AND entidad_id=?
-    `,[id, entidadId],"ELIMINAR")
+      WHERE id=?
+    `,[id],"ELIMINAR")
   }
 
   return {

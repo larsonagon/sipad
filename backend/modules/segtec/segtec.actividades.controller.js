@@ -9,9 +9,9 @@ export function SEGTECActividadesController(service) {
     if (!req.user) return null
 
     return (
-      req.user.sub ||
-      req.user.id ||
-      req.user.usuario_id ||
+      req.user.id ||                 // 🔥 PRIORIDAD
+      req.user.usuario_id ||         // 🔥 PRIORIDAD
+      req.user.sub ||                // 🔻 fallback
       req.usuarioId ||
       null
     )
