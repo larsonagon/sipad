@@ -1324,8 +1324,7 @@ select.form-control{
 
 /* 🔥 elimina salto visual */
 .pig-user-meta::before{
-  content:"– ";
-  margin:0 2px;
+  content:none;
 }
 
 /* MOBILE */
