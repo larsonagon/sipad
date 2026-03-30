@@ -22,25 +22,8 @@ export function SEGTECActividadesRepository(db) {
     return result
   }
 
-  // 🔥 AJUSTE CLAVE MULTI-TENANT (TOLERANTE)
-  function resolverUsuarioId(input) {
-
-    if (!input) return null
-
-    if (typeof input === 'string') return input
-
-    return (
-      input.usuario_id ||
-      input.usuarioId ||
-      input.user_id ||
-      null
-    )
-  }
-
-  // 🔥 NUEVO: obtener entidad del usuario (ROBUSTO)
-  async function obtenerEntidadIdPorUsuario(input) {
-
-    const usuarioId = resolverUsuarioId(input)
+  // 🔥 NUEVO: obtener entidad del usuario
+  async function obtenerEntidadIdPorUsuario(usuarioId) {
 
     if (!usuarioId) {
       throw new Error('usuarioId requerido para multi-tenant')
@@ -186,7 +169,7 @@ export function SEGTECActividadesRepository(db) {
     const id = crypto.randomUUID()
     const now = nowISO()
 
-    const entidadId = await obtenerEntidadIdPorUsuario(data)
+    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     await db.run(`
       INSERT INTO segtec_actividades (
@@ -199,7 +182,7 @@ export function SEGTECActividadesRepository(db) {
       id,
       data.proceso_id || null,
       data.dependencia_id,
-      resolverUsuarioId(data),
+      data.usuario_id,
       null,
       null,
       null,
@@ -261,12 +244,12 @@ export function SEGTECActividadesRepository(db) {
   }
 
   // =====================================================
-  // BLOQUES (AJUSTE AQUÍ 🔥)
+  // BLOQUE 1 (🔒 protegido)
   // =====================================================
 
   async function actualizarBloque1(id,data={}) {
 
-    const entidadId = await obtenerEntidadIdPorUsuario(data)
+    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -283,9 +266,13 @@ export function SEGTECActividadesRepository(db) {
     ],"BLOQUE1")
   }
 
+  // =====================================================
+  // BLOQUE 2 (🔒 protegido)
+  // =====================================================
+
   async function actualizarBloque2(id,data={}) {
 
-    const entidadId = await obtenerEntidadIdPorUsuario(data)
+    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -317,9 +304,13 @@ export function SEGTECActividadesRepository(db) {
     ],"BLOQUE2")
   }
 
+  // =====================================================
+  // BLOQUE 3 (🔒 protegido)
+  // =====================================================
+
   async function actualizarBloque3(id,data={}) {
 
-    const entidadId = await obtenerEntidadIdPorUsuario(data)
+    const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
@@ -354,15 +345,64 @@ export function SEGTECActividadesRepository(db) {
   }
 
   // =====================================================
-  // RESTO IGUAL
+  // ANALISIS
   // =====================================================
 
-  async function guardarAnalisisActividad(id,data){/* igual */}
-  async function obtenerUltimoAnalisis(id){/* igual */}
-  async function listarAnalisisPorActividad(id){/* igual */}
+  async function guardarAnalisisActividad(id,data){
+
+    const analisisId = crypto.randomUUID()
+
+    await db.run(`
+      INSERT INTO segtec_analisis_actividad
+      (id,actividad_id,serie_propuesta,subserie_propuesta,retencion_gestion,retencion_central,disposicion_final,justificacion,motor_version,creado_en)
+      VALUES (?,?,?,?,?,?,?,?,?,?)
+    `,[
+      analisisId,
+      id,
+      data.serie_propuesta ?? null,
+      data.subserie_propuesta ?? null,
+      data.retencion_gestion ?? null,
+      data.retencion_central ?? null,
+      data.disposicion_final ?? null,
+      data.justificacion ?? null,
+      data.motor_version ?? '1.0',
+      nowISO()
+    ])
+
+    return { id: analisisId }
+  }
+
+  async function obtenerUltimoAnalisis(id){
+
+    return db.get(`
+      SELECT *
+      FROM segtec_analisis_actividad
+      WHERE actividad_id=?
+      ORDER BY creado_en DESC
+      LIMIT 1
+    `,[id])
+  }
+
+  async function listarAnalisisPorActividad(id){
+
+    const rows = await db.all(`
+      SELECT *
+      FROM segtec_analisis_actividad
+      WHERE actividad_id=?
+      ORDER BY creado_en DESC
+    `,[id])
+
+    return rows || []
+  }
+
+  // =====================================================
+  // ESTADO (🔒 protegido)
+  // =====================================================
 
   async function actualizarEstadoGeneral(id,estado,usuarioId){
+
     const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET estado_general=?,updated_at=?
@@ -371,7 +411,9 @@ export function SEGTECActividadesRepository(db) {
   }
 
   async function marcarActividadComoCompleta(id,usuarioId){
+
     const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET estado_general='caracterizada',updated_at=?
@@ -380,7 +422,9 @@ export function SEGTECActividadesRepository(db) {
   }
 
   async function eliminarActividad(id,usuarioId){
+
     const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+
     return ejecutarUpdate(`
       DELETE FROM segtec_actividades
       WHERE id=? AND entidad_id=?
