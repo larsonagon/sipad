@@ -132,11 +132,33 @@ export function renderHeader(activeModule) {
   const esRolGeneral =
     (user?.rol || '').toLowerCase() === 'general'
 
-  // 🔥 NUEVO: entidad
+  // ======================================================
+  // 🔥 DATOS CLAVE UI
+  // ======================================================
+
   const nombreEntidad =
     user?.entidad ||
-    user?.nombre_entidad ||
+    user?.entidad_nombre ||
     'Entidad'
+
+  const nombreUsuario =
+    user?.nombre ||
+    user?.nombre_completo ||
+    user?.username ||
+    'Usuario'
+
+  const cargo =
+    user?.cargo ||
+    user?.cargo_nombre ||
+    ''
+
+  const dependencia =
+    user?.dependencia ||
+    ''
+
+  // ======================================================
+  // HEADER
+  // ======================================================
 
   const header = document.createElement('header')
   header.className = 'pig-header'
@@ -144,13 +166,11 @@ export function renderHeader(activeModule) {
   header.innerHTML = `
     <div class="pig-header-inner">
 
+      <!-- IZQUIERDA -->
       <div class="pig-header-left">
 
         <div class="pig-title">
-          SIPAD
-          <span class="pig-entity">
-            ${nombreEntidad}
-          </span>
+          SIPAD – ${nombreEntidad}
           <span class="pig-module">
             ${modulo === 'home' ? 'Panel Principal' : modulo}
           </span>
@@ -160,6 +180,7 @@ export function renderHeader(activeModule) {
 
       </div>
 
+      <!-- DERECHA -->
       <div class="pig-header-right">
 
         <nav class="pig-nav">
@@ -209,21 +230,18 @@ export function renderHeader(activeModule) {
 
         </nav>
 
+        <!-- USUARIO -->
         <div class="pig-user">
 
           <div class="pig-user-info" id="btnUserMenu">
 
             <div class="pig-user-name">
-              ${user.nombre_completo || user.username}
+              ${nombreUsuario}
             </div>
 
             <div class="pig-user-meta">
-              ${user.rol || ''}
-              ${
-                user.entidad_nombre
-                  ? ' – ' + user.entidad_nombre
-                  : (user.dependencia ? ' – ' + user.dependencia : '')
-              }
+              ${cargo}
+              ${dependencia ? ' – ' + dependencia : ''}
             </div>
 
           </div>
@@ -286,7 +304,6 @@ export function renderHeader(activeModule) {
     ?.addEventListener('click', () => {
 
       const modal = document.getElementById('modalPassword')
-
       if (!modal) return
 
       modal.classList.remove('hidden')
@@ -313,11 +330,9 @@ export function renderHeader(activeModule) {
   })
 
   document.addEventListener('click', (e) => {
-
     if (!e.target.closest('.pig-user')) {
       dropdown?.classList.remove('show')
     }
-
   })
 
   document.addEventListener('keydown', (e) => {
