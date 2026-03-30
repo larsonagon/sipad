@@ -1,5 +1,6 @@
 // backend/modules/usuarios/usuarios.routes.js
 // SIPAD – Módulo Usuarios Institucional (Cargo y Nivel obligatorio real)
+// 🔒 MULTI-TENANT HARDENED (SIN ROMPER ESTRUCTURA ORIGINAL)
 
 import express from 'express'
 import bcrypt from 'bcrypt'
@@ -25,42 +26,43 @@ async function registrarAuditoria(actorId, usuarioId, accion, detalle) {
   )
 }
 
-async function obtenerNivelRol(idRol) {
+// 🔒 AHORA TODOS VALIDAN POR ENTIDAD
+async function obtenerNivelRol(idRol, entidadId) {
   const row = await db.get(
-    `SELECT nivel_acceso FROM roles WHERE id = ?`,
-    [idRol]
+    `SELECT nivel_acceso FROM roles WHERE id = ? AND entidad_id = ?`,
+    [idRol, entidadId]
   )
   return row?.nivel_acceso ?? null
 }
 
-async function validarCargo(idCargo) {
+async function validarCargo(idCargo, entidadId) {
   const row = await db.get(
-    `SELECT id FROM cargos WHERE id = ? AND estado = 1`,
-    [idCargo]
+    `SELECT id FROM cargos WHERE id = ? AND estado = 1 AND entidad_id = ?`,
+    [idCargo, entidadId]
   )
   return !!row
 }
 
-async function validarNivel(idNivel) {
+async function validarNivel(idNivel, entidadId) {
   const row = await db.get(
-    `SELECT id FROM niveles WHERE id = ? AND estado = 1`,
-    [idNivel]
+    `SELECT id FROM niveles WHERE id = ? AND estado = 1 AND entidad_id = ?`,
+    [idNivel, entidadId]
   )
   return !!row
 }
 
-async function validarDependencia(idDependencia) {
+async function validarDependencia(idDependencia, entidadId) {
   const row = await db.get(
-    `SELECT id FROM dependencias WHERE id = ?`,
-    [idDependencia]
+    `SELECT id FROM dependencias WHERE id = ? AND entidad_id = ?`,
+    [idDependencia, entidadId]
   )
   return !!row
 }
 
-async function validarRol(idRol) {
+async function validarRol(idRol, entidadId) {
   const row = await db.get(
-    `SELECT id FROM roles WHERE id = ?`,
-    [idRol]
+    `SELECT id FROM roles WHERE id = ? AND entidad_id = ?`,
+    [idRol, entidadId]
   )
   return !!row
 }
@@ -73,10 +75,8 @@ function generarPasswordTemporal() {
   return crypto.randomBytes(4).toString('hex')
 }
 
-
 // =====================================================
-// CAMBIAR PASSWORD (AUTOGESTIÓN DEL USUARIO)
-// ⚠️ DEBE ESTAR ANTES DE /:id
+// CAMBIAR PASSWORD (AUTOGESTIÓN)
 // =====================================================
 
 router.put(
@@ -87,6 +87,7 @@ router.put(
     try {
 
       const usuarioId = parseInt(req.user.sub)
+      const entidadId = req.user.entidad_id
 
       const password_actual =
         req.body.password_actual ?? req.body.passwordActual
@@ -110,9 +111,9 @@ router.put(
         `
         SELECT password_hash
         FROM usuarios
-        WHERE id = ?
+        WHERE id = ? AND id_entidad = ?
         `,
-        [usuarioId]
+        [usuarioId, entidadId]
       )
 
       if (!usuario) {
@@ -138,9 +139,9 @@ router.put(
         `
         UPDATE usuarios
         SET password_hash = ?
-        WHERE id = ?
+        WHERE id = ? AND id_entidad = ?
         `,
-        [nuevoHash, usuarioId]
+        [nuevoHash, usuarioId, entidadId]
       )
 
       await registrarAuditoria(
@@ -168,7 +169,6 @@ router.put(
   }
 )
 
-
 // =====================================================
 // LISTAR USUARIOS
 // =====================================================
@@ -181,7 +181,7 @@ router.get(
 
     try {
 
-      const entidad = req.user.id_entidad
+      const entidad = req.user.entidad_id
       const dependencia = req.query.dependencia
 
       let query = `
@@ -241,7 +241,6 @@ router.get(
   }
 )
 
-
 // =====================================================
 // OBTENER USUARIO POR ID
 // =====================================================
@@ -255,6 +254,7 @@ router.get(
     try {
 
       const id = parseInt(req.params.id)
+      const entidadId = req.user.entidad_id
 
       const usuario = await db.get(
         `
@@ -271,9 +271,9 @@ router.get(
           estado,
           bloqueado
         FROM usuarios
-        WHERE id = ?
+        WHERE id = ? AND id_entidad = ?
         `,
-        [id]
+        [id, entidadId]
       )
 
       if (!usuario) {
@@ -297,7 +297,6 @@ router.get(
   }
 )
 
-
 // =====================================================
 // CREAR USUARIO
 // =====================================================
@@ -312,10 +311,7 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-
-      const entidad = req.isMasterAdmin
-        ? (req.body.id_entidad ?? req.user.id_entidad)
-        : req.user.id_entidad
+      const entidad = req.user.entidad_id
 
       const {
         nombre_completo,
@@ -338,23 +334,19 @@ router.post(
       if (password.length < 8)
         return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres' })
 
-      const dependenciaValida = await validarDependencia(id_dependencia)
-      if (!dependenciaValida)
+      if (!(await validarDependencia(id_dependencia, entidad)))
         return res.status(400).json({ error: 'Dependencia inválida' })
 
-      const rolValido = await validarRol(id_rol)
-      if (!rolValido)
+      if (!(await validarRol(id_rol, entidad)))
         return res.status(400).json({ error: 'Rol inválido' })
 
-      const cargoValido = await validarCargo(id_cargo)
-      if (!cargoValido)
+      if (!(await validarCargo(id_cargo, entidad)))
         return res.status(400).json({ error: 'Cargo inválido o inactivo' })
 
-      const nivelValido = await validarNivel(id_nivel)
-      if (!nivelValido)
+      if (!(await validarNivel(id_nivel, entidad)))
         return res.status(400).json({ error: 'Nivel inválido o inactivo' })
 
-      const nivelNuevoRol = await obtenerNivelRol(id_rol)
+      const nivelNuevoRol = await obtenerNivelRol(id_rol, entidad)
 
       if (!req.isMasterAdmin &&
           actorNivel !== 100 &&
@@ -420,7 +412,6 @@ router.post(
   }
 )
 
-
 // =====================================================
 // EDITAR USUARIO
 // =====================================================
@@ -436,6 +427,18 @@ router.put(
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
       const id = parseInt(req.params.id)
+      const entidadId = req.user.entidad_id
+
+      const usuarioExiste = await db.get(
+        `SELECT id FROM usuarios WHERE id = ? AND id_entidad = ?`,
+        [id, entidadId]
+      )
+
+      if (!usuarioExiste) {
+        return res.status(404).json({
+          error: 'Usuario no pertenece a esta entidad'
+        })
+      }
 
       const {
         email,
@@ -451,23 +454,19 @@ router.put(
       if (!email)
         return res.status(400).json({ error: 'Email requerido' })
 
-      const dependenciaValida = await validarDependencia(id_dependencia)
-      if (!dependenciaValida)
+      if (!(await validarDependencia(id_dependencia, entidadId)))
         return res.status(400).json({ error: 'Dependencia inválida' })
 
-      const rolValido = await validarRol(id_rol)
-      if (!rolValido)
+      if (!(await validarRol(id_rol, entidadId)))
         return res.status(400).json({ error: 'Rol inválido' })
 
-      const cargoValido = await validarCargo(id_cargo)
-      if (!cargoValido)
+      if (!(await validarCargo(id_cargo, entidadId)))
         return res.status(400).json({ error: 'Cargo inválido' })
 
-      const nivelValido = await validarNivel(id_nivel)
-      if (!nivelValido)
+      if (!(await validarNivel(id_nivel, entidadId)))
         return res.status(400).json({ error: 'Nivel inválido' })
 
-      const nivelNuevoRol = await obtenerNivelRol(id_rol)
+      const nivelNuevoRol = await obtenerNivelRol(id_rol, entidadId)
 
       if (!req.isMasterAdmin &&
           actorNivel !== 100 &&
@@ -505,7 +504,7 @@ router.put(
             estado = ?,
             bloqueado = ?,
             password_hash = ?
-          WHERE id = ?
+          WHERE id = ? AND id_entidad = ?
         `,
         [
           email,
@@ -516,7 +515,8 @@ router.put(
           estado,
           bloqueado,
           passwordHash,
-          id
+          id,
+          entidadId
         ])
 
       } else {
@@ -531,7 +531,7 @@ router.put(
             id_nivel = ?,
             estado = ?,
             bloqueado = ?
-          WHERE id = ?
+          WHERE id = ? AND id_entidad = ?
         `,
         [
           email,
@@ -541,7 +541,8 @@ router.put(
           id_nivel,
           estado,
           bloqueado,
-          id
+          id,
+          entidadId
         ])
 
       }
@@ -572,7 +573,6 @@ router.put(
   }
 )
 
-
 // =====================================================
 // RESET PASSWORD ADMINISTRATIVO
 // =====================================================
@@ -587,18 +587,29 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const id = parseInt(req.params.id)
+      const entidadId = req.user.entidad_id
+
+      const usuarioExiste = await db.get(
+        `SELECT id FROM usuarios WHERE id = ? AND id_entidad = ?`,
+        [id, entidadId]
+      )
+
+      if (!usuarioExiste) {
+        return res.status(404).json({
+          error: 'Usuario no pertenece a esta entidad'
+        })
+      }
 
       const nuevaPassword = generarPasswordTemporal()
-
       const hash = await bcrypt.hash(nuevaPassword, 10)
 
       await db.run(
         `
         UPDATE usuarios
         SET password_hash = ?, bloqueado = 0
-        WHERE id = ?
+        WHERE id = ? AND id_entidad = ?
         `,
-        [hash, id]
+        [hash, id, entidadId]
       )
 
       await registrarAuditoria(actorId, id, 'RESET_PASSWORD', {

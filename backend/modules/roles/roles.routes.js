@@ -40,21 +40,22 @@ async function registrarAuditoria(actorId, rolId, accion, detalle) {
 
 }
 
-async function contarRolesNivel100() {
+async function contarRolesNivel100(entidadId) {
 
   const row = await db.get(`
     SELECT COUNT(*) as total
     FROM roles
     WHERE nivel_acceso = 100
       AND activo = 1
-  `)
+      AND entidad_id = $1
+  `, [entidadId])
 
   return row?.total ?? 0
 
 }
 
 // =====================================================
-// LISTAR ROLES (>=80)
+// LISTAR ROLES
 // =====================================================
 
 router.get(
@@ -65,11 +66,14 @@ router.get(
 
     try {
 
+      const entidadId = req.entidad_id
+
       const roles = await db.all(`
         SELECT id, nombre, descripcion, nivel_acceso, activo, created_at
         FROM roles
+        WHERE entidad_id = $1
         ORDER BY nivel_acceso DESC
-      `)
+      `, [entidadId])
 
       res.json(roles)
 
@@ -84,7 +88,7 @@ router.get(
 )
 
 // =====================================================
-// CREAR ROL (SOLO 100)
+// CREAR ROL
 // =====================================================
 
 router.post(
@@ -97,6 +101,7 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
+      const entidadId = req.entidad_id
 
       const { nombre, descripcion } = req.body
 
@@ -104,7 +109,6 @@ router.post(
         return res.status(400).json({ error: 'Nombre requerido' })
       }
 
-      // nivel automático para roles creados desde UI
       const nivel = 50
 
       if (nivel > actorNivel) {
@@ -114,26 +118,27 @@ router.post(
       }
 
       const existeNombre = await db.get(
-        `SELECT id FROM roles WHERE nombre = $1`,
-        [nombre.trim()]
+        `SELECT id FROM roles WHERE nombre = $1 AND entidad_id = $2`,
+        [nombre.trim(), entidadId]
       )
 
       if (existeNombre) {
         return res.status(400).json({
-          error: 'Ya existe un rol con ese nombre'
+          error: 'Ya existe un rol con ese nombre en esta entidad'
         })
       }
 
       const result = await db.get(
         `
-        INSERT INTO roles (nombre, descripcion, nivel_acceso, activo)
-        VALUES ($1,$2,$3,1)
+        INSERT INTO roles (nombre, descripcion, nivel_acceso, activo, entidad_id)
+        VALUES ($1,$2,$3,1,$4)
         RETURNING id
         `,
         [
           nombre.trim(),
           descripcion || null,
-          nivel
+          nivel,
+          entidadId
         ]
       )
 
@@ -162,7 +167,7 @@ router.post(
 )
 
 // =====================================================
-// EDITAR ROL (SOLO 100)
+// EDITAR ROL
 // =====================================================
 
 router.patch(
@@ -175,24 +180,25 @@ router.patch(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
 
       const { nombre, descripcion, nivel_acceso } = req.body
 
       const rol = await db.get(
-        `SELECT * FROM roles WHERE id = $1`,
-        [id]
+        `SELECT * FROM roles WHERE id = $1 AND entidad_id = $2`,
+        [id, entidadId]
       )
 
       if (!rol) {
-        return res.status(404).json({ error: 'Rol no encontrado' })
+        return res.status(404).json({ error: 'Rol no encontrado en esta entidad' })
       }
 
       const nivelNuevo = nivel_acceso ?? rol.nivel_acceso
 
       if (rol.nivel_acceso === 100) {
 
-        const total = await contarRolesNivel100()
+        const total = await contarRolesNivel100(entidadId)
 
         if (total <= 1 && nivelNuevo !== 100) {
           return res.status(400).json({
@@ -214,13 +220,14 @@ router.patch(
         SET nombre = $1,
             descripcion = $2,
             nivel_acceso = $3
-        WHERE id = $4
+        WHERE id = $4 AND entidad_id = $5
         `,
         [
           nombre || rol.nombre,
           descripcion ?? rol.descripcion,
           nivelNuevo,
-          id
+          id,
+          entidadId
         ]
       )
 
@@ -244,7 +251,7 @@ router.patch(
 )
 
 // =====================================================
-// ACTIVAR / DESACTIVAR ROL
+// ACTIVAR / DESACTIVAR
 // =====================================================
 
 router.patch(
@@ -256,21 +263,22 @@ router.patch(
     try {
 
       const actorId = parseInt(req.user.sub)
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { activo } = req.body
 
       const rol = await db.get(
-        `SELECT * FROM roles WHERE id = $1`,
-        [id]
+        `SELECT * FROM roles WHERE id = $1 AND entidad_id = $2`,
+        [id, entidadId]
       )
 
       if (!rol) {
-        return res.status(404).json({ error: 'Rol no encontrado' })
+        return res.status(404).json({ error: 'Rol no encontrado en esta entidad' })
       }
 
       if (rol.nivel_acceso === 100 && !activo) {
 
-        const total = await contarRolesNivel100()
+        const total = await contarRolesNivel100(entidadId)
 
         if (total <= 1) {
           return res.status(400).json({
@@ -284,9 +292,9 @@ router.patch(
         `
         SELECT COUNT(*) as total
         FROM usuarios
-        WHERE id_rol = $1 AND estado = 1
+        WHERE id_rol = $1 AND estado = 1 AND id_entidad = $2
         `,
-        [id]
+        [id, entidadId]
       )
 
       if (usuariosActivos.total > 0 && !activo) {
@@ -296,8 +304,8 @@ router.patch(
       }
 
       await db.run(
-        `UPDATE roles SET activo = $1 WHERE id = $2`,
-        [activo ? 1 : 0, id]
+        `UPDATE roles SET activo = $1 WHERE id = $2 AND entidad_id = $3`,
+        [activo ? 1 : 0, id, entidadId]
       )
 
       await registrarAuditoria(
@@ -319,6 +327,6 @@ router.patch(
   }
 )
 
-console.log('🔥 ROLES ROUTES CARGADO')
+console.log('🔥 ROLES ROUTES CARGADO (MULTI-TENANT)')
 
 export default router

@@ -16,69 +16,66 @@ const REFRESH_TOKEN_DAYS = 7
 
 const router = express.Router()
 
-// =========================
-// LOGIN INSTITUCIONAL
-// =========================
+// ======================================================
+// HELPERS
+// ======================================================
+
+function generarRefreshToken() {
+  return crypto.randomUUID()
+}
+
+function calcularExpiracion() {
+  const now = new Date()
+  return new Date(now.getTime() + REFRESH_TOKEN_DAYS * 86400000)
+}
+
+// ======================================================
+// LOGIN
+// ======================================================
 
 router.post('/login', async (req, res) => {
 
   const requestId = Date.now().toString(36)
 
   console.log(`\n[AUTH][${requestId}] ===== LOGIN =====`)
-  console.log(`[AUTH][${requestId}] JWT_SECRET LOGIN:`, JWT_SECRET)
 
   try {
 
     const { username, password } = req.body || {}
 
     if (!username || !password) {
-      return res.status(400).json({
-        error: 'Datos incompletos'
-      })
+      return res.status(400).json({ error: 'Datos incompletos' })
     }
 
     const user = await findUserByUsernameDB(username)
 
     if (!user) {
-      console.warn(`[AUTH][${requestId}] Usuario no encontrado`)
-      return res.status(401).json({
-        error: 'Credenciales inválidas'
-      })
+      return res.status(401).json({ error: 'Credenciales inválidas' })
+    }
+
+    if (user.estado !== 1) {
+      return res.status(403).json({ error: 'Usuario inactivo' })
+    }
+
+    if (user.bloqueado === 1) {
+      return res.status(403).json({ error: 'Usuario bloqueado' })
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash)
 
     if (!valid) {
-      console.warn(`[AUTH][${requestId}] Password inválido`)
-      return res.status(401).json({
-        error: 'Credenciales inválidas'
-      })
+      return res.status(401).json({ error: 'Credenciales inválidas' })
     }
 
     const nivelAcceso = Number(user.nivel_acceso ?? 0)
 
-    if (Number.isNaN(nivelAcceso) || nivelAcceso <= 0) {
-
-      console.error(`[AUTH][${requestId}] Usuario sin nivel válido`)
-
-      return res.status(500).json({
-        error: 'Usuario sin nivel de acceso válido'
-      })
+    if (!nivelAcceso || nivelAcceso <= 0) {
+      return res.status(500).json({ error: 'Usuario sin nivel válido' })
     }
 
     if (!user.entidad_id) {
-      console.error(`[AUTH][${requestId}] Usuario sin entidad asignada`)
-      return res.status(500).json({
-        error: 'Usuario sin entidad válida'
-      })
+      return res.status(500).json({ error: 'Usuario sin entidad válida' })
     }
-
-    // 🔥 YA NO CONSULTAMOS BD → VIENE DEL MODELO
-    const nombreEntidad = user.entidad_nombre || null
-
-    // =========================
-    // ACCESS TOKEN
-    // =========================
 
     const payload = {
       sub: Number(user.id),
@@ -90,7 +87,7 @@ router.post('/login', async (req, res) => {
       nivel_acceso: nivelAcceso,
 
       entidad_id: user.entidad_id,
-      entidad_nombre: nombreEntidad, // 🔥 AJUSTADO
+      entidad_nombre: user.entidad_nombre || null,
 
       id_dependencia: Number(user.id_dependencia ?? 0),
       dependencia: user.dependencia_nombre,
@@ -99,46 +96,19 @@ router.post('/login', async (req, res) => {
       es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
     }
 
-    console.log(`[AUTH][${requestId}] PAYLOAD TOKEN:`, payload)
+    const accessToken = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: ACCESS_TOKEN_TTL
+    })
 
-    const accessToken = jwt.sign(
-      payload,
-      JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_TTL }
-    )
-
-    console.log(`[AUTH][${requestId}] TOKEN GENERADO (inicio):`,
-      accessToken.substring(0, 30) + '...'
-    )
-
-    // =========================
-    // REFRESH TOKEN
-    // =========================
-
-    const refreshToken = crypto.randomUUID()
-
-    const now = new Date()
-
-    const expiresAt = new Date(
-      now.getTime() + REFRESH_TOKEN_DAYS * 86400000
-    )
+    const refreshToken = generarRefreshToken()
+    const expiresAt = calcularExpiracion()
 
     await db.run(
       `
-      INSERT INTO refresh_tokens (
-        user_id,
-        token,
-        expires_at,
-        created_at
-      )
+      INSERT INTO refresh_tokens (user_id, token, expires_at, created_at)
       VALUES (?, ?, ?, ?)
       `,
-      [
-        Number(user.id),
-        refreshToken,
-        expiresAt,
-        now
-      ]
+      [user.id, refreshToken, expiresAt, new Date()]
     )
 
     return res.json({
@@ -150,16 +120,11 @@ router.post('/login', async (req, res) => {
         nombre: user.nombre_completo,
         rol: user.role,
         cargo: user.cargo_nombre,
-
         nivel_acceso: nivelAcceso,
-
         dependencia: user.dependencia_nombre,
-
         entidad_id: user.entidad_id,
-        entidad_nombre: nombreEntidad, // 🔥 AJUSTADO
-
+        entidad_nombre: user.entidad_nombre || null,
         id_dependencia: Number(user.id_dependencia ?? 0),
-
         es_master_admin: Boolean(user.es_master_admin),
         es_responsable_dependencia: Boolean(user.es_responsable_dependencia)
       }
@@ -167,35 +132,29 @@ router.post('/login', async (req, res) => {
 
   } catch (err) {
 
-    console.error(`[AUTH][${requestId}] ERROR LOGIN:`, err)
+    console.error(`[AUTH] ERROR LOGIN:`, err)
 
-    return res.status(500).json({
-      error: 'Error interno'
-    })
+    return res.status(500).json({ error: 'Error interno' })
   }
 
 })
 
-
-// =========================
-// REFRESH TOKEN
-// =========================
+// ======================================================
+// REFRESH (ROTACIÓN SEGURA)
+// ======================================================
 
 router.post('/refresh', async (req, res) => {
 
   const requestId = Date.now().toString(36)
 
   console.log(`\n[AUTH][${requestId}] ===== REFRESH =====`)
-  console.log(`[AUTH][${requestId}] JWT_SECRET REFRESH:`, JWT_SECRET)
 
   try {
 
     const { refreshToken } = req.body || {}
 
     if (!refreshToken) {
-      return res.status(400).json({
-        error: 'Refresh token requerido'
-      })
+      return res.status(400).json({ error: 'Refresh token requerido' })
     }
 
     const row = await db.get(
@@ -209,41 +168,53 @@ router.post('/refresh', async (req, res) => {
         c.nombre AS cargo_nombre,
         r.nivel_acceso,
         u.entidad_id,
-        e.nombre AS entidad_nombre, -- 🔥 NUEVO
+        e.nombre AS entidad_nombre,
         u.id_dependencia,
         d.nombre AS dependencia_nombre,
         u.es_master_admin,
-        u.es_responsable_dependencia
+        u.es_responsable_dependencia,
+        u.estado,
+        u.bloqueado
       FROM refresh_tokens rt
       JOIN usuarios u ON u.id = rt.user_id
       JOIN roles r ON r.id = u.id_rol
       LEFT JOIN cargos c ON c.id = u.id_cargo
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
-      LEFT JOIN entidades e ON e.id = u.entidad_id -- 🔥 NUEVO
+      LEFT JOIN entidades e ON e.id = u.entidad_id
       WHERE rt.token = ?
       `,
       [refreshToken]
     )
 
     if (!row) {
-      return res.status(401).json({
-        error: 'Refresh inválido'
-      })
+      return res.status(401).json({ error: 'Refresh inválido' })
     }
 
     if (new Date(row.expires_at) < new Date()) {
-      return res.status(401).json({
-        error: 'Refresh expirado'
-      })
+      return res.status(401).json({ error: 'Refresh expirado' })
     }
 
-    const nivelAcceso = Number(row.nivel_acceso ?? 0)
-
-    if (!row.entidad_id) {
-      return res.status(500).json({
-        error: 'Usuario sin entidad válida'
-      })
+    if (row.estado !== 1) {
+      return res.status(403).json({ error: 'Usuario inactivo' })
     }
+
+    if (row.bloqueado === 1) {
+      return res.status(403).json({ error: 'Usuario bloqueado' })
+    }
+
+    // 🔥 ROTACIÓN
+    await db.run(`DELETE FROM refresh_tokens WHERE token = ?`, [refreshToken])
+
+    const newRefreshToken = generarRefreshToken()
+    const expiresAt = calcularExpiracion()
+
+    await db.run(
+      `
+      INSERT INTO refresh_tokens (user_id, token, expires_at, created_at)
+      VALUES (?, ?, ?, ?)
+      `,
+      [row.user_id, newRefreshToken, expiresAt, new Date()]
+    )
 
     const payload = {
       sub: Number(row.user_id),
@@ -251,39 +222,62 @@ router.post('/refresh', async (req, res) => {
       nombre: row.nombre_completo,
       rol: row.rol_nombre,
       cargo: row.cargo_nombre,
-
-      nivel_acceso: nivelAcceso,
-
+      nivel_acceso: Number(row.nivel_acceso ?? 0),
       entidad_id: row.entidad_id,
-      entidad_nombre: row.entidad_nombre || null, // 🔥 AJUSTADO
-
+      entidad_nombre: row.entidad_nombre || null,
       id_dependencia: Number(row.id_dependencia ?? 0),
       dependencia: row.dependencia_nombre,
-
       es_master_admin: Boolean(row.es_master_admin),
       es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
     }
 
-    const newAccessToken = jwt.sign(
-      payload,
-      JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_TTL }
-    )
-
-    console.log(`[AUTH][${requestId}] NEW TOKEN (inicio):`,
-      newAccessToken.substring(0, 30) + '...'
-    )
+    const newAccessToken = jwt.sign(payload, JWT_SECRET, {
+      expiresIn: ACCESS_TOKEN_TTL
+    })
 
     return res.json({
-      token: newAccessToken
+      token: newAccessToken,
+      refreshToken: newRefreshToken
     })
 
   } catch (err) {
 
-    console.error(`[AUTH][${requestId}] ERROR REFRESH:`, err)
+    console.error(`[AUTH] ERROR REFRESH:`, err)
+
+    return res.status(500).json({ error: 'Error interno' })
+  }
+
+})
+
+// ======================================================
+// LOGOUT (REVOCAR)
+// ======================================================
+
+router.post('/logout', async (req, res) => {
+
+  try {
+
+    const { refreshToken } = req.body
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        error: 'Refresh token requerido'
+      })
+    }
+
+    await db.run(
+      `DELETE FROM refresh_tokens WHERE token = ?`,
+      [refreshToken]
+    )
+
+    return res.json({ ok: true })
+
+  } catch (err) {
+
+    console.error('[AUTH] ERROR LOGOUT:', err)
 
     return res.status(500).json({
-      error: 'Error interno'
+      error: 'Error cerrando sesión'
     })
   }
 

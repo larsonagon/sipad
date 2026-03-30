@@ -6,7 +6,7 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 const router = express.Router()
 
 // =====================================================
-// AUDITORÍA GLOBAL INSTITUCIONAL
+// AUDITORÍA GLOBAL INSTITUCIONAL (MULTI-TENANT)
 // =====================================================
 
 router.get(
@@ -16,6 +16,8 @@ router.get(
   async (req, res) => {
 
     try {
+
+      const entidadId = req.entidad_id
 
       const {
         actor,
@@ -30,6 +32,10 @@ router.get(
 
       let filtros = []
       let params = []
+
+      // 🔥 SIEMPRE FILTRAR POR ENTIDAD
+      filtros.push(`entidad_id = ?`)
+      params.push(entidadId)
 
       // =====================
       // FILTROS DINÁMICOS
@@ -50,6 +56,14 @@ router.get(
         params.push(fecha_fin)
       }
 
+      // 🔥 VALIDAR MODULO (ANTI INYECCIÓN)
+      const modulosValidos = ['USUARIOS', 'ROLES', 'DEPENDENCIAS']
+
+      if (modulo && modulosValidos.includes(modulo.toUpperCase())) {
+        filtros.push(`modulo = ?`)
+        params.push(modulo.toUpperCase())
+      }
+
       const whereClause = filtros.length
         ? `WHERE ${filtros.join(' AND ')}`
         : ''
@@ -68,7 +82,8 @@ router.get(
             a.actor_id,
             u.username as actor,
             a.detalle_json,
-            a.created_at
+            a.created_at,
+            a.entidad_id
           FROM auditoria_usuarios a
           JOIN usuarios u ON u.id = a.actor_id
 
@@ -81,7 +96,8 @@ router.get(
             r.actor_id,
             u.username as actor,
             r.detalle_json,
-            r.created_at
+            r.created_at,
+            r.entidad_id
           FROM auditoria_roles r
           JOIN usuarios u ON u.id = r.actor_id
 
@@ -94,13 +110,13 @@ router.get(
             d.actor_id,
             u.username as actor,
             d.detalle_json,
-            d.created_at
+            d.created_at,
+            d.entidad_id
           FROM auditoria_dependencias d
           JOIN usuarios u ON u.id = d.actor_id
 
         ) AS auditoria
         ${whereClause}
-        ${modulo ? `AND modulo = '${modulo.toUpperCase()}'` : ''}
         ORDER BY created_at DESC
         LIMIT ? OFFSET ?
       `
@@ -118,13 +134,17 @@ router.get(
       })
 
     } catch (err) {
+
       console.error(err)
+
       res.status(500).json({
         error: 'Error obteniendo auditoría global'
       })
+
     }
   }
 )
 
-console.log('🔥 AUDITORIA GLOBAL CARGADA')
+console.log('🔥 AUDITORIA GLOBAL CARGADA (MULTI-TENANT)')
+
 export default router

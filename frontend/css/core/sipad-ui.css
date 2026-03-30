@@ -1323,8 +1323,10 @@ select.form-control{
 }
 
 /* 🔥 elimina salto visual */
-.pig-user-meta::before{
-  content:none;
+.pig-user-meta{
+  font-size:11px;
+  opacity:.75;
+  letter-spacing:.2px;
 }
 
 /* MOBILE */

@@ -43,7 +43,6 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 // =====================================================
 // LISTAR DEPENDENCIAS
 // =====================================================
-// 🔹 Todos los usuarios institucionales pueden ver dependencias
 
 router.get(
   '/',
@@ -53,11 +52,14 @@ router.get(
 
     try {
 
+      const entidadId = req.entidad_id
+
       const rows = await db.all(`
         SELECT id, nombre, activa, created_at
         FROM dependencias
+        WHERE entidad_id = ?
         ORDER BY created_at ASC
-      `)
+      `, [entidadId])
 
       res.json(rows)
 
@@ -74,7 +76,6 @@ router.get(
 // =====================================================
 // CREAR DEPENDENCIA
 // =====================================================
-// 🔹 Solo administración institucional
 
 router.post(
   '/',
@@ -85,6 +86,7 @@ router.post(
     try {
 
       const actorId = Number(req.user.sub)
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!nombre || !nombre.trim()) {
@@ -94,23 +96,23 @@ router.post(
       const nombreLimpio = nombre.trim()
 
       const existe = await db.get(
-        `SELECT id FROM dependencias WHERE nombre = ?`,
-        [nombreLimpio]
+        `SELECT id FROM dependencias WHERE nombre = ? AND entidad_id = ?`,
+        [nombreLimpio, entidadId]
       )
 
       if (existe) {
         return res.status(400).json({
-          error: 'Ya existe una dependencia con ese nombre'
+          error: 'Ya existe una dependencia con ese nombre en esta entidad'
         })
       }
 
       const result = await db.get(
         `
-        INSERT INTO dependencias (nombre, activa)
-        VALUES (?, 1)
+        INSERT INTO dependencias (nombre, activa, entidad_id)
+        VALUES (?, 1, ?)
         RETURNING id
         `,
-        [nombreLimpio]
+        [nombreLimpio, entidadId]
       )
 
       const nuevaDependenciaId = result?.id ?? null
@@ -157,8 +159,20 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
+      const entidadId = req.entidad_id
       const id = Number(req.params.id)
       const { nombre } = req.body
+
+      const dependencia = await db.get(
+        `SELECT id FROM dependencias WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!dependencia) {
+        return res.status(404).json({
+          error: 'Dependencia no pertenece a esta entidad'
+        })
+      }
 
       if (!nombre || !nombre.trim()) {
         return res.status(400).json({ error: 'Nombre requerido' })
@@ -167,8 +181,8 @@ router.patch(
       const nombreLimpio = nombre.trim()
 
       const existe = await db.get(
-        `SELECT id FROM dependencias WHERE nombre = ? AND id != ?`,
-        [nombreLimpio, id]
+        `SELECT id FROM dependencias WHERE nombre = ? AND id != ? AND entidad_id = ?`,
+        [nombreLimpio, id, entidadId]
       )
 
       if (existe) {
@@ -178,8 +192,8 @@ router.patch(
       }
 
       await db.run(
-        `UPDATE dependencias SET nombre = ? WHERE id = ?`,
-        [nombreLimpio, id]
+        `UPDATE dependencias SET nombre = ? WHERE id = ? AND entidad_id = ?`,
+        [nombreLimpio, id, entidadId]
       )
 
       await registrarAuditoria(
@@ -214,8 +228,20 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
+      const entidadId = req.entidad_id
       const id = Number(req.params.id)
       const { activa } = req.body
+
+      const dependencia = await db.get(
+        `SELECT id FROM dependencias WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!dependencia) {
+        return res.status(404).json({
+          error: 'Dependencia no pertenece a esta entidad'
+        })
+      }
 
       if (activa === 0) {
 
@@ -223,9 +249,9 @@ router.patch(
           `
           SELECT COUNT(*) as total
           FROM usuarios
-          WHERE id_dependencia = ? AND estado = 1
+          WHERE id_dependencia = ? AND estado = 1 AND id_entidad = ?
           `,
-          [id]
+          [id, entidadId]
         )
 
         if (usuariosActivos?.total > 0) {
@@ -237,8 +263,8 @@ router.patch(
       }
 
       await db.run(
-        `UPDATE dependencias SET activa = ? WHERE id = ?`,
-        [activa ? 1 : 0, id]
+        `UPDATE dependencias SET activa = ? WHERE id = ? AND entidad_id = ?`,
+        [activa ? 1 : 0, id, entidadId]
       )
 
       await registrarAuditoria(
@@ -260,6 +286,6 @@ router.patch(
   }
 )
 
-console.log('🔥 DEPENDENCIAS ROUTES CARGADO')
+console.log('🔥 DEPENDENCIAS ROUTES CARGADO (MULTI-TENANT)')
 
 export default router

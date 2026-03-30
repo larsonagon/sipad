@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import rateLimit from 'express-rate-limit'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -15,6 +16,24 @@ const FRONTEND_PATH = path.join(__dirname, 'frontend')
 // ==========================================================
 
 import { db } from './backend/db/database.js'
+
+// ==========================================================
+// 🔥 MIDDLEWARES
+// ==========================================================
+
+import { verificarJWT } from './backend/middlewares/auth.middleware.js'
+import { multiTenant } from './backend/middlewares/multiTenant.middleware.js'
+
+// 🔥 RATE LIMIT LOGIN
+const loginLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Demasiados intentos de login. Intenta más tarde.'
+  }
+})
 
 // ==========================================================
 // IMPORTACIONES BACKEND
@@ -43,8 +62,6 @@ import cargosRoutes from './backend/modules/cargos/cargos.routes.js'
 // ENTIDADES
 import { runEntidadesMigration } from './backend/modules/entidades/entidades.migration.js'
 import { runMultiTenantMigration } from './backend/modules/entidades/entidades.extend.migration.js'
-
-// 🔥 NUEVO: RUTAS ENTIDADES
 import entidadesRoutes from './backend/modules/entidades/entidades.routes.js'
 
 // USUARIOS
@@ -117,15 +134,18 @@ async function init() {
     console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'OK' : 'NO DEFINIDO')
 
     const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
-
-    console.log('🗄️ Motor de base de datos:', DB_ENGINE)
-
     const isSQLite = DB_ENGINE === 'sqlite'
 
     app.use(express.json())
 
     // ==================================================
-    // MIGRACIONES SOLO SQLITE
+    // 🔥 RATE LIMIT SOLO LOGIN
+    // ==================================================
+
+    app.use('/api/auth/login', loginLimiter)
+
+    // ==================================================
+    // MIGRACIONES
     // ==================================================
 
     if (isSQLite) {
@@ -174,28 +194,28 @@ async function init() {
     const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
-    // RUTAS API
+    // RUTAS
     // ==================================================
 
+    // 🔥 AUTH SIN JWT
     app.use('/api/auth', authRoutes)
-    app.use('/api/roles', rolesRoutes)
-    app.use('/api/dependencias', dependenciasRoutes)
-    app.use('/api/niveles', nivelesRoutes)
-    app.use('/api/cargos', cargosRoutes)
 
-    // 🔥 NUEVO: ENTIDADES
-    app.use('/api/entidades', entidadesRoutes)
-
-    app.use('/api/usuarios', usuariosRoutes)
-    app.use('/api/configuracion', configuracionRoutes)
-    app.use('/api/auditoria', auditoriaRoutes)
+    // 🔥 RESTO PROTEGIDO
+    app.use('/api/roles', verificarJWT, multiTenant, rolesRoutes)
+    app.use('/api/dependencias', verificarJWT, multiTenant, dependenciasRoutes)
+    app.use('/api/niveles', verificarJWT, multiTenant, nivelesRoutes)
+    app.use('/api/cargos', verificarJWT, multiTenant, cargosRoutes)
+    app.use('/api/entidades', verificarJWT, multiTenant, entidadesRoutes)
+    app.use('/api/usuarios', verificarJWT, multiTenant, usuariosRoutes)
+    app.use('/api/configuracion', verificarJWT, multiTenant, configuracionRoutes)
+    app.use('/api/auditoria', verificarJWT, multiTenant, auditoriaRoutes)
 
     registerTRDAIRoutes(app, trdAIController)
 
-    app.use('/api/segtec', buildSEGTECRouter(db, trdAIService))
+    app.use('/api/segtec', verificarJWT, multiTenant, buildSEGTECRouter(db, trdAIService))
 
     console.log('📊 Cargando módulo INFORMES...')
-    app.use('/api/informes', buildInformesRouter(db))
+    app.use('/api/informes', verificarJWT, multiTenant, buildInformesRouter(db))
 
     // ==================================================
     // FRONTEND
@@ -214,7 +234,6 @@ async function init() {
     app.use((req, res, next) => {
 
       if (req.path.startsWith('/api')) return next()
-
       if (path.extname(req.path)) return next()
 
       return res.sendFile(path.join(FRONTEND_PATH, 'auth', 'index.html'))

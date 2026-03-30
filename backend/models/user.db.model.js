@@ -1,6 +1,3 @@
-// backend/models/user.db.model.js
-// SIPAD – Modelo institucional de usuarios (SQLite / PostgreSQL)
-
 import { db } from '../db/database.js'
 
 /* =========================
@@ -68,66 +65,73 @@ export async function createUserDB({
 
 export async function findUserByUsernameDB(username) {
 
-  const row = await db.get(
-    `
-    SELECT
-      u.id,
-      u.username,
-      u.password_hash,
-      u.nombre_completo,
-      u.entidad_id,
-      e.nombre AS entidad_nombre, -- 🔥 NUEVO
-      u.id_dependencia,
-      u.es_master_admin,
-      u.es_responsable_dependencia,
-      r.nombre AS rol_nombre,
-      r.nivel_acceso,
-      d.nombre AS dependencia_nombre,
-      c.nombre AS cargo_nombre
-    FROM usuarios u
-    JOIN roles r ON r.id = u.id_rol
-    LEFT JOIN dependencias d ON d.id = u.id_dependencia
-    LEFT JOIN cargos c ON c.id = u.id_cargo
-    LEFT JOIN entidades e ON e.id = u.entidad_id -- 🔥 NUEVO JOIN
-    WHERE u.username = ?
-      AND u.estado = 1
-      AND u.bloqueado = false
-    `,
-    [username]
-  )
+  try {
 
-  if (!row) {
-    return null
-  }
+    const row = await db.get(
+      `
+      SELECT
+        u.id,
+        u.username,
+        u.password_hash,
+        u.nombre_completo,
+        u.entidad_id,
+        e.nombre AS entidad_nombre,
+        u.id_dependencia,
+        u.es_master_admin,
+        u.es_responsable_dependencia,
+        r.nombre AS rol_nombre,
+        r.nivel_acceso,
+        d.nombre AS dependencia_nombre,
+        c.nombre AS cargo_nombre
+      FROM usuarios u
+      LEFT JOIN roles r ON r.id = u.id_rol
+      LEFT JOIN dependencias d ON d.id = u.id_dependencia
+      LEFT JOIN cargos c ON c.id = u.id_cargo
+      LEFT JOIN entidades e ON e.id = u.entidad_id
+      WHERE u.username = ?
+        AND u.estado = 1
+        AND u.bloqueado = 0
+      `,
+      [username]
+    )
 
-  return {
-    id: Number(row.id),
-    username: row.username,
-    nombre_completo: row.nombre_completo,
-    passwordHash: row.password_hash,
+    if (!row) {
+      return null
+    }
 
-    role: row.rol_nombre,
-    nivel_acceso: Number(row.nivel_acceso),
+    return {
+      id: Number(row.id),
+      username: row.username,
+      nombre_completo: row.nombre_completo,
+      passwordHash: row.password_hash,
 
-    cargo: row.cargo_nombre,
-    cargo_nombre: row.cargo_nombre,
+      role: row.rol_nombre,
+      nivel_acceso: Number(row.nivel_acceso ?? 0),
 
-    // 🔥 MULTI-TENANT
-    entidad_id: row.entidad_id,
-    entidad_nombre: row.entidad_nombre, // 🔥 NUEVO
+      cargo: row.cargo_nombre,
+      cargo_nombre: row.cargo_nombre,
 
-    id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
+      entidad_id: row.entidad_id,
+      entidad_nombre: row.entidad_nombre,
 
-    dependencia_nombre: row.dependencia_nombre,
+      id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
+      dependencia_nombre: row.dependencia_nombre,
 
-    es_master_admin: Boolean(row.es_master_admin),
-    es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
+      es_master_admin: Boolean(row.es_master_admin),
+      es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
+    }
+
+  } catch (err) {
+
+    console.error('❌ Error en findUserByUsernameDB:', err)
+
+    return null // 🔥 NUNCA romper login
   }
 }
 
 
 /* =========================
-   LISTAR USUARIOS (YA MULTI-TENANT)
+   LISTAR USUARIOS
 ========================= */
 
 export async function getAllUsersDB(entidad_id) {
@@ -151,7 +155,7 @@ export async function getAllUsersDB(entidad_id) {
       u.es_responsable_dependencia,
       u.created_at
     FROM usuarios u
-    JOIN roles r ON r.id = u.id_rol
+    LEFT JOIN roles r ON r.id = u.id_rol
     LEFT JOIN cargos c ON c.id = u.id_cargo
     WHERE u.entidad_id = ?
     ORDER BY u.created_at ASC

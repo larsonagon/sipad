@@ -1,5 +1,5 @@
 // backend/modules/cargos/cargos.routes.js
-// SIPAD – Módulo Cargos Institucional
+// SIPAD – Módulo Cargos Institucional (MULTI-TENANT)
 
 import express from 'express'
 import { db } from '../../db/database.js'
@@ -11,8 +11,6 @@ const router = express.Router()
 // =====================================================
 // LISTAR CARGOS
 // =====================================================
-// ⚠️ Cualquier usuario autenticado puede consultar cargos
-// porque es un catálogo institucional
 
 router.get(
   '/',
@@ -20,11 +18,14 @@ router.get(
   async (req, res) => {
     try {
 
+      const entidadId = req.entidad_id
+
       const cargos = await db.all(`
         SELECT id, nombre, estado, created_at
         FROM cargos
+        WHERE entidad_id = ?
         ORDER BY nombre ASC
-      `)
+      `, [entidadId])
 
       res.json(cargos)
 
@@ -38,7 +39,6 @@ router.get(
 // =====================================================
 // CREAR CARGO
 // =====================================================
-// ⚠️ Solo nivel alto puede crear
 
 router.post(
   '/',
@@ -47,24 +47,27 @@ router.post(
   async (req, res) => {
     try {
 
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!nombre)
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
+      const nombreLimpio = nombre.trim()
+
       const existe = await db.get(
-        `SELECT id FROM cargos WHERE nombre = ?`,
-        [nombre.trim()]
+        `SELECT id FROM cargos WHERE nombre = ? AND entidad_id = ?`,
+        [nombreLimpio, entidadId]
       )
 
       if (existe)
-        return res.status(400).json({ error: 'El cargo ya existe' })
+        return res.status(400).json({ error: 'El cargo ya existe en esta entidad' })
 
       await db.run(`
-        INSERT INTO cargos (nombre, estado)
-        VALUES (?, 1)
+        INSERT INTO cargos (nombre, estado, entidad_id)
+        VALUES (?, 1, ?)
       `,
-        [nombre.trim()]
+        [nombreLimpio, entidadId]
       )
 
       res.status(201).json({ ok: true })
@@ -87,18 +90,30 @@ router.put(
   async (req, res) => {
     try {
 
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
       if (!nombre)
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
+      const cargo = await db.get(
+        `SELECT id FROM cargos WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!cargo) {
+        return res.status(404).json({
+          error: 'Cargo no pertenece a esta entidad'
+        })
+      }
+
       await db.run(`
         UPDATE cargos
         SET nombre = ?
-        WHERE id = ?
+        WHERE id = ? AND entidad_id = ?
       `,
-        [nombre.trim(), id]
+        [nombre.trim(), id, entidadId]
       )
 
       res.json({ ok: true })
@@ -121,12 +136,24 @@ router.patch(
   async (req, res) => {
     try {
 
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
 
+      const cargo = await db.get(
+        `SELECT id FROM cargos WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!cargo) {
+        return res.status(404).json({
+          error: 'Cargo no pertenece a esta entidad'
+        })
+      }
+
       await db.run(
-        `UPDATE cargos SET estado = ? WHERE id = ?`,
-        [estado ? 1 : 0, id]
+        `UPDATE cargos SET estado = ? WHERE id = ? AND entidad_id = ?`,
+        [estado ? 1 : 0, id, entidadId]
       )
 
       res.json({ ok: true })
@@ -138,6 +165,6 @@ router.patch(
   }
 )
 
-console.log('🔥 CARGOS ROUTES CARGADO')
+console.log('🔥 CARGOS ROUTES CARGADO (MULTI-TENANT)')
 
 export default router

@@ -1,5 +1,5 @@
 // backend/modules/niveles/niveles.routes.js
-// SIPAD – Módulo Niveles Institucionales
+// SIPAD – Módulo Niveles Institucionales (MULTI-TENANT)
 
 import express from 'express'
 import { db } from '../../db/database.js'
@@ -19,11 +19,14 @@ router.get(
   async (req, res) => {
     try {
 
+      const entidadId = req.entidad_id
+
       const niveles = await db.all(`
         SELECT id, nombre, estado, created_at
         FROM niveles
+        WHERE entidad_id = ?
         ORDER BY orden DESC
-      `)
+      `, [entidadId])
 
       res.json(niveles)
 
@@ -35,7 +38,7 @@ router.get(
 )
 
 // =====================================================
-// CREAR NIVEL (orden automático)
+// CREAR NIVEL (orden automático por entidad)
 // =====================================================
 
 router.post(
@@ -46,31 +49,35 @@ router.post(
 
     try {
 
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!nombre)
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
+      const nombreLimpio = nombre.trim()
+
       const existe = await db.get(
-        `SELECT id FROM niveles WHERE nombre = ?`,
-        [nombre.trim()]
+        `SELECT id FROM niveles WHERE nombre = ? AND entidad_id = ?`,
+        [nombreLimpio, entidadId]
       )
 
       if (existe)
-        return res.status(400).json({ error: 'El nivel ya existe' })
+        return res.status(400).json({ error: 'El nivel ya existe en esta entidad' })
 
-      // 🔥 Obtener el orden máximo actual
+      // 🔥 Orden por entidad
       const maxOrdenRow = await db.get(
-        `SELECT MAX(orden) as max FROM niveles`
+        `SELECT MAX(orden) as max FROM niveles WHERE entidad_id = ?`,
+        [entidadId]
       )
 
       const nuevoOrden = (maxOrdenRow?.max || 0) + 10
 
       await db.run(`
-        INSERT INTO niveles (nombre, orden, estado)
-        VALUES (?, ?, 1)
+        INSERT INTO niveles (nombre, orden, estado, entidad_id)
+        VALUES (?, ?, 1, ?)
       `,
-        [nombre.trim(), nuevoOrden]
+        [nombreLimpio, nuevoOrden, entidadId]
       )
 
       res.status(201).json({ ok: true })
@@ -83,7 +90,7 @@ router.post(
 )
 
 // =====================================================
-// EDITAR NIVEL (NO modifica orden)
+// EDITAR NIVEL
 // =====================================================
 
 router.put(
@@ -94,18 +101,30 @@ router.put(
 
     try {
 
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
       if (!nombre)
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
+      const nivel = await db.get(
+        `SELECT id FROM niveles WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!nivel) {
+        return res.status(404).json({
+          error: 'Nivel no pertenece a esta entidad'
+        })
+      }
+
       await db.run(`
         UPDATE niveles
         SET nombre = ?
-        WHERE id = ?
+        WHERE id = ? AND entidad_id = ?
       `,
-        [nombre.trim(), id]
+        [nombre.trim(), id, entidadId]
       )
 
       res.json({ ok: true })
@@ -129,12 +148,24 @@ router.patch(
 
     try {
 
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
 
+      const nivel = await db.get(
+        `SELECT id FROM niveles WHERE id = ? AND entidad_id = ?`,
+        [id, entidadId]
+      )
+
+      if (!nivel) {
+        return res.status(404).json({
+          error: 'Nivel no pertenece a esta entidad'
+        })
+      }
+
       await db.run(
-        `UPDATE niveles SET estado = ? WHERE id = ?`,
-        [estado ? 1 : 0, id]
+        `UPDATE niveles SET estado = ? WHERE id = ? AND entidad_id = ?`,
+        [estado ? 1 : 0, id, entidadId]
       )
 
       res.json({ ok: true })
@@ -146,6 +177,6 @@ router.patch(
   }
 )
 
-console.log('🔥 NIVELES ROUTES CARGADO')
+console.log('🔥 NIVELES ROUTES CARGADO (MULTI-TENANT)')
 
 export default router
