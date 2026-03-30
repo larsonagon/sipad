@@ -11,7 +11,6 @@ const router = express.Router()
 
 router.get(
   '/global',
-  verificarJWT,
   requireLevel(80),
   async (req, res) => {
 

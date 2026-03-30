@@ -80,7 +80,7 @@ function generarPasswordTemporal() {
 
 router.put(
   '/cambiar-password',
-  verificarJWT,
+  
   async (req, res) => {
 
     try {
@@ -174,7 +174,7 @@ router.put(
 
 router.get(
   '/',
-  verificarJWT,
+  
   requireLevel(80),
   async (req, res) => {
 
@@ -246,7 +246,7 @@ router.get(
 
 router.get(
   '/:id',
-  verificarJWT,
+  
   requireLevel(80),
   async (req, res) => {
 
@@ -302,7 +302,7 @@ router.get(
 
 router.post(
   '/',
-  verificarJWT,
+  
   requireLevel(80),
   async (req, res) => {
 
@@ -426,7 +426,7 @@ router.post(
 
 router.put(
   '/:id',
-  verificarJWT,
+  
   requireLevel(80),
   async (req, res) => {
 
@@ -587,7 +587,7 @@ router.put(
 
 router.post(
   '/:id/reset-password',
-  verificarJWT,
+  
   requireLevel(80),
   async (req, res) => {
 

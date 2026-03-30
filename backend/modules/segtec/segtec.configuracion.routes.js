@@ -18,7 +18,7 @@ export function registerSEGTECConfiguracionRoutes(app) {
   // =========================================================
   // VERIFICAR SI EXISTE CONFIGURACIÓN ACTIVA
   // =========================================================
-  router.get('/existe', verificarJWT, async (req, res) => {
+  router.get('/existe', async (req, res) => {
     try {
 
       const idDependencia = getDependenciaId(req)
@@ -54,7 +54,7 @@ export function registerSEGTECConfiguracionRoutes(app) {
   // =========================================================
   // OBTENER CONFIGURACIÓN ACTIVA
   // =========================================================
-  router.get('/', verificarJWT, async (req, res) => {
+  router.get('/', async (req, res) => {
     try {
 
       const idDependencia = getDependenciaId(req)
@@ -89,7 +89,7 @@ export function registerSEGTECConfiguracionRoutes(app) {
   // =========================================================
   // HISTÓRICO DE VERSIONES (SOLO LECTURA)
   // =========================================================
-  router.get('/historico', verificarJWT, async (req, res) => {
+  router.get('/historico', async (req, res) => {
     try {
 
       const idDependencia = getDependenciaId(req)
@@ -139,7 +139,7 @@ export function registerSEGTECConfiguracionRoutes(app) {
   // =========================================================
   // CREAR NUEVA VERSIÓN
   // =========================================================
-  router.post('/', verificarJWT, async (req, res) => {
+  router.post('/', async (req, res) => {
     try {
 
       const usuarioId = getUsuarioId(req)

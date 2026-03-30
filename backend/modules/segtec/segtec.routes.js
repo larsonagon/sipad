@@ -59,25 +59,25 @@ const pdfController = SEGTECPDFController(
 
 router.get(
   '/actividades',
-  verificarJWT,
+  
   actividadesController.listarPorDependencia
 )
 
 router.post(
   '/actividades',
-  verificarJWT,
+  
   actividadesController.crear
 )
 
 router.delete(
   '/actividades/:id',
-  verificarJWT,
+  
   actividadesController.eliminar
 )
 
 router.put(
   '/actividades/:id/tecnico',
-  verificarJWT,
+  
   actividadesController.actualizarCamposTecnicos
 )
 
@@ -97,7 +97,7 @@ router.get(
 
 router.post(
   '/actividades/:id/analizar',
-  verificarJWT,
+  
   actividadesController.analizar
 )
 
@@ -107,7 +107,7 @@ router.post(
 
 router.get(
   '/actividades/:id/analisis',
-  verificarJWT,
+  
   actividadesController.listarAnalisis
 )
 
@@ -117,7 +117,7 @@ router.get(
 
 router.post(
   '/actividades/:id/completar',
-  verificarJWT,
+  
   actividadesController.marcarCompleta
 )
 
@@ -127,7 +127,7 @@ router.post(
 
 router.post(
   '/actividades/:id/sugerencia',
-  verificarJWT,
+  
   actividadesController.guardarSugerencia
 )
 
@@ -137,13 +137,13 @@ router.post(
 
 router.get(
   '/actividades/:actividadId/validacion-tecnica',
-  verificarJWT,
+  
   validacionController.obtener
 )
 
 router.put(
   '/actividades/:actividadId/validacion-tecnica',
-  verificarJWT,
+  
   validacionController.guardar
 )
 

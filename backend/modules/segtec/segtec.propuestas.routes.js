@@ -33,7 +33,7 @@ export function registerSEGTECPropuestasRoutes(app, db) {
 
   router.post(
     '/:formularioId/generar',
-    verificarJWT,
+    
     controller.generar
   )
 
@@ -43,7 +43,7 @@ export function registerSEGTECPropuestasRoutes(app, db) {
 
   router.get(
     '/:formularioId',
-    verificarJWT,
+    
     controller.listar
   )
 
@@ -53,7 +53,7 @@ export function registerSEGTECPropuestasRoutes(app, db) {
 
   router.patch(
     '/:id/aprobar',
-    verificarJWT,
+    
     controller.aprobar
   )
 
@@ -63,7 +63,7 @@ export function registerSEGTECPropuestasRoutes(app, db) {
 
   router.patch(
     '/:id/rechazar',
-    verificarJWT,
+    
     controller.rechazar
   )
 

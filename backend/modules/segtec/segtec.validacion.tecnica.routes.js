@@ -30,14 +30,14 @@ export function registerSEGTECValidacionTecnicaRoutes(app, db) {
   // 🔹 Obtener validación técnica
   app.get(
     '/api/segtec/actividades/:actividadId/validacion-tecnica',
-    verificarJWT,
+    
     controller.obtener
   )
 
   // 🔹 Guardar / actualizar validación técnica
   app.put(
     '/api/segtec/actividades/:actividadId/validacion-tecnica',
-    verificarJWT,
+    
     controller.guardar
   )
 }

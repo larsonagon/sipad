@@ -1,5 +1,8 @@
-export function multiTenant(req, res, next) {
+// 🔒 Middleware Multi-Tenant Global
 
+export function tenantMiddleware(req, res, next) {
+
+  // 🔒 Debe existir usuario autenticado
   if (!req.user) {
     return res.status(401).json({
       error: 'Usuario no autenticado'
@@ -14,7 +17,7 @@ export function multiTenant(req, res, next) {
     })
   }
 
-  // 🔥 Inyección limpia
+  // 🔥 Inyectamos en request
   req.entidad_id = entidadId
 
   next()

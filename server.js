@@ -136,7 +136,6 @@ async function init() {
     const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
     const isSQLite = DB_ENGINE === 'sqlite'
 
-    // 🔥 DEBUG CLAVE (NO BORRAR AÚN)
     console.log('🧠 DB_ENGINE:', DB_ENGINE)
     console.log('🧠 DATABASE_URL:', process.env.DATABASE_URL || 'NO DEFINIDA')
 
@@ -198,28 +197,34 @@ async function init() {
     const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
+    // 🔥 MIDDLEWARE GLOBAL MULTI-TENANT
+    // ==================================================
+
+    app.use('/api',  multiTenant)
+
+    // ==================================================
     // RUTAS
     // ==================================================
 
-    // 🔥 AUTH SIN JWT
+    // AUTH sin JWT global
     app.use('/api/auth', authRoutes)
 
-    // 🔥 RESTO PROTEGIDO
-    app.use('/api/roles', verificarJWT, multiTenant, rolesRoutes)
-    app.use('/api/dependencias', verificarJWT, multiTenant, dependenciasRoutes)
-    app.use('/api/niveles', verificarJWT, multiTenant, nivelesRoutes)
-    app.use('/api/cargos', verificarJWT, multiTenant, cargosRoutes)
-    app.use('/api/entidades', verificarJWT, multiTenant, entidadesRoutes)
-    app.use('/api/usuarios', verificarJWT, multiTenant, usuariosRoutes)
-    app.use('/api/configuracion', verificarJWT, multiTenant, configuracionRoutes)
-    app.use('/api/auditoria', verificarJWT, multiTenant, auditoriaRoutes)
+    // 🔒 YA NO REPITES MIDDLEWARES
+    app.use('/api/roles', rolesRoutes)
+    app.use('/api/dependencias', dependenciasRoutes)
+    app.use('/api/niveles', nivelesRoutes)
+    app.use('/api/cargos', cargosRoutes)
+    app.use('/api/entidades', entidadesRoutes)
+    app.use('/api/usuarios', usuariosRoutes)
+    app.use('/api/configuracion', configuracionRoutes)
+    app.use('/api/auditoria', auditoriaRoutes)
 
     registerTRDAIRoutes(app, trdAIController)
 
-    app.use('/api/segtec', verificarJWT, multiTenant, buildSEGTECRouter(db, trdAIService))
+    app.use('/api/segtec', buildSEGTECRouter(db, trdAIService))
 
     console.log('📊 Cargando módulo INFORMES...')
-    app.use('/api/informes', verificarJWT, multiTenant, buildInformesRouter(db))
+    app.use('/api/informes', buildInformesRouter(db))
 
     // ==================================================
     // FRONTEND

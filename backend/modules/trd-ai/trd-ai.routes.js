@@ -12,7 +12,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/dashboard',
-    verificarJWT,
+    
     requireLevel(60),
     controller.obtenerDashboardTRDAI
   )
@@ -23,7 +23,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/analizar',
-    verificarJWT,
+    
     controller.analizarSeries
   )
 
@@ -33,7 +33,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/generar-propuestas',
-    verificarJWT,
+    
     requireLevel(60),
     controller.generarPropuestas
   )
@@ -44,7 +44,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/series-propuestas',
-    verificarJWT,
+    
     requireLevel(60),
     controller.listarPropuestas
   )
@@ -55,7 +55,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.patch(
     '/series-propuestas/:id/aprobar',
-    verificarJWT,
+    
     requireLevel(60),
     controller.aprobarPropuesta
   )
@@ -66,7 +66,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.patch(
     '/series-propuestas/:id/rechazar',
-    verificarJWT,
+    
     requireLevel(60),
     controller.rechazarPropuesta
   )
@@ -77,7 +77,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/series-propuestas/:id/incorporar',
-    verificarJWT,
+    
     requireLevel(60),
     controller.incorporarASerieOficial
   )
@@ -88,14 +88,14 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/series-propuestas/:propuestaId/retencion',
-    verificarJWT,
+    
     requireLevel(60),
     controller.guardarReglaRetencion
   )
 
   router.get(
     '/series-propuestas/:propuestaId/retencion',
-    verificarJWT,
+    
     requireLevel(60),
     controller.obtenerReglaRetencion
   )
@@ -106,7 +106,7 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/series-propuestas/:propuestaId/retencion-automatica',
-    verificarJWT,
+    
     requireLevel(60),
     controller.sugerirRetencionAutomatica
   )

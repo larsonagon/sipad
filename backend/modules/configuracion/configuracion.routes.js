@@ -6,7 +6,6 @@ const router = express.Router()
 
 router.get(
   '/',
-  verificarJWT,
   async (req, res) => {
 
     try {

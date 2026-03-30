@@ -46,7 +46,6 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 
 router.get(
   '/',
-  verificarJWT,
   requireLevel(50),
   async (req, res) => {
 
@@ -83,7 +82,7 @@ router.get(
 
 router.post(
   '/',
-  verificarJWT,
+  
   requireLevel(100),
   async (req, res) => {
 
@@ -160,7 +159,7 @@ router.post(
 
 router.patch(
   '/:id',
-  verificarJWT,
+  
   requireLevel(100),
   async (req, res) => {
 
@@ -233,7 +232,7 @@ router.patch(
 
 router.patch(
   '/:id/estado',
-  verificarJWT,
+  
   requireLevel(100),
   async (req, res) => {
 

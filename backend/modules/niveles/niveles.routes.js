@@ -14,7 +14,6 @@ const router = express.Router()
 
 router.get(
   '/',
-  verificarJWT,
   requireLevel(80),
   async (req, res) => {
     try {
@@ -47,7 +46,6 @@ router.get(
 
 router.post(
   '/',
-  verificarJWT,
   requireLevel(90),
   async (req, res) => {
 
@@ -103,7 +101,6 @@ router.post(
 
 router.put(
   '/:id',
-  verificarJWT,
   requireLevel(90),
   async (req, res) => {
 
@@ -168,7 +165,6 @@ router.put(
 
 router.patch(
   '/:id/estado',
-  verificarJWT,
   requireLevel(90),
   async (req, res) => {
 

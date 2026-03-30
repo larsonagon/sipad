@@ -148,7 +148,6 @@ export function buildSEGTECRouter(db, trdAIService) {
 
   router.get(
     '/configuracion',
-    verificarJWT,
     attachContext,
     asyncHandler(async (req, res) => {
 
@@ -171,7 +170,6 @@ export function buildSEGTECRouter(db, trdAIService) {
 
   router.post(
     '/configuracion',
-    verificarJWT,
     attachContext,
     asyncHandler(async (req, res) => {
 
@@ -254,18 +252,18 @@ export function buildSEGTECRouter(db, trdAIService) {
   // ACTIVIDADES
   // =====================================================
 
-  router.get('/actividades', verificarJWT, attachContext, asyncHandler(controller.listar))
-  router.get('/actividades/:id', verificarJWT, attachContext, asyncHandler(controller.obtenerPorId))
-  router.post('/actividades', verificarJWT, attachContext, asyncHandler(controller.crear))
-  router.put('/actividades/:id', verificarJWT, attachContext, asyncHandler(controller.actualizar))
-  router.delete('/actividades/:id', verificarJWT, attachContext, asyncHandler(controller.eliminar))
+  router.get('/actividades', attachContext, asyncHandler(controller.listar))
+  router.get('/actividades/:id', attachContext, asyncHandler(controller.obtenerPorId))
+  router.post('/actividades', attachContext, asyncHandler(controller.crear))
+  router.put('/actividades/:id', attachContext, asyncHandler(controller.actualizar))
+  router.delete('/actividades/:id', attachContext, asyncHandler(controller.eliminar))
 
-  router.put('/actividades/:id/bloque1', verificarJWT, attachContext, asyncHandler(controller.actualizarBloque1))
-  router.put('/actividades/:id/bloque2', verificarJWT, attachContext, asyncHandler(controller.actualizarBloque2))
-  router.put('/actividades/:id/bloque3', verificarJWT, attachContext, asyncHandler(controller.actualizarBloque3))
+  router.put('/actividades/:id/bloque1', attachContext, asyncHandler(controller.actualizarBloque1))
+  router.put('/actividades/:id/bloque2', attachContext, asyncHandler(controller.actualizarBloque2))
+  router.put('/actividades/:id/bloque3', attachContext, asyncHandler(controller.actualizarBloque3))
 
-  router.post('/actividades/:id/analizar', verificarJWT, attachContext, asyncHandler(controller.analizar))
-  router.post('/actividades/:id/completar', verificarJWT, attachContext, asyncHandler(controller.marcarCompleta))
+  router.post('/actividades/:id/analizar', attachContext, asyncHandler(controller.analizar))
+  router.post('/actividades/:id/completar', attachContext, asyncHandler(controller.marcarCompleta))
 
   // =====================================================
   // PDF (CORREGIDO)
@@ -273,7 +271,6 @@ export function buildSEGTECRouter(db, trdAIService) {
 
   router.get(
     '/actividades/:id/pdf',
-    verificarJWT,
     attachContext,
     asyncHandler(async (req, res) => {
 

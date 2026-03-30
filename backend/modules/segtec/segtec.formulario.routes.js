@@ -45,7 +45,6 @@ export function registerSEGTECRoutes(app, service) {
   // =====================================================
   router.post(
     '/nuevo',
-    verificarJWT,
     async (req, res) => {
       try {
 
@@ -97,7 +96,7 @@ export function registerSEGTECRoutes(app, service) {
   // =====================================================
   router.get(
     '/mis',
-    verificarJWT,
+    
     async (req, res) => {
       try {
 
@@ -132,7 +131,7 @@ export function registerSEGTECRoutes(app, service) {
   // =====================================================
   router.put(
     '/finalizar/:id',
-    verificarJWT,
+    
     async (req, res) => {
       try {
 
@@ -166,7 +165,7 @@ export function registerSEGTECRoutes(app, service) {
   // =====================================================
   router.patch(
     '/avanzar/:formularioId',
-    verificarJWT,
+    
     async (req, res) => {
       try {
 
