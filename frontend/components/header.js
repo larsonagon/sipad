@@ -129,7 +129,7 @@ export function renderHeader(activeModule) {
     (user?.rol || '').toLowerCase() === 'general'
 
   // ======================================================
-  // 🔥 DATOS UI LIMPIOS
+  // 🔥 DATOS UI LIMPIOS (ANTI-BASURA)
   // ======================================================
 
   const nombreEntidad =
@@ -149,9 +149,15 @@ export function renderHeader(activeModule) {
   const dependenciaRaw =
     (user?.dependencia || '').trim()
 
-  // 🔥 NORMALIZACIÓN (sin guiones basura)
-  const cargo = cargoRaw.replace(/^-\s*/, '')
-  const dependencia = dependenciaRaw.replace(/^-\s*/, '')
+  // 🔥 FUNCIÓN LIMPIADORA DEFINITIVA
+  const limpiar = (texto) =>
+    texto
+      .replace(/^[\s\-–—]+/, '')   // elimina cualquier guion al inicio
+      .replace(/\s+/g, ' ')        // normaliza espacios
+      .trim()
+
+  const cargo = limpiar(cargoRaw)
+  const dependencia = limpiar(dependenciaRaw)
 
   let cargoDependencia = ''
 
