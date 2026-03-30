@@ -16,11 +16,15 @@ export async function createUserDB({
   idDependencia,
   idRol,
   idCargo,
-  idEntidad = 1
+  entidad_id
 }) {
 
   if (!idCargo) {
     throw new Error('El cargo es obligatorio')
+  }
+
+  if (!entidad_id) {
+    throw new Error('Entidad obligatoria')
   }
 
   const row = await db.get(
@@ -34,7 +38,7 @@ export async function createUserDB({
       id_dependencia,
       id_rol,
       id_cargo,
-      id_entidad
+      entidad_id
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     RETURNING id
@@ -48,7 +52,7 @@ export async function createUserDB({
       idDependencia,
       idRol,
       idCargo,
-      idEntidad
+      entidad_id
     ]
   )
 
@@ -71,7 +75,7 @@ export async function findUserByUsernameDB(username) {
       u.username,
       u.password_hash,
       u.nombre_completo,
-      u.id_entidad,
+      u.entidad_id,
       u.id_dependencia,
       u.es_master_admin,
       u.es_responsable_dependencia,
@@ -100,15 +104,15 @@ export async function findUserByUsernameDB(username) {
     nombre_completo: row.nombre_completo,
     passwordHash: row.password_hash,
 
-    // 🔹 Normalización institucional
     role: row.rol_nombre,
     nivel_acceso: Number(row.nivel_acceso),
 
-    // 🔹 Cargo (compatibilidad completa)
     cargo: row.cargo_nombre,
     cargo_nombre: row.cargo_nombre,
 
-    id_entidad: row.id_entidad ? Number(row.id_entidad) : null,
+    // 🔥 CAMBIO CLAVE
+    entidad_id: row.entidad_id,
+
     id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
 
     dependencia_nombre: row.dependencia_nombre,
@@ -120,10 +124,14 @@ export async function findUserByUsernameDB(username) {
 
 
 /* =========================
-   DEBUG – LISTAR USUARIOS
+   LISTAR USUARIOS (YA MULTI-TENANT)
 ========================= */
 
-export async function getAllUsersDB() {
+export async function getAllUsersDB(entidad_id) {
+
+  if (!entidad_id) {
+    throw new Error('Entidad requerida')
+  }
 
   const rows = await db.all(
     `
@@ -134,7 +142,7 @@ export async function getAllUsersDB() {
       c.nombre AS cargo,
       r.nombre AS rol,
       r.nivel_acceso,
-      u.id_entidad,
+      u.entidad_id,
       u.id_dependencia,
       u.es_master_admin,
       u.es_responsable_dependencia,
@@ -142,8 +150,10 @@ export async function getAllUsersDB() {
     FROM usuarios u
     JOIN roles r ON r.id = u.id_rol
     LEFT JOIN cargos c ON c.id = u.id_cargo
+    WHERE u.entidad_id = ?
     ORDER BY u.created_at ASC
-    `
+    `,
+    [entidad_id]
   )
 
   return rows || []

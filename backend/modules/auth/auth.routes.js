@@ -66,6 +66,14 @@ router.post('/login', async (req, res) => {
       })
     }
 
+    // 🔥 VALIDACIÓN CRÍTICA NUEVA
+    if (!user.entidad_id) {
+      console.error(`[AUTH][${requestId}] Usuario sin entidad asignada`)
+      return res.status(500).json({
+        error: 'Usuario sin entidad válida'
+      })
+    }
+
     // =========================
     // ACCESS TOKEN
     // =========================
@@ -79,7 +87,9 @@ router.post('/login', async (req, res) => {
 
       nivel_acceso: nivelAcceso,
 
-      id_entidad: Number(user.id_entidad ?? 0),
+      // 🔥 CAMBIO CLAVE
+      entidad_id: user.entidad_id,
+
       id_dependencia: Number(user.id_dependencia ?? 0),
       dependencia: user.dependencia_nombre,
 
@@ -142,7 +152,10 @@ router.post('/login', async (req, res) => {
         nivel_acceso: nivelAcceso,
 
         dependencia: user.dependencia_nombre,
-        id_entidad: Number(user.id_entidad ?? 0),
+
+        // 🔥 CAMBIO CLAVE
+        entidad_id: user.entidad_id,
+
         id_dependencia: Number(user.id_dependencia ?? 0),
 
         es_master_admin: Boolean(user.es_master_admin),
@@ -193,7 +206,7 @@ router.post('/refresh', async (req, res) => {
         r.nombre AS rol_nombre,
         c.nombre AS cargo_nombre,
         r.nivel_acceso,
-        u.id_entidad,
+        u.entidad_id,
         u.id_dependencia,
         d.nombre AS dependencia_nombre,
         u.es_master_admin,
@@ -222,6 +235,13 @@ router.post('/refresh', async (req, res) => {
 
     const nivelAcceso = Number(row.nivel_acceso ?? 0)
 
+    // 🔥 VALIDACIÓN NUEVA
+    if (!row.entidad_id) {
+      return res.status(500).json({
+        error: 'Usuario sin entidad válida'
+      })
+    }
+
     const payload = {
       sub: Number(row.user_id),
       username: row.username,
@@ -231,7 +251,9 @@ router.post('/refresh', async (req, res) => {
 
       nivel_acceso: nivelAcceso,
 
-      id_entidad: Number(row.id_entidad ?? 0),
+      // 🔥 CAMBIO CLAVE
+      entidad_id: row.entidad_id,
+
       id_dependencia: Number(row.id_dependencia ?? 0),
       dependencia: row.dependencia_nombre,
 
