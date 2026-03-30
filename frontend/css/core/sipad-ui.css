@@ -1238,3 +1238,42 @@ select.form-control{
   }
 
 }
+
+/* ======================================================
+   HEADER – AJUSTE FINO DE ESPACIADO Y TIPOGRAFÍA
+====================================================== */
+
+/* 🔧 Reduce separación entre título y usuario */
+.pig-header-inner{
+  gap:2px !important;
+}
+
+/* 🔧 Quita margen extra del bloque inferior */
+.pig-header-bottom{
+  margin-top:0 !important;
+}
+
+/* 🔧 Ajusta altura del header completo */
+.pig-header{
+  padding-top:4px;
+  padding-bottom:4px;
+}
+
+/* 🔧 Usuario MÁS compacto */
+.pig-user-name{
+  font-size:12px; /* antes 13px */
+  line-height:1.2;
+}
+
+.pig-user-meta{
+  font-size:10px; /* antes 11px */
+  line-height:1.2;
+  opacity:.8;
+}
+
+/* 🔧 Compacta visualmente el bloque usuario */
+.pig-user-info{
+  display:flex;
+  flex-direction:column;
+  gap:1px;
+}
