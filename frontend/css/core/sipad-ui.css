@@ -1135,13 +1135,106 @@ select.form-control{
   padding:0 18px;
 }
 
-.pig-header-left{
-  flex:1;
-}
-
 .pig-header-right{
   display:flex;
   align-items:center;
   gap:16px;
   margin-left:auto; /* 🔥 empuja todo a la derecha */
+}
+
+/* ======================================================
+   HEADER SIPAD v2 (ESTRUCTURA PROFESIONAL)
+   🔥 NO ROMPE LO EXISTENTE – SOLO AJUSTA
+====================================================== */
+
+/* CONTENEDOR GENERAL */
+.pig-header-inner{
+  display:flex;
+  flex-direction:column; /* 🔥 ahora en dos filas */
+  height:auto !important;
+  gap:4px;
+}
+
+/* FILA SUPERIOR */
+.pig-header-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+}
+
+/* FILA INFERIOR */
+.pig-header-bottom{
+  display:flex;
+  justify-content:flex-start;
+  align-items:center;
+  width:100%;
+  margin-top:2px;
+}
+
+/* IZQUIERDA */
+.pig-header-left{
+  display:flex;
+  flex-direction:column;
+}
+
+/* DERECHA (BOTONES) */
+.pig-header-right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-left:auto;
+}
+
+/* NAV LIMPIO */
+.pig-nav{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+/* BOTONES MÁS PRO */
+.pig-nav button{
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* USUARIO ABAJO */
+.pig-user{
+  margin-left:0; /* 🔥 quita desplazamiento viejo */
+}
+
+/* TEXTO USUARIO */
+.pig-user-name{
+  font-size:13px;
+  font-weight:600;
+}
+
+.pig-user-meta{
+  font-size:11px;
+  opacity:.85;
+}
+
+/* RESPONSIVE AJUSTADO */
+@media (max-width:768px){
+
+  .pig-header-top{
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+
+  .pig-header-right{
+    width:100%;
+    justify-content:center;
+  }
+
+  .pig-header-bottom{
+    justify-content:center;
+    text-align:center;
+  }
+
 }

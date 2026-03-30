@@ -6,10 +6,8 @@ const TIEMPO_INACTIVIDAD = 60 * 60 * 1000 // 60 minutos
 let temporizadorSesion = null
 
 function cerrarSesion() {
-
   sessionStorage.clear()
   window.location.href = '/'
-
 }
 
 function reiniciarTemporizadorSesion() {
@@ -21,10 +19,8 @@ function reiniciarTemporizadorSesion() {
   sessionStorage.setItem('lastActivity', Date.now())
 
   temporizadorSesion = setTimeout(() => {
-
     alert('La sesión ha expirado por inactividad.')
     cerrarSesion()
-
   }, TIEMPO_INACTIVIDAD)
 
 }
@@ -133,7 +129,7 @@ export function renderHeader(activeModule) {
     (user?.rol || '').toLowerCase() === 'general'
 
   // ======================================================
-  // 🔥 DATOS CLAVE UI
+  // 🔥 DATOS UI
   // ======================================================
 
   const nombreEntidad =
@@ -166,71 +162,80 @@ export function renderHeader(activeModule) {
   header.innerHTML = `
     <div class="pig-header-inner">
 
-      <!-- IZQUIERDA -->
-      <div class="pig-header-left">
+      <!-- FILA SUPERIOR -->
+      <div class="pig-header-top">
 
-        <div class="pig-title">
-          SIPAD – ${nombreEntidad}
-          <span class="pig-module">
-            ${modulo === 'home' ? 'Panel Principal' : modulo}
-          </span>
+        <!-- IZQUIERDA -->
+        <div class="pig-header-left">
+
+          <div class="pig-title">
+            SIPAD – ${nombreEntidad}
+            <span class="pig-module">
+              ${modulo === 'home' ? 'Panel Principal' : modulo}
+            </span>
+          </div>
+
+          ${seccion ? `<div class="pig-sub">${seccion}</div>` : ''}
+
         </div>
 
-        ${seccion ? `<div class="pig-sub">${seccion}</div>` : ''}
+        <!-- DERECHA (BOTONES) -->
+        <div class="pig-header-right">
+
+          <nav class="pig-nav">
+
+            <button type="button" id="btnInicio"
+              ${modulo === 'home' ? 'class="active"' : ''}>
+              Inicio
+            </button>
+
+            ${
+              !esRolGeneral && esAdmin
+                ? `
+                <button type="button" id="btnAdmin"
+                  ${modulo === 'Administración' ? 'class="active"' : ''}>
+                  Administración
+                </button>
+                `
+                : ''
+            }
+
+            <button type="button" id="btnSegtec"
+              ${modulo === 'ICAF' ? 'class="active"' : ''}>
+              ICAF
+            </button>
+
+            ${
+              !esRolGeneral
+                ? `
+                <button type="button" id="btnTRDAI"
+                  ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
+                  TRD-AI
+                </button>
+                `
+                : ''
+            }
+
+            ${
+              !esRolGeneral && puedeVerInformes
+                ? `
+                <button type="button" id="btnInformes"
+                  ${modulo === 'Informes' ? 'class="active"' : ''}>
+                  Informes
+                </button>
+                `
+                : ''
+            }
+
+          </nav>
+
+        </div>
 
       </div>
 
-      <!-- DERECHA -->
-      <div class="pig-header-right">
+      <!-- FILA INFERIOR (USUARIO) -->
+      <div class="pig-header-bottom">
 
-        <nav class="pig-nav">
-
-          <button type="button" id="btnInicio"
-            ${modulo === 'home' ? 'class="active"' : ''}>
-            Inicio
-          </button>
-
-          ${
-            !esRolGeneral && esAdmin
-              ? `
-              <button type="button" id="btnAdmin"
-                ${modulo === 'Administración' ? 'class="active"' : ''}>
-                Administración
-              </button>
-              `
-              : ''
-          }
-
-          <button type="button" id="btnSegtec"
-            ${modulo === 'ICAF' ? 'class="active"' : ''}>
-            ICAF
-          </button>
-
-          ${
-            !esRolGeneral
-              ? `
-              <button type="button" id="btnTRDAI"
-                ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
-                TRD-AI
-              </button>
-              `
-              : ''
-          }
-
-          ${
-            !esRolGeneral && puedeVerInformes
-              ? `
-              <button type="button" id="btnInformes"
-                ${modulo === 'Informes' ? 'class="active"' : ''}>
-                Informes
-              </button>
-              `
-              : ''
-          }
-
-        </nav>
-
-        <!-- USUARIO -->
         <div class="pig-user">
 
           <div class="pig-user-info" id="btnUserMenu">
