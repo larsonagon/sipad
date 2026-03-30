@@ -240,13 +240,17 @@ export function renderHeader(activeModule) {
 
           <div class="pig-user-info" id="btnUserMenu">
 
-            <div class="pig-user-name">
-              ${nombreUsuario}
-            </div>
+            <div class="pig-user-icon">👤</div>
 
-            <div class="pig-user-meta">
-              ${cargo}
-              ${dependencia ? ' – ' + dependencia : ''}
+            <div class="pig-user-text">
+              <div class="pig-user-name">
+                ${nombreUsuario}
+              </div>
+
+              <div class="pig-user-meta">
+                ${cargo}
+                ${dependencia ? ' – ' + dependencia : ''}
+              </div>
             </div>
 
           </div>
@@ -254,11 +258,11 @@ export function renderHeader(activeModule) {
           <div class="pig-user-dropdown" id="userDropdown">
 
             <button type="button" id="btnCambiarPassword">
-              Cambiar contraseña
+              🔑 Cambiar contraseña
             </button>
 
             <button type="button" id="btnSalir" class="logout">
-              Cerrar sesión
+              🚪 Cerrar sesión
             </button>
 
           </div>
