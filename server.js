@@ -197,7 +197,13 @@ async function init() {
     const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
-    // 🔥 MIDDLEWARE GLOBAL CORRECTO
+    // 🔥 AUTH (PRIMERO SIN PROTEGER)
+    // ==================================================
+
+    app.use('/api/auth', authRoutes)
+
+    // ==================================================
+    // 🔒 PROTECCIÓN GLOBAL (DESPUÉS DE AUTH)
     // ==================================================
 
     app.use('/api', verificarJWT, multiTenant)
@@ -205,9 +211,6 @@ async function init() {
     // ==================================================
     // RUTAS
     // ==================================================
-
-    // AUTH sin protección
-    app.use('/api/auth', authRoutes)
 
     app.use('/api/roles', rolesRoutes)
     app.use('/api/dependencias', dependenciasRoutes)

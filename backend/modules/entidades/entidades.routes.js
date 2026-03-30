@@ -1,6 +1,5 @@
 import express from 'express'
 import { db } from '../../db/database.js'
-import { requireLevel } from '../../middlewares/role.middleware.js'
 
 const router = express.Router()
 
@@ -38,64 +37,68 @@ router.get('/', async (req, res) => {
 
 
 // ======================================
-// CREAR ENTIDAD
+// CREAR ENTIDAD (SOLO MASTER ADMIN)
 // ======================================
 
-router.post(
-  '/',
-  requireLevel(100),
-  async (req, res) => {
+router.post('/', async (req, res) => {
 
-    try {
+  try {
 
-      const { nombre } = req.body
-
-      if (!nombre || nombre.trim() === '') {
-        return res.status(400).json({
-          ok: false,
-          error: 'Nombre requerido'
-        })
-      }
-
-      const nombreLimpio = nombre.trim()
-
-      const existe = await db.get(
-        `SELECT id FROM entidades WHERE nombre = ?`,
-        [nombreLimpio]
-      )
-
-      if (existe) {
-        return res.status(400).json({
-          ok: false,
-          error: 'Ya existe una entidad con ese nombre'
-        })
-      }
-
-      const result = await db.run(
-        `
-        INSERT INTO entidades (nombre, estado)
-        VALUES (?, true)
-        `,
-        [nombreLimpio]
-      )
-
-      return res.status(201).json({
-        ok: true,
-        id: result.lastID,
-        nombre: nombreLimpio
-      })
-
-    } catch (err) {
-
-      console.error('Error creando entidad:', err)
-
-      return res.status(500).json({
+    // 🔥 VALIDACIÓN CRÍTICA
+    if (!req.user || !req.isMasterAdmin) {
+      return res.status(403).json({
         ok: false,
-        error: 'Error creando entidad'
+        error: 'No autorizado (solo master admin)'
       })
     }
 
+    const { nombre } = req.body
+
+    if (!nombre || nombre.trim() === '') {
+      return res.status(400).json({
+        ok: false,
+        error: 'Nombre requerido'
+      })
+    }
+
+    const nombreLimpio = nombre.trim()
+
+    const existe = await db.get(
+      `SELECT id FROM entidades WHERE nombre = ?`,
+      [nombreLimpio]
+    )
+
+    if (existe) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Ya existe una entidad con ese nombre'
+      })
+    }
+
+    const result = await db.run(
+      `
+      INSERT INTO entidades (nombre, estado)
+      VALUES (?, true)
+      `,
+      [nombreLimpio]
+    )
+
+    return res.status(201).json({
+      ok: true,
+      id: result.lastID,
+      nombre: nombreLimpio
+    })
+
+  } catch (err) {
+
+    console.error('Error creando entidad:', err)
+
+    return res.status(500).json({
+      ok: false,
+      error: 'Error creando entidad'
+    })
   }
-)
+
+})
 
 export default router
