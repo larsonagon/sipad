@@ -129,7 +129,7 @@ export function renderHeader(activeModule) {
     (user?.rol || '').toLowerCase() === 'general'
 
   // ======================================================
-  // 🔥 DATOS UI
+  // 🔥 DATOS UI LIMPIOS
   // ======================================================
 
   const nombreEntidad =
@@ -143,14 +143,25 @@ export function renderHeader(activeModule) {
     user?.username ||
     'Usuario'
 
-  const cargo =
-    user?.cargo ||
-    user?.cargo_nombre ||
-    ''
+  const cargoRaw =
+    (user?.cargo || user?.cargo_nombre || '').trim()
 
-  const dependencia =
-    user?.dependencia ||
-    ''
+  const dependenciaRaw =
+    (user?.dependencia || '').trim()
+
+  // 🔥 NORMALIZACIÓN (sin guiones basura)
+  const cargo = cargoRaw.replace(/^-\s*/, '')
+  const dependencia = dependenciaRaw.replace(/^-\s*/, '')
+
+  let cargoDependencia = ''
+
+  if (cargo && dependencia) {
+    cargoDependencia = `${cargo} – ${dependencia}`
+  } else if (cargo) {
+    cargoDependencia = cargo
+  } else if (dependencia) {
+    cargoDependencia = dependencia
+  }
 
   // ======================================================
   // HEADER
@@ -248,8 +259,7 @@ export function renderHeader(activeModule) {
               </div>
 
               <div class="pig-user-meta">
-                ${cargo}
-                ${dependencia ? ' – ' + dependencia : ''}
+                ${cargoDependencia}
               </div>
             </div>
 
