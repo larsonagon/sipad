@@ -1,5 +1,5 @@
 // backend/modules/niveles/niveles.routes.js
-// SIPAD – Módulo Niveles Institucionales (MULTI-TENANT)
+// SIPAD – Módulo Niveles Institucionales (MULTI-TENANT SEGURO)
 
 import express from 'express'
 import { db } from '../../db/database.js'
@@ -19,10 +19,14 @@ router.get(
   async (req, res) => {
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const niveles = await db.all(`
-        SELECT id, nombre, estado, created_at
+        SELECT id, nombre, estado, created_at, orden
         FROM niveles
         WHERE entidad_id = ?
         ORDER BY orden DESC
@@ -49,10 +53,14 @@ router.post(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const { nombre } = req.body
 
-      if (!nombre)
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
+      if (!nombre || !nombre.trim())
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
       const nombreLimpio = nombre.trim()
@@ -65,7 +73,7 @@ router.post(
       if (existe)
         return res.status(400).json({ error: 'El nivel ya existe en esta entidad' })
 
-      // 🔥 Orden por entidad
+      // 🔥 Orden por entidad (seguro)
       const maxOrdenRow = await db.get(
         `SELECT MAX(orden) as max FROM niveles WHERE entidad_id = ?`,
         [entidadId]
@@ -101,11 +109,15 @@ router.put(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
-      if (!nombre)
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
+      if (!nombre || !nombre.trim())
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
       const nivel = await db.get(
@@ -119,12 +131,26 @@ router.put(
         })
       }
 
+      const nombreLimpio = nombre.trim()
+
+      // 🔒 VALIDACIÓN MULTI-TENANT (evita duplicados)
+      const existe = await db.get(
+        `SELECT id FROM niveles WHERE nombre = ? AND id != ? AND entidad_id = ?`,
+        [nombreLimpio, id, entidadId]
+      )
+
+      if (existe) {
+        return res.status(400).json({
+          error: 'Ya existe otro nivel con ese nombre en esta entidad'
+        })
+      }
+
       await db.run(`
         UPDATE niveles
         SET nombre = ?
         WHERE id = ? AND entidad_id = ?
       `,
-        [nombre.trim(), id, entidadId]
+        [nombreLimpio, id, entidadId]
       )
 
       res.json({ ok: true })
@@ -148,9 +174,13 @@ router.patch(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const nivel = await db.get(
         `SELECT id FROM niveles WHERE id = ? AND entidad_id = ?`,
@@ -177,6 +207,6 @@ router.patch(
   }
 )
 
-console.log('🔥 NIVELES ROUTES CARGADO (MULTI-TENANT)')
+console.log('🔥 NIVELES ROUTES CARGADO (MULTI-TENANT SEGURO)')
 
 export default router

@@ -82,15 +82,15 @@ export async function findUserByUsernameDB(username) {
         r.nombre AS rol_nombre,
         r.nivel_acceso,
         d.nombre AS dependencia_nombre,
-        c.nombre AS cargo_nombre
+        c.nombre AS cargo_nombre,
+        u.estado,
+        u.bloqueado
       FROM usuarios u
       LEFT JOIN roles r ON r.id = u.id_rol
       LEFT JOIN dependencias d ON d.id = u.id_dependencia
       LEFT JOIN cargos c ON c.id = u.id_cargo
       LEFT JOIN entidades e ON e.id = u.entidad_id
       WHERE u.username = ?
-        AND u.estado = 1
-        AND u.bloqueado = 0
       `,
       [username]
     )
@@ -98,6 +98,13 @@ export async function findUserByUsernameDB(username) {
     if (!row) {
       return null
     }
+
+    // 🔥 Normalización cross-DB (Postgres / SQLite)
+    const estadoNormalizado =
+      row.estado === true || row.estado === 1 ? 1 : 0
+
+    const bloqueadoNormalizado =
+      row.bloqueado === true || row.bloqueado === 1 ? 1 : 0
 
     return {
       id: Number(row.id),
@@ -114,18 +121,25 @@ export async function findUserByUsernameDB(username) {
       entidad_id: row.entidad_id,
       entidad_nombre: row.entidad_nombre,
 
-      id_dependencia: row.id_dependencia ? Number(row.id_dependencia) : null,
+      id_dependencia: row.id_dependencia
+        ? Number(row.id_dependencia)
+        : null,
+
       dependencia_nombre: row.dependencia_nombre,
 
       es_master_admin: Boolean(row.es_master_admin),
-      es_responsable_dependencia: Boolean(row.es_responsable_dependencia)
+      es_responsable_dependencia: Boolean(row.es_responsable_dependencia),
+
+      // 🔥 NUEVO (CRÍTICO)
+      estado: estadoNormalizado,
+      bloqueado: bloqueadoNormalizado
     }
 
   } catch (err) {
 
     console.error('❌ Error en findUserByUsernameDB:', err)
 
-    return null // 🔥 NUNCA romper login
+    return null // 🔥 nunca romper login
   }
 }
 
@@ -153,7 +167,9 @@ export async function getAllUsersDB(entidad_id) {
       u.id_dependencia,
       u.es_master_admin,
       u.es_responsable_dependencia,
-      u.created_at
+      u.created_at,
+      u.estado,
+      u.bloqueado
     FROM usuarios u
     LEFT JOIN roles r ON r.id = u.id_rol
     LEFT JOIN cargos c ON c.id = u.id_cargo

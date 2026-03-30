@@ -52,7 +52,11 @@ router.get(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const rows = await db.all(`
         SELECT id, nombre, activa, created_at
@@ -86,8 +90,12 @@ router.post(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const { nombre } = req.body
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       if (!nombre || !nombre.trim()) {
         return res.status(400).json({ error: 'Nombre requerido' })
@@ -159,9 +167,13 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = Number(req.params.id)
       const { nombre } = req.body
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const dependencia = await db.get(
         `SELECT id FROM dependencias WHERE id = ? AND entidad_id = ?`,
@@ -228,9 +240,13 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = Number(req.params.id)
       const { activa } = req.body
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const dependencia = await db.get(
         `SELECT id FROM dependencias WHERE id = ? AND entidad_id = ?`,
@@ -249,7 +265,7 @@ router.patch(
           `
           SELECT COUNT(*) as total
           FROM usuarios
-          WHERE id_dependencia = ? AND estado = 1 AND id_entidad = ?
+          WHERE id_dependencia = ? AND estado = 1 AND entidad_id = ?
           `,
           [id, entidadId]
         )
@@ -286,6 +302,6 @@ router.patch(
   }
 )
 
-console.log('🔥 DEPENDENCIAS ROUTES CARGADO (MULTI-TENANT)')
+console.log('🔥 DEPENDENCIAS ROUTES CARGADO (MULTI-TENANT SEGURO)')
 
 export default router

@@ -22,7 +22,7 @@ async function registrarAuditoria(actorId, rolId, accion, detalle) {
       `
       INSERT INTO auditoria_roles
       (actor_id, rol_afectado_id, accion, detalle_json)
-      VALUES ($1,$2,$3,$4)
+      VALUES (?, ?, ?, ?)
       `,
       [
         actorId,
@@ -47,7 +47,7 @@ async function contarRolesNivel100(entidadId) {
     FROM roles
     WHERE nivel_acceso = 100
       AND activo = 1
-      AND entidad_id = $1
+      AND entidad_id = ?
   `, [entidadId])
 
   return row?.total ?? 0
@@ -66,12 +66,16 @@ router.get(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const roles = await db.all(`
         SELECT id, nombre, descripcion, nivel_acceso, activo, created_at
         FROM roles
-        WHERE entidad_id = $1
+        WHERE entidad_id = ?
         ORDER BY nivel_acceso DESC
       `, [entidadId])
 
@@ -101,11 +105,15 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
 
       const { nombre, descripcion } = req.body
 
-      if (!nombre) {
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
+      if (!nombre || !nombre.trim()) {
         return res.status(400).json({ error: 'Nombre requerido' })
       }
 
@@ -117,9 +125,11 @@ router.post(
         })
       }
 
+      const nombreLimpio = nombre.trim()
+
       const existeNombre = await db.get(
-        `SELECT id FROM roles WHERE nombre = $1 AND entidad_id = $2`,
-        [nombre.trim(), entidadId]
+        `SELECT id FROM roles WHERE nombre = ? AND entidad_id = ?`,
+        [nombreLimpio, entidadId]
       )
 
       if (existeNombre) {
@@ -131,11 +141,11 @@ router.post(
       const result = await db.get(
         `
         INSERT INTO roles (nombre, descripcion, nivel_acceso, activo, entidad_id)
-        VALUES ($1,$2,$3,1,$4)
+        VALUES (?, ?, ?, 1, ?)
         RETURNING id
         `,
         [
-          nombre.trim(),
+          nombreLimpio,
           descripcion || null,
           nivel,
           entidadId
@@ -151,7 +161,7 @@ router.post(
         actorId,
         nuevoRolId,
         'CREAR_ROL',
-        { nombre, nivel_acceso: nivel }
+        { nombre: nombreLimpio, nivel_acceso: nivel }
       )
 
       res.status(201).json({ ok: true })
@@ -180,13 +190,17 @@ router.patch(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
 
       const { nombre, descripcion, nivel_acceso } = req.body
 
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
       const rol = await db.get(
-        `SELECT * FROM roles WHERE id = $1 AND entidad_id = $2`,
+        `SELECT * FROM roles WHERE id = ? AND entidad_id = ?`,
         [id, entidadId]
       )
 
@@ -214,16 +228,30 @@ router.patch(
         })
       }
 
+      const nombreLimpio = nombre ? nombre.trim() : rol.nombre
+
+      // 🔒 VALIDACIÓN MULTI-TENANT
+      if (nombre) {
+        const existe = await db.get(
+          `SELECT id FROM roles WHERE nombre = ? AND id != ? AND entidad_id = ?`,
+          [nombreLimpio, id, entidadId]
+        )
+
+        if (existe) {
+          return res.status(400).json({
+            error: 'Ya existe otro rol con ese nombre en esta entidad'
+          })
+        }
+      }
+
       await db.run(
         `
         UPDATE roles
-        SET nombre = $1,
-            descripcion = $2,
-            nivel_acceso = $3
-        WHERE id = $4 AND entidad_id = $5
+        SET nombre = ?, descripcion = ?, nivel_acceso = ?
+        WHERE id = ? AND entidad_id = ?
         `,
         [
-          nombre || rol.nombre,
+          nombreLimpio,
           descripcion ?? rol.descripcion,
           nivelNuevo,
           id,
@@ -235,7 +263,7 @@ router.patch(
         actorId,
         id,
         'EDITAR_ROL',
-        { nombre, nivel_acceso: nivelNuevo }
+        { nombre: nombreLimpio, nivel_acceso: nivelNuevo }
       )
 
       res.json({ ok: true })
@@ -263,12 +291,16 @@ router.patch(
     try {
 
       const actorId = parseInt(req.user.sub)
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
       const { activo } = req.body
 
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
       const rol = await db.get(
-        `SELECT * FROM roles WHERE id = $1 AND entidad_id = $2`,
+        `SELECT * FROM roles WHERE id = ? AND entidad_id = ?`,
         [id, entidadId]
       )
 
@@ -292,19 +324,19 @@ router.patch(
         `
         SELECT COUNT(*) as total
         FROM usuarios
-        WHERE id_rol = $1 AND estado = 1 AND id_entidad = $2
+        WHERE id_rol = ? AND estado = 1 AND entidad_id = ?
         `,
         [id, entidadId]
       )
 
-      if (usuariosActivos.total > 0 && !activo) {
+      if (usuariosActivos?.total > 0 && !activo) {
         return res.status(400).json({
           error: 'No puedes desactivar un rol con usuarios activos'
         })
       }
 
       await db.run(
-        `UPDATE roles SET activo = $1 WHERE id = $2 AND entidad_id = $3`,
+        `UPDATE roles SET activo = ? WHERE id = ? AND entidad_id = ?`,
         [activo ? 1 : 0, id, entidadId]
       )
 
@@ -327,6 +359,6 @@ router.patch(
   }
 )
 
-console.log('🔥 ROLES ROUTES CARGADO (MULTI-TENANT)')
+console.log('🔥 ROLES ROUTES CARGADO (MULTI-TENANT SEGURO)')
 
 export default router

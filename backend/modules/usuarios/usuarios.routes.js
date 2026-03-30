@@ -26,7 +26,6 @@ async function registrarAuditoria(actorId, usuarioId, accion, detalle) {
   )
 }
 
-// 🔒 AHORA TODOS VALIDAN POR ENTIDAD
 async function obtenerNivelRol(idRol, entidadId) {
   const row = await db.get(
     `SELECT nivel_acceso FROM roles WHERE id = ? AND entidad_id = ?`,
@@ -76,7 +75,7 @@ function generarPasswordTemporal() {
 }
 
 // =====================================================
-// CAMBIAR PASSWORD (AUTOGESTIÓN)
+// CAMBIAR PASSWORD
 // =====================================================
 
 router.put(
@@ -111,7 +110,7 @@ router.put(
         `
         SELECT password_hash
         FROM usuarios
-        WHERE id = ? AND id_entidad = ?
+        WHERE id = ? AND entidad_id = ?
         `,
         [usuarioId, entidadId]
       )
@@ -139,7 +138,7 @@ router.put(
         `
         UPDATE usuarios
         SET password_hash = ?
-        WHERE id = ? AND id_entidad = ?
+        WHERE id = ? AND entidad_id = ?
         `,
         [nuevoHash, usuarioId, entidadId]
       )
@@ -200,17 +199,17 @@ router.get(
           u.bloqueado,
           u.created_at
         FROM usuarios u
-        JOIN roles r ON r.id = u.id_rol
-        JOIN dependencias d ON d.id = u.id_dependencia
-        LEFT JOIN cargos c ON c.id = u.id_cargo
-        LEFT JOIN niveles n ON n.id = u.id_nivel
+        JOIN roles r ON r.id = u.id_rol AND r.entidad_id = u.entidad_id
+        JOIN dependencias d ON d.id = u.id_dependencia AND d.entidad_id = u.entidad_id
+        LEFT JOIN cargos c ON c.id = u.id_cargo AND c.entidad_id = u.entidad_id
+        LEFT JOIN niveles n ON n.id = u.id_nivel AND n.entidad_id = u.entidad_id
         WHERE 1=1
       `
 
       const params = []
 
       if (!req.isMasterAdmin) {
-        query += ` AND u.id_entidad = ?`
+        query += ` AND u.entidad_id = ?`
         params.push(entidad)
       }
 
@@ -271,7 +270,7 @@ router.get(
           estado,
           bloqueado
         FROM usuarios
-        WHERE id = ? AND id_entidad = ?
+        WHERE id = ? AND entidad_id = ?
         `,
         [id, entidadId]
       )
@@ -334,6 +333,15 @@ router.post(
       if (password.length < 8)
         return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres' })
 
+      // 🔒 DUPLICADOS
+      const existe = await db.get(
+        `SELECT id FROM usuarios WHERE (email = ? OR username = ?) AND entidad_id = ?`,
+        [email, username, entidad]
+      )
+
+      if (existe)
+        return res.status(400).json({ error: 'Usuario o email ya existe en esta entidad' })
+
       if (!(await validarDependencia(id_dependencia, entidad)))
         return res.status(400).json({ error: 'Dependencia inválida' })
 
@@ -372,7 +380,7 @@ router.post(
           id_rol,
           id_cargo,
           id_nivel,
-          id_entidad
+          entidad_id
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
@@ -430,7 +438,7 @@ router.put(
       const entidadId = req.user.entidad_id
 
       const usuarioExiste = await db.get(
-        `SELECT id FROM usuarios WHERE id = ? AND id_entidad = ?`,
+        `SELECT id FROM usuarios WHERE id = ? AND entidad_id = ?`,
         [id, entidadId]
       )
 
@@ -504,7 +512,7 @@ router.put(
             estado = ?,
             bloqueado = ?,
             password_hash = ?
-          WHERE id = ? AND id_entidad = ?
+          WHERE id = ? AND entidad_id = ?
         `,
         [
           email,
@@ -531,7 +539,7 @@ router.put(
             id_nivel = ?,
             estado = ?,
             bloqueado = ?
-          WHERE id = ? AND id_entidad = ?
+          WHERE id = ? AND entidad_id = ?
         `,
         [
           email,
@@ -590,7 +598,7 @@ router.post(
       const entidadId = req.user.entidad_id
 
       const usuarioExiste = await db.get(
-        `SELECT id FROM usuarios WHERE id = ? AND id_entidad = ?`,
+        `SELECT id FROM usuarios WHERE id = ? AND entidad_id = ?`,
         [id, entidadId]
       )
 
@@ -607,7 +615,7 @@ router.post(
         `
         UPDATE usuarios
         SET password_hash = ?, bloqueado = 0
-        WHERE id = ? AND id_entidad = ?
+        WHERE id = ? AND entidad_id = ?
         `,
         [hash, id, entidadId]
       )

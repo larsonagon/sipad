@@ -1,5 +1,5 @@
 // backend/modules/cargos/cargos.routes.js
-// SIPAD – Módulo Cargos Institucional (MULTI-TENANT)
+// SIPAD – Módulo Cargos Institucional (MULTI-TENANT SEGURO)
 
 import express from 'express'
 import { db } from '../../db/database.js'
@@ -18,7 +18,11 @@ router.get(
   async (req, res) => {
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const cargos = await db.all(`
         SELECT id, nombre, estado, created_at
@@ -47,10 +51,14 @@ router.post(
   async (req, res) => {
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const { nombre } = req.body
 
-      if (!nombre)
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
+      if (!nombre || !nombre.trim())
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
       const nombreLimpio = nombre.trim()
@@ -90,11 +98,15 @@ router.put(
   async (req, res) => {
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
-      if (!nombre)
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
+
+      if (!nombre || !nombre.trim())
         return res.status(400).json({ error: 'Nombre obligatorio' })
 
       const cargo = await db.get(
@@ -108,12 +120,26 @@ router.put(
         })
       }
 
+      const nombreLimpio = nombre.trim()
+
+      // 🔒 VALIDACIÓN MULTI-TENANT (evita duplicados)
+      const existe = await db.get(
+        `SELECT id FROM cargos WHERE nombre = ? AND id != ? AND entidad_id = ?`,
+        [nombreLimpio, id, entidadId]
+      )
+
+      if (existe) {
+        return res.status(400).json({
+          error: 'Ya existe otro cargo con ese nombre en esta entidad'
+        })
+      }
+
       await db.run(`
         UPDATE cargos
         SET nombre = ?
         WHERE id = ? AND entidad_id = ?
       `,
-        [nombre.trim(), id, entidadId]
+        [nombreLimpio, id, entidadId]
       )
 
       res.json({ ok: true })
@@ -136,9 +162,13 @@ router.patch(
   async (req, res) => {
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const cargo = await db.get(
         `SELECT id FROM cargos WHERE id = ? AND entidad_id = ?`,
@@ -165,6 +195,6 @@ router.patch(
   }
 )
 
-console.log('🔥 CARGOS ROUTES CARGADO (MULTI-TENANT)')
+console.log('🔥 CARGOS ROUTES CARGADO (MULTI-TENANT SEGURO)')
 
 export default router

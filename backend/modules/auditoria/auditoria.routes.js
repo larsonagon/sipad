@@ -6,7 +6,7 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 const router = express.Router()
 
 // =====================================================
-// AUDITORÍA GLOBAL INSTITUCIONAL (MULTI-TENANT)
+// AUDITORÍA GLOBAL INSTITUCIONAL (MULTI-TENANT SEGURO)
 // =====================================================
 
 router.get(
@@ -17,7 +17,11 @@ router.get(
 
     try {
 
-      const entidadId = req.entidad_id
+      const entidadId = req.user.entidad_id
+
+      if (!entidadId) {
+        return res.status(401).json({ error: 'Entidad no definida en el token' })
+      }
 
       const {
         actor,
@@ -28,12 +32,14 @@ router.get(
         limit = 20
       } = req.query
 
-      const offset = (parseInt(page) - 1) * parseInt(limit)
+      const pageInt = parseInt(page)
+      const limitInt = parseInt(limit)
+      const offset = (pageInt - 1) * limitInt
 
       let filtros = []
       let params = []
 
-      // 🔥 SIEMPRE FILTRAR POR ENTIDAD
+      // 🔒 FILTRO BASE (OBLIGATORIO MULTI-TENANT)
       filtros.push(`entidad_id = ?`)
       params.push(entidadId)
 
@@ -56,7 +62,7 @@ router.get(
         params.push(fecha_fin)
       }
 
-      // 🔥 VALIDAR MODULO (ANTI INYECCIÓN)
+      // 🔒 VALIDACIÓN ANTI-INYECCIÓN
       const modulosValidos = ['USUARIOS', 'ROLES', 'DEPENDENCIAS']
 
       if (modulo && modulosValidos.includes(modulo.toUpperCase())) {
@@ -64,12 +70,10 @@ router.get(
         params.push(modulo.toUpperCase())
       }
 
-      const whereClause = filtros.length
-        ? `WHERE ${filtros.join(' AND ')}`
-        : ''
+      const whereClause = `WHERE ${filtros.join(' AND ')}`
 
       // =====================
-      // CONSULTA UNIFICADA
+      // CONSULTA UNIFICADA SEGURA
       // =====================
 
       const query = `
@@ -85,7 +89,9 @@ router.get(
             a.created_at,
             a.entidad_id
           FROM auditoria_usuarios a
-          JOIN usuarios u ON u.id = a.actor_id
+          JOIN usuarios u 
+            ON u.id = a.actor_id
+           AND u.entidad_id = a.entidad_id
 
           UNION ALL
 
@@ -99,7 +105,9 @@ router.get(
             r.created_at,
             r.entidad_id
           FROM auditoria_roles r
-          JOIN usuarios u ON u.id = r.actor_id
+          JOIN usuarios u 
+            ON u.id = r.actor_id
+           AND u.entidad_id = r.entidad_id
 
           UNION ALL
 
@@ -113,7 +121,9 @@ router.get(
             d.created_at,
             d.entidad_id
           FROM auditoria_dependencias d
-          JOIN usuarios u ON u.id = d.actor_id
+          JOIN usuarios u 
+            ON u.id = d.actor_id
+           AND u.entidad_id = d.entidad_id
 
         ) AS auditoria
         ${whereClause}
@@ -123,12 +133,12 @@ router.get(
 
       const results = await db.all(
         query,
-        [...params, parseInt(limit), offset]
+        [...params, limitInt, offset]
       )
 
       res.json({
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: pageInt,
+        limit: limitInt,
         total_registros: results.length,
         data: results
       })
@@ -145,6 +155,6 @@ router.get(
   }
 )
 
-console.log('🔥 AUDITORIA GLOBAL CARGADA (MULTI-TENANT)')
+console.log('🔥 AUDITORIA GLOBAL CARGADA (MULTI-TENANT SEGURO)')
 
 export default router

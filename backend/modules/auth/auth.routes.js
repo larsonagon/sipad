@@ -48,23 +48,29 @@ router.post('/login', async (req, res) => {
     }
 
     const user = await findUserByUsernameDB(username)
-    console.log('🧪 USER LOGIN:', user)
+
+    console.log(`[AUTH][${requestId}] USER:`, user ? 'ENCONTRADO' : 'NO EXISTE')
 
     if (!user) {
       return res.status(401).json({ error: 'Credenciales inválidas' })
     }
 
-    if (user.estado !== 1) {
+    // 🔥 DEBUG CONTROLADO (NO imprime todo el objeto)
+    console.log(`[AUTH][${requestId}] HASH DB:`, user.passwordHash?.substring(0, 20) + '...')
+    console.log(`[AUTH][${requestId}] PASSWORD INPUT LENGTH:`, password.length)
+
+    // ⚠️ VALIDACIONES SEGURAS
+    if (user.estado !== undefined && user.estado !== 1) {
       return res.status(403).json({ error: 'Usuario inactivo' })
     }
 
-    if (user.bloqueado === 1) {
+    if (user.bloqueado !== undefined && (user.bloqueado === 1 || user.bloqueado === true)) {
       return res.status(403).json({ error: 'Usuario bloqueado' })
     }
-    console.log('🧪 PASSWORD INPUT:', password)
-    console.log('🧪 HASH DB:', user.passwordHash)
-    
+
     const valid = await bcrypt.compare(password, user.passwordHash)
+
+    console.log(`[AUTH][${requestId}] BCRYPT RESULT:`, valid)
 
     if (!valid) {
       return res.status(401).json({ error: 'Credenciales inválidas' })
@@ -113,6 +119,8 @@ router.post('/login', async (req, res) => {
       `,
       [user.id, refreshToken, expiresAt, new Date()]
     )
+
+    console.log(`[AUTH][${requestId}] LOGIN OK`)
 
     return res.json({
       token: accessToken,
@@ -205,7 +213,7 @@ router.post('/refresh', async (req, res) => {
       return res.status(403).json({ error: 'Usuario bloqueado' })
     }
 
-    // 🔥 ROTACIÓN
+    // 🔥 ROTACIÓN SEGURA
     await db.run(`DELETE FROM refresh_tokens WHERE token = ?`, [refreshToken])
 
     const newRefreshToken = generarRefreshToken()
@@ -253,7 +261,7 @@ router.post('/refresh', async (req, res) => {
 })
 
 // ======================================================
-// LOGOUT (REVOCAR)
+// LOGOUT
 // ======================================================
 
 router.post('/logout', async (req, res) => {
