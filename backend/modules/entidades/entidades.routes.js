@@ -3,6 +3,8 @@ import { db } from '../../db/database.js'
 
 const router = express.Router()
 
+console.log('🔥 ENTIDADES ROUTES ACTUALIZADO')
+
 // ======================================
 // LISTAR ENTIDADES ACTIVAS
 // ======================================
@@ -44,8 +46,15 @@ router.post('/', async (req, res) => {
 
   try {
 
-    // 🔥 VALIDACIÓN CRÍTICA
-    if (!req.user || !req.isMasterAdmin) {
+    // 🔒 VALIDACIÓN DE SEGURIDAD
+    if (!req.user) {
+      return res.status(401).json({
+        ok: false,
+        error: 'No autenticado'
+      })
+    }
+
+    if (!req.isMasterAdmin) {
       return res.status(403).json({
         ok: false,
         error: 'No autorizado (solo master admin)'
@@ -62,10 +71,12 @@ router.post('/', async (req, res) => {
     }
 
     const nombreLimpio = nombre.trim()
+    const nombreNormalizado = nombreLimpio.toLowerCase()
 
+    // 🔍 VALIDAR DUPLICADO (case insensitive)
     const existe = await db.get(
-      `SELECT id FROM entidades WHERE nombre = ?`,
-      [nombreLimpio]
+      `SELECT id FROM entidades WHERE LOWER(nombre) = ?`,
+      [nombreNormalizado]
     )
 
     if (existe) {
