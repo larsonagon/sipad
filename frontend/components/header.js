@@ -249,7 +249,7 @@ export function renderHeader(activeModule) {
 
               <div class="pig-user-meta">
                 ${cargo}
-                ${dependencia ? ' ' + dependencia : ''}
+                ${dependencia ? ' – ' + dependencia : ''}
               </div>
             </div>
 
