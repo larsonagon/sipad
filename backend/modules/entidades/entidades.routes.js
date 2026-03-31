@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
       })
     }
 
-    if (!req.isMasterAdmin) {
+    if (!req.user.es_master_admin) {
       return res.status(403).json({
         ok: false,
         error: 'No autorizado (solo master admin)'

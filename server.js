@@ -24,7 +24,10 @@ import { db } from './backend/db/database.js'
 import { verificarJWT } from './backend/middlewares/auth.middleware.js'
 import { multiTenant } from './backend/middlewares/multiTenant.middleware.js'
 
-// 🔥 RATE LIMIT LOGIN
+// ==========================================================
+// RATE LIMIT
+// ==========================================================
+
 const loginLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5,
@@ -36,51 +39,39 @@ const loginLimiter = rateLimit({
 })
 
 // ==========================================================
-// IMPORTACIONES BACKEND
+// IMPORTS
 // ==========================================================
 
-// AUTH
 import { runAuthMigration } from './backend/modules/auth/auth.migration.js'
 import authRoutes from './backend/modules/auth/auth.routes.js'
 
-// ROLES
 import { runRolesMigration } from './backend/modules/roles/roles.migration.js'
 import rolesRoutes from './backend/modules/roles/roles.routes.js'
 
-// DEPENDENCIAS
 import { runDependenciasMigration } from './backend/modules/dependencias/dependencias.migration.js'
 import dependenciasRoutes from './backend/modules/dependencias/dependencias.routes.js'
 
-// NIVELES
 import { runNivelesMigration } from './backend/modules/niveles/niveles.migration.js'
 import nivelesRoutes from './backend/modules/niveles/niveles.routes.js'
 
-// CARGOS
 import { runCargosMigration } from './backend/modules/cargos/cargos.migration.js'
 import cargosRoutes from './backend/modules/cargos/cargos.routes.js'
 
-// ENTIDADES
 import { runEntidadesMigration } from './backend/modules/entidades/entidades.migration.js'
 import { runMultiTenantMigration } from './backend/modules/entidades/entidades.extend.migration.js'
 import entidadesRoutes from './backend/modules/entidades/entidades.routes.js'
 
-// USUARIOS
 import { runUsuariosMasterMigration } from './backend/modules/usuarios/usuarios.master.migration.js'
 import { runUsuariosExtendMigration } from './backend/modules/usuarios/usuarios.extend.migration.js'
 import usuariosRoutes from './backend/modules/usuarios/usuarios.routes.js'
 
-// CONFIGURACIÓN
 import { runConfiguracionMigration } from './backend/modules/configuracion/configuracion.migration.js'
 import { seedConfiguracionDefault } from './backend/modules/configuracion/configuracion.seeder.js'
 import configuracionRoutes from './backend/modules/configuracion/configuracion.routes.js'
 
-// AUDITORÍA
 import auditoriaRoutes from './backend/modules/auditoria/auditoria.routes.js'
 
-// TRD
 import { runTRDMigration } from './backend/modules/trd/trd.migration.js'
-
-// ACTIVIDADES
 import { runActividadesMigration } from './backend/modules/actividades/actividades.migration.js'
 
 // ==========================================================
@@ -92,18 +83,14 @@ async function init() {
   try {
 
     console.log('🚀 Iniciando backend...')
-    console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'OK' : 'NO DEFINIDO')
 
     const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
     const isSQLite = DB_ENGINE === 'sqlite'
 
-    console.log('🧠 DB_ENGINE:', DB_ENGINE)
-    console.log('🧠 DATABASE_URL:', process.env.DATABASE_URL || 'NO DEFINIDA')
-
     app.use(express.json())
 
     // ==================================================
-    // 🔥 RATE LIMIT LOGIN
+    // RATE LIMIT LOGIN
     // ==================================================
 
     app.use('/api/auth/login', loginLimiter)
@@ -113,8 +100,6 @@ async function init() {
     // ==================================================
 
     if (isSQLite) {
-
-      console.log('🧱 Ejecutando migraciones SQLite...')
 
       await runAuthMigration()
       await runRolesMigration(db)
@@ -134,16 +119,10 @@ async function init() {
       await runTRDMigration(db)
       await runActividadesMigration(db)
 
-      console.log('✅ Migraciones SQLite ejecutadas')
-
-    } else {
-
-      console.log('🐘 PostgreSQL detectado — migraciones SQLite omitidas')
-
     }
 
     // ==================================================
-    // 🔥 DEBUG RUTAS (NO BORRAR AÚN)
+    // DEBUG REQUESTS
     // ==================================================
 
     app.use((req, res, next) => {
@@ -152,28 +131,23 @@ async function init() {
     })
 
     // ==================================================
-    // 🔓 PUBLIC (SIN AUTH)
+    // PUBLIC
     // ==================================================
 
     app.use('/api/auth', authRoutes)
 
     // ==================================================
-    // 🔐 AUTH GLOBAL
+    // AUTH + TENANT
     // ==================================================
 
     app.use('/api', verificarJWT)
-
-    // ==================================================
-    // 🏢 MULTI-TENANT
-    // ==================================================
-
     app.use('/api', multiTenant)
 
     // ==================================================
-    // RUTAS
+    // RUTAS API
     // ==================================================
 
-    console.log('🔥 ENTIDADES ROUTES CARGADO')
+    console.log('🔥 ENTIDADES ROUTES MONTADO')
     app.use('/api/entidades', entidadesRoutes)
 
     app.use('/api/usuarios', usuariosRoutes)
@@ -183,6 +157,17 @@ async function init() {
     app.use('/api/cargos', cargosRoutes)
     app.use('/api/configuracion', configuracionRoutes)
     app.use('/api/auditoria', auditoriaRoutes)
+
+    // ==================================================
+    // 🚨 404 API (CLAVE)
+    // ==================================================
+
+    app.use('/api', (req, res) => {
+      return res.status(404).json({
+        ok: false,
+        error: 'Ruta API no encontrada'
+      })
+    })
 
     // ==================================================
     // FRONTEND
@@ -226,11 +211,8 @@ async function init() {
     // SERVER
     // ==================================================
 
-    app.listen(PORT, '0.0.0.0', () => {
-
-      console.log(`🔥 Servidor en puerto ${PORT}`)
-      console.log(`🌐 http://localhost:${PORT}`)
-
+    app.listen(PORT, () => {
+      console.log(`🔥 http://localhost:${PORT}`)
     })
 
   } catch (err) {

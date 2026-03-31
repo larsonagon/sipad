@@ -6,6 +6,11 @@ export function multiTenant(req, res, next) {
     })
   }
 
+  // ✅ Master admin bypassa el tenant check
+  if (req.user.es_master_admin) {
+    return next()
+  }
+
   const entidadId = req.user.entidad_id
 
   if (!entidadId) {
