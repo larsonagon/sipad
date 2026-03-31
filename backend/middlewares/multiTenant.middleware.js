@@ -8,8 +8,9 @@ export async function multiTenant(req, res, next) {
     })
   }
 
-  // 🔥 Normalizar header
-  const headerEntidad = (req.headers['x-entidad-id'] || '').toString().trim()
+  // 🔥 Normalizar header → ✅ FIX: convertir a integer
+  const headerRaw = (req.headers['x-entidad-id'] || '').toString().trim()
+  const headerEntidad = headerRaw ? parseInt(headerRaw) : null
 
   // 🔒 Usuario normal NO puede usar override
   if (!req.user.es_master_admin && headerEntidad) {
@@ -23,7 +24,7 @@ export async function multiTenant(req, res, next) {
   // ======================================
   if (req.user.es_master_admin) {
 
-    console.log('🔥 MASTER ADMIN - x-entidad-id:', headerEntidad || '(no enviado)')
+    console.log('🔥 MASTER ADMIN - x-entidad-id:', headerEntidad ?? '(no enviado)')
 
     if (headerEntidad) {
 
@@ -43,7 +44,8 @@ export async function multiTenant(req, res, next) {
 
         console.log(`[MULTI-TENANT] Master ${req.user.sub} operando en entidad ${headerEntidad}`)
 
-        req.entidad_id = headerEntidad
+        // ✅ FIX: guardar como integer, no string
+        req.entidad_id = parseInt(entidad.id)
 
       } catch (err) {
 
@@ -57,7 +59,8 @@ export async function multiTenant(req, res, next) {
     } else {
 
       // ✔ comportamiento original intacto
-      req.entidad_id = req.user.entidad_id
+      // ✅ FIX: guardar como integer
+      req.entidad_id = parseInt(req.user.entidad_id)
     }
 
     return next()
@@ -76,7 +79,8 @@ export async function multiTenant(req, res, next) {
   }
 
   // ✔ comportamiento original intacto
-  req.entidad_id = entidadId
+  // ✅ FIX: guardar como integer
+  req.entidad_id = parseInt(entidadId)
 
   next()
 }
