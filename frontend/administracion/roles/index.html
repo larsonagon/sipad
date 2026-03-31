@@ -21,128 +21,110 @@
 <!-- HEADER -->
 
 <div class="module-header centered">
-<h1>Gestión de roles</h1>
-<p>Definición de permisos funcionales del sistema.</p>
+  <h1>Gestión de roles</h1>
+  <p>Definición de permisos funcionales del sistema.</p>
 </div>
-
-
 
 <!-- TOOLBAR -->
 
 <section class="section-actions">
 
-<div class="actions-left">
+  <div class="actions-left">
+    <button id="btnNuevo" class="btn-primary">
+      + Nuevo Rol
+    </button>
+  </div>
 
-<button id="btnNuevo" class="btn-primary">
-+ Nuevo Rol
-</button>
-
-</div>
-
-
-<div class="actions-right">
-
-<input
-type="text"
-id="inputBuscarRol"
-class="input-search"
-placeholder="Buscar rol"
-autocomplete="off"
->
-
-</div>
+  <div class="actions-right">
+    <input
+      type="text"
+      id="inputBuscarRol"
+      class="input-search"
+      placeholder="Buscar rol"
+      autocomplete="off"
+    >
+  </div>
 
 </section>
 
-
-
 <!-- TABLA -->
 
-<section>
+<section class="table-wrapper">
 
-<table id="tablaRoles" class="table">
+  <div class="table-container-centered">
 
-<thead>
+    <table id="tablaRoles" class="table">
 
-<tr>
-<th style="width:80px;">ID</th>
-<th>Nombre</th>
-<th>Nivel</th>
-</tr>
+      <thead>
+        <tr>
+          <th style="width:80px;">ID</th>
+          <th>Nombre</th>
+          <th>Nivel</th>
+        </tr>
+      </thead>
 
-</thead>
+      <tbody></tbody>
 
-<tbody></tbody>
+    </table>
 
-</table>
+  </div>
 
 </section>
 
 </main>
 
-
-
 <!-- MODAL -->
 
 <div id="modal" class="modal hidden">
 
-<div class="modal-content">
+  <div class="modal-content">
 
-<h3 id="modalTitle">Nuevo Rol</h3>
+    <h3 id="modalTitle">Nuevo Rol</h3>
 
-<form id="formRol" autocomplete="off">
+    <form id="formRol" autocomplete="off">
 
-<div class="form-group">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input
+          type="text"
+          id="inputNombre"
+          placeholder="Ej: Administrador TRD"
+          required
+        >
+      </div>
 
-<label>Nombre</label>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea
+          id="inputDescripcion"
+          placeholder="Descripción funcional del rol dentro del sistema"
+        ></textarea>
+      </div>
 
-<input
-type="text"
-id="inputNombre"
-placeholder="Ej: Administrador TRD"
-required
->
+      <div class="modal-actions">
 
-</div>
+        <button
+          type="button"
+          id="btnCancelar"
+          class="btn-secondary"
+        >
+          Cancelar
+        </button>
 
+        <button
+          type="submit"
+          class="btn-primary"
+        >
+          Guardar
+        </button>
 
-<div class="form-group">
+      </div>
 
-<label>Descripción</label>
+    </form>
 
-<textarea
-id="inputDescripcion"
-placeholder="Descripción funcional del rol dentro del sistema"
-></textarea>
-
-</div>
-
-
-<div class="modal-actions">
-
-<button
-type="button"
-id="btnCancelar"
-class="btn-secondary"
->
-Cancelar
-</button>
-
-<button
-type="submit"
-class="btn-primary"
->
-Guardar
-</button>
+  </div>
 
 </div>
-
-</form>
-
-</div>
-
-</div>
-
 
 <script type="module" src="./roles.js"></script>
 <script src="/components/password-modal.js"></script>

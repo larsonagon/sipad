@@ -1553,3 +1553,22 @@ select.form-control{
   display: flex;
   align-items: center;
 }
+
+/* ===================================== */
+/* CENTRADO PROFESIONAL TABLAS ADMIN */
+/* ===================================== */
+
+.table-wrapper{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+.table-container-centered{
+  width:100%;
+  max-width:720px; /* 🔥 ancho profesional */
+}
+
+.table-container-centered .table{
+  width:100%;
+}
