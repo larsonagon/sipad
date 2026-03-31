@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Entidades | SIPAD</title>
+
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <link rel="stylesheet" href="/css/modules/admin.css">
+
+</head>
+
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+
+    <!-- HEADER -->
+    <div class="module-header centered">
+      <h1>Gestión de Entidades</h1>
+      <p>Administración de entidades del sistema. Acceso exclusivo Super Admin.</p>
+    </div>
+
+    <!-- TOOLBAR -->
+    <section class="section-actions">
+
+      <div class="actions-left">
+        <button id="btnNueva" class="btn-primary" type="button">
+          + Nueva Entidad
+        </button>
+      </div>
+
+      <div class="actions-right">
+        <input
+          type="text"
+          id="inputBuscarEntidad"
+          class="input-search"
+          placeholder="Buscar entidad"
+          autocomplete="off"
+        >
+      </div>
+
+    </section>
+
+    <!-- TABLA -->
+    <section>
+
+      <table id="tablaEntidades" class="table">
+
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th style="width:130px;">Estado</th>
+            <th style="width:80px;">Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+
+      </table>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL ENTIDAD -->
+  <div
+    id="modalEntidad"
+    class="modal hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+  >
+
+    <div class="modal-content" role="document" tabindex="-1">
+
+      <h3 id="modalTitle">Nueva Entidad</h3>
+
+      <form id="formEntidad" autocomplete="off">
+
+        <div class="form-group">
+          <label for="inputNombre">Nombre</label>
+          <input
+            type="text"
+            id="inputNombre"
+            name="nombre"
+            placeholder="Nombre de la entidad"
+            required
+          >
+        </div>
+
+        <div class="modal-actions">
+
+          <button type="button" id="btnCancelar" class="btn-secondary">
+            Cancelar
+          </button>
+
+          <button type="submit" id="btnGuardar" class="btn-primary">
+            Guardar
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+  <script type="module" src="./entidades.js"></script>
+  <script src="/components/password-modal.js"></script>
+  <script type="module" src="/components/notifications.js"></script>
+
+</body>
+</html>
