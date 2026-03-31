@@ -13,9 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = JSON.parse(userRaw)
 
   // 🔥 Leer contexto de gestión
+  const gestionEntidadId = sessionStorage.getItem('gestion_entidad_id') || null
   const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
 
   renderHeader('Administración', gestionEntidadNombre)
+
+  // =========================
+  // 🔥 TÍTULO DINÁMICO
+  // =========================
+
+  if (gestionEntidadNombre) {
+
+    const h1 = document.querySelector('.module-header h1')
+    const p = document.querySelector('.module-header p')
+
+    if (h1) h1.textContent = `Gestionando: ${gestionEntidadNombre}`
+    if (p) p.textContent = 'Configura la estructura interna de esta entidad: dependencias, cargos, niveles, roles y usuarios.'
+
+  }
 
   // =========================
   // CONTROL DE VISIBILIDAD
@@ -30,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCargos) btnCargos.style.display = 'none'
   }
 
-  // Entidades solo master admin (ocultar cuando está en modo gestión)
+  // Entidades solo master admin
   if (!esMaster) {
     const btnEntidades = document.getElementById('btnEntidades')
     if (btnEntidades) btnEntidades.style.display = 'none'
   }
 
-  // 🔥 Si está en modo gestión, ocultar botón de entidades para no confundir
+  // 🔥 En modo gestión ocultar tarjeta Entidades
   if (gestionEntidadNombre) {
     const btnEntidades = document.getElementById('btnEntidades')
     if (btnEntidades) btnEntidades.style.display = 'none'
