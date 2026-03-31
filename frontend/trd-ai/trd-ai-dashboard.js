@@ -13,10 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // RENDER HEADER
   // ======================================================
 
-  renderHeader({
-    modulo: 'TRD-AI',
-    seccion: 'Dashboard'
-  })
+  renderHeader('TRD-AI')
 
   // ======================================================
   // BOTONES

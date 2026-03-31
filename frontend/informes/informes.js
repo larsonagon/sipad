@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     return
   }
 
-  renderHeader('Informes',user)
+  renderHeader('Informes')
 
   configurarCards()
 

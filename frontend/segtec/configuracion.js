@@ -9,10 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  renderHeader({
-    modulo: 'SEG-TEC',
-    seccion: 'Configuración funcional'
-  });
+  renderHeader('ICAF')
 
   const form = document.getElementById('formConfiguracion');
   const btnCancelar = document.getElementById('btnCancelar');

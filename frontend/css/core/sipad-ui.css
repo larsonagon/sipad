@@ -1540,3 +1540,16 @@ select.form-control{
 .pig-gestion-banner button:hover {
   background: rgba(255,255,255,0.25);
 }
+
+.pig-header-inner {
+  justify-content: center;
+}
+
+.pig-header-top {
+  align-items: center;
+}
+
+.pig-header-right {
+  display: flex;
+  align-items: center;
+}
