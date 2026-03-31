@@ -16,18 +16,11 @@ function getHeaders(extra = {}) {
     'Authorization': `Bearer ${getToken()}`,
     ...extra
   }
-  if (gestionEntidadId) headers['X-Entidad-Id'] = gestionEntidadId
-  return headers
+  return headers // 🔥 roles ya NO dependen de entidad
 }
 
 let rolesCache = []
-let editandoId = null
 
-let modal
-let modalTitle
-let formRol
-let inputNombre
-let inputDescripcion
 let inputBuscar
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -47,23 +40,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await new Promise(r => requestAnimationFrame(r))
   document.body.offsetHeight
 
-  modal = document.getElementById('modal')
-  modalTitle = document.getElementById('modalTitle')
-  formRol = document.getElementById('formRol')
-  inputNombre = document.getElementById('inputNombre')
-  inputDescripcion = document.getElementById('inputDescripcion')
   inputBuscar = document.getElementById('inputBuscarRol')
 
-  document.getElementById('btnNuevo').addEventListener('click', () => abrirModal('Nuevo Rol'))
-  document.getElementById('btnCancelar').addEventListener('click', cerrarModal)
-  formRol.addEventListener('submit', guardarRol)
   inputBuscar.addEventListener('input', filtrarRoles)
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') cerrarModal()
-  })
-
-  document.addEventListener('click', cerrarMenus)
 
   await cargarRoles()
 })
@@ -102,146 +81,24 @@ function renderTabla(data) {
 
   data.forEach(rol => {
 
-    const activo = rol.activo === 1
     const tr = document.createElement('tr')
 
     tr.innerHTML = `
       <td>${rol.id}</td>
       <td>${escapeHTML(rol.nombre)}</td>
-      <td>${escapeHTML(rol.descripcion ?? '')}</td>
-      <td>
-        <span class="${activo ? 'badge-aprobado' : 'badge-inactivo'}">
-          ${activo ? 'Activo' : 'Inactivo'}
-        </span>
-      </td>
-      <td>${formatearFecha(rol.created_at)}</td>
-      <td>
-        <div class="acciones-menu">
-          <button class="btn-menu" data-menu="${rol.id}">⋮</button>
-          <div class="menu-dropdown" id="menu-${rol.id}">
-            <button onclick="editarRol(${rol.id})">Editar</button>
-            <button onclick="toggleEstado(${rol.id},${activo})">${activo ? 'Desactivar' : 'Activar'}</button>
-          </div>
-        </div>
-      </td>
+      <td>${rol.nivel_acceso ?? '-'}</td>
     `
 
     tbody.appendChild(tr)
   })
-
-  activarMenus()
-}
-
-function activarMenus() {
-  document.querySelectorAll('.btn-menu').forEach(btn => {
-    btn.onclick = e => {
-      e.stopPropagation()
-      const id = btn.dataset.menu
-      const menu = document.getElementById(`menu-${id}`)
-      if (!menu) return
-      cerrarMenus()
-      menu.classList.toggle('show')
-    }
-  })
-}
-
-function cerrarMenus() {
-  document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'))
 }
 
 function filtrarRoles() {
   const q = inputBuscar.value.toLowerCase().trim()
   const filtrados = rolesCache.filter(r =>
-    r.nombre.toLowerCase().includes(q) ||
-    (r.descripcion ?? '').toLowerCase().includes(q)
+    r.nombre.toLowerCase().includes(q)
   )
   renderTabla(filtrados)
-}
-
-function abrirModal(titulo) {
-  modalTitle.textContent = titulo
-  modal.classList.remove('hidden')
-}
-
-function cerrarModal() {
-  modal.classList.add('hidden')
-  formRol.reset()
-  editandoId = null
-}
-
-window.editarRol = function(id) {
-  const rol = rolesCache.find(r => r.id == id)
-  if (!rol) return
-  editandoId = id
-  inputNombre.value = rol.nombre
-  inputDescripcion.value = rol.descripcion ?? ''
-  abrirModal('Editar Rol')
-}
-
-async function guardarRol(e) {
-
-  e.preventDefault()
-
-  const payload = {
-    nombre: inputNombre.value.trim(),
-    descripcion: inputDescripcion.value.trim()
-  }
-
-  if (!payload.nombre) {
-    alert('Nombre obligatorio')
-    return
-  }
-
-  try {
-
-    if (editandoId) {
-      await fetch(`${API_URL}/${editandoId}`, {
-        method: 'PATCH',
-        headers: getHeaders(),
-        body: JSON.stringify(payload)
-      })
-    } else {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: getHeaders(),
-        body: JSON.stringify(payload)
-      })
-    }
-
-    cerrarModal()
-    await cargarRoles()
-
-  } catch (err) {
-    console.error(err)
-    alert('No fue posible guardar el rol.')
-  }
-}
-
-window.toggleEstado = async function(id, activoActual) {
-
-  try {
-    await fetch(`${API_URL}/${id}/estado`, {
-      method: 'PATCH',
-      headers: getHeaders(),
-      body: JSON.stringify({ activo: activoActual ? 0 : 1 })
-    })
-
-    await cargarRoles()
-
-  } catch (err) {
-    console.error(err)
-    alert('No fue posible cambiar el estado.')
-  }
-}
-
-function formatearFecha(fecha) {
-  if (!fecha) return '-'
-  const f = new Date(fecha)
-  if (isNaN(f.getTime())) return '-'
-  const d = String(f.getDate()).padStart(2, '0')
-  const m = String(f.getMonth() + 1).padStart(2, '0')
-  const a = f.getFullYear()
-  return `${d}/${m}/${a}`
 }
 
 function escapeHTML(text) {

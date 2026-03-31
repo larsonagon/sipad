@@ -57,12 +57,12 @@ export const requireLevel = (minLevel) => {
 }
 
 // =====================================================
-// 🔥 RESOLVER PERMISOS FUNCIONALES (CORREGIDO POR RANGOS)
+// 🔥 RESOLVER PERMISOS FUNCIONALES (AHORA POR ROL)
 // =====================================================
 
 export const resolvePermissions = (user) => {
 
-  const nivel = Number(user?.nivel_acceso ?? 0)
+  const rol = user?.role
   const esMaster = user?.es_master_admin === true
 
   return {
@@ -71,23 +71,23 @@ export const resolvePermissions = (user) => {
 
     // 🔹 Administración
     puedeAdministrar:
-      esMaster || nivel >= 90,
+      esMaster || rol === 'Administrador',
 
     // 🔹 SEGTEC (ICAF)
     puedeVerICAF:
-      nivel >= 10,
+      true, // todos los roles autenticados
 
     // 🔹 Informes
     puedeVerInformes:
-      esMaster || (nivel >= 50 && nivel < 90),
+      esMaster || rol === 'Archivista' || rol === 'Jefe',
 
     // 🔹 TRD-AI
     puedeVerTRD:
-      esMaster || (nivel >= 70 && nivel < 90),
+      esMaster || rol === 'Archivista',
 
     // 🔹 Visión global
     puedeVerTodo:
-      esMaster || (nivel >= 70 && nivel < 90)
+      esMaster || rol === 'Archivista'
 
   }
 
