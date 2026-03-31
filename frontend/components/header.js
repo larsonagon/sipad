@@ -116,17 +116,34 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
     seccion = activeModule.seccion || ''
   }
 
-  const nivelAcceso = user?.nivel_acceso || 0
+  const nivelAcceso = Number(user?.nivel_acceso || 0)
+
+  const esMaster = user?.es_master_admin === true
 
   const esAdmin =
-    user?.es_master_admin === true ||
+    esMaster ||
     nivelAcceso >= 90
-
-  const puedeVerInformes =
-    nivelAcceso >= 80
 
   const esRolGeneral =
     (user?.rol || '').toLowerCase() === 'general'
+
+  // ======================================================
+  // 🔥 AJUSTE REAL DE PERMISOS (SIN ROMPER NADA)
+  // ======================================================
+
+  let puedeVerInformes =
+    (nivelAcceso === 70 || nivelAcceso === 50) || esMaster
+
+  let puedeVerTRDAI =
+    (nivelAcceso === 70) || esMaster
+
+  // 🔴 REGLA CRÍTICA: ADMINISTRADOR SOLO ICAF + ADMIN
+  if (nivelAcceso === 90 && !esMaster) {
+    puedeVerInformes = false
+    puedeVerTRDAI = false
+  }
+
+  // ======================================================
 
   const nombreEntidad =
     user?.entidad ||
@@ -218,7 +235,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
             </button>
 
             ${
-              !esRolGeneral
+              !esRolGeneral && puedeVerTRDAI
                 ? `
                 <button type="button" id="btnTRDAI"
                   ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
@@ -287,10 +304,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.body.prepend(header)
 
-  // =========================
-  // NAVEGACIÓN
-  // =========================
-
   document.getElementById('btnInicio')
     ?.addEventListener('click', () => {
       window.location.href = '/home/index.html'
@@ -316,10 +329,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
       window.location.href = '/informes/index.html'
     })
 
-  // =========================
-  // PASSWORD
-  // =========================
-
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', () => {
       const modal = document.getElementById('modalPassword')
@@ -327,16 +336,8 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
       modal.classList.remove('hidden')
     })
 
-  // =========================
-  // LOGOUT
-  // =========================
-
   document.getElementById('btnSalir')
     ?.addEventListener('click', cerrarSesion)
-
-  // =========================
-  // DROPDOWN
-  // =========================
 
   const btnUserMenu = document.getElementById('btnUserMenu')
   const dropdown = document.getElementById('userDropdown')
@@ -357,10 +358,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
       dropdown?.classList.remove('show')
     }
   })
-
-  // =========================
-  // FOOTER
-  // =========================
 
   const footer = document.createElement('footer')
   footer.className = 'sipad-footer'
