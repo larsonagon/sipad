@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const esMaster = user.es_master_admin === true;
 
   // =====================================================
-  // 🔥 PERMISOS DETERMINÍSTICOS POR ROL
+  // 🔥 PERMISOS CLAROS POR ROL (SIN AMBIGÜEDADES)
   // =====================================================
 
   let puedeICAF = false;
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     puedeInformes = true;
   }
 
-  // ⚪ GENERAL (nivel >=10)
+  // ⚪ GENERAL
   else if (nivel >= 10) {
     puedeICAF = true;
   }
@@ -152,12 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardInformes = document.getElementById('cardInformes');
 
   // =====================================================
-  // 🔥 CONTROL VISUAL FORZADO (SIN FALLAS)
+  // 🔥 CONTROL VISUAL CORRECTO (SIN ROMPER CSS)
   // =====================================================
 
   function toggle(el, condition) {
     if (!el) return;
-    el.style.display = condition ? 'flex' : 'none';
+    el.style.display = condition ? '' : 'none';
   }
 
   toggle(cardSegtec, puedeICAF);
@@ -167,20 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   toggle(cardAdmin, puedeAdmin);
 
   // =====================================================
-  // DEBUG (puedes quitar después)
-  // =====================================================
-
-  console.log('PERMISOS HOME:', {
-    nivel,
-    esMaster,
-    puedeICAF,
-    puedeInformes,
-    puedeTRDAI,
-    puedeAdmin
-  });
-
-  // =====================================================
-  // NAVEGACIÓN
+  // NAVEGACIÓN (SIN CAMBIOS)
   // =====================================================
 
   if (cardSegtec) {
