@@ -170,7 +170,7 @@ function renderTabla(data) {
           <div class="menu-dropdown" id="menu-${ent.id}">
 
             <button data-action="gestionar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
-              🏢 Gestionar
+              Gestionar entidad
             </button>
 
             <button data-action="editar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
