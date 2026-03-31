@@ -50,7 +50,7 @@ router.get(
   '/',
   requireLevel(50),
   async (req, res) => {
-
+    console.log('🔥 DEPENDENCIAS - req.entidad_id:', req.entidad_id)
     try {
 
       const entidadId = req.user.entidad_id
