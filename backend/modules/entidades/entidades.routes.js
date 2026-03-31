@@ -5,6 +5,8 @@ const router = express.Router()
 
 console.log('🔥 ENTIDADES ROUTES ACTUALIZADO')
 
+const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
+
 // ======================================
 // LISTAR ENTIDADES ACTIVAS
 // ======================================
@@ -86,17 +88,32 @@ router.post('/', async (req, res) => {
       })
     }
 
-    const result = await db.run(
-      `
-      INSERT INTO entidades (nombre, estado)
-      VALUES (?, true)
-      `,
-      [nombreLimpio]
-    )
+    // 🔥 INSERT compatible con PostgreSQL y SQLite
+    let entidadId
+
+    if (DB_ENGINE === 'postgres') {
+
+      const row = await db.get(
+        `INSERT INTO entidades (nombre, estado) VALUES (?, true) RETURNING id`,
+        [nombreLimpio]
+      )
+
+      entidadId = row.id
+
+    } else {
+
+      const result = await db.run(
+        `INSERT INTO entidades (nombre, estado) VALUES (?, true)`,
+        [nombreLimpio]
+      )
+
+      entidadId = result.lastID
+
+    }
 
     return res.status(201).json({
       ok: true,
-      id: result.lastID,
+      id: entidadId,
       nombre: nombreLimpio
     })
 
