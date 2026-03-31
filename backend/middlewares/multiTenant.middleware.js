@@ -6,8 +6,17 @@ export function multiTenant(req, res, next) {
     })
   }
 
-  // ✅ Master admin bypassa el tenant check
+  // ✅ Master admin puede operar en nombre de otra entidad
   if (req.user.es_master_admin) {
+
+    const entidadOverride = req.headers['x-entidad-id']
+
+    if (entidadOverride) {
+      req.entidad_id = entidadOverride
+    } else {
+      req.entidad_id = req.user.entidad_id
+    }
+
     return next()
   }
 

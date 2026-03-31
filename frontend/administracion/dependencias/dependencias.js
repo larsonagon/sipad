@@ -13,15 +13,19 @@ let tabla
 
 let dependenciasCache = []
 
+// 🔥 Contexto de gestión (SuperAdmin gestionando otra entidad)
+let gestionEntidadId = null
+let gestionEntidadNombre = null
+
 /* =========================================
    UTIL TOKEN
 ========================================= */
 
-function getToken(){
+function getToken() {
 
   const token = sessionStorage.getItem('token')
 
-  if(!token){
+  if (!token) {
     window.location.href = '/'
     throw new Error('Token no encontrado')
   }
@@ -29,6 +33,23 @@ function getToken(){
   return token
 }
 
+/* =========================================
+   UTIL HEADERS (inyecta X-Entidad-Id si aplica)
+========================================= */
+
+function getHeaders(extra = {}) {
+
+  const headers = {
+    'Authorization': `Bearer ${getToken()}`,
+    ...extra
+  }
+
+  if (gestionEntidadId) {
+    headers['X-Entidad-Id'] = gestionEntidadId
+  }
+
+  return headers
+}
 
 /* =========================================
    INIT
@@ -47,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const user = JSON.parse(userRaw)
-
   const nivel = Number(user?.nivel_acceso ?? user?.nivel ?? 0)
 
   console.log("Usuario:", user)
@@ -59,19 +79,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  renderHeader('Administración')
+  // 🔥 Leer contexto de gestión
+  gestionEntidadId = sessionStorage.getItem('gestion_entidad_id') || null
+  gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
 
-  /* =========================================
-     FIX GLOBAL MODALES CHROME
-     (Chrome no recalcula layout tras header dinámico)
-  ========================================= */
+  renderHeader('Administración', gestionEntidadNombre)
 
   await new Promise(r => requestAnimationFrame(r))
   await new Promise(r => requestAnimationFrame(r))
-
   document.body.offsetHeight
-
-
 
   modal = document.getElementById('modalDependencia')
   inputNombre = document.getElementById('inputNombre')
@@ -95,8 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   tabla.addEventListener('click', manejarClicksTabla)
 
-  document.addEventListener('click', (e)=>{
-    if(!e.target.closest('.acciones-menu')){
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.acciones-menu')) {
       cerrarMenus()
     }
   })
@@ -104,59 +120,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarDependencias()
 })
 
-
-
 /* =========================================
    CARGAR DEPENDENCIAS
 ========================================= */
 
-async function cargarDependencias(){
+async function cargarDependencias() {
 
-  try{
+  try {
 
-    const res = await fetch(API,{
-      headers:{
-        'Authorization':`Bearer ${getToken()}`
-      }
+    const res = await fetch(API, {
+      headers: getHeaders()
     })
 
-    if(res.status === 401 || res.status === 403){
-
+    if (res.status === 401 || res.status === 403) {
       sessionStorage.removeItem('token')
       sessionStorage.removeItem('user')
-
       alert('Sesión expirada')
-
       window.location.href = '/'
       return
     }
 
     const data = await res.json()
 
-    if(!res.ok){
+    if (!res.ok) {
       alert(data.error || 'Error cargando dependencias')
       return
     }
 
-    dependenciasCache = data.sort((a,b)=> a.id - b.id)
+    dependenciasCache = data.sort((a, b) => a.id - b.id)
 
     renderTabla(dependenciasCache)
 
-  }catch(err){
+  } catch (err) {
 
-    console.error('Error cargando dependencias:',err)
+    console.error('Error cargando dependencias:', err)
     alert('Error de conexión con el servidor')
 
   }
 }
 
-
-
 /* =========================================
    RENDER TABLA
 ========================================= */
 
-function renderTabla(data){
+function renderTabla(data) {
 
   const tbody = document.querySelector('#tablaDependencias tbody')
   tbody.innerHTML = ''
@@ -206,73 +213,53 @@ function renderTabla(data){
   })
 }
 
-
-
 /* =========================================
    MENÚ Y ACCIONES
 ========================================= */
 
-function manejarClicksTabla(e){
+function manejarClicksTabla(e) {
 
   const btnMenu = e.target.closest('.btn-menu')
-  if(btnMenu){
-
+  if (btnMenu) {
     e.stopPropagation()
-
     const id = btnMenu.dataset.menu
     const menu = document.getElementById(`menu-${id}`)
-
     cerrarMenus()
-
-    if(menu){
-      menu.classList.toggle('show')
-    }
-
+    if (menu) menu.classList.toggle('show')
     return
   }
 
   const actionBtn = e.target.closest('[data-action]')
-  if(!actionBtn) return
+  if (!actionBtn) return
 
   cerrarMenus()
 
   const action = actionBtn.dataset.action
   const id = Number(actionBtn.dataset.id)
 
-  if(action === 'editar'){
-
+  if (action === 'editar') {
     const dep = dependenciasCache.find(d => d.id === id)
-    if(dep){
-      editar(dep.id, dep.nombre)
-    }
-
+    if (dep) editar(dep.id, dep.nombre)
     return
   }
 
-  if(action === 'toggle'){
-
+  if (action === 'toggle') {
     const activa = Number(actionBtn.dataset.activa)
-    toggleEstado(id,activa)
-
+    toggleEstado(id, activa)
     return
   }
-
 }
 
-
-
-function cerrarMenus(){
+function cerrarMenus() {
   document.querySelectorAll('.menu-dropdown')
     .forEach(m => m.classList.remove('show'))
 }
-
-
 
 /* =========================================
    BUSCAR
 ========================================= */
 
-function filtrarDependencias(){
+function filtrarDependencias() {
 
   const q = inputBuscar.value.toLowerCase()
 
@@ -283,13 +270,11 @@ function filtrarDependencias(){
   renderTabla(filtradas)
 }
 
-
-
 /* =========================================
    MODAL
 ========================================= */
 
-function abrirModalNueva(){
+function abrirModalNueva() {
 
   modoEdicion = false
   idEditando = null
@@ -301,17 +286,15 @@ function abrirModalNueva(){
   modal.classList.remove('hidden')
 }
 
-function cerrarModal(){
+function cerrarModal() {
   modal.classList.add('hidden')
 }
-
-
 
 /* =========================================
    EDITAR
 ========================================= */
 
-function editar(id,nombre){
+function editar(id, nombre) {
 
   modoEdicion = true
   idEditando = id
@@ -323,21 +306,19 @@ function editar(id,nombre){
   modal.classList.remove('hidden')
 }
 
-
-
 /* =========================================
    GUARDAR
 ========================================= */
 
-async function guardarDependencia(e){
+async function guardarDependencia(e) {
 
   e.preventDefault()
 
-  try{
+  try {
 
     const nombre = inputNombre.value.trim()
 
-    if(!nombre){
+    if (!nombre) {
       alert('Nombre requerido')
       return
     }
@@ -345,27 +326,23 @@ async function guardarDependencia(e){
     const url = modoEdicion ? `${API}/${idEditando}` : API
     const method = modoEdicion ? 'PATCH' : 'POST'
 
-    const res = await fetch(url,{
+    const res = await fetch(url, {
       method,
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':`Bearer ${getToken()}`
-      },
-      body:JSON.stringify({nombre})
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ nombre })
     })
 
     const data = await res.json()
 
-    if(!res.ok){
+    if (!res.ok) {
       alert(data.error || 'Error')
       return
     }
 
     cerrarModal()
-
     await cargarDependencias()
 
-  }catch(err){
+  } catch (err) {
 
     console.error(err)
     alert('Error guardando dependencia')
@@ -373,35 +350,30 @@ async function guardarDependencia(e){
   }
 }
 
-
-
 /* =========================================
    ESTADO
 ========================================= */
 
-async function toggleEstado(id,activaActual){
+async function toggleEstado(id, activaActual) {
 
-  try{
+  try {
 
-    const res = await fetch(`${API}/${id}/estado`,{
-      method:'PATCH',
-      headers:{
-        'Content-Type':'application/json',
-        'Authorization':`Bearer ${getToken()}`
-      },
-      body:JSON.stringify({activa:activaActual ? 0 : 1})
+    const res = await fetch(`${API}/${id}/estado`, {
+      method: 'PATCH',
+      headers: getHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ activa: activaActual ? 0 : 1 })
     })
 
     const data = await res.json()
 
-    if(!res.ok){
+    if (!res.ok) {
       alert(data.error || 'Error')
       return
     }
 
     await cargarDependencias()
 
-  }catch(err){
+  } catch (err) {
 
     console.error(err)
     alert('Error actualizando estado')
@@ -409,31 +381,27 @@ async function toggleEstado(id,activaActual){
   }
 }
 
-
-
 /* =========================================
    UTIL
 ========================================= */
 
-function formatearFecha(fecha){
+function formatearFecha(fecha) {
 
-  if(!fecha) return '-'
+  if (!fecha) return '-'
 
   const f = new Date(fecha)
 
-  if(isNaN(f.getTime())) return '-'
+  if (isNaN(f.getTime())) return '-'
 
-  const d = String(f.getDate()).padStart(2,'0')
-  const m = String(f.getMonth()+1).padStart(2,'0')
+  const d = String(f.getDate()).padStart(2, '0')
+  const m = String(f.getMonth() + 1).padStart(2, '0')
   const a = f.getFullYear()
 
   return `${d}/${m}/${a}`
 }
 
-function escapeHTML(text){
-
+function escapeHTML(text) {
   const div = document.createElement('div')
   div.innerText = text
-
   return div.innerHTML
 }

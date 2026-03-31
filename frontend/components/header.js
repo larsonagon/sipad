@@ -85,7 +85,7 @@ function getUserFromToken() {
 // RENDER HEADER
 // ======================================================
 
-export function renderHeader(activeModule) {
+export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   const user = getUserFromToken()
 
@@ -128,10 +128,6 @@ export function renderHeader(activeModule) {
   const esRolGeneral =
     (user?.rol || '').toLowerCase() === 'general'
 
-  // ======================================================
-  // 🔥 DATOS UI LIMPIOS (ANTI-BASURA)
-  // ======================================================
-
   const nombreEntidad =
     user?.entidad ||
     user?.entidad_nombre ||
@@ -149,11 +145,10 @@ export function renderHeader(activeModule) {
   const dependenciaRaw =
     (user?.dependencia || '').trim()
 
-  // 🔥 FUNCIÓN LIMPIADORA DEFINITIVA
   const limpiar = (texto) =>
     texto
-      .replace(/^[\s\-–—]+/, '')   // elimina cualquier guion al inicio
-      .replace(/\s+/g, ' ')        // normaliza espacios
+      .replace(/^[\s\-–—]+/, '')
+      .replace(/\s+/g, ' ')
       .trim()
 
   const cargo = limpiar(cargoRaw)
@@ -170,6 +165,19 @@ export function renderHeader(activeModule) {
   }
 
   // ======================================================
+  // 🔥 BANNER DE GESTIÓN (cuando SuperAdmin opera en otra entidad)
+  // ======================================================
+
+  const bannerGestion = gestionEntidadNombre
+    ? `
+      <div class="pig-gestion-banner">
+        🏢 Gestionando: <strong>${gestionEntidadNombre}</strong>
+        <button type="button" id="btnSalirGestion">✕ Salir de gestión</button>
+      </div>
+    `
+    : ''
+
+  // ======================================================
   // HEADER
   // ======================================================
 
@@ -177,6 +185,8 @@ export function renderHeader(activeModule) {
   header.className = 'pig-header'
 
   header.innerHTML = `
+    ${bannerGestion}
+
     <div class="pig-header-inner">
 
       <!-- FILA SUPERIOR -->
@@ -186,7 +196,7 @@ export function renderHeader(activeModule) {
         <div class="pig-header-left">
 
           <div class="pig-title">
-            SIPAD – ${nombreEntidad}
+            SIPAD – ${gestionEntidadNombre || nombreEntidad}
             <span class="pig-module">
               ${modulo === 'home' ? 'Panel Principal' : modulo}
             </span>
@@ -293,6 +303,17 @@ export function renderHeader(activeModule) {
   document.body.prepend(header)
 
   // =========================
+  // SALIR DE GESTIÓN
+  // =========================
+
+  document.getElementById('btnSalirGestion')
+    ?.addEventListener('click', () => {
+      sessionStorage.removeItem('gestion_entidad_id')
+      sessionStorage.removeItem('gestion_entidad_nombre')
+      window.location.href = '/administracion/entidades/index.html'
+    })
+
+  // =========================
   // NAVEGACIÓN
   // =========================
 
@@ -327,12 +348,9 @@ export function renderHeader(activeModule) {
 
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', () => {
-
       const modal = document.getElementById('modalPassword')
       if (!modal) return
-
       modal.classList.remove('hidden')
-
     })
 
   // =========================

@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
+  // 🔥 Limpiar entidad gestionada al entrar a este módulo
+  sessionStorage.removeItem('gestion_entidad_id')
+  sessionStorage.removeItem('gestion_entidad_nombre')
+
   renderHeader('Administración')
 
   await new Promise(r => requestAnimationFrame(r))
@@ -165,6 +169,10 @@ function renderTabla(data) {
 
           <div class="menu-dropdown" id="menu-${ent.id}">
 
+            <button data-action="gestionar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
+              🏢 Gestionar
+            </button>
+
             <button data-action="editar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
               Editar
             </button>
@@ -206,9 +214,14 @@ function manejarClicksTabla(e) {
 
   const action = actionBtn.dataset.action
   const id = actionBtn.dataset.id
+  const nombre = actionBtn.dataset.nombre
+
+  if (action === 'gestionar') {
+    gestionarEntidad(id, nombre)
+    return
+  }
 
   if (action === 'editar') {
-    const nombre = actionBtn.dataset.nombre
     editar(id, nombre)
     return
   }
@@ -223,6 +236,20 @@ function manejarClicksTabla(e) {
 function cerrarMenus() {
   document.querySelectorAll('.menu-dropdown')
     .forEach(m => m.classList.remove('show'))
+}
+
+/* =========================================
+   GESTIONAR ENTIDAD
+========================================= */
+
+function gestionarEntidad(id, nombre) {
+
+  // 🔥 Guardar contexto de gestión en sessionStorage
+  sessionStorage.setItem('gestion_entidad_id', id)
+  sessionStorage.setItem('gestion_entidad_nombre', nombre)
+
+  // Redirigir a administración
+  window.location.href = '/administracion/index.html'
 }
 
 /* =========================================
