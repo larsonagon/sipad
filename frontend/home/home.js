@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
-  // 🔥 Home nunca muestra banner de gestión
   try {
     renderHeader('home')
   } catch (error) {
@@ -98,11 +97,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   cargarSelectorEntidad(user);
 
-  const nivel = user.nivel_acceso || 0;
+  const nivel = Number(user.nivel_acceso || 0);
   const esMaster = user.es_master_admin === true;
 
-  const rolUsuario = JSON.stringify(user).toLowerCase();
-  const esRolGeneral = rolUsuario.includes('general');
+  // =====================================================
+  // 🔥 NUEVO MODELO DE PERMISOS (ALINEADO AL BACKEND)
+  // =====================================================
+
+  const puedeICAF = nivel >= 10;
+
+  const puedeInformes =
+    nivel === 70 || // Archivista
+    nivel === 50 || // Jefe
+    esMaster;
+
+  const puedeTRDAI =
+    nivel === 70 || // Archivista
+    esMaster;
+
+  const puedeAdmin =
+    nivel >= 90; // Administrador y superior
+
+  // =====================================================
 
   const cardSegtec = document.getElementById('cardSegtec');
   const cardTRD = document.getElementById('cardTRD');
@@ -110,21 +126,34 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardAdmin = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
 
-  if (nivel < 80 && !esMaster) {
+  // =====================================================
+  // 🔥 CONTROL VISUAL (SIN ROMPER NADA EXISTENTE)
+  // =====================================================
 
-    if (cardTRDAI) cardTRDAI.style.display = 'none';
-    if (cardAdmin) cardAdmin.style.display = 'none';
-
+  if (!puedeICAF && cardSegtec) {
+    cardSegtec.style.display = 'none';
   }
 
-  if (esRolGeneral) {
-
-    if (cardTRD) cardTRD.style.display = 'none';
-    if (cardTRDAI) cardTRDAI.style.display = 'none';
-    if (cardAdmin) cardAdmin.style.display = 'none';
-    if (cardInformes) cardInformes.style.display = 'none';
-
+  if (!puedeInformes && cardInformes) {
+    cardInformes.style.display = 'none';
   }
+
+  if (!puedeTRDAI && cardTRDAI) {
+    cardTRDAI.style.display = 'none';
+  }
+
+  // TRD normal (no IA) → mismo criterio que TRDAI por ahora
+  if (!puedeTRDAI && cardTRD) {
+    cardTRD.style.display = 'none';
+  }
+
+  if (!puedeAdmin && cardAdmin) {
+    cardAdmin.style.display = 'none';
+  }
+
+  // =====================================================
+  // NAVEGACIÓN (SE MANTIENE IGUAL)
+  // =====================================================
 
   if (cardSegtec) {
     cardSegtec.addEventListener('click', () => {
