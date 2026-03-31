@@ -16,11 +16,10 @@ function getHeaders(extra = {}) {
     'Authorization': `Bearer ${getToken()}`,
     ...extra
   }
-  return headers // 🔥 roles ya NO dependen de entidad
+  return headers
 }
 
 let rolesCache = []
-
 let inputBuscar
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -42,7 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   inputBuscar = document.getElementById('inputBuscarRol')
 
-  inputBuscar.addEventListener('input', filtrarRoles)
+  if (inputBuscar) {
+    inputBuscar.addEventListener('input', filtrarRoles)
+  }
+
+  // 🔥 ocultar botón nuevo si existe (sin romper HTML)
+  const btnNuevo = document.getElementById('btnNuevo')
+  if (btnNuevo) btnNuevo.style.display = 'none'
 
   await cargarRoles()
 })
@@ -95,9 +100,11 @@ function renderTabla(data) {
 
 function filtrarRoles() {
   const q = inputBuscar.value.toLowerCase().trim()
+
   const filtrados = rolesCache.filter(r =>
     r.nombre.toLowerCase().includes(q)
   )
+
   renderTabla(filtrados)
 }
 
