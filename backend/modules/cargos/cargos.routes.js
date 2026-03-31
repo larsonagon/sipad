@@ -17,7 +17,7 @@ router.get(
   async (req, res) => {
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       if (!entidadId) {
         return res.status(401).json({ error: 'Entidad no definida en el token' })
@@ -49,7 +49,7 @@ router.post(
   async (req, res) => {
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!entidadId) {
@@ -72,9 +72,7 @@ router.post(
       await db.run(`
         INSERT INTO cargos (nombre, estado, entidad_id)
         VALUES (?, 1, ?)
-      `,
-        [nombreLimpio, entidadId]
-      )
+      `, [nombreLimpio, entidadId])
 
       res.status(201).json({ ok: true })
 
@@ -95,7 +93,7 @@ router.put(
   async (req, res) => {
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
@@ -119,7 +117,6 @@ router.put(
 
       const nombreLimpio = nombre.trim()
 
-      // 🔒 VALIDACIÓN MULTI-TENANT (evita duplicados)
       const existe = await db.get(
         `SELECT id FROM cargos WHERE nombre = ? AND id != ? AND entidad_id = ?`,
         [nombreLimpio, id, entidadId]
@@ -135,9 +132,7 @@ router.put(
         UPDATE cargos
         SET nombre = ?
         WHERE id = ? AND entidad_id = ?
-      `,
-        [nombreLimpio, id, entidadId]
-      )
+      `, [nombreLimpio, id, entidadId])
 
       res.json({ ok: true })
 
@@ -158,7 +153,7 @@ router.patch(
   async (req, res) => {
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
 

@@ -26,18 +26,11 @@ async function registrarAuditoria(actorId, rolId, accion, detalle) {
       (actor_id, rol_afectado_id, accion, detalle_json)
       VALUES (?, ?, ?, ?)
       `,
-      [
-        actorId,
-        rolId,
-        accion,
-        JSON.stringify(detalle || {})
-      ]
+      [actorId, rolId, accion, JSON.stringify(detalle || {})]
     )
 
   } catch (err) {
-
     console.error('⚠️ Error registrando auditoría:', err)
-
   }
 
 }
@@ -67,7 +60,7 @@ router.get(
 
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       if (!entidadId) {
         return res.status(401).json({ error: 'Entidad no definida en el token' })
@@ -83,10 +76,8 @@ router.get(
       res.json(roles)
 
     } catch (err) {
-
       console.error(err)
       res.status(500).json({ error: 'Error listando roles' })
-
     }
 
   }
@@ -105,7 +96,7 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       const { nombre, descripcion } = req.body
 
@@ -138,7 +129,6 @@ router.post(
         })
       }
 
-      // 🔥 INSERT compatible con PostgreSQL y SQLite
       let nuevoRolId
 
       if (DB_ENGINE === 'postgres') {
@@ -178,10 +168,8 @@ router.post(
       res.status(201).json({ ok: true })
 
     } catch (err) {
-
       console.error(err)
       res.status(500).json({ error: 'Error creando rol' })
-
     }
 
   }
@@ -200,7 +188,7 @@ router.patch(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
 
       const { nombre, descripcion, nivel_acceso } = req.body
@@ -259,13 +247,7 @@ router.patch(
         SET nombre = ?, descripcion = ?, nivel_acceso = ?
         WHERE id = ? AND entidad_id = ?
         `,
-        [
-          nombreLimpio,
-          descripcion ?? rol.descripcion,
-          nivelNuevo,
-          id,
-          entidadId
-        ]
+        [nombreLimpio, descripcion ?? rol.descripcion, nivelNuevo, id, entidadId]
       )
 
       await registrarAuditoria(
@@ -278,10 +260,8 @@ router.patch(
       res.json({ ok: true })
 
     } catch (err) {
-
       console.error(err)
       res.status(500).json({ error: 'Error editando rol' })
-
     }
 
   }
@@ -299,7 +279,7 @@ router.patch(
     try {
 
       const actorId = parseInt(req.user.sub)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { activo } = req.body
 
@@ -358,10 +338,8 @@ router.patch(
       res.json({ ok: true })
 
     } catch (err) {
-
       console.error(err)
       res.status(500).json({ error: 'Error actualizando estado del rol' })
-
     }
 
   }

@@ -18,7 +18,7 @@ router.get(
   async (req, res) => {
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       if (!entidadId) {
         return res.status(401).json({ error: 'Entidad no definida en el token' })
@@ -41,7 +41,7 @@ router.get(
 )
 
 // =====================================================
-// CREAR NIVEL (orden automático por entidad)
+// CREAR NIVEL
 // =====================================================
 
 router.post(
@@ -51,7 +51,7 @@ router.post(
 
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!entidadId) {
@@ -71,7 +71,6 @@ router.post(
       if (existe)
         return res.status(400).json({ error: 'El nivel ya existe en esta entidad' })
 
-      // 🔥 Orden por entidad (seguro)
       const maxOrdenRow = await db.get(
         `SELECT MAX(orden) as max FROM niveles WHERE entidad_id = ?`,
         [entidadId]
@@ -82,9 +81,7 @@ router.post(
       await db.run(`
         INSERT INTO niveles (nombre, orden, estado, entidad_id)
         VALUES (?, ?, 1, ?)
-      `,
-        [nombreLimpio, nuevoOrden, entidadId]
-      )
+      `, [nombreLimpio, nuevoOrden, entidadId])
 
       res.status(201).json({ ok: true })
 
@@ -106,7 +103,7 @@ router.put(
 
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { nombre } = req.body
 
@@ -130,7 +127,6 @@ router.put(
 
       const nombreLimpio = nombre.trim()
 
-      // 🔒 VALIDACIÓN MULTI-TENANT (evita duplicados)
       const existe = await db.get(
         `SELECT id FROM niveles WHERE nombre = ? AND id != ? AND entidad_id = ?`,
         [nombreLimpio, id, entidadId]
@@ -146,9 +142,7 @@ router.put(
         UPDATE niveles
         SET nombre = ?
         WHERE id = ? AND entidad_id = ?
-      `,
-        [nombreLimpio, id, entidadId]
-      )
+      `, [nombreLimpio, id, entidadId])
 
       res.json({ ok: true })
 
@@ -170,7 +164,7 @@ router.patch(
 
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = parseInt(req.params.id)
       const { estado } = req.body
 

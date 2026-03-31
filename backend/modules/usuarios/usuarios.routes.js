@@ -1,6 +1,6 @@
 // backend/modules/usuarios/usuarios.routes.js
 // SIPAD – Módulo Usuarios Institucional (Cargo y Nivel obligatorio real)
-// 🔒 MULTI-TENANT HARDENED (SIN ROMPER ESTRUCTURA ORIGINAL)
+// 🔒 MULTI-TENANT HARDENED
 
 import express from 'express'
 import bcrypt from 'bcrypt'
@@ -77,7 +77,7 @@ function generarPasswordTemporal() {
 }
 
 // =====================================================
-// CAMBIAR PASSWORD
+// CAMBIAR PASSWORD (autoservicio — usa req.user.entidad_id)
 // =====================================================
 
 router.put(
@@ -87,13 +87,10 @@ router.put(
     try {
 
       const usuarioId = parseInt(req.user.sub)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.user.entidad_id  // 🔒 autoservicio, siempre del token
 
-      const password_actual =
-        req.body.password_actual ?? req.body.passwordActual
-
-      const password_nueva =
-        req.body.password_nueva ?? req.body.passwordNueva
+      const password_actual = req.body.password_actual ?? req.body.passwordActual
+      const password_nueva = req.body.password_nueva ?? req.body.passwordNueva
 
       if (!password_actual || !password_nueva) {
         return res.status(400).json({
@@ -108,62 +105,34 @@ router.put(
       }
 
       const usuario = await db.get(
-        `
-        SELECT password_hash
-        FROM usuarios
-        WHERE id = ? AND entidad_id = ?
-        `,
+        `SELECT password_hash FROM usuarios WHERE id = ? AND entidad_id = ?`,
         [usuarioId, entidadId]
       )
 
       if (!usuario) {
-        return res.status(404).json({
-          error: 'Usuario no encontrado'
-        })
+        return res.status(404).json({ error: 'Usuario no encontrado' })
       }
 
-      const passwordValida = await bcrypt.compare(
-        password_actual,
-        usuario.password_hash
-      )
+      const passwordValida = await bcrypt.compare(password_actual, usuario.password_hash)
 
       if (!passwordValida) {
-        return res.status(400).json({
-          error: 'La contraseña actual es incorrecta'
-        })
+        return res.status(400).json({ error: 'La contraseña actual es incorrecta' })
       }
 
       const nuevoHash = await bcrypt.hash(password_nueva, 10)
 
       await db.run(
-        `
-        UPDATE usuarios
-        SET password_hash = ?
-        WHERE id = ? AND entidad_id = ?
-        `,
+        `UPDATE usuarios SET password_hash = ? WHERE id = ? AND entidad_id = ?`,
         [nuevoHash, usuarioId, entidadId]
       )
 
-      await registrarAuditoria(
-        usuarioId,
-        usuarioId,
-        'CAMBIAR_PASSWORD',
-        { self_service: true }
-      )
+      await registrarAuditoria(usuarioId, usuarioId, 'CAMBIAR_PASSWORD', { self_service: true })
 
-      res.json({
-        ok: true,
-        mensaje: 'Contraseña actualizada correctamente'
-      })
+      res.json({ ok: true, mensaje: 'Contraseña actualizada correctamente' })
 
     } catch (err) {
-
       console.error('Error cambiando contraseña:', err)
-
-      res.status(500).json({
-        error: 'Error cambiando contraseña'
-      })
-
+      res.status(500).json({ error: 'Error cambiando contraseña' })
     }
 
   }
@@ -180,7 +149,7 @@ router.get(
 
     try {
 
-      const entidad = req.user.entidad_id
+      const entidad = req.entidad_id
       const dependencia = req.query.dependencia
 
       let query = `
@@ -203,15 +172,10 @@ router.get(
         JOIN dependencias d ON d.id = u.id_dependencia AND d.entidad_id = u.entidad_id
         LEFT JOIN cargos c ON c.id = u.id_cargo AND c.entidad_id = u.entidad_id
         LEFT JOIN niveles n ON n.id = u.id_nivel AND n.entidad_id = u.entidad_id
-        WHERE 1=1
+        WHERE u.entidad_id = ?
       `
 
-      const params = []
-
-      if (!req.isMasterAdmin) {
-        query += ` AND u.entidad_id = ?`
-        params.push(entidad)
-      }
+      const params = [entidad]
 
       if (dependencia !== undefined && dependencia !== '') {
         query += ` AND u.id_dependencia = ?`
@@ -222,19 +186,11 @@ router.get(
 
       const rows = await db.all(query, params)
 
-      res.json({
-        success: true,
-        data: rows
-      })
+      res.json({ success: true, data: rows })
 
     } catch (error) {
-
       console.error('Error listando usuarios:', error)
-
-      res.status(500).json({
-        error: 'Error al obtener usuarios'
-      })
-
+      res.status(500).json({ error: 'Error al obtener usuarios' })
     }
 
   }
@@ -252,22 +208,14 @@ router.get(
     try {
 
       const id = parseInt(req.params.id)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       const usuario = await db.get(
         `
         SELECT
-          id,
-          nombre_completo,
-          documento,
-          username,
-          email,
-          id_dependencia,
-          id_rol,
-          id_cargo,
-          id_nivel,
-          estado,
-          bloqueado
+          id, nombre_completo, documento, username, email,
+          id_dependencia, id_rol, id_cargo, id_nivel,
+          estado, bloqueado
         FROM usuarios
         WHERE id = ? AND entidad_id = ?
         `,
@@ -275,21 +223,14 @@ router.get(
       )
 
       if (!usuario) {
-        return res.status(404).json({
-          error: 'Usuario no encontrado'
-        })
+        return res.status(404).json({ error: 'Usuario no encontrado' })
       }
 
       res.json(usuario)
 
     } catch (error) {
-
       console.error('Error obteniendo usuario:', error)
-
-      res.status(500).json({
-        error: 'Error al obtener usuario'
-      })
-
+      res.status(500).json({ error: 'Error al obtener usuario' })
     }
 
   }
@@ -308,18 +249,11 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
-      const entidad = req.user.entidad_id
+      const entidad = req.entidad_id
 
       const {
-        nombre_completo,
-        documento,
-        email,
-        username,
-        password,
-        id_dependencia,
-        id_rol,
-        id_cargo,
-        id_nivel
+        nombre_completo, documento, email, username, password,
+        id_dependencia, id_rol, id_cargo, id_nivel
       } = req.body
 
       if (!nombre_completo || !email || !username || !password)
@@ -353,9 +287,7 @@ router.post(
 
       const nivelNuevoRol = await obtenerNivelRol(id_rol, entidad)
 
-      if (!req.isMasterAdmin &&
-          actorNivel !== 100 &&
-          nivelNuevoRol >= actorNivel) {
+      if (!req.isMasterAdmin && actorNivel !== 100 && nivelNuevoRol >= actorNivel) {
         return res.status(403).json({
           error: 'No puedes crear un usuario con nivel igual o superior al tuyo'
         })
@@ -363,7 +295,6 @@ router.post(
 
       const passwordHash = await bcrypt.hash(password, 10)
 
-      // 🔥 INSERT compatible con PostgreSQL y SQLite
       let nuevoUsuarioId
 
       if (DB_ENGINE === 'postgres') {
@@ -374,9 +305,8 @@ router.post(
            id_dependencia, id_rol, id_cargo, id_nivel, entidad_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           RETURNING id
-        `,
-        [nombre_completo, documento, email, username, passwordHash,
-         id_dependencia, id_rol, id_cargo, id_nivel, entidad])
+        `, [nombre_completo, documento, email, username, passwordHash,
+            id_dependencia, id_rol, id_cargo, id_nivel, entidad])
 
         nuevoUsuarioId = result?.id ?? null
 
@@ -387,32 +317,22 @@ router.post(
           (nombre_completo, documento, email, username, password_hash,
            id_dependencia, id_rol, id_cargo, id_nivel, entidad_id)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `,
-        [nombre_completo, documento, email, username, passwordHash,
-         id_dependencia, id_rol, id_cargo, id_nivel, entidad])
+        `, [nombre_completo, documento, email, username, passwordHash,
+            id_dependencia, id_rol, id_cargo, id_nivel, entidad])
 
         nuevoUsuarioId = result?.lastID ?? null
 
       }
 
       await registrarAuditoria(actorId, nuevoUsuarioId, 'CREAR_USUARIO', {
-        username,
-        id_rol,
-        id_dependencia,
-        id_cargo,
-        id_nivel
+        username, id_rol, id_dependencia, id_cargo, id_nivel
       })
 
       res.status(201).json({ ok: true })
 
     } catch (err) {
-
       console.error('Error creando usuario:', err)
-
-      res.status(500).json({
-        error: 'Error creando usuario'
-      })
-
+      res.status(500).json({ error: 'Error creando usuario' })
     }
 
   }
@@ -432,7 +352,7 @@ router.put(
       const actorId = parseInt(req.user.sub)
       const actorNivel = req.user.nivel_acceso
       const id = parseInt(req.params.id)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       const usuarioExiste = await db.get(
         `SELECT id FROM usuarios WHERE id = ? AND entidad_id = ?`,
@@ -440,20 +360,12 @@ router.put(
       )
 
       if (!usuarioExiste) {
-        return res.status(404).json({
-          error: 'Usuario no pertenece a esta entidad'
-        })
+        return res.status(404).json({ error: 'Usuario no pertenece a esta entidad' })
       }
 
       const {
-        email,
-        id_dependencia,
-        id_rol,
-        id_cargo,
-        id_nivel,
-        estado,
-        bloqueado,
-        password
+        email, id_dependencia, id_rol, id_cargo, id_nivel,
+        estado, bloqueado, password
       } = req.body
 
       if (!email)
@@ -473,9 +385,7 @@ router.put(
 
       const nivelNuevoRol = await obtenerNivelRol(id_rol, entidadId)
 
-      if (!req.isMasterAdmin &&
-          actorNivel !== 100 &&
-          nivelNuevoRol >= actorNivel) {
+      if (!req.isMasterAdmin && actorNivel !== 100 && nivelNuevoRol >= actorNivel) {
         return res.status(403).json({
           error: 'No puedes asignar un rol igual o superior al tuyo'
         })
@@ -486,9 +396,7 @@ router.put(
       if (password && password.trim() !== '') {
 
         if (password.length < 8)
-          return res.status(400).json({
-            error: 'La contraseña debe tener mínimo 8 caracteres'
-          })
+          return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres' })
 
         passwordHash = await bcrypt.hash(password, 10)
 
@@ -498,79 +406,34 @@ router.put(
 
         await db.run(`
           UPDATE usuarios
-          SET
-            email = ?,
-            id_dependencia = ?,
-            id_rol = ?,
-            id_cargo = ?,
-            id_nivel = ?,
-            estado = ?,
-            bloqueado = ?,
-            password_hash = ?
+          SET email = ?, id_dependencia = ?, id_rol = ?, id_cargo = ?,
+              id_nivel = ?, estado = ?, bloqueado = ?, password_hash = ?
           WHERE id = ? AND entidad_id = ?
-        `,
-        [
-          email,
-          id_dependencia,
-          id_rol,
-          id_cargo,
-          id_nivel,
-          estado,
-          bloqueado,
-          passwordHash,
-          id,
-          entidadId
-        ])
+        `, [email, id_dependencia, id_rol, id_cargo, id_nivel,
+            estado, bloqueado, passwordHash, id, entidadId])
 
       } else {
 
         await db.run(`
           UPDATE usuarios
-          SET
-            email = ?,
-            id_dependencia = ?,
-            id_rol = ?,
-            id_cargo = ?,
-            id_nivel = ?,
-            estado = ?,
-            bloqueado = ?
+          SET email = ?, id_dependencia = ?, id_rol = ?, id_cargo = ?,
+              id_nivel = ?, estado = ?, bloqueado = ?
           WHERE id = ? AND entidad_id = ?
-        `,
-        [
-          email,
-          id_dependencia,
-          id_rol,
-          id_cargo,
-          id_nivel,
-          estado,
-          bloqueado,
-          id,
-          entidadId
-        ])
+        `, [email, id_dependencia, id_rol, id_cargo, id_nivel,
+            estado, bloqueado, id, entidadId])
 
       }
 
       await registrarAuditoria(actorId, id, 'EDITAR_USUARIO', {
-        email,
-        id_dependencia,
-        id_rol,
-        id_cargo,
-        id_nivel,
-        estado,
-        bloqueado,
-        password_cambiado: !!passwordHash
+        email, id_dependencia, id_rol, id_cargo, id_nivel,
+        estado, bloqueado, password_cambiado: !!passwordHash
       })
 
       res.json({ ok: true })
 
     } catch (err) {
-
       console.error('Error actualizando usuario:', err)
-
-      res.status(500).json({
-        error: 'Error actualizando usuario'
-      })
-
+      res.status(500).json({ error: 'Error actualizando usuario' })
     }
 
   }
@@ -589,7 +452,7 @@ router.post(
 
       const actorId = parseInt(req.user.sub)
       const id = parseInt(req.params.id)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       const usuarioExiste = await db.get(
         `SELECT id FROM usuarios WHERE id = ? AND entidad_id = ?`,
@@ -597,40 +460,24 @@ router.post(
       )
 
       if (!usuarioExiste) {
-        return res.status(404).json({
-          error: 'Usuario no pertenece a esta entidad'
-        })
+        return res.status(404).json({ error: 'Usuario no pertenece a esta entidad' })
       }
 
       const nuevaPassword = generarPasswordTemporal()
       const hash = await bcrypt.hash(nuevaPassword, 10)
 
       await db.run(
-        `
-        UPDATE usuarios
-        SET password_hash = ?, bloqueado = 0
-        WHERE id = ? AND entidad_id = ?
-        `,
+        `UPDATE usuarios SET password_hash = ?, bloqueado = 0 WHERE id = ? AND entidad_id = ?`,
         [hash, id, entidadId]
       )
 
-      await registrarAuditoria(actorId, id, 'RESET_PASSWORD', {
-        generado_por_admin: true
-      })
+      await registrarAuditoria(actorId, id, 'RESET_PASSWORD', { generado_por_admin: true })
 
-      res.json({
-        ok: true,
-        password_temporal: nuevaPassword
-      })
+      res.json({ ok: true, password_temporal: nuevaPassword })
 
     } catch (err) {
-
       console.error('Error reset password:', err)
-
-      res.status(500).json({
-        error: 'Error reseteando contraseña'
-      })
-
+      res.status(500).json({ error: 'Error reseteando contraseña' })
     }
 
   }
