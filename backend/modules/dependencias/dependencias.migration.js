@@ -1,6 +1,17 @@
 export async function runDependenciasMigration(db) {
 
   await db.exec(`
+    CREATE TABLE IF NOT EXISTS dependencias (
+      id SERIAL PRIMARY KEY,
+      nombre TEXT NOT NULL,
+      activa INTEGER NOT NULL DEFAULT 1,
+      entidad_id TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (entidad_id) REFERENCES entidades(id)
+    );
+  `)
+
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS auditoria_dependencias (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       actor_id INTEGER NOT NULL,

@@ -5,6 +5,8 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 
 const router = express.Router()
 
+const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
+
 // =====================================================
 // HELPERS
 // =====================================================
@@ -82,7 +84,6 @@ router.get(
 
 router.post(
   '/',
-  
   requireLevel(100),
   async (req, res) => {
 
@@ -113,16 +114,28 @@ router.post(
         })
       }
 
-      const result = await db.get(
-        `
-        INSERT INTO dependencias (nombre, activa, entidad_id)
-        VALUES (?, 1, ?)
-        RETURNING id
-        `,
-        [nombreLimpio, entidadId]
-      )
+      // 🔥 INSERT compatible con PostgreSQL y SQLite
+      let nuevaDependenciaId
 
-      const nuevaDependenciaId = result?.id ?? null
+      if (DB_ENGINE === 'postgres') {
+
+        const result = await db.get(
+          `INSERT INTO dependencias (nombre, activa, entidad_id) VALUES (?, 1, ?) RETURNING id`,
+          [nombreLimpio, entidadId]
+        )
+
+        nuevaDependenciaId = result?.id ?? null
+
+      } else {
+
+        const result = await db.run(
+          `INSERT INTO dependencias (nombre, activa, entidad_id) VALUES (?, 1, ?)`,
+          [nombreLimpio, entidadId]
+        )
+
+        nuevaDependenciaId = result?.lastID ?? null
+
+      }
 
       if (!nuevaDependenciaId) {
 
@@ -159,7 +172,6 @@ router.post(
 
 router.patch(
   '/:id',
-  
   requireLevel(100),
   async (req, res) => {
 
@@ -232,7 +244,6 @@ router.patch(
 
 router.patch(
   '/:id/estado',
-  
   requireLevel(100),
   async (req, res) => {
 
