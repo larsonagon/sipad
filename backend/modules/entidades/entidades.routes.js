@@ -94,7 +94,7 @@ router.post('/', async (req, res) => {
     if (DB_ENGINE === 'postgres') {
 
       const row = await db.get(
-        `INSERT INTO entidades (nombre, estado) VALUES (?, true) RETURNING id`,
+        `INSERT INTO entidades (id, nombre, estado) VALUES (gen_random_uuid(), ?, true) RETURNING id`,
         [nombreLimpio]
       )
 
