@@ -50,10 +50,10 @@ router.get(
   '/',
   requireLevel(50),
   async (req, res) => {
-    console.log('🔥 DEPENDENCIAS - req.entidad_id:', req.entidad_id)
+
     try {
 
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
 
       if (!entidadId) {
         return res.status(401).json({ error: 'Entidad no definida en el token' })
@@ -90,7 +90,7 @@ router.post(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const { nombre } = req.body
 
       if (!entidadId) {
@@ -114,7 +114,6 @@ router.post(
         })
       }
 
-      // 🔥 INSERT compatible con PostgreSQL y SQLite
       let nuevaDependenciaId
 
       if (DB_ENGINE === 'postgres') {
@@ -178,7 +177,7 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = Number(req.params.id)
       const { nombre } = req.body
 
@@ -250,7 +249,7 @@ router.patch(
     try {
 
       const actorId = Number(req.user.sub)
-      const entidadId = req.user.entidad_id
+      const entidadId = req.entidad_id
       const id = Number(req.params.id)
       const { activa } = req.body
 
