@@ -13,15 +13,10 @@ function getUserFromToken() {
 
 }
 
-// ======================================================
-// 🔥 NUEVO: SELECTOR MULTI-ENTIDAD
-// ======================================================
-
 async function cargarSelectorEntidad(user) {
 
   if (!user) return;
 
-  // 🔒 Solo superadmin
   if (!user.es_master_admin && user.rol !== 'Super Admin') {
     return;
   }
@@ -77,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const token = sessionStorage.getItem('token');
 
-  // 🔐 Si no hay token → volver al login
   if (!token) {
     window.location.href = '/';
     return;
@@ -87,50 +81,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!user) {
 
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
 
     window.location.href = '/';
     return;
 
   }
 
-  // =========================
-  // HEADER DINÁMICO
-  // =========================
-
+  // 🔥 Home nunca muestra banner de gestión
   try {
-    renderHeader('home', user);
+    renderHeader('home')
   } catch (error) {
     console.error('Error renderizando header:', error);
   }
 
-  // 🔥 ACTIVAR SELECTOR (AQUÍ EXACTAMENTE)
   cargarSelectorEntidad(user);
 
   const nivel = user.nivel_acceso || 0;
   const esMaster = user.es_master_admin === true;
 
-  // =========================
-  // DETECTAR ROL GENERAL
-  // =========================
-
   const rolUsuario = JSON.stringify(user).toLowerCase();
   const esRolGeneral = rolUsuario.includes('general');
-
-  // =========================
-  // REFERENCIAS A TARJETAS
-  // =========================
 
   const cardSegtec = document.getElementById('cardSegtec');
   const cardTRD = document.getElementById('cardTRD');
   const cardTRDAI = document.getElementById('cardTRDAI');
   const cardAdmin = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
-
-  // =========================
-  // CONTROL DE VISIBILIDAD
-  // =========================
 
   if (nivel < 80 && !esMaster) {
 
@@ -147,10 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cardInformes) cardInformes.style.display = 'none';
 
   }
-
-  // =========================
-  // NAVEGACIÓN
-  // =========================
 
   if (cardSegtec) {
     cardSegtec.addEventListener('click', () => {
