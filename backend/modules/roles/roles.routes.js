@@ -1,7 +1,7 @@
 import express from 'express'
 import { db } from '../../db/database.js'
 import { verificarJWT } from '../../middlewares/auth.middleware.js'
-import { requireLevel } from '../../middlewares/role.middleware.js'
+import { requireLevel, attachPermissions } from '../../middlewares/role.middleware.js'
 
 const router = express.Router()
 
@@ -56,6 +56,7 @@ async function contarRolesNivel100(entidadId) {
 router.get(
   '/',
   requireLevel(80),
+  attachPermissions, // 🔥 NUEVO (no rompe nada)
   async (req, res) => {
 
     try {
@@ -90,6 +91,7 @@ router.get(
 router.post(
   '/',
   requireLevel(100),
+  attachPermissions, // 🔥 NUEVO
   async (req, res) => {
 
     try {
@@ -182,6 +184,7 @@ router.post(
 router.patch(
   '/:id',
   requireLevel(100),
+  attachPermissions, // 🔥 NUEVO
   async (req, res) => {
 
     try {
@@ -274,6 +277,7 @@ router.patch(
 router.patch(
   '/:id/estado',
   requireLevel(100),
+  attachPermissions, // 🔥 NUEVO
   async (req, res) => {
 
     try {

@@ -3,6 +3,10 @@ import InformesRepository from './InformesRepository.js'
 import InformesService from './InformesService.js'
 import InformesController from './InformesController.js'
 
+// 🔥 NUEVO (middleware de seguridad)
+import { verificarJWT } from '../../middlewares/auth.middleware.js'
+import { attachPermissions, requireInformes } from '../../middlewares/role.middleware.js'
+
 export function buildInformesRouter(db) {
 
   const router = express.Router()
@@ -20,16 +24,25 @@ export function buildInformesRouter(db) {
 
   router.get(
     '/actividades',
+    verificarJWT,
+    attachPermissions,
+    requireInformes,
     controller.obtenerActividades
   )
 
   router.get(
     '/registro-actividades-word',
+    verificarJWT,
+    attachPermissions,
+    requireInformes,
     controller.generarWord
   )
 
   router.get(
     '/registro-actividades-excel',
+    verificarJWT,
+    attachPermissions,
+    requireInformes,
     controller.generarExcel
   )
 
@@ -40,6 +53,9 @@ export function buildInformesRouter(db) {
 
   router.get(
     '/dependencias',
+    verificarJWT,
+    attachPermissions,
+    requireInformes,
     controller.obtenerResumenDependencias
   )
 
@@ -50,6 +66,9 @@ export function buildInformesRouter(db) {
 
   router.get(
     '/produccion-documental',
+    verificarJWT,
+    attachPermissions,
+    requireInformes,
     controller.obtenerProduccionDocumental
   )
 
