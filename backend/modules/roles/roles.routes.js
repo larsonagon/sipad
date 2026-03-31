@@ -5,6 +5,8 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 
 const router = express.Router()
 
+const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
+
 // =====================================================
 // HELPERS
 // =====================================================
@@ -136,24 +138,35 @@ router.post(
         })
       }
 
-      const result = await db.get(
-        `
-        INSERT INTO roles (nombre, descripcion, nivel_acceso, activo, entidad_id)
-        VALUES (?, ?, ?, 1, ?)
-        RETURNING id
-        `,
-        [
-          nombreLimpio,
-          descripcion || null,
-          nivel,
-          entidadId
-        ]
-      )
+      // 🔥 INSERT compatible con PostgreSQL y SQLite
+      let nuevoRolId
 
-      const nuevoRolId =
-        result?.id ??
-        result?.rows?.[0]?.id ??
-        null
+      if (DB_ENGINE === 'postgres') {
+
+        const result = await db.get(
+          `
+          INSERT INTO roles (nombre, descripcion, nivel_acceso, activo, entidad_id)
+          VALUES (?, ?, ?, 1, ?)
+          RETURNING id
+          `,
+          [nombreLimpio, descripcion || null, nivel, entidadId]
+        )
+
+        nuevoRolId = result?.id ?? null
+
+      } else {
+
+        const result = await db.run(
+          `
+          INSERT INTO roles (nombre, descripcion, nivel_acceso, activo, entidad_id)
+          VALUES (?, ?, ?, 1, ?)
+          `,
+          [nombreLimpio, descripcion || null, nivel, entidadId]
+        )
+
+        nuevoRolId = result?.lastID ?? null
+
+      }
 
       await registrarAuditoria(
         actorId,
@@ -227,7 +240,6 @@ router.patch(
 
       const nombreLimpio = nombre ? nombre.trim() : rol.nombre
 
-      // 🔒 VALIDACIÓN MULTI-TENANT
       if (nombre) {
         const existe = await db.get(
           `SELECT id FROM roles WHERE nombre = ? AND id != ? AND entidad_id = ?`,

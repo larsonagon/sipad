@@ -11,6 +11,8 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 
 const router = express.Router()
 
+const DB_ENGINE = process.env.DB_ENGINE || 'postgres'
+
 // =====================================================
 // HELPERS
 // =====================================================
@@ -80,7 +82,6 @@ function generarPasswordTemporal() {
 
 router.put(
   '/cambiar-password',
-  
   async (req, res) => {
 
     try {
@@ -174,7 +175,6 @@ router.put(
 
 router.get(
   '/',
-  
   requireLevel(80),
   async (req, res) => {
 
@@ -246,7 +246,6 @@ router.get(
 
 router.get(
   '/:id',
-  
   requireLevel(80),
   async (req, res) => {
 
@@ -302,7 +301,6 @@ router.get(
 
 router.post(
   '/',
-  
   requireLevel(80),
   async (req, res) => {
 
@@ -333,7 +331,6 @@ router.post(
       if (password.length < 8)
         return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres' })
 
-      // 🔒 DUPLICADOS
       const existe = await db.get(
         `SELECT id FROM usuarios WHERE (email = ? OR username = ?) AND entidad_id = ?`,
         [email, username, entidad]
@@ -359,45 +356,46 @@ router.post(
       if (!req.isMasterAdmin &&
           actorNivel !== 100 &&
           nivelNuevoRol >= actorNivel) {
-
         return res.status(403).json({
           error: 'No puedes crear un usuario con nivel igual o superior al tuyo'
         })
-
       }
 
       const passwordHash = await bcrypt.hash(password, 10)
 
-      const result = await db.run(`
-        INSERT INTO usuarios
-        (
-          nombre_completo,
-          documento,
-          email,
-          username,
-          password_hash,
-          id_dependencia,
-          id_rol,
-          id_cargo,
-          id_nivel,
-          entidad_id
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `,
-      [
-        nombre_completo,
-        documento,
-        email,
-        username,
-        passwordHash,
-        id_dependencia,
-        id_rol,
-        id_cargo,
-        id_nivel,
-        entidad
-      ])
+      // 🔥 INSERT compatible con PostgreSQL y SQLite
+      let nuevoUsuarioId
 
-      await registrarAuditoria(actorId, result.lastID, 'CREAR_USUARIO', {
+      if (DB_ENGINE === 'postgres') {
+
+        const result = await db.get(`
+          INSERT INTO usuarios
+          (nombre_completo, documento, email, username, password_hash,
+           id_dependencia, id_rol, id_cargo, id_nivel, entidad_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          RETURNING id
+        `,
+        [nombre_completo, documento, email, username, passwordHash,
+         id_dependencia, id_rol, id_cargo, id_nivel, entidad])
+
+        nuevoUsuarioId = result?.id ?? null
+
+      } else {
+
+        const result = await db.run(`
+          INSERT INTO usuarios
+          (nombre_completo, documento, email, username, password_hash,
+           id_dependencia, id_rol, id_cargo, id_nivel, entidad_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [nombre_completo, documento, email, username, passwordHash,
+         id_dependencia, id_rol, id_cargo, id_nivel, entidad])
+
+        nuevoUsuarioId = result?.lastID ?? null
+
+      }
+
+      await registrarAuditoria(actorId, nuevoUsuarioId, 'CREAR_USUARIO', {
         username,
         id_rol,
         id_dependencia,
@@ -426,7 +424,6 @@ router.post(
 
 router.put(
   '/:id',
-  
   requireLevel(80),
   async (req, res) => {
 
@@ -479,11 +476,9 @@ router.put(
       if (!req.isMasterAdmin &&
           actorNivel !== 100 &&
           nivelNuevoRol >= actorNivel) {
-
         return res.status(403).json({
           error: 'No puedes asignar un rol igual o superior al tuyo'
         })
-
       }
 
       let passwordHash = null
@@ -587,7 +582,6 @@ router.put(
 
 router.post(
   '/:id/reset-password',
-  
   requireLevel(80),
   async (req, res) => {
 
