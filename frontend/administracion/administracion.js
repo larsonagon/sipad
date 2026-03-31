@@ -12,7 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const user = JSON.parse(userRaw)
 
-  renderHeader('Administración')
+  // 🔥 Leer contexto de gestión
+  const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
+
+  renderHeader('Administración', gestionEntidadNombre)
 
   // =========================
   // CONTROL DE VISIBILIDAD
@@ -27,8 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCargos) btnCargos.style.display = 'none'
   }
 
-  // Entidades solo master admin
+  // Entidades solo master admin (ocultar cuando está en modo gestión)
   if (!esMaster) {
+    const btnEntidades = document.getElementById('btnEntidades')
+    if (btnEntidades) btnEntidades.style.display = 'none'
+  }
+
+  // 🔥 Si está en modo gestión, ocultar botón de entidades para no confundir
+  if (gestionEntidadNombre) {
     const btnEntidades = document.getElementById('btnEntidades')
     if (btnEntidades) btnEntidades.style.display = 'none'
   }
