@@ -9,6 +9,8 @@ export function multiTenant(req, res, next) {
   // ✅ Master admin puede operar en nombre de otra entidad
   if (req.user.es_master_admin) {
 
+    console.log('🔥 MASTER ADMIN - x-entidad-id:', req.headers['x-entidad-id'])
+
     const entidadOverride = req.headers['x-entidad-id']
 
     if (entidadOverride) {
