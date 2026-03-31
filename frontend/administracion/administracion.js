@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const user = JSON.parse(userRaw)
 
-  // 🔥 Render header institucional
   renderHeader('Administración')
 
   // =========================
@@ -26,6 +25,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (nivel < 90 && !esMaster) {
     const btnCargos = document.getElementById('btnCargos')
     if (btnCargos) btnCargos.style.display = 'none'
+  }
+
+  // Entidades solo master admin
+  if (!esMaster) {
+    const btnEntidades = document.getElementById('btnEntidades')
+    if (btnEntidades) btnEntidades.style.display = 'none'
   }
 
   // =========================
@@ -55,6 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnNiveles')
     ?.addEventListener('click', () => {
       window.location.href = '/administracion/niveles/index.html'
+    })
+
+  document.getElementById('btnEntidades')
+    ?.addEventListener('click', () => {
+      window.location.href = '/administracion/entidades/index.html'
     })
 
 })

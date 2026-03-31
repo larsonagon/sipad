@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Administración | SIPAD</title>
-
   <link rel="stylesheet" href="/css/core/sipad-ui.css">
 </head>
 <body>
@@ -22,6 +21,13 @@
 
     <div class="module-content">
       <div class="module-grid">
+
+        <!-- ENTIDADES (solo master admin) -->
+        <div class="module-card" id="btnEntidades">
+          <div class="module-icon">🌐</div>
+          <h3>Entidades</h3>
+          <p>Gestión de entidades del sistema. Solo visible para Super Admin.</p>
+        </div>
 
         <!-- DEPENDENCIAS -->
         <div class="module-card" id="btnDependencias">
@@ -63,63 +69,36 @@
 
   </main>
 
-
-  <!-- ===================================== -->
-  <!-- MODAL CAMBIAR PASSWORD (MISMO QUE HOME) -->
-  <!-- ===================================== -->
-
   <div id="modalPassword" class="modal hidden">
-
     <div class="modal-content small">
-
       <h3>Cambiar contraseña</h3>
-
       <form id="formCambiarPassword">
-
         <div class="form-group">
           <label>Contraseña actual</label>
           <input type="password" id="passwordActual" required>
         </div>
-
         <div class="form-group">
           <label>Nueva contraseña</label>
           <input type="password" id="passwordNueva" required>
         </div>
-
         <div class="form-group">
           <label>Confirmar nueva contraseña</label>
           <input type="password" id="passwordConfirmar" required>
         </div>
-
         <div class="modal-actions">
-
-          <button
-            type="button"
-            id="btnCancelarPassword"
-            class="btn-secondary">
+          <button type="button" id="btnCancelarPassword" class="btn-secondary">
             Cancelar
           </button>
-
-          <button
-            type="submit"
-            class="btn-primary">
+          <button type="submit" class="btn-primary">
             Actualizar contraseña
           </button>
-
         </div>
-
       </form>
-
     </div>
-
   </div>
 
-
   <script type="module" src="./administracion.js"></script>
-
-  <!-- SCRIPT GLOBAL CAMBIAR PASSWORD -->
   <script src="/components/password-modal.js"></script>
-
   <script type="module" src="/components/notifications.js"></script>
 
 </body>
