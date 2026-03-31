@@ -57,16 +57,17 @@ export const requireLevel = (minLevel) => {
 }
 
 // =====================================================
-// 🔥 NUEVO: RESOLVER PERMISOS FUNCIONALES
+// 🔥 RESOLVER PERMISOS FUNCIONALES (CORREGIDO)
 // =====================================================
 
 export const resolvePermissions = (user) => {
 
   const nivel = Number(user?.nivel_acceso ?? 0)
+  const esMaster = user?.es_master_admin === true
 
   return {
 
-    esSuperAdmin: user?.es_master_admin === true,
+    esSuperAdmin: esMaster,
 
     // 🔹 Administración
     puedeAdministrar: nivel >= 90,
@@ -76,26 +77,30 @@ export const resolvePermissions = (user) => {
 
     // 🔹 Informes
     puedeVerInformes:
-      nivel === 70 || // Archivista
-      nivel === 50 || // Jefe
-      user?.es_master_admin === true,
+      (
+        nivel === 70 || // Archivista
+        nivel === 50 || // Jefe
+        esMaster
+      ) && nivel !== 90, // 🔥 bloqueo explícito admin
 
     // 🔹 TRD-AI
     puedeVerTRD:
-      nivel === 70 || // Archivista
-      user?.es_master_admin === true,
+      (
+        nivel === 70 || // Archivista
+        esMaster
+      ) && nivel !== 90, // 🔥 bloqueo explícito admin
 
-    // 🔹 Visión global (todo el sistema)
+    // 🔹 Visión global
     puedeVerTodo:
       nivel === 70 || // Archivista
-      user?.es_master_admin === true
+      esMaster
 
   }
 
 }
 
 // =====================================================
-// 🔥 NUEVO: MIDDLEWARE GENERADOR DE PERMISOS
+// 🔥 MIDDLEWARE GENERADOR DE PERMISOS
 // =====================================================
 
 export const attachPermissions = (req, res, next) => {
@@ -108,7 +113,6 @@ export const attachPermissions = (req, res, next) => {
       })
     }
 
-    // 🔥 Inyecta permisos calculados
     req.permisos = resolvePermissions(req.user)
 
     next()
@@ -126,7 +130,7 @@ export const attachPermissions = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 NUEVO: REQUIERE ACCESO A INFORMES
+// 🔥 REQUIERE ACCESO A INFORMES
 // =====================================================
 
 export const requireInformes = (req, res, next) => {
@@ -160,7 +164,7 @@ export const requireInformes = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 NUEVO: REQUIERE ACCESO A TRD-AI
+// 🔥 REQUIERE ACCESO A TRD-AI
 // =====================================================
 
 export const requireTRD = (req, res, next) => {
@@ -194,7 +198,7 @@ export const requireTRD = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 NUEVO: REQUIERE ACCESO A SEGTEC (ICAF)
+// 🔥 REQUIERE ACCESO A SEGTEC (ICAF)
 // =====================================================
 
 export const requireICAF = (req, res, next) => {
