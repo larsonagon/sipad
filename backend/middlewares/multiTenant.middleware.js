@@ -1,4 +1,6 @@
-export function multiTenant(req, res, next) {
+import { db } from '../db/database.js'
+
+export async function multiTenant(req, res, next) {
 
   if (!req.user) {
     return res.status(401).json({
@@ -6,21 +8,64 @@ export function multiTenant(req, res, next) {
     })
   }
 
-  // ✅ Master admin puede operar en nombre de otra entidad
+  // 🔥 Normalizar header
+  const headerEntidad = (req.headers['x-entidad-id'] || '').toString().trim()
+
+  // 🔒 Usuario normal NO puede usar override
+  if (!req.user.es_master_admin && headerEntidad) {
+    return res.status(403).json({
+      error: 'No autorizado para cambiar de entidad'
+    })
+  }
+
+  // ======================================
+  // 🔥 MASTER ADMIN
+  // ======================================
   if (req.user.es_master_admin) {
 
-    console.log('🔥 MASTER ADMIN - x-entidad-id:', req.headers['x-entidad-id'])
+    console.log('🔥 MASTER ADMIN - x-entidad-id:', headerEntidad || '(no enviado)')
 
-    const entidadOverride = req.headers['x-entidad-id']
+    if (headerEntidad) {
 
-    if (entidadOverride) {
-      req.entidad_id = entidadOverride
+      try {
+
+        // ✅ Validar que la entidad exista
+        const entidad = await db.get(
+          `SELECT id FROM entidades WHERE id = ?`,
+          [headerEntidad]
+        )
+
+        if (!entidad) {
+          return res.status(400).json({
+            error: 'Entidad inválida'
+          })
+        }
+
+        console.log(`[MULTI-TENANT] Master ${req.user.sub} operando en entidad ${headerEntidad}`)
+
+        req.entidad_id = headerEntidad
+
+      } catch (err) {
+
+        console.error('Error validando entidad override:', err)
+
+        return res.status(500).json({
+          error: 'Error validando entidad'
+        })
+      }
+
     } else {
+
+      // ✔ comportamiento original intacto
       req.entidad_id = req.user.entidad_id
     }
 
     return next()
   }
+
+  // ======================================
+  // 🔒 USUARIO NORMAL
+  // ======================================
 
   const entidadId = req.user.entidad_id
 
@@ -30,7 +75,7 @@ export function multiTenant(req, res, next) {
     })
   }
 
-  // 🔥 Inyección limpia
+  // ✔ comportamiento original intacto
   req.entidad_id = entidadId
 
   next()
