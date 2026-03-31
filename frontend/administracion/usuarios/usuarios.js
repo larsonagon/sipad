@@ -14,11 +14,11 @@ function getHeaders(extra = {}) {
     ...extra
   }
 
-  // 🔥 FIX (NO ROMPE NADA)
+  // ✅ FIX: gestion_entidad_id tiene prioridad sobre entidad_id
   const entidad =
     gestionEntidadId ||
-    sessionStorage.getItem('entidad_id') ||
-    sessionStorage.getItem('gestion_entidad_id')
+    sessionStorage.getItem('gestion_entidad_id') ||
+    sessionStorage.getItem('entidad_id')
 
   if (entidad) headers['X-Entidad-Id'] = entidad
 
@@ -35,10 +35,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  // 🔥 FIX AQUÍ (CLAVE)
+  // ✅ FIX: gestion_entidad_id tiene prioridad sobre entidad_id
   gestionEntidadId =
-    sessionStorage.getItem('entidad_id') ||
     sessionStorage.getItem('gestion_entidad_id') ||
+    sessionStorage.getItem('entidad_id') ||
     null
 
   gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
@@ -250,6 +250,13 @@ window.editarUsuario = async function(id) {
   try {
     const res = await fetch(`/api/usuarios/${id}`, { headers: getHeaders() })
     const json = await res.json()
+
+    // ✅ FIX: verificar res.ok antes de leer los datos
+    if (!res.ok) {
+      alert(json.error || 'Error cargando usuario')
+      return
+    }
+
     const u = json.data ?? json
 
     document.getElementById('modalTitle').textContent = 'Editar Usuario'
@@ -272,6 +279,7 @@ window.editarUsuario = async function(id) {
     document.getElementById('modalUsuario').classList.remove('hidden')
   } catch (err) {
     console.error('Error cargando usuario', err)
+    alert('No fue posible cargar el usuario.')
   }
 }
 
@@ -344,4 +352,4 @@ async function guardarUsuario(e) {
     console.error(err)
     alert('No fue posible guardar el usuario.')
   }
-} 
+}
