@@ -8,9 +8,8 @@ export async function multiTenant(req, res, next) {
     })
   }
 
-  // 🔥 Normalizar header → ✅ FIX: convertir a integer
-  const headerRaw = (req.headers['x-entidad-id'] || '').toString().trim()
-  const headerEntidad = headerRaw ? parseInt(headerRaw) : null
+  // 🔥 Normalizar header — mantener como string (entidades.id es UUID)
+  const headerEntidad = (req.headers['x-entidad-id'] || '').toString().trim()
 
   // 🔒 Usuario normal NO puede usar override
   if (!req.user.es_master_admin && headerEntidad) {
@@ -24,15 +23,15 @@ export async function multiTenant(req, res, next) {
   // ======================================
   if (req.user.es_master_admin) {
 
-    console.log('🔥 MASTER ADMIN - x-entidad-id:', headerEntidad ?? '(no enviado)')
+    console.log('🔥 MASTER ADMIN - x-entidad-id:', headerEntidad || '(no enviado)')
 
     if (headerEntidad) {
 
       try {
 
-        // ✅ Validar que la entidad exista
+        // ✅ FIX: cast a texto para soportar tanto UUID como integer
         const entidad = await db.get(
-          `SELECT id FROM entidades WHERE id = ?`,
+          `SELECT id FROM entidades WHERE id::text = ?`,
           [headerEntidad]
         )
 
@@ -44,8 +43,8 @@ export async function multiTenant(req, res, next) {
 
         console.log(`[MULTI-TENANT] Master ${req.user.sub} operando en entidad ${headerEntidad}`)
 
-        // ✅ FIX: guardar como integer, no string
-        req.entidad_id = parseInt(entidad.id)
+        // ✅ Usar el id real que devuelve la DB (respeta el tipo original)
+        req.entidad_id = entidad.id
 
       } catch (err) {
 
@@ -59,8 +58,7 @@ export async function multiTenant(req, res, next) {
     } else {
 
       // ✔ comportamiento original intacto
-      // ✅ FIX: guardar como integer
-      req.entidad_id = parseInt(req.user.entidad_id)
+      req.entidad_id = req.user.entidad_id
     }
 
     return next()
@@ -79,8 +77,7 @@ export async function multiTenant(req, res, next) {
   }
 
   // ✔ comportamiento original intacto
-  // ✅ FIX: guardar como integer
-  req.entidad_id = parseInt(entidadId)
+  req.entidad_id = entidadId
 
   next()
 }

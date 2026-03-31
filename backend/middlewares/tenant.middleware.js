@@ -11,9 +11,9 @@ export function tenantMiddleware(req, res, next) {
 
   // ✅ FIX: master admin puede hacer override via header X-Entidad-Id
   if (req.user.es_master_admin) {
-    const headerRaw = (req.headers['x-entidad-id'] || '').toString().trim()
-    if (headerRaw) {
-      req.entidad_id = parseInt(headerRaw)
+    const headerEntidad = (req.headers['x-entidad-id'] || '').toString().trim()
+    if (headerEntidad) {
+      req.entidad_id = headerEntidad
       return next()
     }
   }
@@ -27,8 +27,7 @@ export function tenantMiddleware(req, res, next) {
   }
 
   // 🔥 Inyectamos en request
-  // ✅ FIX: guardar como integer, no string
-  req.entidad_id = parseInt(entidadId)
+  req.entidad_id = entidadId
 
   next()
 }
