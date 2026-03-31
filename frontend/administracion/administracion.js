@@ -32,9 +32,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 🔥 Botón salir de gestión
     const btnSalir = document.createElement('button')
-    btnSalir.textContent = '← Salir de gestión'
-    btnSalir.className = 'btn-secondary'
-    btnSalir.style.marginTop = '12px'
+    btnSalir.textContent = '← Volver a Entidades'
+    btnSalir.style.cssText = `
+      margin-top: 16px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      background: #dc2626;
+      color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+      border: none;
+      cursor: pointer;
+      transition: all .2s;
+    `
+
+    btnSalir.addEventListener('mouseenter', () => {
+      btnSalir.style.background = '#b91c1c'
+      btnSalir.style.boxShadow = '0 6px 16px rgba(220,38,38,0.4)'
+    })
+
+    btnSalir.addEventListener('mouseleave', () => {
+      btnSalir.style.background = '#dc2626'
+      btnSalir.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3)'
+    })
 
     btnSalir.addEventListener('click', () => {
       sessionStorage.removeItem('gestion_entidad_id')
