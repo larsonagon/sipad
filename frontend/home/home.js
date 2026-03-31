@@ -101,48 +101,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const esMaster = user.es_master_admin === true;
 
   // =====================================================
-  // 🔥 PERMISOS CLAROS POR ROL (SIN AMBIGÜEDADES)
+  // 🔥 MODELO CORREGIDO (POR RANGOS, NO IGUALDAD)
   // =====================================================
 
-  let puedeICAF = false;
-  let puedeInformes = false;
-  let puedeTRDAI = false;
-  let puedeAdmin = false;
+  const puedeICAF = nivel >= 10;
 
-  // 🔴 SUPER ADMIN
-  if (esMaster) {
-    puedeICAF = true;
-    puedeInformes = true;
-    puedeTRDAI = true;
-    puedeAdmin = true;
+  let puedeInformes =
+    (nivel >= 50 && nivel < 90) || esMaster;
+
+  let puedeTRDAI =
+    (nivel >= 70 && nivel < 90) || esMaster;
+
+  const puedeAdmin =
+    (nivel >= 90);
+
+  // 🔥 ADMINISTRADOR (90+) NO VE INFORMES NI TRD
+  if (nivel >= 90 && !esMaster) {
+    puedeInformes = false;
+    puedeTRDAI = false;
   }
 
-  // 🟠 ADMINISTRADOR (nivel 90)
-  else if (nivel === 90) {
-    puedeICAF = true;
-    puedeAdmin = true;
-  }
-
-  // 🔵 ARCHIVISTA (nivel 70)
-  else if (nivel === 70) {
-    puedeICAF = true;
-    puedeInformes = true;
-    puedeTRDAI = true;
-  }
-
-  // 🟣 JEFE (nivel 50)
-  else if (nivel === 50) {
-    puedeICAF = true;
-    puedeInformes = true;
-  }
-
-  // ⚪ GENERAL
-  else if (nivel >= 10) {
-    puedeICAF = true;
-  }
-
-  // =====================================================
-  // ELEMENTOS
   // =====================================================
 
   const cardSegtec = document.getElementById('cardSegtec');
@@ -152,19 +130,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardInformes = document.getElementById('cardInformes');
 
   // =====================================================
-  // 🔥 CONTROL VISUAL CORRECTO (SIN ROMPER CSS)
+  // 🔥 CONTROL VISUAL (SEGURO Y PREDECIBLE)
   // =====================================================
 
-  function toggle(el, condition) {
-    if (!el) return;
-    el.style.display = condition ? '' : 'none';
+  if (cardSegtec) {
+    cardSegtec.style.display = puedeICAF ? 'block' : 'none';
   }
 
-  toggle(cardSegtec, puedeICAF);
-  toggle(cardInformes, puedeInformes);
-  toggle(cardTRDAI, puedeTRDAI);
-  toggle(cardTRD, puedeTRDAI);
-  toggle(cardAdmin, puedeAdmin);
+  if (cardInformes) {
+    cardInformes.style.display = puedeInformes ? 'block' : 'none';
+  }
+
+  if (cardTRDAI) {
+    cardTRDAI.style.display = puedeTRDAI ? 'block' : 'none';
+  }
+
+  if (cardTRD) {
+    cardTRD.style.display = puedeTRDAI ? 'block' : 'none';
+  }
+
+  if (cardAdmin) {
+    cardAdmin.style.display = puedeAdmin ? 'block' : 'none';
+  }
 
   // =====================================================
   // NAVEGACIÓN (SIN CAMBIOS)
