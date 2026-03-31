@@ -101,22 +101,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const esMaster = user.es_master_admin === true;
 
   // =====================================================
-  // 🔥 NUEVO MODELO DE PERMISOS (ALINEADO AL BACKEND)
+  // 🔥 MODELO DEFINITIVO DE PERMISOS
   // =====================================================
 
   const puedeICAF = nivel >= 10;
 
-  const puedeInformes =
-    nivel === 70 || // Archivista
-    nivel === 50 || // Jefe
-    esMaster;
+  let puedeInformes =
+    (nivel === 70 || nivel === 50 || esMaster);
 
-  const puedeTRDAI =
-    nivel === 70 || // Archivista
-    esMaster;
+  let puedeTRDAI =
+    (nivel === 70 || esMaster);
 
   const puedeAdmin =
-    nivel >= 90; // Administrador y superior
+    (nivel >= 90);
+
+  // 🔥 REGLA CRÍTICA: ADMINISTRADOR NO VE INFORMES NI TRD
+  if (nivel === 90 && !esMaster) {
+    puedeInformes = false;
+    puedeTRDAI = false;
+  }
 
   // =====================================================
 
@@ -127,28 +130,27 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardInformes = document.getElementById('cardInformes');
 
   // =====================================================
-  // 🔥 CONTROL VISUAL (SIN ROMPER NADA EXISTENTE)
+  // 🔥 CONTROL VISUAL FUERTE (DETERMINÍSTICO)
   // =====================================================
 
-  if (!puedeICAF && cardSegtec) {
-    cardSegtec.style.display = 'none';
+  if (cardSegtec) {
+    cardSegtec.style.display = puedeICAF ? 'block' : 'none';
   }
 
-  if (!puedeInformes && cardInformes) {
-    cardInformes.style.display = 'none';
+  if (cardInformes) {
+    cardInformes.style.display = puedeInformes ? 'block' : 'none';
   }
 
-  if (!puedeTRDAI && cardTRDAI) {
-    cardTRDAI.style.display = 'none';
+  if (cardTRDAI) {
+    cardTRDAI.style.display = puedeTRDAI ? 'block' : 'none';
   }
 
-  // TRD normal (no IA) → mismo criterio que TRDAI por ahora
-  if (!puedeTRDAI && cardTRD) {
-    cardTRD.style.display = 'none';
+  if (cardTRD) {
+    cardTRD.style.display = puedeTRDAI ? 'block' : 'none';
   }
 
-  if (!puedeAdmin && cardAdmin) {
-    cardAdmin.style.display = 'none';
+  if (cardAdmin) {
+    cardAdmin.style.display = puedeAdmin ? 'block' : 'none';
   }
 
   // =====================================================
