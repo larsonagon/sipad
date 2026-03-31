@@ -6,7 +6,20 @@ function getUserFromToken() {
   if (!token) return null;
 
   try {
-    return JSON.parse(atob(token.split('.')[1]));
+    const decoded = JSON.parse(atob(token.split('.')[1]));
+
+    // 🔥 NORMALIZAR CAMPOS
+    return {
+      ...decoded,
+      nivel_acceso: Number(
+        decoded.nivel_acceso ??
+        decoded.nivel ??
+        decoded.level ??
+        0
+      ),
+      es_master_admin: decoded.es_master_admin === true
+    };
+
   } catch (error) {
     return null;
   }
@@ -53,9 +66,6 @@ async function cargarSelectorEntidad(user) {
     select.addEventListener('change', () => {
 
       sessionStorage.setItem('entidad_id', select.value);
-
-      console.log('Entidad activa:', select.value);
-
       location.reload();
 
     });
@@ -80,46 +90,33 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = getUserFromToken();
 
   if (!user) {
-
-    sessionStorage.removeItem('token')
-    sessionStorage.removeItem('user')
-
+    sessionStorage.clear();
     window.location.href = '/';
     return;
-
   }
 
-  try {
-    renderHeader('home')
-  } catch (error) {
-    console.error('Error renderizando header:', error);
-  }
-
+  renderHeader('home');
   cargarSelectorEntidad(user);
 
-  const nivel = Number(user.nivel_acceso || 0);
-  const esMaster = user.es_master_admin === true;
+  const nivel = user.nivel_acceso;
+  const esMaster = user.es_master_admin;
+
+  console.log('DEBUG USER:', user);
 
   // =====================================================
-  // 🔥 MODELO CORREGIDO (POR RANGOS, NO IGUALDAD)
+  // 🔥 PERMISOS CLAROS Y SIN ERRORES
   // =====================================================
 
-  const puedeICAF = nivel >= 10;
-
-  let puedeInformes =
-    (nivel >= 50 && nivel < 90) || esMaster;
-
-  let puedeTRDAI =
-    (nivel >= 70 && nivel < 90) || esMaster;
+  const puedeICAF = true;
 
   const puedeAdmin =
-    (nivel >= 90);
+    esMaster || nivel >= 90;
 
-  // 🔥 ADMINISTRADOR (90+) NO VE INFORMES NI TRD
-  if (nivel >= 90 && !esMaster) {
-    puedeInformes = false;
-    puedeTRDAI = false;
-  }
+  const puedeInformes =
+    esMaster || (nivel >= 50 && nivel < 90);
+
+  const puedeTRDAI =
+    esMaster || (nivel >= 70 && nivel < 90);
 
   // =====================================================
 
@@ -129,62 +126,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardAdmin = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
 
-  // =====================================================
-  // 🔥 CONTROL VISUAL (SEGURO Y PREDECIBLE)
+  if (cardSegtec) cardSegtec.style.display = puedeICAF ? 'block' : 'none';
+  if (cardAdmin) cardAdmin.style.display = puedeAdmin ? 'block' : 'none';
+  if (cardInformes) cardInformes.style.display = puedeInformes ? 'block' : 'none';
+  if (cardTRDAI) cardTRDAI.style.display = puedeTRDAI ? 'block' : 'none';
+  if (cardTRD) cardTRD.style.display = puedeTRDAI ? 'block' : 'none';
+
   // =====================================================
 
   if (cardSegtec) {
-    cardSegtec.style.display = puedeICAF ? 'block' : 'none';
-  }
-
-  if (cardInformes) {
-    cardInformes.style.display = puedeInformes ? 'block' : 'none';
-  }
-
-  if (cardTRDAI) {
-    cardTRDAI.style.display = puedeTRDAI ? 'block' : 'none';
-  }
-
-  if (cardTRD) {
-    cardTRD.style.display = puedeTRDAI ? 'block' : 'none';
+    cardSegtec.onclick = () => window.location.href = '/segtec/segtec.html';
   }
 
   if (cardAdmin) {
-    cardAdmin.style.display = puedeAdmin ? 'block' : 'none';
-  }
-
-  // =====================================================
-  // NAVEGACIÓN (SIN CAMBIOS)
-  // =====================================================
-
-  if (cardSegtec) {
-    cardSegtec.addEventListener('click', () => {
-      window.location.href = '/segtec/segtec.html';
-    });
-  }
-
-  if (cardTRD) {
-    cardTRD.addEventListener('click', () => {
-      alert('TRD en construcción');
-    });
-  }
-
-  if (cardTRDAI) {
-    cardTRDAI.addEventListener('click', () => {
-      window.location.href = '/trd-ai/trd-ai-dashboard.html';
-    });
-  }
-
-  if (cardAdmin) {
-    cardAdmin.addEventListener('click', () => {
-      window.location.href = '/administracion/index.html';
-    });
+    cardAdmin.onclick = () => window.location.href = '/administracion/index.html';
   }
 
   if (cardInformes) {
-    cardInformes.addEventListener('click', () => {
-      window.location.href = '/informes/index.html';
-    });
+    cardInformes.onclick = () => window.location.href = '/informes/index.html';
+  }
+
+  if (cardTRDAI) {
+    cardTRDAI.onclick = () => window.location.href = '/trd-ai/trd-ai-dashboard.html';
+  }
+
+  if (cardTRD) {
+    cardTRD.onclick = () => alert('TRD en construcción');
   }
 
 });
