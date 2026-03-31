@@ -165,19 +165,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   }
 
   // ======================================================
-  // 🔥 BANNER DE GESTIÓN (cuando SuperAdmin opera en otra entidad)
-  // ======================================================
-
-  const bannerGestion = gestionEntidadNombre
-    ? `
-      <div class="pig-gestion-banner">
-        🏢 Gestionando: <strong>${gestionEntidadNombre}</strong>
-        <button type="button" id="btnSalirGestion">✕ Salir de gestión</button>
-      </div>
-    `
-    : ''
-
-  // ======================================================
   // HEADER
   // ======================================================
 
@@ -185,8 +172,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   header.className = 'pig-header'
 
   header.innerHTML = `
-    ${bannerGestion}
-
     <div class="pig-header-inner">
 
       <!-- FILA SUPERIOR -->
@@ -301,17 +286,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   `
 
   document.body.prepend(header)
-
-  // =========================
-  // SALIR DE GESTIÓN
-  // =========================
-
-  document.getElementById('btnSalirGestion')
-    ?.addEventListener('click', () => {
-      sessionStorage.removeItem('gestion_entidad_id')
-      sessionStorage.removeItem('gestion_entidad_nombre')
-      window.location.href = '/administracion/entidades/index.html'
-    })
 
   // =========================
   // NAVEGACIÓN

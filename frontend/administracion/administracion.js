@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderHeader('Administración', gestionEntidadNombre)
 
   // =========================
-  // 🔥 TÍTULO DINÁMICO
+  // 🔥 TÍTULO DINÁMICO + BOTÓN SALIR
   // =========================
 
   if (gestionEntidadNombre) {
@@ -29,6 +29,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (h1) h1.textContent = `Gestionando: ${gestionEntidadNombre}`
     if (p) p.textContent = 'Configura la estructura interna de esta entidad: dependencias, cargos, niveles, roles y usuarios.'
+
+    // 🔥 Botón salir de gestión
+    const btnSalir = document.createElement('button')
+    btnSalir.textContent = '← Salir de gestión'
+    btnSalir.className = 'btn-secondary'
+    btnSalir.style.marginTop = '12px'
+
+    btnSalir.addEventListener('click', () => {
+      sessionStorage.removeItem('gestion_entidad_id')
+      sessionStorage.removeItem('gestion_entidad_nombre')
+      window.location.href = '/administracion/entidades/index.html'
+    })
+
+    document.querySelector('.module-header').appendChild(btnSalir)
 
   }
 
@@ -45,14 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnCargos) btnCargos.style.display = 'none'
   }
 
-  // Entidades solo master admin
-  if (!esMaster) {
-    const btnEntidades = document.getElementById('btnEntidades')
-    if (btnEntidades) btnEntidades.style.display = 'none'
-  }
-
-  // 🔥 En modo gestión ocultar tarjeta Entidades
-  if (gestionEntidadNombre) {
+  // Entidades solo master admin y solo fuera de modo gestión
+  if (!esMaster || gestionEntidadNombre) {
     const btnEntidades = document.getElementById('btnEntidades')
     if (btnEntidades) btnEntidades.style.display = 'none'
   }
