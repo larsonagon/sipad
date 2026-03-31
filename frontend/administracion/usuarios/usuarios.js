@@ -13,7 +13,15 @@ function getHeaders(extra = {}) {
     'Authorization': `Bearer ${getToken()}`,
     ...extra
   }
-  if (gestionEntidadId) headers['X-Entidad-Id'] = gestionEntidadId
+
+  // 🔥 FIX (NO ROMPE NADA)
+  const entidad =
+    gestionEntidadId ||
+    sessionStorage.getItem('entidad_id') ||
+    sessionStorage.getItem('gestion_entidad_id')
+
+  if (entidad) headers['X-Entidad-Id'] = entidad
+
   return headers
 }
 
@@ -27,7 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  gestionEntidadId = sessionStorage.getItem('gestion_entidad_id') || null
+  // 🔥 FIX AQUÍ (CLAVE)
+  gestionEntidadId =
+    sessionStorage.getItem('entidad_id') ||
+    sessionStorage.getItem('gestion_entidad_id') ||
+    null
+
   gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
 
   renderHeader('Administración', gestionEntidadNombre)
@@ -234,9 +247,7 @@ function cerrarModal() {
 }
 
 window.editarUsuario = async function(id) {
-
   try {
-
     const res = await fetch(`/api/usuarios/${id}`, { headers: getHeaders() })
     const json = await res.json()
     const u = json.data ?? json
@@ -259,7 +270,6 @@ window.editarUsuario = async function(id) {
     document.getElementById('inputDocumento').disabled = true
     document.getElementById('inputUsername').disabled = true
     document.getElementById('modalUsuario').classList.remove('hidden')
-
   } catch (err) {
     console.error('Error cargando usuario', err)
   }
@@ -334,4 +344,4 @@ async function guardarUsuario(e) {
     console.error(err)
     alert('No fue posible guardar el usuario.')
   }
-}
+} 
