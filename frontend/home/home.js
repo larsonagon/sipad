@@ -6,20 +6,7 @@ function getUserFromToken() {
   if (!token) return null;
 
   try {
-    const decoded = JSON.parse(atob(token.split('.')[1]));
-
-    // 🔥 NORMALIZAR CAMPOS
-    return {
-      ...decoded,
-      nivel_acceso: Number(
-        decoded.nivel_acceso ??
-        decoded.nivel ??
-        decoded.level ??
-        0
-      ),
-      es_master_admin: decoded.es_master_admin === true
-    };
-
+    return JSON.parse(atob(token.split('.')[1]));
   } catch (error) {
     return null;
   }
@@ -66,6 +53,7 @@ async function cargarSelectorEntidad(user) {
     select.addEventListener('change', () => {
 
       sessionStorage.setItem('entidad_id', select.value);
+
       location.reload();
 
     });
@@ -95,29 +83,64 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  renderHeader('home');
+  try {
+    renderHeader('home')
+  } catch (error) {
+    console.error('Error renderizando header:', error);
+  }
+
   cargarSelectorEntidad(user);
 
-  const nivel = user.nivel_acceso;
-  const esMaster = user.es_master_admin;
-
-  console.log('DEBUG USER:', user);
+  // 🔥 NORMALIZACIÓN REAL
+  const nivel = Number(user.nivel_acceso || 0);
+  const esMaster = user.es_master_admin === true;
 
   // =====================================================
-  // 🔥 PERMISOS CLAROS Y SIN ERRORES
+  // 🔥 PERMISOS EXACTOS (SIN >=, SIN AMBIGÜEDAD)
   // =====================================================
 
-  const puedeICAF = true;
+  let puedeICAF = false;
+  let puedeInformes = false;
+  let puedeTRDAI = false;
+  let puedeAdmin = false;
 
-  const puedeAdmin =
-    esMaster || nivel >= 90;
+  if (esMaster) {
+    puedeICAF = true;
+    puedeInformes = true;
+    puedeTRDAI = true;
+    puedeAdmin = true;
+  } else {
 
-  const puedeInformes =
-    esMaster || (nivel >= 50 && nivel < 90);
+    switch (nivel) {
 
-  const puedeTRDAI =
-    esMaster || (nivel >= 70 && nivel < 90);
+      case 90: // ADMINISTRADOR
+        puedeICAF = true;
+        puedeAdmin = true;
+        break;
 
+      case 70: // ARCHIVISTA
+        puedeICAF = true;
+        puedeInformes = true;
+        puedeTRDAI = true;
+        break;
+
+      case 50: // JEFE
+        puedeICAF = true;
+        puedeInformes = true;
+        break;
+
+      case 10: // GENERAL
+        puedeICAF = true;
+        break;
+
+      default:
+        break;
+    }
+
+  }
+
+  // =====================================================
+  // 🔥 UI (NO ROMPE CARDS)
   // =====================================================
 
   const cardSegtec = document.getElementById('cardSegtec');
@@ -126,32 +149,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardAdmin = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
 
-  if (cardSegtec) cardSegtec.style.display = puedeICAF ? 'block' : 'none';
-  if (cardAdmin) cardAdmin.style.display = puedeAdmin ? 'block' : 'none';
-  if (cardInformes) cardInformes.style.display = puedeInformes ? 'block' : 'none';
-  if (cardTRDAI) cardTRDAI.style.display = puedeTRDAI ? 'block' : 'none';
-  if (cardTRD) cardTRD.style.display = puedeTRDAI ? 'block' : 'none';
-
-  // =====================================================
-
   if (cardSegtec) {
-    cardSegtec.onclick = () => window.location.href = '/segtec/segtec.html';
-  }
-
-  if (cardAdmin) {
-    cardAdmin.onclick = () => window.location.href = '/administracion/index.html';
+    cardSegtec.style.display = puedeICAF ? '' : 'none';
   }
 
   if (cardInformes) {
-    cardInformes.onclick = () => window.location.href = '/informes/index.html';
+    cardInformes.style.display = puedeInformes ? '' : 'none';
   }
 
   if (cardTRDAI) {
-    cardTRDAI.onclick = () => window.location.href = '/trd-ai/trd-ai-dashboard.html';
+    cardTRDAI.style.display = puedeTRDAI ? '' : 'none';
   }
 
   if (cardTRD) {
-    cardTRD.onclick = () => alert('TRD en construcción');
+    cardTRD.style.display = puedeTRDAI ? '' : 'none';
+  }
+
+  if (cardAdmin) {
+    cardAdmin.style.display = puedeAdmin ? '' : 'none';
+  }
+
+  // =====================================================
+  // NAVEGACIÓN
+  // =====================================================
+
+  if (cardSegtec) {
+    cardSegtec.onclick = () => {
+      window.location.href = '/segtec/segtec.html';
+    };
+  }
+
+  if (cardTRD) {
+    cardTRD.onclick = () => {
+      alert('TRD en construcción');
+    };
+  }
+
+  if (cardTRDAI) {
+    cardTRDAI.onclick = () => {
+      window.location.href = '/trd-ai/trd-ai-dashboard.html';
+    };
+  }
+
+  if (cardAdmin) {
+    cardAdmin.onclick = () => {
+      window.location.href = '/administracion/index.html';
+    };
+  }
+
+  if (cardInformes) {
+    cardInformes.onclick = () => {
+      window.location.href = '/informes/index.html';
+    };
   }
 
 });

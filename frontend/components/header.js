@@ -117,30 +117,44 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   }
 
   const nivelAcceso = Number(user?.nivel_acceso || 0)
-
   const esMaster = user?.es_master_admin === true
 
-  const esAdmin =
-    esMaster ||
-    nivelAcceso >= 90
-
-  const esRolGeneral =
-    (user?.rol || '').toLowerCase() === 'general'
-
   // ======================================================
-  // 🔥 AJUSTE REAL DE PERMISOS (SIN ROMPER NADA)
+  // 🔥 MODELO EXACTO (SIN >=)
   // ======================================================
 
-  let puedeVerInformes =
-    (nivelAcceso === 70 || nivelAcceso === 50) || esMaster
+  let puedeAdmin = false
+  let puedeTRDAI = false
+  let puedeVerInformes = false
+  let esGeneral = false
 
-  let puedeVerTRDAI =
-    (nivelAcceso === 70) || esMaster
+  if (esMaster) {
+    puedeAdmin = true
+    puedeTRDAI = true
+    puedeVerInformes = true
+  } else {
 
-  // 🔴 REGLA CRÍTICA: ADMINISTRADOR SOLO ICAF + ADMIN
-  if (nivelAcceso === 90 && !esMaster) {
-    puedeVerInformes = false
-    puedeVerTRDAI = false
+    switch (nivelAcceso) {
+
+      case 90: // ADMINISTRADOR
+        puedeAdmin = true
+        break
+
+      case 70: // ARCHIVISTA
+        puedeTRDAI = true
+        puedeVerInformes = true
+        break
+
+      case 50: // JEFE
+        puedeVerInformes = true
+        break
+
+      case 10: // GENERAL
+        esGeneral = true
+        break
+
+    }
+
   }
 
   // ======================================================
@@ -191,10 +205,8 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   header.innerHTML = `
     <div class="pig-header-inner">
 
-      <!-- FILA SUPERIOR -->
       <div class="pig-header-top">
 
-        <!-- IZQUIERDA -->
         <div class="pig-header-left">
 
           <div class="pig-title">
@@ -208,7 +220,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         </div>
 
-        <!-- DERECHA (BOTONES) -->
         <div class="pig-header-right">
 
           <nav class="pig-nav">
@@ -219,7 +230,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
             </button>
 
             ${
-              !esRolGeneral && esAdmin
+              puedeAdmin
                 ? `
                 <button type="button" id="btnAdmin"
                   ${modulo === 'Administración' ? 'class="active"' : ''}>
@@ -235,7 +246,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
             </button>
 
             ${
-              !esRolGeneral && puedeVerTRDAI
+              puedeTRDAI
                 ? `
                 <button type="button" id="btnTRDAI"
                   ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
@@ -246,7 +257,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
             }
 
             ${
-              !esRolGeneral && puedeVerInformes
+              puedeVerInformes
                 ? `
                 <button type="button" id="btnInformes"
                   ${modulo === 'Informes' ? 'class="active"' : ''}>
@@ -262,7 +273,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
       </div>
 
-      <!-- FILA INFERIOR (USUARIO) -->
       <div class="pig-header-bottom">
 
         <div class="pig-user">
