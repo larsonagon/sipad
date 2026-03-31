@@ -84,7 +84,7 @@ router.get(
 
 router.post(
   '/',
-  requireLevel(100),
+  requireLevel(90),
   async (req, res) => {
 
     try {
@@ -171,7 +171,7 @@ router.post(
 
 router.patch(
   '/:id',
-  requireLevel(100),
+  requireLevel(90),
   async (req, res) => {
 
     try {

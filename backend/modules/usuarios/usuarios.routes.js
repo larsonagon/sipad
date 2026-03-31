@@ -144,7 +144,7 @@ router.put(
 
 router.get(
   '/',
-  requireLevel(80),
+  requireLevel(90),
   async (req, res) => {
 
     try {
@@ -202,7 +202,7 @@ router.get(
 
 router.get(
   '/:id',
-  requireLevel(80),
+  requireLevel(90),
   async (req, res) => {
 
     try {
@@ -242,7 +242,7 @@ router.get(
 
 router.post(
   '/',
-  requireLevel(80),
+  requireLevel(90),
   async (req, res) => {
 
     try {
@@ -344,7 +344,7 @@ router.post(
 
 router.put(
   '/:id',
-  requireLevel(80),
+  requireLevel(90),
   async (req, res) => {
 
     try {
