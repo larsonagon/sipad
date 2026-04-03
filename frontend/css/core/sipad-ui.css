@@ -530,6 +530,11 @@ button{
   font-weight:600;
 }
 
+/* ✅ Todas las celdas centradas por defecto */
+.table td{
+  text-align:center;
+}
+
 /* ✅ Primera columna alineada a la izquierda */
 .table th:first-child,
 .table td:first-child{
