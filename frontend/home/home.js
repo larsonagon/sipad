@@ -159,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cardTRDAI)    cardTRDAI.style.display     = puedeTRDAI    ? '' : 'none';
   if (cardTRD)      cardTRD.style.display       = puedeTRDAI    ? '' : 'none';
   if (cardAdmin)    cardAdmin.style.display     = puedeAdmin    ? '' : 'none';
+  // ✅ Mostrar grid solo después de aplicar permisos (evita flash)
+  const grid = document.querySelector(".module-grid");
+  if (grid) grid.style.visibility = "visible";
 
   // =====================================================
   // NAVEGACIÓN

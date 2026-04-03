@@ -8,204 +8,90 @@
 
   <title>SIPAD – Panel principal</title>
 
-  <!-- ========================= -->
-  <!-- CORE GLOBAL UI -->
-  <!-- ========================= -->
   <link rel="stylesheet" href="/css/core/sipad-ui.css">
+
+  <style>
+    /* ✅ Ocultar todo el contenido hasta que JS evalúe permisos */
+    .module-grid { visibility: hidden; }
+  </style>
 
 </head>
 
-
 <body>
 
-  <!-- HEADER DINÁMICO -->
   <div id="header"></div>
-
-
-  <!-- ========================= -->
-  <!-- CONTENIDO PRINCIPAL -->
-  <!-- ========================= -->
 
   <main id="homePage" class="module-page">
 
     <div class="module-header centered">
-
       <h1>Panel principal</h1>
-
       <p>Seleccione un módulo para continuar.</p>
-
     </div>
 
-
     <div class="module-content">
-
       <div class="module-grid">
 
-
-        <!-- ===================================== -->
-        <!-- SEGTEC -->
-        <!-- ===================================== -->
-
-        <div class="module-card"
-             id="cardSegtec"
-             role="button"
-             tabindex="0">
-
+        <div class="module-card" id="cardSegtec" role="button" tabindex="0" style="display:none">
           <div class="module-icon">📊</div>
-
           <h3>ICAF</h3>
-
           <p>Instrumento de caracterización de actividades funcionales</p>
-
         </div>
 
-
-        <!-- ===================================== -->
-        <!-- TRD -->
-        <!-- ===================================== -->
-
-        <div class="module-card"
-             id="cardTRD"
-             role="button"
-             tabindex="0">
-
+        <div class="module-card" id="cardTRD" role="button" tabindex="0" style="display:none">
           <div class="module-icon">📁</div>
-
           <h3>TRD</h3>
-
           <p>Tablas de Retención Documental</p>
-
         </div>
 
-
-        <!-- ===================================== -->
-        <!-- TRD-AI -->
-        <!-- ===================================== -->
-
-        <div class="module-card"
-             id="cardTRDAI"
-             role="button"
-             tabindex="0">
-
+        <div class="module-card" id="cardTRDAI" role="button" tabindex="0" style="display:none">
           <div class="module-icon">🤖</div>
-
           <h3>TRD-AI</h3>
-
           <p>Clasificación archivística asistida</p>
-
         </div>
 
-
-        <!-- ===================================== -->
-        <!-- INFORMES -->
-        <!-- ===================================== -->
-
-        <div class="module-card"
-             id="cardInformes"
-             role="button"
-             tabindex="0">
-
+        <div class="module-card" id="cardInformes" role="button" tabindex="0" style="display:none">
           <div class="module-icon">📑</div>
-
           <h3>Informes</h3>
-
           <p>Generación de reportes y análisis archivístico</p>
-
         </div>
 
-
-        <!-- ===================================== -->
-        <!-- ADMINISTRACIÓN -->
-        <!-- ===================================== -->
-
-        <div class="module-card"
-             id="cardAdmin"
-             role="button"
-             tabindex="0">
-
+        <div class="module-card" id="cardAdmin" role="button" tabindex="0" style="display:none">
           <div class="module-icon">⚙️</div>
-
           <h3>Administración</h3>
-
           <p>Gestión de usuarios, roles y dependencias</p>
-
         </div>
-
 
       </div>
-
     </div>
 
   </main>
 
-
-
-  <!-- ===================================== -->
-  <!-- MODAL CAMBIAR PASSWORD -->
-  <!-- ===================================== -->
-
   <div id="modalPassword" class="modal hidden">
-
     <div class="modal-content small">
-
       <h3>Cambiar contraseña</h3>
-
       <form id="formCambiarPassword">
-
         <div class="form-group">
           <label>Contraseña actual</label>
           <input type="password" id="passwordActual" required>
         </div>
-
         <div class="form-group">
           <label>Nueva contraseña</label>
           <input type="password" id="passwordNueva" required>
         </div>
-
         <div class="form-group">
           <label>Confirmar nueva contraseña</label>
           <input type="password" id="passwordConfirmar" required>
         </div>
-
         <div class="modal-actions">
-
-          <button
-            type="button"
-            id="btnCancelarPassword"
-            class="btn-secondary">
-            Cancelar
-          </button>
-
-          <button
-            type="submit"
-            class="btn-primary">
-            Actualizar contraseña
-          </button>
-
+          <button type="button" id="btnCancelarPassword" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Actualizar contraseña</button>
         </div>
-
       </form>
-
     </div>
-
   </div>
 
-
-
-  <!-- ========================= -->
-  <!-- JS HOME -->
-  <!-- ========================= -->
-
   <script type="module" src="/home/home.js"></script>
-
-
-  <!-- ========================= -->
-  <!-- MODAL PASSWORD -->
-  <!-- ========================= -->
-
   <script src="/components/password-modal.js"></script>
 
-
 </body>
-
 </html>
