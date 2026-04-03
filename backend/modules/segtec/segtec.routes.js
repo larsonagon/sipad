@@ -30,7 +30,6 @@ const trdAIService    = TRDAIService(trdAIRepository)
 const actividadesRepository = SEGTECActividadesRepository(db)
 const validacionRepository  = SEGTECValidacionTecnicaRepository(db)
 
-// ✅ FIX 1: SEGTECActividadesService recibe 3 parámetros
 const actividadesService = SEGTECActividadesService(
   actividadesRepository,
   validacionRepository,
@@ -41,7 +40,6 @@ const actividadesController = SEGTECActividadesController(
   actividadesService
 )
 
-// ✅ FIX 2: SEGTECValidacionTecnicaService recibe 2 parámetros
 const validacionService = SEGTECValidacionTecnicaService(
   validacionRepository,
   actividadesRepository
@@ -51,16 +49,12 @@ const validacionController = SEGTECValidacionTecnicaController(
   validacionService
 )
 
-// =====================================================
-// CONTROLADOR PDF
-// =====================================================
-
 const pdfController = SEGTECPDFController(
   actividadesService
 )
 
 // =====================================================
-// OBTENER CONFIGURACIÓN FUNCIONAL
+// CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
 router.get('/configuracion', async (req, res) => {
@@ -101,10 +95,6 @@ router.get('/configuracion', async (req, res) => {
 
 })
 
-// =====================================================
-// GUARDAR CONFIGURACIÓN FUNCIONAL
-// =====================================================
-
 router.post('/configuracion', async (req, res) => {
 
   try {
@@ -136,7 +126,6 @@ router.post('/configuracion', async (req, res) => {
       descripcion_funcional
     } = req.body
 
-    // Desactivar versión anterior
     await db.run(
       `UPDATE segtec_configuracion_dependencia
        SET activa = 0
@@ -144,7 +133,6 @@ router.post('/configuracion', async (req, res) => {
       [idDependencia]
     )
 
-    // Obtener próxima versión
     const ultima = await db.get(
       `SELECT COALESCE(MAX(version), 0) AS max_version
        FROM segtec_configuracion_dependencia
@@ -169,9 +157,7 @@ router.post('/configuracion', async (req, res) => {
         creado_por, created_at)
        VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
-        nuevoId,
-        idDependencia,
-        nuevaVersion,
+        nuevoId, idDependencia, nuevaVersion,
         tipo_funcion          || null,
         nivel_decisorio       || null,
         recibe_solicitudes    ? 1 : 0,
@@ -197,72 +183,56 @@ router.post('/configuracion', async (req, res) => {
 })
 
 // =====================================================
-// ACTIVIDADES
+// ACTIVIDADES – LISTAR Y CREAR
 // =====================================================
 
-// ✅ FIX 3: listarPorDependencia → listar
-router.get(
-  '/actividades',
-  actividadesController.listar
-)
+router.get('/actividades', actividadesController.listar)
 
-router.post(
-  '/actividades',
-  actividadesController.crear
-)
+router.post('/actividades', actividadesController.crear)
 
-router.delete(
-  '/actividades/:id',
-  actividadesController.eliminar
-)
-
-// ✅ FIX 4: actualizarCamposTecnicos → actualizar
-router.put(
-  '/actividades/:id/tecnico',
-  actividadesController.actualizar
-)
-
-router.get(
-  '/actividades/:id',
-  actividadesController.obtenerPorId
-)
+router.delete('/actividades/:id', actividadesController.eliminar)
 
 // =====================================================
-// PDF ACTIVIDAD
-// ⚠️ SIN JWT PARA PERMITIR DESCARGA DIRECTA
+// ACTIVIDAD POR ID
 // =====================================================
 
-router.get(
-  '/actividades/:id/pdf',
-  pdfController.generar
-)
+router.get('/actividades/:id', actividadesController.obtenerPorId)
 
 // =====================================================
-// ANÁLISIS SEG-TEC
+// ✅ BLOQUES (rutas que el frontend usa al guardar)
 // =====================================================
 
-router.post(
-  '/actividades/:id/analizar',
-  actividadesController.analizar
-)
+router.put('/actividades/:id/bloque1', actividadesController.actualizarBloque1)
+
+router.put('/actividades/:id/bloque2', actividadesController.actualizarBloque2)
+
+router.put('/actividades/:id/bloque3', actividadesController.actualizarBloque3)
 
 // =====================================================
-// HISTÓRICO DE ANÁLISIS
+// RUTA LEGACY (se mantiene por compatibilidad)
 // =====================================================
 
-router.get(
-  '/actividades/:id/analisis',
-  actividadesController.listarAnalisis
-)
+router.put('/actividades/:id/tecnico', actividadesController.actualizar)
 
 // =====================================================
-// COMPLETAR ACTIVIDAD
+// PDF
 // =====================================================
 
-router.post(
-  '/actividades/:id/completar',
-  actividadesController.marcarCompleta
-)
+router.get('/actividades/:id/pdf', pdfController.generar)
+
+// =====================================================
+// ANÁLISIS
+// =====================================================
+
+router.post('/actividades/:id/analizar', actividadesController.analizar)
+
+router.get('/actividades/:id/analisis', actividadesController.listarAnalisis)
+
+// =====================================================
+// COMPLETAR
+// =====================================================
+
+router.post('/actividades/:id/completar', actividadesController.marcarCompleta)
 
 // =====================================================
 // VALIDACIÓN TÉCNICA
