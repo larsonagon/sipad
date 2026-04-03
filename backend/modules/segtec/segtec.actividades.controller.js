@@ -9,21 +9,24 @@ export function SEGTECActividadesController(service) {
     if (!req.user) return null
 
     return (
-      req.user.id ||                 // 🔥 PRIORIDAD
-      req.user.usuario_id ||         // 🔥 PRIORIDAD
-      req.user.sub ||                // 🔻 fallback
+      req.user.id ||
+      req.user.usuario_id ||
+      req.user.sub ||
       req.usuarioId ||
       null
     )
   }
 
   function esSuperAdmin(req) {
-
     return (
       req.user?.es_master_admin === 1 ||
       req.user?.es_master_admin === true ||
       req.user?.rol === 'Super Admin'
     )
+  }
+
+  function esArchivista(req) {
+    return req.user?.rol === 'Archivista'
   }
 
   function validarUsuario(req, res) {
@@ -42,7 +45,6 @@ export function SEGTECActividadesController(service) {
   }
 
   function obtenerDependencia(req) {
-
     return (
       req.dependenciaId ||
       req.user?.id_dependencia ||
@@ -65,7 +67,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // NORMALIZAR CAMPOS (ALINEADO CON TABLA)
+  // NORMALIZAR CAMPOS
   // =====================================================
 
   function normalizarCampos(data = {}) {
@@ -131,6 +133,14 @@ export function SEGTECActividadesController(service) {
       const usuarioId = validarUsuario(req, res)
       if (!usuarioId) return
 
+      // ✅ Super Admin no puede crear actividades
+      if (esSuperAdmin(req)) {
+        return res.status(403).json({
+          ok: false,
+          error: 'El Super Admin no puede crear actividades operativas'
+        })
+      }
+
       const dependenciaId = obtenerDependencia(req)
 
       if (!dependenciaId) {
@@ -143,16 +153,13 @@ export function SEGTECActividadesController(service) {
       const data = normalizarCampos(req.body || {})
 
       if (!data.nombre || data.nombre.trim() === '') {
-
         return res.status(400).json({
           ok: false,
           error: 'El nombre de la actividad es obligatorio'
         })
-
       }
 
-      const result =
-        await service.crear(data, dependenciaId, usuarioId)
+      const result = await service.crear(data, dependenciaId, usuarioId)
 
       return res.status(201).json({
         ok: true,
@@ -171,7 +178,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // ACTUALIZAR COMPLETO (FIX REAL)
+  // ACTUALIZAR COMPLETO
   // =====================================================
 
   async function actualizar(req, res) {
@@ -186,8 +193,7 @@ export function SEGTECActividadesController(service) {
 
       const data = normalizarCampos(req.body || {})
 
-      const estado =
-        await service.actualizarCompleto(id, data, usuarioId)
+      const estado = await service.actualizarCompleto(id, data, usuarioId)
 
       return res.status(200).json({
         ok: true,
@@ -206,7 +212,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // OBTENER
+  // OBTENER POR ID
   // =====================================================
 
   async function obtenerPorId(req, res) {
@@ -219,11 +225,9 @@ export function SEGTECActividadesController(service) {
       const { id } = req.params
       if (!validarId(id, res)) return
 
-      const actividad =
-        await service.obtenerPorId(id, usuarioId)
+      const actividad = await service.obtenerPorId(id, usuarioId)
 
       if (!actividad) {
-
         return res.status(404).json({
           ok: false,
           error: 'Actividad no encontrada'
@@ -260,8 +264,7 @@ export function SEGTECActividadesController(service) {
       const { id } = req.params
       if (!validarId(id, res)) return
 
-      const analisis =
-        await service.obtenerAnalisisPorActividad(id)
+      const analisis = await service.obtenerAnalisisPorActividad(id)
 
       return res.status(200).json({
         ok: true,
@@ -280,7 +283,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // BLOQUES (FIX REAL)
+  // BLOQUES
   // =====================================================
 
   async function actualizarBloque1(req, res) {
@@ -366,6 +369,8 @@ export function SEGTECActividadesController(service) {
 
   // =====================================================
   // LISTAR
+  // ✅ FIX: Super Admin y Archivista ven todas las
+  //         actividades de la entidad gestionada
   // =====================================================
 
   async function listar(req, res) {
@@ -375,10 +380,19 @@ export function SEGTECActividadesController(service) {
       const usuarioId = validarUsuario(req, res)
       if (!usuarioId) return
 
-      const esAdmin = esSuperAdmin(req)
+      const esAdmin    = esSuperAdmin(req)
+      const archivista = esArchivista(req)
+      const verTodo    = esAdmin || archivista
 
-      const actividades =
-        await service.listarPorUsuario(usuarioId, esAdmin)
+      // Para Super Admin y Archivista, usar la entidad del contexto actual
+      // Para operativos, null → el repository usa la entidad del usuario
+      const entidadIdExterno = verTodo ? (req.entidad_id || null) : null
+
+      const actividades = await service.listarPorUsuario(
+        usuarioId,
+        verTodo,
+        entidadIdExterno
+      )
 
       return res.status(200).json({
         ok: true,
@@ -426,7 +440,7 @@ export function SEGTECActividadesController(service) {
   }
 
   // =====================================================
-  // ANALIZAR (FIX REAL)
+  // ANALIZAR
   // =====================================================
 
   async function analizar(req, res) {
@@ -436,11 +450,18 @@ export function SEGTECActividadesController(service) {
       const usuarioId = validarUsuario(req, res)
       if (!usuarioId) return
 
+      // ✅ Solo Super Admin y Archivista pueden analizar
+      if (!esSuperAdmin(req) && !esArchivista(req)) {
+        return res.status(403).json({
+          ok: false,
+          error: 'No autorizado para analizar actividades'
+        })
+      }
+
       const { id } = req.params
       if (!validarId(id, res)) return
 
-      const resultado =
-        await service.analizarActividad(id, usuarioId)
+      const resultado = await service.analizarActividad(id, usuarioId)
 
       if (!resultado) {
         return res.status(400).json({
@@ -480,8 +501,7 @@ export function SEGTECActividadesController(service) {
       const { id } = req.params
       if (!validarId(id, res)) return
 
-      const resultado =
-        await service.marcarComoCompleta(id, usuarioId)
+      const resultado = await service.marcarComoCompleta(id, usuarioId)
 
       return res.status(200).json({
         ok: true,

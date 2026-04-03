@@ -155,14 +155,15 @@ export function SEGTECActividadesService(
 
   // =====================================================
   // LISTAR
+  // ✅ FIX: acepta entidadIdExterno para Super Admin
   // =====================================================
 
-  async function listarPorUsuario(usuarioId, esAdmin = false) {
+  async function listarPorUsuario(usuarioId, esAdmin = false, entidadIdExterno = null) {
 
     if (!esAdmin && !usuarioId)
       throw new Error('usuario requerido')
 
-    return actividadesRepository.listarPorUsuario(usuarioId, esAdmin)
+    return actividadesRepository.listarPorUsuario(usuarioId, esAdmin, entidadIdExterno)
   }
 
   // =====================================================
@@ -202,7 +203,7 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // ACTUALIZACIÓN COMPLETA (🔥 FIX)
+  // ACTUALIZACIÓN COMPLETA
   // =====================================================
 
   async function actualizarCompleto(id, data, usuarioId) {
@@ -254,7 +255,7 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // ELIMINAR (🔥 FIX)
+  // ELIMINAR
   // =====================================================
 
   async function eliminar(id, usuarioId) {
@@ -268,7 +269,7 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // BLOQUES (🔥 FIX)
+  // BLOQUES
   // =====================================================
 
   async function actualizarBloque1(id, data, usuarioId) {
@@ -373,7 +374,7 @@ export function SEGTECActividadesService(
   }
 
   // =====================================================
-  // COMPLETAR (🔥 FIX)
+  // COMPLETAR
   // =====================================================
 
   async function marcarComoCompleta(id, usuarioId) {

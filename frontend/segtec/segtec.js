@@ -19,9 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     .toLowerCase()
     .replace(/\s+/g, '');
 
-  const puedeAnalizar =
-    rolNormalizado === 'superadmin' ||
-    rolNormalizado === 'archivista';
+  // ✅ Permisos por rol
+  const esSuperAdmin  = rolNormalizado === 'superadmin'
+  const esArchivista  = rolNormalizado === 'archivista'
+  const puedeAnalizar = esSuperAdmin || esArchivista
+  const puedeCrear    = !esSuperAdmin
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
   const tablaContainer   = document.getElementById('tablaRegistros');
@@ -33,6 +35,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const modalFooter    = document.getElementById('modalFooter');
   const cerrarModalBtn = document.getElementById('cerrarModal');
 
+  // ✅ Ocultar botón nueva actividad para Super Admin
+  if (!puedeCrear) {
+    nuevaActividadBtn?.classList.add('hidden');
+  }
+
   cerrarModalBtn?.addEventListener('click', cerrarModal);
 
   // =====================================================
@@ -41,10 +48,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function apiFetch(url, options = {}) {
 
+    const entidadId =
+      sessionStorage.getItem('gestion_entidad_id') ||
+      sessionStorage.getItem('entidad_id') ||
+      null
+
     const headers = {
       Authorization: `Bearer ${token}`,
       ...(options.headers || {})
     };
+
+    if (entidadId) {
+      headers['X-Entidad-Id'] = entidadId
+    }
 
     if (options.body) {
       headers['Content-Type'] = 'application/json';
@@ -105,11 +121,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const normalizado = (estado || 'borrador').toLowerCase();
 
     const clases = {
-      borrador    : 'badge-neutral',
-      identificada: 'badge-warning',
-      caracterizada: 'badge-info',
-      analizada   : 'badge-success',
-      completa    : 'badge-success'
+      borrador      : 'badge-neutral',
+      identificada  : 'badge-warning',
+      caracterizada : 'badge-info',
+      analizada     : 'badge-success',
+      completa      : 'badge-success'
     };
 
     return `
@@ -280,9 +296,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // MARCO FUNCIONAL
+  // ✅ Super Admin no tiene dependencia propia,
+  //    se muestra panel informativo y va directo a actividades
   // =====================================================
 
   async function cargarMarcoFuncional() {
+
+    // Super Admin ve todas las actividades sin marco funcional propio
+    if (esSuperAdmin) {
+
+      panelMarco.innerHTML = `
+        <div class="card">
+          <div class="module-actions space-between">
+            <h2>Vista global de actividades</h2>
+          </div>
+          <p style="color: var(--text-secondary); margin: 0;">
+            Estás viendo todas las actividades registradas en la entidad actual.
+          </p>
+        </div>
+      `;
+
+      return true;
+    }
 
     try {
 
@@ -440,12 +475,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
       }
 
+      // ✅ Mostrar dependencia en la tabla para Super Admin y Archivista
+      const colDependencia = (esSuperAdmin || esArchivista)
+        ? `<td>${a.dependencia || '-'}</td>`
+        : ''
+
       return `
         <tr>
           <td><strong>${a.nombre || '-'}</strong></td>
+          ${colDependencia}
           <td>${capitalizar(a.frecuencia)}</td>
           <td>${badgeEstado(a.estado_general)}</td>
-          <td>${fecha}</td>
+          <td>${formatearFecha(a.created_at)}</td>
           <td class="acciones">
 
             <button
@@ -468,12 +509,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     });
 
+    // ✅ Columna extra de dependencia para roles con visión global
+    const thDependencia = (esSuperAdmin || esArchivista)
+      ? '<th>Dependencia</th>'
+      : ''
+
     tablaContainer.innerHTML = `
       <div style="width:100%;">
         <table class="table" style="width:100%;">
           <thead>
             <tr>
               <th>Actividad</th>
+              ${thDependencia}
               <th>Frecuencia</th>
               <th>Estado</th>
               <th>Creado</th>

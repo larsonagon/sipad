@@ -22,7 +22,7 @@ export function SEGTECActividadesRepository(db) {
     return result
   }
 
-  // 🔥 NUEVO: obtener entidad del usuario
+  // 🔥 Obtener entidad del usuario
   async function obtenerEntidadIdPorUsuario(usuarioId) {
 
     if (!usuarioId) {
@@ -198,11 +198,14 @@ export function SEGTECActividadesRepository(db) {
 
   // =====================================================
   // LISTAR
+  // ✅ FIX: acepta entidadId externo para Super Admin
   // =====================================================
 
-  async function listarPorUsuario(usuarioId, esAdmin = false) {
+  async function listarPorUsuario(usuarioId, esAdmin = false, entidadIdExterno = null) {
 
-    const entidadId = await obtenerEntidadIdPorUsuario(usuarioId)
+    // Si viene entidadId externo (Super Admin gestionando otra entidad), usarlo
+    // Si no, obtenerlo desde la BD del usuario
+    const entidadId = entidadIdExterno || await obtenerEntidadIdPorUsuario(usuarioId)
 
     const queryBase = `
       SELECT
@@ -220,9 +223,10 @@ export function SEGTECActividadesRepository(db) {
 
     if (esAdmin === true) {
 
+      // Super Admin y Archivista: todas las actividades de la entidad
       rows = await db.all(`
         ${queryBase}
-        WHERE u.entidad_id = ?
+        WHERE a.entidad_id = ?
         ORDER BY a.created_at DESC
       `, [entidadId])
 
@@ -232,10 +236,11 @@ export function SEGTECActividadesRepository(db) {
         throw new Error('usuarioId requerido para listar actividades')
       }
 
+      // Operativos: solo sus propias actividades
       rows = await db.all(`
         ${queryBase}
         WHERE a.usuario_id = ?
-        AND u.entidad_id = ?
+        AND a.entidad_id = ?
         ORDER BY a.created_at DESC
       `,[usuarioId, entidadId])
     }

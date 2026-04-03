@@ -6,7 +6,7 @@
 import { db } from '../db/database.js'
 
 // =====================================================
-// REQUIERE NIVEL NUMÉRICO (SE MANTIENE IGUAL)
+// REQUIERE NIVEL NUMÉRICO
 // =====================================================
 
 export const requireLevel = (minLevel) => {
@@ -57,44 +57,59 @@ export const requireLevel = (minLevel) => {
 }
 
 // =====================================================
-// 🔥 RESOLVER PERMISOS FUNCIONALES (AHORA POR ROL)
+// RESOLVER PERMISOS FUNCIONALES
 // =====================================================
 
 export const resolvePermissions = (user) => {
 
-  const rol = user?.role
-  const esMaster = user?.es_master_admin === true
+  const rol     = user?.role || user?.rol
+  const esMaster = user?.es_master_admin === true || user?.es_master_admin === 1
+
+  const esSuperAdmin  = esMaster || rol === 'Super Admin'
+  const esArchivista  = rol === 'Archivista'
+  const esJefe        = rol === 'Jefe'
+  const esOperativo   = !esSuperAdmin // todos menos Super Admin
 
   return {
 
-    esSuperAdmin: esMaster,
+    esSuperAdmin,
 
     // 🔹 Administración
     puedeAdministrar:
-      esMaster || rol === 'Administrador',
+      esSuperAdmin || rol === 'Administrador',
 
-    // 🔹 SEGTEC (ICAF)
-    puedeVerICAF:
-      true, // todos los roles autenticados
+    // 🔹 ICAF – Ver el módulo
+    puedeVerICAF: true, // todos los autenticados
 
-    // 🔹 Informes
+    // 🔹 ICAF – Crear actividades (todos menos Super Admin)
+    puedeCrearICAF: esOperativo,
+
+    // 🔹 ICAF – Analizar actividades (Super Admin + Archivista)
+    puedeAnalizarICAF:
+      esSuperAdmin || esArchivista,
+
+    // 🔹 Informes – Ver (Super Admin + Archivista ven todo, Jefe solo su dependencia)
     puedeVerInformes:
-      esMaster || rol === 'Archivista' || rol === 'Jefe',
+      esSuperAdmin || esArchivista || esJefe,
 
-    // 🔹 TRD-AI
+    // 🔹 Informes – Ver solo su dependencia (Jefe)
+    informesSoloDependencia:
+      esJefe && !esSuperAdmin && !esArchivista,
+
+    // 🔹 TRD-AI (Super Admin + Archivista)
     puedeVerTRD:
-      esMaster || rol === 'Archivista',
+      esSuperAdmin || esArchivista,
 
     // 🔹 Visión global
     puedeVerTodo:
-      esMaster || rol === 'Archivista'
+      esSuperAdmin || esArchivista
 
   }
 
 }
 
 // =====================================================
-// 🔥 MIDDLEWARE GENERADOR DE PERMISOS
+// MIDDLEWARE GENERADOR DE PERMISOS
 // =====================================================
 
 export const attachPermissions = (req, res, next) => {
@@ -124,7 +139,7 @@ export const attachPermissions = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 REQUIERE ACCESO A INFORMES
+// REQUIERE ACCESO A INFORMES
 // =====================================================
 
 export const requireInformes = (req, res, next) => {
@@ -158,7 +173,7 @@ export const requireInformes = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 REQUIERE ACCESO A TRD-AI
+// REQUIERE ACCESO A TRD-AI
 // =====================================================
 
 export const requireTRD = (req, res, next) => {
@@ -192,7 +207,7 @@ export const requireTRD = (req, res, next) => {
 }
 
 // =====================================================
-// 🔥 REQUIERE ACCESO A SEGTEC (ICAF)
+// REQUIERE ACCESO A SEGTEC / ICAF
 // =====================================================
 
 export const requireICAF = (req, res, next) => {
@@ -226,7 +241,77 @@ export const requireICAF = (req, res, next) => {
 }
 
 // =====================================================
-// POLÍTICA INSTITUCIONAL SEG-TEC (SE MANTIENE)
+// REQUIERE CREAR ACTIVIDADES ICAF
+// (todos menos Super Admin)
+// =====================================================
+
+export const requireCrearICAF = (req, res, next) => {
+
+  try {
+
+    if (!req.permisos) {
+      return res.status(500).json({
+        error: 'Permisos no inicializados'
+      })
+    }
+
+    if (!req.permisos.puedeCrearICAF) {
+      return res.status(403).json({
+        error: 'El Super Admin no puede crear actividades operativas'
+      })
+    }
+
+    next()
+
+  } catch (err) {
+
+    console.error('Error requireCrearICAF:', err)
+
+    return res.status(500).json({
+      error: 'Error validando permiso de creación ICAF'
+    })
+
+  }
+
+}
+
+// =====================================================
+// REQUIERE ANALIZAR ACTIVIDADES ICAF
+// (Super Admin + Archivista)
+// =====================================================
+
+export const requireAnalizarICAF = (req, res, next) => {
+
+  try {
+
+    if (!req.permisos) {
+      return res.status(500).json({
+        error: 'Permisos no inicializados'
+      })
+    }
+
+    if (!req.permisos.puedeAnalizarICAF) {
+      return res.status(403).json({
+        error: 'No autorizado para analizar actividades'
+      })
+    }
+
+    next()
+
+  } catch (err) {
+
+    console.error('Error requireAnalizarICAF:', err)
+
+    return res.status(500).json({
+      error: 'Error validando permiso de análisis ICAF'
+    })
+
+  }
+
+}
+
+// =====================================================
+// POLÍTICA INSTITUCIONAL SEG-TEC
 // =====================================================
 
 export const requireSEGTECPolicy = async (req, res, next) => {
