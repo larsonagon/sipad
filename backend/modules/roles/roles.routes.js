@@ -27,9 +27,11 @@ router.get(
     try {
 
       // 🔥 YA NO DEPENDE DE ENTIDAD
+      // ✅ FIX: incluir activo en SELECT y filtrar en BD
       const roles = await db.all(`
-        SELECT id, nombre, nivel_acceso
+        SELECT id, nombre, nivel_acceso, activo
         FROM roles
+        WHERE activo = 1
         ORDER BY nivel_acceso DESC
       `)
 
