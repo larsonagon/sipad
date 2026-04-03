@@ -44,22 +44,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // API FETCH
+  // ✅ FIX: X-Entidad-Id solo para Super Admin
   // =====================================================
 
   async function apiFetch(url, options = {}) {
-
-    const entidadId =
-      sessionStorage.getItem('gestion_entidad_id') ||
-      sessionStorage.getItem('entidad_id') ||
-      null
 
     const headers = {
       Authorization: `Bearer ${token}`,
       ...(options.headers || {})
     };
 
-    if (entidadId) {
-      headers['X-Entidad-Id'] = entidadId
+    // Solo el Super Admin puede hacer override de entidad
+    if (esSuperAdmin) {
+      const entidadId =
+        sessionStorage.getItem('gestion_entidad_id') ||
+        sessionStorage.getItem('entidad_id') ||
+        null
+
+      if (entidadId) {
+        headers['X-Entidad-Id'] = entidadId
+      }
     }
 
     if (options.body) {
@@ -296,8 +300,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // MARCO FUNCIONAL
-  // ✅ Super Admin no tiene dependencia propia,
-  //    se muestra panel informativo y va directo a actividades
   // =====================================================
 
   async function cargarMarcoFuncional() {
@@ -451,7 +453,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const filas = actividades.map(a => {
 
-      const fecha  = formatearFecha(a.created_at);
       const estado = (a.estado_general || '').toLowerCase().trim();
 
       let botonAnalizar = '';
