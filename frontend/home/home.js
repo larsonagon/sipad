@@ -92,40 +92,45 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarSelectorEntidad(user);
 
   // 🔥 NORMALIZACIÓN REAL
-  const nivel = Number(user.nivel_acceso || 0);
+  const nivel    = Number(user.nivel_acceso || 0);
   const esMaster = user.es_master_admin === true;
 
+  // ✅ Super Admin sin entidad seleccionada → no puede usar módulos operativos
+  const gestionEntidadId    = sessionStorage.getItem('gestion_entidad_id') || null
+  const superAdminSinEntidad = esMaster && !gestionEntidadId
+
   // =====================================================
-  // 🔥 PERMISOS EXACTOS (SIN >=, SIN AMBIGÜEDAD)
+  // PERMISOS
   // =====================================================
 
-  let puedeICAF = false;
+  let puedeICAF     = false;
   let puedeInformes = false;
-  let puedeTRDAI = false;
-  let puedeAdmin = false;
+  let puedeTRDAI    = false;
+  let puedeAdmin    = false;
 
   if (esMaster) {
-    puedeICAF = true;
-    puedeInformes = true;
-    puedeTRDAI = true;
-    puedeAdmin = true;
+    puedeAdmin    = true;
+    // ✅ Módulos operativos solo si tiene entidad seleccionada
+    puedeICAF     = !superAdminSinEntidad;
+    puedeInformes = !superAdminSinEntidad;
+    puedeTRDAI    = !superAdminSinEntidad;
   } else {
 
     switch (nivel) {
 
       case 90: // ADMINISTRADOR
-        puedeICAF = true;
+        puedeICAF  = true;
         puedeAdmin = true;
         break;
 
       case 70: // ARCHIVISTA
-        puedeICAF = true;
+        puedeICAF     = true;
         puedeInformes = true;
-        puedeTRDAI = true;
+        puedeTRDAI    = true;
         break;
 
       case 50: // JEFE
-        puedeICAF = true;
+        puedeICAF     = true;
         puedeInformes = true;
         break;
 
@@ -140,34 +145,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // =====================================================
-  // 🔥 UI (NO ROMPE CARDS)
+  // UI
   // =====================================================
 
-  const cardSegtec = document.getElementById('cardSegtec');
-  const cardTRD = document.getElementById('cardTRD');
-  const cardTRDAI = document.getElementById('cardTRDAI');
-  const cardAdmin = document.getElementById('cardAdmin');
+  const cardSegtec   = document.getElementById('cardSegtec');
+  const cardTRD      = document.getElementById('cardTRD');
+  const cardTRDAI    = document.getElementById('cardTRDAI');
+  const cardAdmin    = document.getElementById('cardAdmin');
   const cardInformes = document.getElementById('cardInformes');
 
-  if (cardSegtec) {
-    cardSegtec.style.display = puedeICAF ? '' : 'none';
-  }
-
-  if (cardInformes) {
-    cardInformes.style.display = puedeInformes ? '' : 'none';
-  }
-
-  if (cardTRDAI) {
-    cardTRDAI.style.display = puedeTRDAI ? '' : 'none';
-  }
-
-  if (cardTRD) {
-    cardTRD.style.display = puedeTRDAI ? '' : 'none';
-  }
-
-  if (cardAdmin) {
-    cardAdmin.style.display = puedeAdmin ? '' : 'none';
-  }
+  if (cardSegtec)   cardSegtec.style.display   = puedeICAF     ? '' : 'none';
+  if (cardInformes) cardInformes.style.display  = puedeInformes ? '' : 'none';
+  if (cardTRDAI)    cardTRDAI.style.display     = puedeTRDAI    ? '' : 'none';
+  if (cardTRD)      cardTRD.style.display       = puedeTRDAI    ? '' : 'none';
+  if (cardAdmin)    cardAdmin.style.display     = puedeAdmin    ? '' : 'none';
 
   // =====================================================
   // NAVEGACIÓN
