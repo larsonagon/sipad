@@ -117,21 +117,28 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   }
 
   const nivelAcceso = Number(user?.nivel_acceso || 0)
-  const esMaster = user?.es_master_admin === true
+  const esMaster    = user?.es_master_admin === true
+
+  // ✅ Super Admin sin entidad seleccionada → módulos operativos ocultos
+  const gestionEntidadId = sessionStorage.getItem('gestion_entidad_id') || null
+  const superAdminSinEntidad = esMaster && !gestionEntidadId
 
   // ======================================================
-  // 🔥 MODELO EXACTO (SIN >=)
+  // PERMISOS POR ROL
   // ======================================================
 
-  let puedeAdmin = false
-  let puedeTRDAI = false
-  let puedeVerInformes = false
-  let esGeneral = false
+  let puedeAdmin        = false
+  let puedeTRDAI        = false
+  let puedeVerInformes  = false
+  let puedeICAF         = true  // todos los autenticados
+  let esGeneral         = false
 
   if (esMaster) {
-    puedeAdmin = true
-    puedeTRDAI = true
-    puedeVerInformes = true
+    puedeAdmin       = true
+    // ✅ ICAF, TRD-AI e Informes solo si tiene entidad seleccionada
+    puedeTRDAI       = !superAdminSinEntidad
+    puedeVerInformes = !superAdminSinEntidad
+    puedeICAF        = !superAdminSinEntidad
   } else {
 
     switch (nivelAcceso) {
@@ -141,7 +148,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
         break
 
       case 70: // ARCHIVISTA
-        puedeTRDAI = true
+        puedeTRDAI       = true
         puedeVerInformes = true
         break
 
@@ -182,7 +189,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
       .replace(/\s+/g, ' ')
       .trim()
 
-  const cargo = limpiar(cargoRaw)
+  const cargo      = limpiar(cargoRaw)
   const dependencia = limpiar(dependenciaRaw)
 
   let cargoDependencia = ''
@@ -229,43 +236,33 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
               Inicio
             </button>
 
-            ${
-              puedeAdmin
-                ? `
-                <button type="button" id="btnAdmin"
-                  ${modulo === 'Administración' ? 'class="active"' : ''}>
-                  Administración
-                </button>
-                `
-                : ''
-            }
+            ${puedeAdmin ? `
+              <button type="button" id="btnAdmin"
+                ${modulo === 'Administración' ? 'class="active"' : ''}>
+                Administración
+              </button>
+            ` : ''}
 
-            <button type="button" id="btnSegtec"
-              ${modulo === 'ICAF' ? 'class="active"' : ''}>
-              ICAF
-            </button>
+            ${puedeICAF ? `
+              <button type="button" id="btnSegtec"
+                ${modulo === 'ICAF' ? 'class="active"' : ''}>
+                ICAF
+              </button>
+            ` : ''}
 
-            ${
-              puedeTRDAI
-                ? `
-                <button type="button" id="btnTRDAI"
-                  ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
-                  TRD-AI
-                </button>
-                `
-                : ''
-            }
+            ${puedeTRDAI ? `
+              <button type="button" id="btnTRDAI"
+                ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
+                TRD-AI
+              </button>
+            ` : ''}
 
-            ${
-              puedeVerInformes
-                ? `
-                <button type="button" id="btnInformes"
-                  ${modulo === 'Informes' ? 'class="active"' : ''}>
-                  Informes
-                </button>
-                `
-                : ''
-            }
+            ${puedeVerInformes ? `
+              <button type="button" id="btnInformes"
+                ${modulo === 'Informes' ? 'class="active"' : ''}>
+                Informes
+              </button>
+            ` : ''}
 
           </nav>
 
@@ -350,7 +347,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
     ?.addEventListener('click', cerrarSesion)
 
   const btnUserMenu = document.getElementById('btnUserMenu')
-  const dropdown = document.getElementById('userDropdown')
+  const dropdown    = document.getElementById('userDropdown')
 
   btnUserMenu?.addEventListener('click', (e) => {
     e.stopPropagation()

@@ -13,24 +13,83 @@ document.addEventListener('DOMContentLoaded', () => {
   const user = JSON.parse(userRaw)
 
   // 🔥 Leer contexto de gestión
-  const gestionEntidadId = sessionStorage.getItem('gestion_entidad_id') || null
+  const gestionEntidadId     = sessionStorage.getItem('gestion_entidad_id') || null
   const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
 
   renderHeader('Administración', gestionEntidadNombre)
 
+  const esMaster = user?.es_master_admin === true
+  const nivel    = user?.nivel || user?.nivel_acceso || 0
+
   // =========================
-  // 🔥 TÍTULO DINÁMICO + BOTÓN SALIR
+  // SUPER ADMIN SIN ENTIDAD SELECCIONADA
+  // → Solo muestra tarjeta Entidades
   // =========================
 
-  if (gestionEntidadNombre) {
+  if (esMaster && !gestionEntidadId) {
 
+    // Ocultar todo menos Entidades
+    const tarjetasOcultar = [
+      'btnDependencias',
+      'btnCargos',
+      'btnNiveles',
+      'btnRoles',
+      'btnUsuarios'
+    ]
+
+    tarjetasOcultar.forEach(id => {
+      const btn = document.getElementById(id)
+      if (btn) {
+        // Ocultar la tarjeta padre
+        const card = btn.closest('.module-card') || btn.closest('[class*="card"]') || btn
+        card.style.display = 'none'
+      }
+    })
+
+    // Mostrar mensaje orientativo
+    const header = document.querySelector('.module-header')
+    if (header) {
+      const aviso = document.createElement('p')
+      aviso.style.cssText = `
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 8px;
+      `
+      aviso.textContent = 'Selecciona una entidad para gestionar su configuración interna.'
+      header.appendChild(aviso)
+    }
+
+    // Solo navegar a Entidades
+    document.getElementById('btnEntidades')
+      ?.addEventListener('click', () => {
+        window.location.href = '/administracion/entidades/index.html'
+      })
+
+    return
+  }
+
+  // =========================
+  // SUPER ADMIN CON ENTIDAD SELECCIONADA
+  // → Muestra todo menos Entidades
+  // =========================
+
+  if (esMaster && gestionEntidadId) {
+
+    // Ocultar tarjeta Entidades (ya está gestionando una)
+    const btnEntidades = document.getElementById('btnEntidades')
+    if (btnEntidades) {
+      const card = btnEntidades.closest('.module-card') || btnEntidades.closest('[class*="card"]') || btnEntidades
+      card.style.display = 'none'
+    }
+
+    // Título dinámico
     const h1 = document.querySelector('.module-header h1')
-    const p = document.querySelector('.module-header p')
+    const p  = document.querySelector('.module-header p')
 
     if (h1) h1.textContent = `Gestionando: ${gestionEntidadNombre}`
-    if (p) p.textContent = 'Configura la estructura interna de esta entidad: dependencias, cargos, niveles, roles y usuarios.'
+    if (p)  p.textContent  = 'Configura la estructura interna de esta entidad: dependencias, cargos, niveles, roles y usuarios.'
 
-    // 🔥 Botón salir de gestión
+    // Botón volver
     const btnSalir = document.createElement('button')
     btnSalir.textContent = '← Volver a Entidades'
     btnSalir.style.cssText = `
@@ -48,13 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
     `
 
     btnSalir.addEventListener('mouseenter', () => {
-      btnSalir.style.background = '#b91c1c'
-      btnSalir.style.boxShadow = '0 6px 16px rgba(220,38,38,0.4)'
+      btnSalir.style.background  = '#b91c1c'
+      btnSalir.style.boxShadow   = '0 6px 16px rgba(220,38,38,0.4)'
     })
 
     btnSalir.addEventListener('mouseleave', () => {
-      btnSalir.style.background = '#dc2626'
-      btnSalir.style.boxShadow = '0 4px 12px rgba(220,38,38,0.3)'
+      btnSalir.style.background  = '#dc2626'
+      btnSalir.style.boxShadow   = '0 4px 12px rgba(220,38,38,0.3)'
     })
 
     btnSalir.addEventListener('click', () => {
@@ -63,31 +122,34 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/administracion/entidades/index.html'
     })
 
-    document.querySelector('.module-header').appendChild(btnSalir)
+    document.querySelector('.module-header')?.appendChild(btnSalir)
 
-  }
+  } else {
 
-  // =========================
-  // CONTROL DE VISIBILIDAD
-  // =========================
+    // =========================
+    // USUARIO NORMAL
+    // =========================
 
-  const nivel = user?.nivel || user?.nivel_acceso || 0
-  const esMaster = user?.es_master_admin === true
-
-  // Cargos solo nivel alto (>=90)
-  if (nivel < 90 && !esMaster) {
-    const btnCargos = document.getElementById('btnCargos')
-    if (btnCargos) btnCargos.style.display = 'none'
-  }
-
-  // Entidades solo master admin y solo fuera de modo gestión
-  if (!esMaster || gestionEntidadNombre) {
+    // Entidades: solo master admin
     const btnEntidades = document.getElementById('btnEntidades')
-    if (btnEntidades) btnEntidades.style.display = 'none'
+    if (btnEntidades) {
+      const card = btnEntidades.closest('.module-card') || btnEntidades.closest('[class*="card"]') || btnEntidades
+      card.style.display = 'none'
+    }
+
+    // Cargos: solo nivel >= 90
+    if (nivel < 90) {
+      const btnCargos = document.getElementById('btnCargos')
+      if (btnCargos) {
+        const card = btnCargos.closest('.module-card') || btnCargos.closest('[class*="card"]') || btnCargos
+        card.style.display = 'none'
+      }
+    }
+
   }
 
   // =========================
-  // NAVEGACIÓN
+  // NAVEGACIÓN (común a todos)
   // =========================
 
   document.getElementById('btnDependencias')
