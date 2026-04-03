@@ -48,7 +48,7 @@ async function registrarAuditoria(actorId, dependenciaId, accion, detalle) {
 
 router.get(
   '/',
-  requireLevel(50),
+  requireLevel(10),
   async (req, res) => {
 
     try {
