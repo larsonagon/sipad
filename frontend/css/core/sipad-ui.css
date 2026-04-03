@@ -783,10 +783,16 @@ select.form-control{
 ====================================================== */
 
 .module-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
   gap:28px;
   margin-top:40px;
+}
+
+.module-card{
+  width:260px;
+  flex:0 0 260px;
 }
 
 .module-card{
@@ -1044,10 +1050,18 @@ select.form-control{
     padding:6px 10px;
   }
 
-  .home-grid,
-  .module-grid{
+  .home-grid{
     grid-template-columns:1fr;
     gap:18px;
+  }
+
+  .module-grid{
+    gap:16px;
+  }
+
+  .module-card{
+    width:100%;
+    flex:0 0 100%;
   }
 
   .module-page{
