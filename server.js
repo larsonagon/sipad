@@ -74,6 +74,9 @@ import auditoriaRoutes from './backend/modules/auditoria/auditoria.routes.js'
 import { runTRDMigration } from './backend/modules/trd/trd.migration.js'
 import { runActividadesMigration } from './backend/modules/actividades/actividades.migration.js'
 
+// ✅ NUEVO: SEGTEC
+import segtecRoutes from './backend/modules/segtec/segtec.routes.js'
+
 // ==========================================================
 // INIT
 // ==========================================================
@@ -157,6 +160,9 @@ async function init() {
     app.use('/api/cargos', cargosRoutes)
     app.use('/api/configuracion', configuracionRoutes)
     app.use('/api/auditoria', auditoriaRoutes)
+
+    // ✅ NUEVO: SEGTEC
+    app.use('/api/segtec', segtecRoutes)
 
     // ==================================================
     // 🚨 404 API (CLAVE)
