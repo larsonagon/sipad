@@ -28,17 +28,18 @@ const trdAIRepository = TRDAIRepository(db)
 const trdAIService = TRDAIService(trdAIRepository)
 
 const actividadesRepository = SEGTECActividadesRepository(db)
+const validacionRepository  = SEGTECValidacionTecnicaRepository(db)
 
+// ✅ FIX: pasar los 3 parámetros en el orden correcto
 const actividadesService = SEGTECActividadesService(
   actividadesRepository,
+  validacionRepository,
   trdAIService
 )
 
 const actividadesController = SEGTECActividadesController(
   actividadesService
 )
-
-const validacionRepository = SEGTECValidacionTecnicaRepository(db)
 
 const validacionService =
   SEGTECValidacionTecnicaService(validacionRepository)
@@ -55,17 +56,15 @@ const pdfController = SEGTECPDFController(
 )
 
 // =====================================================
-// ✅ NUEVO: OBTENER CONFIGURACIÓN FUNCIONAL
+// ✅ OBTENER CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
 router.get('/configuracion', async (req, res) => {
 
   try {
 
-    const usuarioId    = parseInt(req.user.sub)
-    const entidadId    = req.entidad_id
+    const usuarioId = parseInt(req.user.sub)
 
-    // Obtener id_dependencia del usuario autenticado
     const usuario = await db.get(
       `SELECT id_dependencia FROM usuarios WHERE id = ?`,
       [usuarioId]
@@ -99,7 +98,7 @@ router.get('/configuracion', async (req, res) => {
 })
 
 // =====================================================
-// ✅ NUEVO: GUARDAR CONFIGURACIÓN FUNCIONAL
+// ✅ GUARDAR CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
 router.post('/configuracion', async (req, res) => {
@@ -108,7 +107,6 @@ router.post('/configuracion', async (req, res) => {
 
     const usuarioId = parseInt(req.user.sub)
 
-    // Obtener id_dependencia del usuario autenticado
     const usuario = await db.get(
       `SELECT id_dependencia FROM usuarios WHERE id = ?`,
       [usuarioId]
@@ -134,7 +132,7 @@ router.post('/configuracion', async (req, res) => {
       descripcion_funcional
     } = req.body
 
-    // Desactivar versión anterior si existe
+    // Desactivar versión anterior
     await db.run(
       `UPDATE segtec_configuracion_dependencia
        SET activa = 0
@@ -151,10 +149,8 @@ router.post('/configuracion', async (req, res) => {
     )
 
     const nuevaVersion = (ultima?.max_version ?? 0) + 1
-
     const nuevoId = crypto.randomUUID()
 
-    // tipos_documentales viene como array desde el frontend
     const tiposJSON = JSON.stringify(
       Array.isArray(tipos_documentales) ? tipos_documentales : []
     )
@@ -197,7 +193,7 @@ router.post('/configuracion', async (req, res) => {
 })
 
 // =====================================================
-// ACTIVIDADES (PROTEGIDAS)
+// ACTIVIDADES
 // =====================================================
 
 router.get(
