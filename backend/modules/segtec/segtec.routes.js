@@ -25,12 +25,12 @@ const router = express.Router()
 // =====================================================
 
 const trdAIRepository = TRDAIRepository(db)
-const trdAIService = TRDAIService(trdAIRepository)
+const trdAIService    = TRDAIService(trdAIRepository)
 
 const actividadesRepository = SEGTECActividadesRepository(db)
 const validacionRepository  = SEGTECValidacionTecnicaRepository(db)
 
-// ✅ FIX: pasar los 3 parámetros en el orden correcto
+// ✅ FIX 1: SEGTECActividadesService recibe 3 parámetros
 const actividadesService = SEGTECActividadesService(
   actividadesRepository,
   validacionRepository,
@@ -41,11 +41,15 @@ const actividadesController = SEGTECActividadesController(
   actividadesService
 )
 
-const validacionService =
-  SEGTECValidacionTecnicaService(validacionRepository)
+// ✅ FIX 2: SEGTECValidacionTecnicaService recibe 2 parámetros
+const validacionService = SEGTECValidacionTecnicaService(
+  validacionRepository,
+  actividadesRepository
+)
 
-const validacionController =
-  SEGTECValidacionTecnicaController(validacionService)
+const validacionController = SEGTECValidacionTecnicaController(
+  validacionService
+)
 
 // =====================================================
 // CONTROLADOR PDF
@@ -56,7 +60,7 @@ const pdfController = SEGTECPDFController(
 )
 
 // =====================================================
-// ✅ OBTENER CONFIGURACIÓN FUNCIONAL
+// OBTENER CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
 router.get('/configuracion', async (req, res) => {
@@ -98,7 +102,7 @@ router.get('/configuracion', async (req, res) => {
 })
 
 // =====================================================
-// ✅ GUARDAR CONFIGURACIÓN FUNCIONAL
+// GUARDAR CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
 router.post('/configuracion', async (req, res) => {
@@ -196,9 +200,10 @@ router.post('/configuracion', async (req, res) => {
 // ACTIVIDADES
 // =====================================================
 
+// ✅ FIX 3: listarPorDependencia → listar
 router.get(
   '/actividades',
-  actividadesController.listarPorDependencia
+  actividadesController.listar
 )
 
 router.post(
@@ -211,9 +216,15 @@ router.delete(
   actividadesController.eliminar
 )
 
+// ✅ FIX 4: actualizarCamposTecnicos → actualizar
 router.put(
   '/actividades/:id/tecnico',
-  actividadesController.actualizarCamposTecnicos
+  actividadesController.actualizar
+)
+
+router.get(
+  '/actividades/:id',
+  actividadesController.obtenerPorId
 )
 
 // =====================================================
@@ -251,15 +262,6 @@ router.get(
 router.post(
   '/actividades/:id/completar',
   actividadesController.marcarCompleta
-)
-
-// =====================================================
-// GUARDAR SUGERENCIA
-// =====================================================
-
-router.post(
-  '/actividades/:id/sugerencia',
-  actividadesController.guardarSugerencia
 )
 
 // =====================================================
