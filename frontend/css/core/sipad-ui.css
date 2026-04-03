@@ -43,20 +43,43 @@
   --font-lg:1.25rem;
   --font-xl:1.6rem;
 
+  --header-height: 70px;
+  --footer-height: 40px;
+
 }
 
 /* ======================================================
    BASE
 ====================================================== */
 
-body{
+*{
+  box-sizing:border-box;
+}
+
+html, body{
   margin:0;
+  padding:0;
+  max-width:100%;
+  overflow-x:hidden;
+}
+
+body{
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   color:var(--color-text);
   background:
     radial-gradient(circle at 20% 10%,rgba(13,63,119,.04),transparent 40%),
     radial-gradient(circle at 80% 0%,rgba(198,154,46,.05),transparent 35%),
     #f5f7fa;
+  display:flex;
+  flex-direction:column;
+  min-height:100vh;
+  /* espacio para header fijo y footer fijo */
+  padding-top:var(--header-height);
+  padding-bottom:var(--footer-height);
+}
+
+main{
+  flex:1;
 }
 
 .hidden{
@@ -64,24 +87,61 @@ body{
 }
 
 /* ======================================================
-   HEADER
+   HEADER – FIJO EN LA PARTE SUPERIOR
 ====================================================== */
 
 .pig-header{
   background:#1f4e79;
   color:#fff;
-
-  position:relative;
-  z-index:100;
+  /* ✅ FIX: sticky en lugar de relative */
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:1000;
 }
 
 .pig-header-inner{
   max-width:1200px;
   margin:0 auto;
   display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:6px 16px;
+  height:auto;
+  gap:2px;
+}
+
+.pig-header-top{
+  display:flex;
+  justify-content:space-between;
   align-items:center;
-  padding:8px 16px;
-  height:56px;
+  width:100%;
+}
+
+.pig-header-bottom{
+  display:flex;
+  align-items:center;
+  width:100%;
+  margin:0;
+}
+
+.pig-header-left{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.pig-header-right{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-left:auto;
+}
+
+.pig-title{
+  font-weight:600;
+  font-size:14px;
 }
 
 .pig-module{
@@ -94,19 +154,38 @@ body{
   opacity:.8;
 }
 
+/* ======================================================
+   NAV
+====================================================== */
+
 .pig-nav{
   display:flex;
-  gap:8px;
+  gap:6px;
   align-items:center;
+  flex-wrap:wrap;
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+
+.pig-nav::-webkit-scrollbar{
+  display:none;
 }
 
 .pig-nav button{
   background:#e6edf6;
   border:none;
-  padding:5px 10px;
+  height:26px;
+  padding:4px 10px;
   border-radius:6px;
   font-size:12px;
   line-height:1;
+  flex:0 0 auto;
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:.15s;
 }
 
 .pig-nav button.active{
@@ -120,50 +199,142 @@ body{
 
 .pig-user{
   position:relative;
-  margin-left:18px;
+  margin:0;
 }
 
 .pig-user-info{
+  display:flex;
+  align-items:center;
+  gap:8px;
   cursor:pointer;
-  text-align:left;
+}
+
+.pig-user-info:hover{
+  opacity:.85;
+}
+
+.pig-user-icon{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.15);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+
+.pig-user-text{
+  display:flex;
+  flex-direction:column;
+  line-height:1.2;
 }
 
 .pig-user-name{
-  font-size:13px;
-  font-weight:600;
+  font-size:12px;
+  font-weight:500;
 }
 
 .pig-user-meta{
   font-size:11px;
-  opacity:.8;
+  opacity:.75;
+  letter-spacing:.2px;
 }
 
 .pig-user-dropdown{
   position:absolute;
-  right:0;
-  top:38px;
+  top:100%;
+  left:0;
+  margin-top:8px;
+  min-width:220px;
   background:#fff;
-  border-radius:8px;
-  box-shadow:0 6px 16px rgba(0,0,0,.15);
-  display:none;
-  flex-direction:column;
-  min-width:180px;
+  border-radius:10px;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  padding:6px 0;
+  opacity:0;
+  transform:translateY(-6px);
+  pointer-events:none;
+  transition:all .18s ease;
+  z-index:1001;
 }
 
 .pig-user-dropdown.show{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
   display:flex;
+  flex-direction:column;
+}
+
+.pig-user-dropdown::before{
+  content:"";
+  position:absolute;
+  top:-6px;
+  left:14px;
+  width:10px;
+  height:10px;
+  background:#fff;
+  transform:rotate(45deg);
+  box-shadow:-2px -2px 5px rgba(0,0,0,.05);
 }
 
 .pig-user-dropdown button{
-  border:none;
-  background:none;
-  padding:10px 14px;
+  width:100%;
   text-align:left;
+  padding:10px 14px;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  background:none;
+  border:none;
   cursor:pointer;
 }
 
 .pig-user-dropdown button:hover{
-  background:#f3f6fa;
+  background:#f4f6f9;
+}
+
+.pig-user-dropdown .logout{
+  color:#d9534f;
+}
+
+.pig-user-dropdown .logout:hover{
+  background:#fff1f0;
+}
+
+/* ======================================================
+   FOOTER – FIJO EN LA PARTE INFERIOR
+====================================================== */
+
+.sipad-footer{
+  width:100%;
+  background:#0f2e4d;
+  color:#fff;
+  font-size:13px;
+  text-align:center;
+  padding:10px 15px;
+  /* ✅ FIX: fixed en la parte inferior */
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:1000;
+  height:var(--footer-height);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.sipad-footer-inner{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.sipad-dev{
+  font-weight:600;
 }
 
 /* ======================================================
@@ -173,7 +344,7 @@ body{
 .module-page{
   max-width:1000px;
   width:100%;
-  margin:60px auto 140px auto;
+  margin:40px auto 40px auto;
   padding:0 24px;
   box-sizing:border-box;
 }
@@ -212,9 +383,8 @@ body{
   border:1px solid var(--color-border);
   box-shadow:var(--shadow-sm);
   padding:26px;
+  margin-bottom:20px;
 }
-
-/* TARJETA CLICABLE */
 
 .home-card{
   display:flex;
@@ -255,7 +425,7 @@ button{
 }
 
 .btn-primary{
-  background:var(--color-primary);
+  background:#1d4ed8;
   color:#fff;
 }
 
@@ -277,9 +447,68 @@ button{
   color:#fff;
 }
 
+.btn-success{
+  background:#16a34a;
+  color:#fff;
+}
+
+.btn-warning{
+  background:#f59e0b;
+  color:#fff;
+}
+
+.btn-sm{
+  height:24px;
+  font-size:12px;
+  padding:0 10px;
+}
+
+.btn-md{
+  height:32px;
+  font-size:13px;
+  padding:0 14px;
+}
+
+.btn-lg{
+  height:40px;
+  font-size:14px;
+  padding:0 18px;
+}
+
+.btn-primary,
+.btn-secondary{
+  height:23px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  border-radius:8px;
+}
+
 /* ======================================================
    TABLAS
 ====================================================== */
+
+.table-container{
+  width:100%;
+  overflow-x:auto;
+}
+
+.table-wrapper{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
+
+.table-container-centered{
+  width:100%;
+  max-width:720px;
+}
+
+.table-container-centered .table{
+  width:100%;
+}
 
 .table{
   width:100%;
@@ -289,6 +518,7 @@ button{
   table-layout:auto;
   position:relative;
   overflow:visible;
+  min-width:600px;
 }
 
 .table thead{
@@ -335,6 +565,21 @@ button{
 
 .table tbody tr:last-child td:last-child{
   border-bottom-right-radius:var(--radius-md);
+}
+
+.table th.text-center{
+  text-align:center;
+}
+
+.table .acciones{
+  display:flex;
+  gap:6px;
+  justify-content:flex-start;
+  align-items:center;
+}
+
+.table .acciones button{
+  min-width:70px;
 }
 
 /* ======================================================
@@ -396,12 +641,8 @@ button{
 ====================================================== */
 
 .modal{
-
-  
-  top:0;
-  
-  width:100vw;
-  height:100vh;
+  position:fixed;
+  inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -411,111 +652,18 @@ button{
 }
 
 .modal-content{
-
   background:#fff;
-
   width:440px;
-  max-width:92%;
-
+  max-width:92vw;
   padding:28px 32px;
-
   border-radius:var(--radius-md);
-
   box-shadow:var(--shadow-lg);
-
   position:relative;
-
   max-height:90vh;
-
   overflow:auto;
-
+  display:block;
+  margin:0 auto;
 }
-
-/* ======================================================
-   FORMULARIOS
-====================================================== */
-
-.form-group{
-  margin-bottom:18px;
-  display:flex;
-  flex-direction:column;
-}
-
-.form-group label{
-  font-size:var(--font-sm);
-  margin-bottom:6px;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select{
-  padding:11px 14px;
-  border-radius:var(--radius-sm);
-  border:1px solid var(--color-border);
-}
-
-.modal-actions{
-  display:flex;
-  justify-content:flex-end;
-  gap:10px;
-  margin-top:18px;
-}
-
-/* ======================================================
-   DASHBOARD MÓDULOS
-====================================================== */
-
-.module-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:28px;
-  margin-top:40px;
-}
-
-.module-card{
-  background:#fff;
-  border-radius:var(--radius-md);
-  border:1px solid var(--color-border);
-  box-shadow:var(--shadow-sm);
-  padding:26px;
-  text-align:center;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.module-card:hover{
-  transform:translateY(-6px);
-  box-shadow:var(--shadow-md);
-}
-
-.module-icon{
-  font-size:36px;
-  margin-bottom:12px;
-}
-
-.module-card h3{
-  margin:0;
-  font-size:16px;
-  color:var(--color-primary);
-}
-
-.module-card p{
-  margin-top:6px;
-  font-size:13px;
-  color:var(--color-text-muted);
-}
-
-.text-center{
-  text-align:center;
-}
-
-.table th.text-center{
-  text-align:center;
-}
-
-/* ===================================== */
-/* FIX MODALES CHROME */
-/* ===================================== */
 
 .modal-content input,
 .modal-content select,
@@ -529,22 +677,26 @@ button{
   min-width:0;
 }
 
-/* ===================================== */
-/* PASSWORD MODAL FIX GLOBAL */
-/* ===================================== */
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
+}
+
+/* ======================================================
+   PASSWORD MODAL
+====================================================== */
 
 .password-modal{
-  
+  position:fixed;
   inset:0;
   background:rgba(0,0,0,.45);
-
   display:flex;
   align-items:center;
   justify-content:center;
-
   padding-top:60px;
   box-sizing:border-box;
-
   z-index:3000;
 }
 
@@ -563,308 +715,152 @@ button{
   z-index:3001;
 }
 
-/* ===================================== */
-/* MODAL AISLADO DEL LAYOUT */
-/* ===================================== */
+/* ======================================================
+   FORMULARIOS
+====================================================== */
 
-.modal{
-
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999;
-
+.form-group{
+  margin-bottom:18px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
 }
 
-/* fuerza tamaño real del modal */
-
-.modal-content{
-
-  position: relative;
-
-  width: 440px;
-  max-width: 92vw;
-
-  display: block;
-
-  margin: 0 auto;
-
-}
-
-.sipad-footer{
-  width:100%;
-  background:#0f2e4d;
-  color:#fff;
+.form-group label{
   font-size:13px;
-  text-align:center;
-  padding:10px 15px;
-  
-  
-  
-  z-index:999;
-}
-
-.sipad-footer-inner{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-.sipad-dev{
   font-weight:600;
+  color:#1e293b;
+  margin-bottom:6px;
 }
-
-body{
-  padding-bottom:55px;
-}
-
-/* ============================= */
-/* HEADER RESPONSIVE */
-/* ============================= */
-
-.pig-nav{
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  width:100%;
-  padding-bottom:4px;
-}
-
-.pig-nav::-webkit-scrollbar{
-  display:none;
-}
-
-.pig-nav button{
-  flex:0 0 auto;
-  white-space:nowrap;
-}
-
-
-/* ============================= */
-/* FORMULARIOS MOBILE */
-/* ============================= */
 
 .form-group input,
 .form-group textarea,
 .form-group select{
+  padding:11px 14px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--color-border);
   width:100%;
-  font-size:14px; /* desktop */
+  font-size:14px;
   box-sizing:border-box;
 }
 
-@media (max-width: 768px){
-  .form-group input,
-  .form-group textarea,
-  .form-group select{
-    font-size:16px; /* evita zoom en iOS */
-  }
+.form-hint{
+  font-size:12px;
+  color:#64748b;
 }
 
-/* ============================= */
-/* TABLAS RESPONSIVE */
-/* ============================= */
-
-.table-container{
-  overflow-x:auto;
+.form-control{
+  height:38px;
+  padding:0 12px;
+  border-radius:8px;
+  border:1px solid #dcdfe4;
+  font-size:13px;
+  background:#fff;
 }
 
-.table{
-  min-width:600px;
+textarea.form-control{
+  height:auto;
+  min-height:90px;
+  padding:10px 12px;
 }
 
-/* ============================= */
-/* FOOTER CORRECTO (SIN FIXED) */
-/* ============================= */
+select.form-control{
+  height:38px;
+}
 
-body{
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:22px 28px;
+}
+
+.form-group.full{
+  grid-column:1 / -1;
+}
+
+/* ======================================================
+   DASHBOARD MÓDULOS
+====================================================== */
+
+.module-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:28px;
+  margin-top:40px;
+}
+
+.module-card{
+  background:#fff;
+  border-radius:var(--radius-md);
+  border:1px solid var(--color-border);
+  box-shadow:var(--shadow-sm);
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:.25s;
+}
+
+.module-card:hover{
+  transform:translateY(-6px);
+  box-shadow:var(--shadow-md);
+}
+
+.module-icon{
+  font-size:28px;
+  margin-bottom:8px;
+}
+
+.module-card h3{
+  margin:0;
+  font-size:14px;
+  color:var(--color-primary);
+}
+
+.module-card p{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--color-text-muted);
+}
+
+/* ======================================================
+   SEGTEC CARDS
+====================================================== */
+
+.segtec-card{
+  background:#fff;
+  border-radius:12px;
+  padding:24px 28px;
+  margin-bottom:24px;
+  border:1px solid #e5e7eb;
+}
+
+.card-header{
+  margin-bottom:18px;
+}
+
+.card-header h3{
+  font-size:15px;
+  font-weight:600;
+}
+
+.card-body{
   display:flex;
   flex-direction:column;
-  min-height:100vh;
-  padding-bottom:0 !important; /* elimina hack anterior */
-}
-
-main{
-  flex:1;
-}
-
-
-/* ============================= */
-/* MODALES MOBILE */
-/* ============================= */
-
-.modal-content{
-  width:100%;
-  max-width:95%;
-  padding:20px;
-}
-
-/* ============================= */
-/* TEXTO AJUSTE */
-/* ============================= */
-
-.module-header h1{
-  font-size:1.4rem;
-}
-
-.module-subtext{
-  font-size:0.85rem;
-}
-
-html, body{
-  max-width:100%;
-  overflow-x:hidden;
-}
-
-.pig-title{
-  font-weight:600;
-  font-size:14px;
+  gap:10px;
 }
 
 /* ======================================================
-   MOBILE REAL (AISLADO)
+   COMPONENTES REUTILIZABLES
 ====================================================== */
 
-@media (max-width:768px){
-
-  /* HEADER */
-  .pig-header-inner{
-    flex-wrap:wrap;
-    gap:10px;
-    padding:10px 12px;
-  }
-
-  .pig-nav{
-    overflow-x:auto;
-    width:100%;
-  }
-
-  .pig-nav button{
-    flex:0 0 auto;
-    font-size:12px;
-    padding:6px 10px;
-  }
-
-  /* GRID */
-  .home-grid,
-  .module-grid{
-    grid-template-columns:1fr;
-    gap:18px;
-  }
-
-  /* CONTENEDOR */
-  .module-page{
-    max-width:100% !important;
-    margin:30px auto !important;
-    padding:0 16px !important;
-  }
-
-  /* BOTONES */
-  button{
-    min-height:44px;
-  }
-
+.text-center{
+  text-align:center;
 }
 
-/* ======================================================
-   AJUSTE FINO DESKTOP (ESCALA PROFESIONAL)
-====================================================== */
-
-@media (min-width:1024px){
-
-  /* HEADER MÁS COMPACTO */
-  .pig-header-inner{
-    padding:8px 20px;
-  }
-  
-
-  .pig-nav button{
-    padding:5px 10px;
-    font-size:12px;
-  }
-
-  /* TARJETAS MÁS COMPACTAS */
-  .module-card{
-    padding:18px;
-  }
-
-  .module-icon{
-    font-size:28px;
-    margin-bottom:8px;
-  }
-
-  .module-card h3{
-    font-size:14px;
-  }
-
-  .module-card p{
-    font-size:12px;
-  }
-
-  /* GRID MÁS ELEGANTE */
-  .module-grid{
-    gap:20px;
-  }
-
-  /* BOTONES MÁS PROFESIONALES */
-  button{
-    padding:6px 12px;
-    font-size:12px;
-    min-height:auto;
-  }
-  
-
-  /* TABLAS MÁS COMPACTAS */
-  .table th,
-  .table td{
-    padding:10px 12px;
-    font-size:12px;
-  }
-
-}
-
-/* ======================================================
-   FIX GLOBAL MODALES SIPAD (CRÍTICO)
-====================================================== */
-
-.modal,
-.modal-content{
-  
-  max-width:600px;
-  margin:0 auto;
-}
-
-.modal-content{
-  display:block !important;
-}
-
-/* ===== FIX GLOBAL OVERFLOW ===== */
-*{
-  box-sizing:border-box;
-}
-
-html, body{
-  overflow-x:hidden;
-}
-
-/* ===== HEADER MOBILE CENTER ===== */
-@media (max-width:768px){
-  .pig-header-inner{
-    justify-content:center;
-    text-align:center;
-  }
-}
-
-/* ===================================== */
-/* COMPONENTES REUTILIZABLES */
-/* ===================================== */
-
-.table-container{
-  width:100%;
-  overflow-x:auto;
+.center-actions{
+  display:flex;
+  justify-content:center;
+  margin:24px 0;
 }
 
 .module-actions{
@@ -872,6 +868,11 @@ html, body{
   justify-content:center;
   gap:12px;
   margin-bottom:20px;
+}
+
+.module-actions.space-between{
+  justify-content:space-between;
+  align-items:center;
 }
 
 .empty-state{
@@ -888,38 +889,15 @@ html, body{
   margin-bottom:15px;
 }
 
-/* ===================================== */
-/* TARJETAS */
-/* ===================================== */
-
-.card{
-  background:#fff;
-  border-radius:12px;
-  padding:24px;
-  box-shadow:var(--shadow-sm);
-  border:1px solid var(--color-border);
-  margin-bottom:20px;
-}
-
-/* ===================================== */
-/* GRID RESPONSIVO */
-/* ===================================== */
+/* ======================================================
+   GRID RESPONSIVO
+====================================================== */
 
 .grid-3{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:24px;
 }
-
-@media (max-width:768px){
-  .grid-3{
-    grid-template-columns:1fr;
-  }
-}
-
-/* ===================================== */
-/* ITEM DE GRID */
-/* ===================================== */
 
 .grid-item{
   display:flex;
@@ -938,293 +916,108 @@ html, body{
   font-weight:500;
 }
 
-/* ===================================== */
-/* TABLA */
-/* ===================================== */
+/* ======================================================
+   BADGES
+====================================================== */
 
-.table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-.table th,
-.table td{
-  padding:10px;
-  text-align:left;
-  border-bottom:1px solid #eee;
-}
-
-.center-actions{
-  display:flex;
-  justify-content:center;
-  margin:24px 0;
-}
-
-.btn-primary,
-.btn-secondary{
-  height:23px;
-  padding:0 12px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-size:12px;
-  border-radius:8px;
-}
-
-.module-actions.space-between{
-  justify-content:space-between;
-  align-items:center;
-}
-
-/* ===================================== */
-/* GRID DE FORMULARIOS (REEMPLAZO SEGTEC) */
-/* ===================================== */
-
-.form-grid{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:20px;
-}
-
-.form-group.full{
-  grid-column:1 / -1;
-}
-
-/* RESPONSIVE */
-@media (max-width:768px){
-  .form-grid{
-    grid-template-columns:1fr;
-  }
-}
-
-/* ===================================== */
-/* FORMULARIOS PROFESIONALES */
-/* ===================================== */
-
-.form-grid{
-  display:grid;
-  grid-template-columns:repeat(2, 1fr);
-  gap:22px 28px;
-}
-
-.form-group{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-.form-group.full{
-  grid-column:1 / -1;
-}
-
-/* LABEL */
-.form-group label{
-  font-size:13px;
-  font-weight:600;
-  color:#1e293b;
-}
-
-/* HINT */
-.form-hint{
-  font-size:12px;
-  color:#64748b;
-}
-
-/* INPUTS */
-.form-control{
-  height:38px;
-  padding:0 12px;
-  border-radius:8px;
-  border:1px solid #dcdfe4;
-  font-size:13px;
-  background:#fff;
-}
-
-/* TEXTAREA */
-textarea.form-control{
-  height:auto;
-  min-height:90px;
-  padding:10px 12px;
-}
-
-/* SELECT */
-select.form-control{
-  height:38px;
-}
-
-/* CARDS (BLOQUES) */
-.segtec-card,
-.card{
-  background:#fff;
+.badge{
+  display:inline-block;
+  padding:2px 8px;
   border-radius:12px;
-  padding:24px 28px;
-  margin-bottom:24px;
-  border:1px solid #e5e7eb;
-}
-
-/* HEADER DE BLOQUE */
-.card-header{
-  margin-bottom:18px;
-}
-
-.card-header h3{
-  font-size:15px;
+  font-size:11px;
   font-weight:600;
 }
 
-/* BODY */
-.card-body{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.badge-success{
+  background:var(--color-success-bg);
+  color:var(--color-success);
 }
 
-/* RESPONSIVE */
-@media (max-width:768px){
-  .form-grid{
-    grid-template-columns:1fr;
-  }
+.badge-danger{
+  background:var(--color-danger-bg);
+  color:var(--color-danger);
 }
 
-.table .acciones{
-  display:flex;
-  gap:6px;
-  justify-content:flex-start;
-  align-items:center;
+.badge-warning{
+  background:var(--color-warning-bg);
+  color:var(--color-warning);
 }
 
-.table .acciones button{
-  min-width:70px;
-}
-
-.btn-primary{
-  background:#1d4ed8;
-  color:#fff;
-}
-
-.btn-secondary{
+.badge-neutral{
   background:#f3f4f6;
-  color:#374151;
+  color:#6b7280;
 }
 
-.btn-success{
-  background:#16a34a;
-  color:#fff;
-}
-
-.btn-warning{
-  background:#f59e0b;
-  color:#fff;
-}
-
-.btn-sm{
-  height:24px;
-  font-size:12px;
-  padding:0 10px;
-}
-
-.btn-md{
-  height:32px;
-  font-size:13px;
-  padding:0 14px;
-}
-
-.btn-lg{
-  height:40px;
-  font-size:14px;
-  padding:0 18px;
-}
-
-.pig-header-right{
-  display:flex;
-  align-items:center;
-  gap:16px;
-  margin-left:auto; /* 🔥 empuja todo a la derecha */
+.badge-info{
+  background:#dbeafe;
+  color:#1d4ed8;
 }
 
 /* ======================================================
-   HEADER SIPAD v2 (ESTRUCTURA PROFESIONAL)
-   🔥 NO ROMPE LO EXISTENTE – SOLO AJUSTA
+   BANNER GESTIÓN MULTI-TENANT
 ====================================================== */
 
-/* CONTENEDOR GENERAL */
-.pig-header-inner{
-  display:flex;
-  flex-direction:column; /* 🔥 ahora en dos filas */
-  height:auto !important;
-  gap:4px;
-}
-
-/* FILA SUPERIOR */
-.pig-header-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:100%;
-}
-
-/* FILA INFERIOR */
-.pig-header-bottom{
-  display:flex;
-  justify-content:flex-start;
-  align-items:center;
-  width:100%;
-  margin-top:2px;
-}
-
-/* IZQUIERDA */
-.pig-header-left{
-  display:flex;
-  flex-direction:column;
-}
-
-/* DERECHA (BOTONES) */
-.pig-header-right{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-left:auto;
-}
-
-/* NAV LIMPIO */
-.pig-nav{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-/* BOTONES MÁS PRO */
-.pig-nav button{
-  height:28px;
+.pig-gestion-banner{
+  background:#1e3a8a;
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
+  gap:12px;
+  padding:5px 16px;
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.2px;
 }
 
-/* USUARIO ABAJO */
-.pig-user{
-  margin-left:0; /* 🔥 quita desplazamiento viejo */
+.pig-gestion-banner strong{
+  font-weight:700;
 }
 
-/* TEXTO USUARIO */
-.pig-user-name{
-  font-size:13px;
-  font-weight:600;
-}
-
-.pig-user-meta{
+.pig-gestion-banner button{
+  background:rgba(255,255,255,0.15);
+  color:#fff;
+  border:1px solid rgba(255,255,255,0.3);
+  border-radius:6px;
+  padding:2px 10px;
   font-size:11px;
-  opacity:.85;
+  cursor:pointer;
+  transition:.15s;
+  min-height:auto;
 }
 
-/* RESPONSIVE AJUSTADO */
+.pig-gestion-banner button:hover{
+  background:rgba(255,255,255,0.25);
+}
+
+/* ======================================================
+   INPUT ERROR
+====================================================== */
+
+.input-error{
+  border-color:#dc2626 !important;
+}
+
+.error-msg{
+  color:#c82333;
+  font-size:12px;
+  margin-top:4px;
+}
+
+/* ======================================================
+   RESPONSIVE – MOBILE
+====================================================== */
+
 @media (max-width:768px){
+
+  body{
+    padding-top:90px; /* más espacio por header que se expande */
+  }
 
   .pig-header-top{
     flex-direction:column;
     align-items:center;
-    gap:8px;
+    gap:6px;
   }
 
   .pig-header-right{
@@ -1237,338 +1030,112 @@ select.form-control{
     text-align:center;
   }
 
-}
-
-/* ======================================================
-   HEADER SIPAD – VERSIÓN COMPACTA PROFESIONAL
-====================================================== */
-
-.pig-header-inner{
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  padding:6px 16px !important;
-  height:auto !important;
-  gap:2px;
-}
-
-/* FILA SUPERIOR */
-.pig-header-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  width:100%;
-}
-
-/* FILA INFERIOR */
-.pig-header-bottom{
-  display:flex;
-  align-items:center;
-  width:100%;
-  margin:0;
-}
-
-/* IZQUIERDA */
-.pig-header-left{
-  display:flex;
-  flex-direction:column;
-  gap:2px;
-}
-
-/* DERECHA BOTONES */
-.pig-header-right{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  margin-left:auto;
-}
-
-/* NAV */
-.pig-nav{
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-
-/* BOTONES MÁS PEQUEÑOS */
-.pig-nav button{
-  height:26px;
-  font-size:12px;
-  padding:4px 10px;
-}
-
-/* USUARIO INLINE */
-.pig-user{
-  margin:0;
-}
-
-/* 🔥 CLAVE: UNA SOLA LÍNEA VISUAL */
-.pig-user-info{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  flex-wrap:wrap;
-}
-
-/* NOMBRE */
-.pig-user-name{
-  font-size:12px;
-  font-weight:500;
-}
-
-/* META INLINE */
-.pig-user-meta{
-  font-size:11px;
-  opacity:.75;
-}
-
-/* 🔥 elimina salto visual */
-.pig-user-meta{
-  font-size:11px;
-  opacity:.75;
-  letter-spacing:.2px;
-}
-
-/* MOBILE */
-@media (max-width:768px){
-
-  .pig-header-top{
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-  }
-
-  .pig-header-bottom{
-    justify-content:center;
-    text-align:center;
-  }
-
   .pig-user-info{
     justify-content:center;
   }
 
+  .pig-nav{
+    overflow-x:auto;
+    width:100%;
+  }
+
+  .pig-nav button{
+    font-size:12px;
+    padding:6px 10px;
+  }
+
+  .home-grid,
+  .module-grid{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+
+  .module-page{
+    max-width:100% !important;
+    margin:30px auto !important;
+    padding:0 16px !important;
+  }
+
+  button{
+    min-height:44px;
+  }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select{
+    font-size:16px; /* evita zoom en iOS */
+  }
+
+  .grid-3{
+    grid-template-columns:1fr;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .modal-content{
+    width:100%;
+    max-width:95%;
+    padding:20px;
+  }
+
+  .module-header h1{
+    font-size:1.4rem;
+  }
+
+  .module-subtext{
+    font-size:0.85rem;
+  }
+
 }
 
 /* ======================================================
-   DROPDOWN USUARIO – POSICIÓN PROFESIONAL
+   RESPONSIVE – DESKTOP
 ====================================================== */
 
-.pig-user{
-  position:relative;
-}
+@media (min-width:1024px){
 
-/* 🔥 CLAVE: anclar al inicio del texto */
-.pig-user-dropdown{
-  position:absolute;
-  top:100%;
-  left:0; /* 👈 aquí está la solución */
+  .pig-header-inner{
+    padding:8px 20px;
+  }
 
-  margin-top:6px;
+  .pig-nav button{
+    padding:5px 10px;
+    font-size:12px;
+  }
 
-  min-width:200px;
+  .module-card{
+    padding:18px;
+  }
 
-  background:#fff;
-  border-radius:8px;
-  box-shadow:0 8px 20px rgba(0,0,0,.15);
+  .module-icon{
+    font-size:28px;
+    margin-bottom:8px;
+  }
 
-  padding:6px 0;
-  z-index:999;
-}
+  .module-card h3{
+    font-size:14px;
+  }
 
-/* OPCIONAL: mejor look */
-.pig-user-dropdown button{
-  width:100%;
-  text-align:left;
-  padding:8px 14px;
-  font-size:13px;
-  background:none;
-  border:none;
-  cursor:pointer;
-}
+  .module-card p{
+    font-size:12px;
+  }
 
-.pig-user-dropdown button:hover{
-  background:#f5f7fa;
-}
+  .module-grid{
+    gap:20px;
+  }
 
-/* ======================================================
-   HEADER UX PREMIUM – ICONOS + ANIMACIONES
-====================================================== */
+  button{
+    padding:6px 12px;
+    font-size:12px;
+    min-height:auto;
+  }
 
-/* USER LAYOUT */
-.pig-user-info{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  cursor:pointer;
-}
+  .table th,
+  .table td{
+    padding:10px 12px;
+    font-size:12px;
+  }
 
-/* ICONO USUARIO */
-.pig-user-icon{
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.15);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-}
-
-/* TEXTO */
-.pig-user-text{
-  display:flex;
-  flex-direction:column;
-  line-height:1.2;
-}
-
-/* HOVER SUAVE */
-.pig-user-info:hover{
-  opacity:0.85;
-}
-
-/* ======================================================
-   DROPDOWN PRO
-====================================================== */
-
-.pig-user-dropdown{
-  position:absolute;
-  top:100%;
-  left:0;
-  margin-top:8px;
-
-  min-width:220px;
-
-  background:#fff;
-  border-radius:10px;
-  box-shadow:0 12px 30px rgba(0,0,0,.18);
-
-  padding:6px 0;
-
-  opacity:0;
-  transform:translateY(-6px);
-  pointer-events:none;
-  transition:all .18s ease;
-
-  z-index:999;
-}
-
-/* SHOW */
-.pig-user-dropdown.show{
-  opacity:1;
-  transform:translateY(0);
-  pointer-events:auto;
-}
-
-/* CARET */
-.pig-user-dropdown::before{
-  content:"";
-  position:absolute;
-  top:-6px;
-  left:14px;
-
-  width:10px;
-  height:10px;
-
-  background:#fff;
-  transform:rotate(45deg);
-
-  box-shadow:-2px -2px 5px rgba(0,0,0,.05);
-}
-
-/* BOTONES */
-.pig-user-dropdown button{
-  width:100%;
-  text-align:left;
-  padding:10px 14px;
-  font-size:13px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-
-  background:none;
-  border:none;
-  cursor:pointer;
-}
-
-/* HOVER */
-.pig-user-dropdown button:hover{
-  background:#f4f6f9;
-}
-
-/* LOGOUT DESTACADO */
-.pig-user-dropdown .logout{
-  color:#d9534f;
-}
-
-.pig-user-dropdown .logout:hover{
-  background:#fff1f0;
-}
-
-/* ======================================================
-   BANNER GESTIÓN MULTI-TENANT
-====================================================== */
-
-.pig-gestion-banner {
-  background: #1e3a8a;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 5px 16px;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: .2px;
-}
-
-.pig-gestion-banner strong {
-  font-weight: 700;
-}
-
-.pig-gestion-banner button {
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 6px;
-  padding: 2px 10px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: .15s;
-  min-height: auto;
-}
-
-.pig-gestion-banner button:hover {
-  background: rgba(255,255,255,0.25);
-}
-
-.pig-header-inner {
-  justify-content: center;
-}
-
-.pig-header-top {
-  align-items: center;
-}
-
-.pig-header-right {
-  display: flex;
-  align-items: center;
-}
-
-/* ===================================== */
-/* CENTRADO PROFESIONAL TABLAS ADMIN */
-/* ===================================== */
-
-.table-wrapper{
-  display:flex;
-  justify-content:center;
-  width:100%;
-}
-
-.table-container-centered{
-  width:100%;
-  max-width:720px; /* 🔥 ancho profesional */
-}
-
-.table-container-centered .table{
-  width:100%;
 }
