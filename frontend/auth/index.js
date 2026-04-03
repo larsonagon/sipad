@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sessionStorage.setItem('token', json.token);
         sessionStorage.setItem('user', JSON.stringify(json.user));
+        sessionStorage.setItem('entidad_id', json.user.entidad_id);
         sessionStorage.setItem('lastActivity', Date.now());
 
         window.location.href = '/home/index.html'
