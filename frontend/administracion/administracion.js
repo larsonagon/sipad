@@ -21,6 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const esMaster = user?.es_master_admin === true
   const nivel    = user?.nivel || user?.nivel_acceso || 0
 
+  // Helper para ocultar tarjeta por id
+  function ocultar(id) {
+    const el = document.getElementById(id)
+    if (el) el.style.display = 'none'
+  }
+
   // =========================
   // SUPER ADMIN SIN ENTIDAD SELECCIONADA
   // → Solo muestra tarjeta Entidades
@@ -28,38 +34,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (esMaster && !gestionEntidadId) {
 
-    // Ocultar todo menos Entidades
-    const tarjetasOcultar = [
-      'btnDependencias',
-      'btnCargos',
-      'btnNiveles',
-      'btnRoles',
-      'btnUsuarios'
-    ]
+    ocultar('btnDependencias')
+    ocultar('btnCargos')
+    ocultar('btnNiveles')
+    ocultar('btnRoles')
+    ocultar('btnUsuarios')
 
-    tarjetasOcultar.forEach(id => {
-      const btn = document.getElementById(id)
-      if (btn) {
-        // Ocultar la tarjeta padre
-        const card = btn.closest('.module-card') || btn.closest('[class*="card"]') || btn
-        card.style.display = 'none'
-      }
-    })
+    // Mensaje orientativo
+    const p = document.querySelector('.module-header p')
+    if (p) p.textContent = 'Selecciona una entidad para gestionar su configuración interna.'
 
-    // Mostrar mensaje orientativo
-    const header = document.querySelector('.module-header')
-    if (header) {
-      const aviso = document.createElement('p')
-      aviso.style.cssText = `
-        color: #6b7280;
-        font-size: 14px;
-        margin-top: 8px;
-      `
-      aviso.textContent = 'Selecciona una entidad para gestionar su configuración interna.'
-      header.appendChild(aviso)
-    }
-
-    // Solo navegar a Entidades
     document.getElementById('btnEntidades')
       ?.addEventListener('click', () => {
         window.location.href = '/administracion/entidades/index.html'
@@ -70,17 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // =========================
   // SUPER ADMIN CON ENTIDAD SELECCIONADA
-  // → Muestra todo menos Entidades
+  // → Todo menos Entidades + botón volver
   // =========================
 
   if (esMaster && gestionEntidadId) {
 
-    // Ocultar tarjeta Entidades (ya está gestionando una)
-    const btnEntidades = document.getElementById('btnEntidades')
-    if (btnEntidades) {
-      const card = btnEntidades.closest('.module-card') || btnEntidades.closest('[class*="card"]') || btnEntidades
-      card.style.display = 'none'
-    }
+    ocultar('btnEntidades')
 
     // Título dinámico
     const h1 = document.querySelector('.module-header h1')
@@ -107,13 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
     `
 
     btnSalir.addEventListener('mouseenter', () => {
-      btnSalir.style.background  = '#b91c1c'
-      btnSalir.style.boxShadow   = '0 6px 16px rgba(220,38,38,0.4)'
+      btnSalir.style.background = '#b91c1c'
+      btnSalir.style.boxShadow  = '0 6px 16px rgba(220,38,38,0.4)'
     })
 
     btnSalir.addEventListener('mouseleave', () => {
-      btnSalir.style.background  = '#dc2626'
-      btnSalir.style.boxShadow   = '0 4px 12px rgba(220,38,38,0.3)'
+      btnSalir.style.background = '#dc2626'
+      btnSalir.style.boxShadow  = '0 4px 12px rgba(220,38,38,0.3)'
     })
 
     btnSalir.addEventListener('click', () => {
@@ -128,22 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // =========================
     // USUARIO NORMAL
+    // → Sin Entidades, sin Cargos si nivel < 90
     // =========================
 
-    // Entidades: solo master admin
-    const btnEntidades = document.getElementById('btnEntidades')
-    if (btnEntidades) {
-      const card = btnEntidades.closest('.module-card') || btnEntidades.closest('[class*="card"]') || btnEntidades
-      card.style.display = 'none'
-    }
+    ocultar('btnEntidades')
 
-    // Cargos: solo nivel >= 90
     if (nivel < 90) {
-      const btnCargos = document.getElementById('btnCargos')
-      if (btnCargos) {
-        const card = btnCargos.closest('.module-card') || btnCargos.closest('[class*="card"]') || btnCargos
-        card.style.display = 'none'
-      }
+      ocultar('btnCargos')
     }
 
   }
@@ -151,6 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // =========================
   // NAVEGACIÓN (común a todos)
   // =========================
+
+  document.getElementById('btnEntidades')
+    ?.addEventListener('click', () => {
+      window.location.href = '/administracion/entidades/index.html'
+    })
 
   document.getElementById('btnDependencias')
     ?.addEventListener('click', () => {
@@ -175,11 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnNiveles')
     ?.addEventListener('click', () => {
       window.location.href = '/administracion/niveles/index.html'
-    })
-
-  document.getElementById('btnEntidades')
-    ?.addEventListener('click', () => {
-      window.location.href = '/administracion/entidades/index.html'
     })
 
 })
