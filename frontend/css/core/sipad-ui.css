@@ -782,7 +782,7 @@ textarea.form-control{
 }
 
 select.form-control{
-  height:38px;
+  min-height:38px;
 }
 
 .form-grid{
