@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
+import { sugerirSerieDesdeActividad } from './trd-ai.engine.js'
 
-console.log('🔥 TRD-AI REPOSITORY CARGADO (MOTOR V6 AUTO-EVOLUTIVO)')
+console.log('🔥 TRD-AI REPOSITORY CARGADO (MOTOR V2 + CATÁLOGO BD)')
 
 // =====================================================
 // CONFIGURACIÓN LÉXICA
@@ -442,7 +443,9 @@ return true
 },
 
 // =====================================================
-// MOTOR TRD-AI
+// MOTOR TRD-AI V2
+// Capas 1-3: lógica interna del repository (original)
+// Capa 4: catálogo real BD vía engine
 // =====================================================
 
 async ejecutarMotorInteligente(){
@@ -472,6 +475,7 @@ const tipologias=extraerTipologias(actividad.documentos_generados)
 let serie=null
 let subserie=null
 let confianza=0.7
+let origen='desconocido'
 
 // 1️⃣ patrón documental
 
@@ -484,6 +488,7 @@ if(patron){
 serie=patron.serie
 subserie=patron.subserie
 confianza=0.92
+origen='patron'
 break
 
 }
@@ -501,6 +506,7 @@ if(sub){
 subserie=sub
 serie=obtenerSerieDesdeSubserie(sub)
 confianza=0.85
+origen='heuristica'
 
 }
 
@@ -517,6 +523,25 @@ if(emergente){
 serie=emergente.serie
 subserie=tipologias[0]||null
 confianza=0.75
+origen='autoevolutivo'
+
+}
+
+}
+
+// 4️⃣ catálogo real BD (engine V2)
+
+if(!serie){
+
+const clasificacion=await sugerirSerieDesdeActividad(actividad, db)
+
+if(clasificacion && clasificacion.serie_sugerida?.nombre &&
+   clasificacion.serie_sugerida.nombre !== 'DOCUMENTACION GENERAL'){
+
+serie=clasificacion.serie_sugerida.nombre
+subserie=clasificacion.subserie_sugerida?.nombre||null
+confianza=clasificacion.confianza??0.65
+origen=clasificacion.origen||'catalogo'
 
 }
 
@@ -532,7 +557,7 @@ actividad_id:actividad.id,
 nombre_serie:serie,
 nombre_subserie:subserie,
 tipologia_documental:tipologiaPrincipal,
-justificacion:'Propuesta generada automáticamente desde SEGTEC TRD-AI',
+justificacion:`Propuesta generada automáticamente — origen: ${origen}`,
 nivel_confianza:confianza
 
 })
@@ -544,6 +569,7 @@ serie,
 subserie,
 tipologia:tipologiaPrincipal,
 confianza,
+origen,
 propuesta:propuestaID
 
 })

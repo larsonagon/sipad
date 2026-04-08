@@ -74,8 +74,15 @@ import auditoriaRoutes from './backend/modules/auditoria/auditoria.routes.js'
 import { runTRDMigration } from './backend/modules/trd/trd.migration.js'
 import { runActividadesMigration } from './backend/modules/actividades/actividades.migration.js'
 
-// ✅ NUEVO: SEGTEC
+// ✅ SEGTEC
 import segtecRoutes from './backend/modules/segtec/segtec.routes.js'
+
+// ✅ TRD-AI
+import { runTRDAIMigration }    from './backend/modules/trd-ai/trd-ai.migration.js'
+import { TRDAIRepository }      from './backend/modules/trd-ai/trd-ai.repository.js'
+import { TRDAIService }         from './backend/modules/trd-ai/trd-ai.service.js'
+import { TRDAIController }      from './backend/modules/trd-ai/trd-ai.controller.js'
+import { registerTRDAIRoutes }  from './backend/modules/trd-ai/trd-ai.routes.js'
 
 // ==========================================================
 // INIT
@@ -122,7 +129,18 @@ async function init() {
       await runTRDMigration(db)
       await runActividadesMigration(db)
 
+      // ✅ TRD-AI migration
+      await runTRDAIMigration(db)
+
     }
+
+    // ==================================================
+    // INSTANCIAR TRD-AI
+    // ==================================================
+
+    const trdAIRepository = TRDAIRepository(db)
+    const trdAIService    = TRDAIService(trdAIRepository)
+    const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
     // DEBUG REQUESTS
@@ -161,8 +179,11 @@ async function init() {
     app.use('/api/configuracion', configuracionRoutes)
     app.use('/api/auditoria', auditoriaRoutes)
 
-    // ✅ NUEVO: SEGTEC
+    // ✅ SEGTEC
     app.use('/api/segtec', segtecRoutes)
+
+    // ✅ TRD-AI
+    registerTRDAIRoutes(app, trdAIController)
 
     // ==================================================
     // 🚨 404 API (CLAVE)

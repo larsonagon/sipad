@@ -6,6 +6,7 @@
  * - Subseries
  * - Retención
  * - Detección por tipologías
+ * V2 — capa 4: catálogo real BD
  */
 
 // ===================================================
@@ -225,10 +226,77 @@ return coincidencias/totalTokens
 }
 
 // ===================================================
+// CAPA 4: CATÁLOGO REAL BD
+// ===================================================
+
+async function buscarEnCatalogo(db, tokensTexto){
+
+if(!db) return null
+
+try{
+
+const termino=tokensTexto
+.filter(t=>t.length>3)
+.slice(0,3)
+.join(' ')
+
+if(!termino) return null
+
+const like=`%${termino}%`
+
+// buscar en subseries primero (más específico)
+const subseries=await db.all(
+`SELECT
+cs.nombre  AS serie,
+csub.nombre AS subserie
+FROM trd_catalogo_subseries csub
+JOIN trd_catalogo_series cs ON cs.id=csub.serie_id
+WHERE csub.nombre ILIKE $1
+OR cs.nombre ILIKE $1
+LIMIT 5`,
+[like]
+)
+
+if(subseries && subseries.length>0){
+return{
+serie_sugerida:{nombre:subseries[0].serie},
+subserie_sugerida:{nombre:subseries[0].subserie},
+confianza:0.78,
+origen:'catalogo'
+}
+}
+
+// buscar solo serie si no hay subserie
+const series=await db.all(
+`SELECT nombre AS serie
+FROM trd_catalogo_series
+WHERE nombre ILIKE $1
+LIMIT 3`,
+[like]
+)
+
+if(series && series.length>0){
+return{
+serie_sugerida:{nombre:series[0].serie},
+subserie_sugerida:{nombre:null},
+confianza:0.65,
+origen:'catalogo'
+}
+}
+
+}catch(err){
+console.error('TRD-AI capa 4 error:',err.message)
+}
+
+return null
+
+}
+
+// ===================================================
 // MOTOR DE CLASIFICACIÓN
 // ===================================================
 
-export function sugerirSerieDesdeActividad(actividad={}){
+export async function sugerirSerieDesdeActividad(actividad={}, db=null){
 
 const texto=normalizar(`
 ${actividad.nombre||''}
@@ -248,7 +316,7 @@ actividad.documentos_generados
 )
 
 // ---------------------------------------------------
-// detectar por tipologías
+// CAPA 1: detectar por tipologías
 // ---------------------------------------------------
 
 for(const tipologia of tipologias){
@@ -257,12 +325,13 @@ const patron=detectarPatronDocumental(tipologia)
 
 if(patron){
 
-console.log('Clasificación por tipología detectada:', patron.serie)
+console.log('Capa 1 — clasificación por tipología:', patron.serie)
 
 return{
 serie_sugerida:{nombre:patron.serie},
 subserie_sugerida:{nombre:tipologia},
-confianza:0.92
+confianza:0.92,
+origen:'patron'
 }
 
 }
@@ -270,7 +339,7 @@ confianza:0.92
 }
 
 // ---------------------------------------------------
-// matriz archivística
+// CAPAS 2-3: matriz archivística
 // ---------------------------------------------------
 
 let mejor=null
@@ -308,22 +377,34 @@ subserie:regla.subserie
 console.log('Mejor coincidencia:', mejor)
 console.log('Score final:', mejorScore)
 
-// ---------------------------------------------------
-// resultado
-// ---------------------------------------------------
-
 if(mejorScore>=0.4){
+
+console.log('Capa 2-3 — matriz archivística:', mejor.serie)
 
 return{
 serie_sugerida:{nombre:mejor.serie},
 subserie_sugerida:{nombre:mejor.subserie},
-confianza:Number((0.65+mejorScore*0.25).toFixed(2))
+confianza:Number((0.65+mejorScore*0.25).toFixed(2)),
+origen:'matriz'
 }
 
 }
 
 // ---------------------------------------------------
-// fallback
+// CAPA 4: catálogo real BD
+// ---------------------------------------------------
+
+console.log('Capa 4 — consultando catálogo BD...')
+
+const resultadoCatalogo=await buscarEnCatalogo(db, tokensTexto)
+
+if(resultadoCatalogo){
+console.log('Capa 4 — encontrado:', resultadoCatalogo.serie_sugerida.nombre)
+return resultadoCatalogo
+}
+
+// ---------------------------------------------------
+// FALLBACK
 // ---------------------------------------------------
 
 console.log('No se encontró coincidencia suficiente')
@@ -331,7 +412,8 @@ console.log('No se encontró coincidencia suficiente')
 return{
 serie_sugerida:{nombre:'DOCUMENTACION GENERAL'},
 subserie_sugerida:{nombre:null},
-confianza:0.4
+confianza:0.4,
+origen:'fallback'
 }
 
 }
