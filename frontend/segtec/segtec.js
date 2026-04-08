@@ -19,11 +19,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     .toLowerCase()
     .replace(/\s+/g, '');
 
-  // ✅ Permisos por rol
-  const esSuperAdmin  = rolNormalizado === 'superadmin'
-  const esArchivista  = rolNormalizado === 'archivista'
-  const puedeAnalizar = esSuperAdmin || esArchivista
-  const puedeCrear    = !esSuperAdmin
+  const esSuperAdmin  = rolNormalizado === 'superadmin';
+  const esArchivista  = rolNormalizado === 'archivista';
+  const puedeAnalizar = esSuperAdmin || esArchivista;
+  const puedeCrear    = !esSuperAdmin;
 
   const nuevaActividadBtn = document.getElementById('nuevaActividad');
   const tablaContainer   = document.getElementById('tablaRegistros');
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const modalFooter    = document.getElementById('modalFooter');
   const cerrarModalBtn = document.getElementById('cerrarModal');
 
-  // ✅ Ocultar botón nueva actividad para Super Admin
   if (!puedeCrear) {
     nuevaActividadBtn?.classList.add('hidden');
   }
@@ -44,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // API FETCH
-  // ✅ FIX: X-Entidad-Id solo para Super Admin
+  // FIX: Content-Type para POST aunque no haya body
   // =====================================================
 
   async function apiFetch(url, options = {}) {
@@ -54,19 +52,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...(options.headers || {})
     };
 
-    // Solo el Super Admin puede hacer override de entidad
     if (esSuperAdmin) {
       const entidadId =
         sessionStorage.getItem('gestion_entidad_id') ||
         sessionStorage.getItem('entidad_id') ||
-        null
+        null;
 
       if (entidadId) {
-        headers['X-Entidad-Id'] = entidadId
+        headers['X-Entidad-Id'] = entidadId;
       }
     }
 
-    if (options.body) {
+    // ✅ FIX: incluir Content-Type en POST aunque no haya body
+    if (options.body || options.method === 'POST') {
       headers['Content-Type'] = 'application/json';
     }
 
@@ -224,6 +222,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // MODAL ANÁLISIS
+  // FIX: Content-Type en POST + mapeo robusto de campos
   // =====================================================
 
   async function abrirModalAnalisis(id) {
@@ -239,6 +238,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const json = await resp.json();
 
+      // ✅ DEBUG temporal — eliminar una vez confirmados los nombres de campo
+      console.log('🔍 ANÁLISIS RESPONSE completo:', JSON.stringify(json, null, 2));
+
       if (!json.ok) {
         alert('No se pudo generar el análisis.');
         return;
@@ -246,12 +248,39 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const a = json.data || {};
 
-      const serie    = a.serie    || a.serie_propuesta    || '-';
-      const subserie = a.subserie || a.subserie_propuesta || '-';
+      // ✅ FIX: mapeo robusto cubriendo todos los nombres posibles
+      const serie = a.serie_documental
+        || a.serie_sugerida
+        || a.serie
+        || a.serie_propuesta
+        || '-';
+
+      const subserie = a.subserie_documental
+        || a.subserie_sugerida
+        || a.subserie
+        || a.subserie_propuesta
+        || '-';
+
+      const retencionGestion = a.retencion_gestion
+        || a.retencion_archivo_gestion
+        || a.retention_gestion
+        || '-';
+
+      const retencionCentral = a.retencion_central
+        || a.retencion_archivo_central
+        || a.retention_central
+        || '-';
+
+      const disposicion = a.disposicion_final
+        || a.disposicion
+        || a.disposition_final
+        || '-';
+
+      // ✅ Usar modalTitle para el título, modalBody solo para el contenido
+      document.getElementById('modalTitle').textContent =
+        'Análisis técnico de la actividad';
 
       modalBody.innerHTML = `
-        <h3>Análisis técnico de la actividad</h3>
-
         <div class="grid-3">
 
           <div class="grid-item">
@@ -266,17 +295,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <div class="grid-item">
             <label>Retención archivo de gestión:</label>
-            <strong>${a.retencion_gestion || '-'} años</strong>
+            <strong>${retencionGestion !== '-' ? retencionGestion + ' años' : '-'}</strong>
           </div>
 
           <div class="grid-item">
             <label>Retención archivo central:</label>
-            <strong>${a.retencion_central || '-'} años</strong>
+            <strong>${retencionCentral !== '-' ? retencionCentral + ' años' : '-'}</strong>
           </div>
 
           <div class="grid-item">
             <label>Disposición final:</label>
-            <strong>${formatearDisposicion(a.disposicion_final)}</strong>
+            <strong>${formatearDisposicion(disposicion)}</strong>
           </div>
 
         </div>
@@ -293,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       modal.classList.remove('hidden');
 
     } catch (error) {
-      console.error(error);
+      console.error('Error en análisis:', error);
       alert('Error generando análisis.');
     }
   }
@@ -304,7 +333,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function cargarMarcoFuncional() {
 
-    // Super Admin ve todas las actividades sin marco funcional propio
     if (esSuperAdmin) {
 
       panelMarco.innerHTML = `
@@ -476,10 +504,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
       }
 
-      // ✅ Mostrar dependencia en la tabla para Super Admin y Archivista
       const colDependencia = (esSuperAdmin || esArchivista)
         ? `<td>${a.dependencia || '-'}</td>`
-        : ''
+        : '';
 
       return `
         <tr>
@@ -510,10 +537,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       `;
     });
 
-    // ✅ Columna extra de dependencia para roles con visión global
     const thDependencia = (esSuperAdmin || esArchivista)
       ? '<th>Dependencia</th>'
-      : ''
+      : '';
 
     tablaContainer.innerHTML = `
       <div style="width:100%;">
@@ -539,8 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .querySelectorAll('.abrir-btn')
       .forEach(btn => {
         btn.addEventListener('click', () => {
-          const id = btn.dataset.id;
-          window.location.href = `/segtec/actividad.html?id=${id}`;
+          window.location.href = `/segtec/actividad.html?id=${btn.dataset.id}`;
         });
       });
 
@@ -548,8 +573,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .querySelectorAll('.pdf-btn')
       .forEach(btn => {
         btn.addEventListener('click', () => {
-          const id = btn.dataset.id;
-          descargarPDFActividad(id);
+          descargarPDFActividad(btn.dataset.id);
         });
       });
 
@@ -557,8 +581,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       .querySelectorAll('.analizar-btn')
       .forEach(btn => {
         btn.addEventListener('click', () => {
-          const id = btn.dataset.id;
-          abrirModalAnalisis(id);
+          abrirModalAnalisis(btn.dataset.id);
         });
       });
   }
