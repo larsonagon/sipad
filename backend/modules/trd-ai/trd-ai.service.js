@@ -106,8 +106,9 @@ export const TRDAIService = (repository) => ({
 
     for (const actividad of actividades) {
 
+      // ✅ FIX: sugerirSerieDesdeActividad es async — faltaba await
       const clasificacion =
-        sugerirSerieDesdeActividad(actividad)
+        await sugerirSerieDesdeActividad(actividad)
 
       resultados.push({
 
