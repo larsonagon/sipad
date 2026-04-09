@@ -86,12 +86,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   tabla.addEventListener('click', manejarClicksTabla)
 
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.acciones-menu')) {
-      cerrarMenus()
-    }
-  })
-
   await cargarEntidades()
 })
 
@@ -199,20 +193,8 @@ function renderTabla(data) {
 
 function manejarClicksTabla(e) {
 
-  const btnMenu = e.target.closest('.btn-menu')
-  if (btnMenu) {
-    e.stopPropagation()
-    const id = btnMenu.dataset.menu
-    const menu = document.getElementById(`menu-${id}`)
-    cerrarMenus()
-    if (menu) menu.classList.toggle('show')
-    return
-  }
-
   const actionBtn = e.target.closest('[data-action]')
   if (!actionBtn) return
-
-  cerrarMenus()
 
   const action = actionBtn.dataset.action
   const id     = actionBtn.dataset.id
@@ -229,16 +211,12 @@ function manejarClicksTabla(e) {
   }
 
   if (action === 'toggle') {
-    const estado = actionBtn.dataset.estado
-    toggleEstado(id, estado)
+    toggleEstado(id, actionBtn.dataset.estado)
     return
   }
 }
 
-function cerrarMenus() {
-  document.querySelectorAll('.menu-dropdown')
-    .forEach(m => m.classList.remove('show'))
-}
+function cerrarMenus() {}
 
 /* =========================================
    GESTIONAR ENTIDAD

@@ -9,64 +9,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  // ======================================================
-  // RENDER HEADER
-  // ======================================================
-
   renderHeader('TRD-AI')
-
-  // ======================================================
-  // BOTONES
-  // ======================================================
 
   document
     .getElementById('btnVerPropuestas')
     ?.addEventListener('click', () => {
-
-      window.location.href =
-        '/trd-ai/trd-ai-propuestas.html'
-
+      window.location.href = '/trd-ai/trd-ai-propuestas.html'
     })
-
-  // ======================================================
-  // CARGAR DASHBOARD
-  // ======================================================
 
   await cargarDashboard()
 
 })
 
-
+// ======================================================
+// API FETCH
+// ✅ FIX: token desde sessionStorage + X-Entidad-Id
+// ======================================================
 
 async function apiFetch(url, options = {}) {
 
-  const token = localStorage.getItem('token')
+  // ✅ FIX: era localStorage, debe ser sessionStorage
+  const token = sessionStorage.getItem('token')
 
-  const resp = await fetch(url,{
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  }
+
+  // ✅ FIX: enviar entidad en contexto superadmin
+  const entidadId =
+    sessionStorage.getItem('gestion_entidad_id') ||
+    sessionStorage.getItem('entidad_id') ||
+    null
+
+  if (entidadId) {
+    headers['X-Entidad-Id'] = entidadId
+  }
+
+  const resp = await fetch(url, {
     ...options,
-    headers:{
-      Authorization:`Bearer ${token}`,
-      'Content-Type':'application/json'
-    }
+    headers
   })
 
+  if (resp.status === 401) {
+    sessionStorage.clear()
+    window.location.href = '/'
+    return null
+  }
+
   return resp
-
 }
-
-
 
 // ======================================================
 // CARGAR DASHBOARD
 // ======================================================
 
-async function cargarDashboard(){
+async function cargarDashboard() {
 
-  try{
+  try {
 
     const resp = await apiFetch('/api/trd-ai/dashboard')
 
-    if (!resp.ok)
+    if (!resp || !resp.ok)
       throw new Error('Error HTTP')
 
     const json = await resp.json()
@@ -75,10 +80,6 @@ async function cargarDashboard(){
       throw new Error(json.error)
 
     const data = json.data
-
-    // ==================================================
-    // KPIs
-    // ==================================================
 
     document.getElementById('kpiTotal').textContent =
       data.resumen.total_propuestas || 0
@@ -92,53 +93,35 @@ async function cargarDashboard(){
     document.getElementById('kpiPendientes').textContent =
       data.resumen.pendientes || 0
 
-    // ==================================================
-    // TABLA ÚLTIMAS APROBADAS
-    // ==================================================
-
     renderUltimas(data.ultimas_aprobadas)
 
-  }
-  catch(error){
+  } catch (error) {
 
-    console.error('Error dashboard TRD-AI:',error)
+    console.error('Error dashboard TRD-AI:', error)
 
   }
 
 }
 
-
-
 // ======================================================
 // RENDER TABLA ÚLTIMAS
 // ======================================================
 
-function renderUltimas(series){
+function renderUltimas(series) {
 
   const tbody = document.getElementById('tablaRecientes')
 
-  if(!series || !series.length){
-
-    tbody.innerHTML =
-      '<tr><td colspan="2">No hay registros</td></tr>'
-
+  if (!series || !series.length) {
+    tbody.innerHTML = '<tr><td colspan="2">No hay registros</td></tr>'
     return
   }
 
-  let html=''
-
-  series.forEach(s=>{
-
-    html+=`
+  tbody.innerHTML = series.map(s => `
     <tr>
       <td>${s.nombre_serie || '-'}</td>
       <td>${formatearFecha(s.fecha_aprobacion)}</td>
     </tr>
-    `
-
-  })
-
-  tbody.innerHTML = html
+  `).join('')
 
 }
 
@@ -146,12 +129,7 @@ function renderUltimas(series){
 // UTILIDADES
 // ======================================================
 
-function formatearFecha(fecha){
-
-  if(!fecha) return '-'
-
-  const d = new Date(fecha)
-
-  return d.toLocaleDateString('es-CO')
-
+function formatearFecha(fecha) {
+  if (!fecha) return '-'
+  return new Date(fecha).toLocaleDateString('es-CO')
 }
