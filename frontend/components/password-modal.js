@@ -12,16 +12,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputNueva = document.getElementById('passwordNueva')
     const inputConfirmar = document.getElementById('passwordConfirmar')
 
-    // 🔥 Si aún no existe, reintenta (clave)
     if (!modal || !form) {
       setTimeout(inicializar, 300)
       return
     }
 
+    function abrirModal() {
+      modal.classList.remove('hidden')
+      // ✅ FIX: forzar overlay completo por JS igual que modal de análisis
+      Object.assign(modal.style, {
+        display        : 'flex',
+        position       : 'fixed',
+        top            : '0',
+        left           : '0',
+        width          : '100vw',
+        height         : '100vh',
+        background     : 'rgba(0,0,0,0.5)',
+        alignItems     : 'center',
+        justifyContent : 'center',
+        zIndex         : '9999'
+      })
+    }
+
     function cerrarModal() {
       modal.classList.add('hidden')
+      modal.style.display = 'none'
       form.reset()
     }
+
+    // ✅ Exponer abrirModal globalmente para que el header pueda llamarlo
+    window.abrirModalPassword = abrirModal
 
     btnCancelar?.addEventListener('click', cerrarModal)
 
@@ -29,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Escape') cerrarModal()
     })
 
-    // 🔥 Evita duplicar listeners
     if (form.dataset.listener === 'true') return
     form.dataset.listener = 'true'
 
@@ -51,13 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
           return
         }
 
-        const actual = inputActual.value.trim()
-        const nueva = inputNueva.value.trim()
+        const actual    = inputActual.value.trim()
+        const nueva     = inputNueva.value.trim()
         const confirmar = inputConfirmar.value.trim()
-
-        // =========================
-        // VALIDACIONES
-        // =========================
 
         if (!actual || !nueva || !confirmar) {
           alert('Debe completar todos los campos')
@@ -79,10 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
           return
         }
 
-        // =========================
-        // REQUEST
-        // =========================
-
         console.log('📡 Enviando request...')
 
         const res = await fetch('/api/usuarios/cambiar-password', {
@@ -98,30 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
         })
 
         let json = {}
-
-        try {
-          json = await res.json()
-        } catch {}
+        try { json = await res.json() } catch {}
 
         if (!res.ok) {
           alert(json.error || 'Error cambiando contraseña')
           return
         }
 
-        // =========================
-        // ÉXITO
-        // =========================
-
         cerrarModal()
 
         setTimeout(() => {
-
           alert('Contraseña actualizada correctamente. Debe iniciar sesión nuevamente.')
-
           sessionStorage.clear()
           localStorage.clear()
           window.location.href = '/'
-
         }, 150)
 
       } catch (error) {
@@ -139,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   }
 
-  // 🔥 iniciar correctamente
   inicializar()
 
 })
