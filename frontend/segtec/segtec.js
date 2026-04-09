@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const user = JSON.parse(userRaw);
 
-  renderHeader('ICAF');
+  const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null;
+  renderHeader('ICAF', gestionEntidadNombre);
 
   const rolNormalizado =
     (user?.rol || '')
@@ -42,7 +43,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // API FETCH
-  // FIX: Content-Type para POST aunque no haya body
   // =====================================================
 
   async function apiFetch(url, options = {}) {
@@ -63,7 +63,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // ✅ FIX: incluir Content-Type en POST aunque no haya body
     if (options.body || options.method === 'POST') {
       headers['Content-Type'] = 'application/json';
     }
@@ -225,7 +224,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // MODAL ANÁLISIS
-  // FIX: Content-Type en POST + mapeo robusto de campos
   // =====================================================
 
   async function abrirModalAnalisis(id) {
@@ -241,7 +239,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const json = await resp.json();
 
-      // ✅ DEBUG temporal — eliminar una vez confirmados los nombres de campo
       console.log('🔍 ANÁLISIS RESPONSE completo:', JSON.stringify(json, null, 2));
 
       if (!json.ok) {
@@ -251,7 +248,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const a = json.data || {};
 
-      // ✅ FIX: mapeo robusto cubriendo todos los nombres posibles
       const serie = a.serie_documental
         || a.serie_sugerida
         || a.serie
@@ -324,7 +320,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         .getElementById('btnCerrarAnalisis')
         ?.addEventListener('click', cerrarModal);
 
-      // ✅ FIX: forzar overlay completo por JS, independiente del CSS
       modal.classList.remove('hidden');
       Object.assign(modal.style, {
         display        : 'flex',
