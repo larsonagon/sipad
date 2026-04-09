@@ -18,7 +18,7 @@ const FRONTEND_PATH = path.join(__dirname, 'frontend')
 import { db } from './backend/db/database.js'
 
 // ==========================================================
-// 🔥 MIDDLEWARES
+// MIDDLEWARES
 // ==========================================================
 
 import { verificarJWT } from './backend/middlewares/auth.middleware.js'
@@ -78,11 +78,14 @@ import { runActividadesMigration } from './backend/modules/actividades/actividad
 import segtecRoutes from './backend/modules/segtec/segtec.routes.js'
 
 // ✅ TRD-AI
-import { runTRDAIMigration }    from './backend/modules/trd-ai/trd-ai.migration.js'
-import { TRDAIRepository }      from './backend/modules/trd-ai/trd-ai.repository.js'
-import { TRDAIService }         from './backend/modules/trd-ai/trd-ai.service.js'
-import { TRDAIController }      from './backend/modules/trd-ai/trd-ai.controller.js'
-import { registerTRDAIRoutes }  from './backend/modules/trd-ai/trd-ai.routes.js'
+import { runTRDAIMigration }   from './backend/modules/trd-ai/trd-ai.migration.js'
+import { TRDAIRepository }     from './backend/modules/trd-ai/trd-ai.repository.js'
+import { TRDAIService }        from './backend/modules/trd-ai/trd-ai.service.js'
+import { TRDAIController }     from './backend/modules/trd-ai/trd-ai.controller.js'
+import { registerTRDAIRoutes } from './backend/modules/trd-ai/trd-ai.routes.js'
+
+// ✅ INFORMES
+import { buildInformesRouter } from './backend/modules/informes/InformesRouter.js'
 
 // ==========================================================
 // INIT
@@ -129,7 +132,6 @@ async function init() {
       await runTRDMigration(db)
       await runActividadesMigration(db)
 
-      // ✅ TRD-AI migration
       await runTRDAIMigration(db)
 
     }
@@ -171,13 +173,13 @@ async function init() {
     console.log('🔥 ENTIDADES ROUTES MONTADO')
     app.use('/api/entidades', entidadesRoutes)
 
-    app.use('/api/usuarios', usuariosRoutes)
-    app.use('/api/roles', rolesRoutes)
-    app.use('/api/dependencias', dependenciasRoutes)
-    app.use('/api/niveles', nivelesRoutes)
-    app.use('/api/cargos', cargosRoutes)
+    app.use('/api/usuarios',      usuariosRoutes)
+    app.use('/api/roles',         rolesRoutes)
+    app.use('/api/dependencias',  dependenciasRoutes)
+    app.use('/api/niveles',       nivelesRoutes)
+    app.use('/api/cargos',        cargosRoutes)
     app.use('/api/configuracion', configuracionRoutes)
-    app.use('/api/auditoria', auditoriaRoutes)
+    app.use('/api/auditoria',     auditoriaRoutes)
 
     // ✅ SEGTEC
     app.use('/api/segtec', segtecRoutes)
@@ -185,8 +187,11 @@ async function init() {
     // ✅ TRD-AI
     registerTRDAIRoutes(app, trdAIController)
 
+    // ✅ INFORMES
+    app.use('/api/informes', buildInformesRouter(db))
+
     // ==================================================
-    // 🚨 404 API (CLAVE)
+    // 404 API
     // ==================================================
 
     app.use('/api', (req, res) => {
@@ -211,12 +216,9 @@ async function init() {
     // ==================================================
 
     app.use((req, res, next) => {
-
       if (req.path.startsWith('/api')) return next()
       if (path.extname(req.path)) return next()
-
       return res.sendFile(path.join(FRONTEND_PATH, 'auth', 'index.html'))
-
     })
 
     // ==================================================
@@ -224,14 +226,11 @@ async function init() {
     // ==================================================
 
     app.use((err, req, res, next) => {
-
       console.error('🔥 ERROR GLOBAL:', err)
-
       res.status(500).json({
         success: false,
         message: 'Error interno del servidor'
       })
-
     })
 
     // ==================================================
