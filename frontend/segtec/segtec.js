@@ -282,37 +282,37 @@ document.addEventListener('DOMContentLoaded', async () => {
       const serieLabel    = serie    !== '-' ? serie    : '<em style="color:var(--color-text-secondary);font-style:normal;">No determinada por la IA</em>';
       const subserieLabel = subserie !== '-' ? subserie : '<em style="color:var(--color-text-secondary);font-style:normal;">No determinada por la IA</em>';
 
-      document.getElementById('modalTitle').textContent =
-        'Análisis técnico de la actividad';
+      document.getElementById('modalTitle').textContent = '';
 
       modalBody.innerHTML = `
-        <div class="grid-3">
+        <div style="border-bottom:0.5px solid var(--border-color,#e5e7eb); padding-bottom:0.75rem; margin-bottom:1rem;">
+          <p style="margin:0 0 3px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary);">Análisis técnico de la actividad</p>
+        </div>
 
-          <div class="grid-item">
-            <label>Serie documental sugerida:</label>
-            <strong>${serieLabel}</strong>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; padding-bottom:1rem; margin-bottom:1rem; border-bottom:0.5px solid var(--border-color,#e5e7eb);">
+          <div>
+            <p style="margin:0 0 4px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary);">Serie documental</p>
+            <p style="margin:0; font-size:15px; font-weight:600;">${serieLabel}</p>
           </div>
-
-          <div class="grid-item">
-            <label>Subserie sugerida:</label>
-            <strong>${subserieLabel}</strong>
+          <div>
+            <p style="margin:0 0 4px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-secondary);">Subserie</p>
+            <p style="margin:0; font-size:15px; font-weight:600;">${subserieLabel}</p>
           </div>
+        </div>
 
-          <div class="grid-item">
-            <label>Retención archivo de gestión:</label>
-            <strong>${retencionGestion !== '-' ? retencionGestion + ' años' : '-'}</strong>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+          <div style="background:var(--bg-secondary,#f9fafb); border-radius:8px; padding:12px;">
+            <p style="margin:0 0 4px; font-size:11px; color:var(--text-secondary);">Archivo de gestión</p>
+            <p style="margin:0; font-size:20px; font-weight:600;">${retencionGestion !== '-' ? retencionGestion : '-'}<span style="font-size:12px; font-weight:400; color:var(--text-secondary);">${retencionGestion !== '-' ? ' años' : ''}</span></p>
           </div>
-
-          <div class="grid-item">
-            <label>Retención archivo central:</label>
-            <strong>${retencionCentral !== '-' ? retencionCentral + ' años' : '-'}</strong>
+          <div style="background:var(--bg-secondary,#f9fafb); border-radius:8px; padding:12px;">
+            <p style="margin:0 0 4px; font-size:11px; color:var(--text-secondary);">Archivo central</p>
+            <p style="margin:0; font-size:20px; font-weight:600;">${retencionCentral !== '-' ? retencionCentral : '-'}<span style="font-size:12px; font-weight:400; color:var(--text-secondary);">${retencionCentral !== '-' ? ' años' : ''}</span></p>
           </div>
-
-          <div class="grid-item">
-            <label>Disposición final:</label>
-            <strong>${formatearDisposicion(disposicion)}</strong>
+          <div style="background:var(--bg-secondary,#f9fafb); border-radius:8px; padding:12px;">
+            <p style="margin:0 0 4px; font-size:11px; color:var(--text-secondary);">Disposición</p>
+            <p style="margin:0; font-size:13px; font-weight:600;">${formatearDisposicion(disposicion)}</p>
           </div>
-
         </div>
       `;
 
