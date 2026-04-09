@@ -1,148 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Informes – SIPAD</title>
-
-<link rel="stylesheet" href="/css/core/sipad-ui.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informes – SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
 </head>
-
 <body>
 
-<div id="header"></div>
+  <div id="header"></div>
 
-<main class="module-page">
+  <main class="module-page">
 
-<div class="module-header centered">
-<h1>Módulo de Informes</h1>
-<p>Seleccione el informe que desea generar.</p>
-</div>
+    <div class="module-header centered">
+      <h1>Módulo de Informes</h1>
+      <p>Seleccione el informe que desea generar.</p>
+    </div>
 
-<div class="module-content">
+    <div class="module-content">
+      <div class="module-grid">
 
-<div class="module-grid">
+        <div class="module-card" id="cardRegistro" role="button" tabindex="0">
+          <div class="module-icon">📋</div>
+          <h3>Registro de actividades</h3>
+          <p>Listado completo de actividades registradas en el sistema.</p>
+        </div>
 
+        <div class="module-card" id="cardDependencia" role="button" tabindex="0">
+          <div class="module-icon">🏢</div>
+          <h3>Actividades por dependencia</h3>
+          <p>Análisis de actividades agrupadas por unidad administrativa.</p>
+        </div>
 
-<!-- ============================ -->
-<!-- REGISTRO DE ACTIVIDADES -->
-<!-- ============================ -->
+      </div>
+    </div>
 
-<div class="module-card"
-     id="cardRegistro"
-     role="button"
-     tabindex="0">
+  </main>
 
-<div class="module-icon">📋</div>
+  <div id="modalPassword" class="modal hidden">
+    <div class="modal-content small">
+      <h3>Cambiar contraseña</h3>
+      <form id="formCambiarPassword">
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <input type="password" id="passwordActual" required>
+        </div>
+        <div class="form-group">
+          <label>Nueva contraseña</label>
+          <input type="password" id="passwordNueva" required>
+        </div>
+        <div class="form-group">
+          <label>Confirmar nueva contraseña</label>
+          <input type="password" id="passwordConfirmar" required>
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="btnCancelarPassword" class="btn-secondary">Cancelar</button>
+          <button type="submit" class="btn-primary">Actualizar contraseña</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-<h3>Registro de actividades</h3>
-
-<p>Listado completo de actividades registradas en el sistema.</p>
-
-</div>
-
-
-<!-- ============================ -->
-<!-- ACTIVIDADES POR DEPENDENCIA -->
-<!-- ============================ -->
-
-<div class="module-card"
-     id="cardDependencia"
-     role="button"
-     tabindex="0">
-
-<div class="module-icon">🏢</div>
-
-<h3>Actividades por dependencia</h3>
-
-<p>Análisis de actividades agrupadas por unidad administrativa.</p>
-
-</div>
-
-
-<!-- ============================ -->
-<!-- PRODUCCIÓN DOCUMENTAL -->
-<!-- ============================ -->
-
-<div class="module-card"
-     id="cardProduccion"
-     role="button"
-     tabindex="0">
-
-<div class="module-icon">📄</div>
-
-<h3>Producción documental</h3>
-
-<p>Producción documental generada por cada actividad funcional.</p>
-
-</div>
-
-
-</div>
-
-</div>
-
-</main>
-
-
-<!-- ===================================== -->
-<!-- MODAL CAMBIAR PASSWORD (GLOBAL) -->
-<!-- ===================================== -->
-
-<div id="modalPassword" class="modal hidden">
-
-<div class="modal-content small">
-
-<h3>Cambiar contraseña</h3>
-
-<form id="formCambiarPassword">
-
-<div class="form-group">
-<label>Contraseña actual</label>
-<input type="password" id="passwordActual" required>
-</div>
-
-<div class="form-group">
-<label>Nueva contraseña</label>
-<input type="password" id="passwordNueva" required>
-</div>
-
-<div class="form-group">
-<label>Confirmar nueva contraseña</label>
-<input type="password" id="passwordConfirmar" required>
-</div>
-
-<div class="modal-actions">
-
-<button
-type="button"
-id="btnCancelarPassword"
-class="btn-secondary">
-Cancelar
-</button>
-
-<button
-type="submit"
-class="btn-primary">
-Actualizar contraseña
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</div>
-
-
-<script type="module" src="/informes/informes.js"></script>
-
-<script src="/components/password-modal.js"></script>
+  <script type="module" src="/informes/informes.js"></script>
+  <script src="/components/password-modal.js"></script>
 
 </body>
 </html>
