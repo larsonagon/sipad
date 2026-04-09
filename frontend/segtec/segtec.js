@@ -471,8 +471,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const actividades = json.data || [];
 
-      if (actividades.length) console.log('CAMPOS ACTIVIDAD:', Object.keys(actividades[0]), actividades[0]);
-
       if (!actividades.length) {
 
         tablaContainer.innerHTML = `
@@ -520,7 +518,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const colDependencia = (esSuperAdmin || esArchivista)
-        ? `<td>${a.dependencia || '-'}</td><td>${a.usuario_nombre || a.creado_por || '-'}</td>`
+        ? `<td>${a.dependencia || '-'}</td><td>${a.funcionario || '-'}</td>`
         : '';
 
       return `
