@@ -23,15 +23,12 @@ async function apiFetch(url) {
     'Content-Type': 'application/json'
   }
 
-  // ✅ Contexto superadmin
   const entidadId =
     sessionStorage.getItem('gestion_entidad_id') ||
     sessionStorage.getItem('entidad_id') ||
     null
 
-  if (entidadId) {
-    headers['X-Entidad-Id'] = entidadId
-  }
+  if (entidadId) headers['X-Entidad-Id'] = entidadId
 
   const res = await fetch(url, { headers })
 
@@ -52,20 +49,11 @@ async function apiFetch(url) {
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = getToken()
-
-  if (!token) {
-    window.location.href = '/'
-    return
-  }
+  if (!token) { window.location.href = '/'; return }
 
   const user = getUserFromToken()
+  if (!user) { window.location.href = '/'; return }
 
-  if (!user) {
-    window.location.href = '/'
-    return
-  }
-
-  // ✅ FIX: renderHeader solo recibe el nombre del módulo
   renderHeader('Informes')
 
   await cargarDependencias()
@@ -78,122 +66,106 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnConsultar').addEventListener('click', consultar)
   document.getElementById('btnWord').addEventListener('click', exportarWord)
   document.getElementById('btnExcel').addEventListener('click', exportarExcel)
-
+  document.getElementById('btnWordBottom')?.addEventListener('click', exportarWord)
+  document.getElementById('btnExcelBottom')?.addEventListener('click', exportarExcel)
 })
 
-/* ============================= */
-/* DEPENDENCIAS                  */
-/* ============================= */
-
 async function cargarDependencias() {
-
   const select = document.getElementById('dependencia')
   select.innerHTML = '<option value="">Todas</option>'
-
   try {
-
     const json = await apiFetch('/api/dependencias')
     if (!json) return
-
     const dependencias = json.data || json
-
     dependencias.forEach(dep => {
-      const option = document.createElement('option')
-      option.value = dep.id
-      option.textContent = dep.nombre
-      select.appendChild(option)
+      const o = document.createElement('option')
+      o.value = dep.id
+      o.textContent = dep.nombre
+      select.appendChild(o)
     })
-
-  } catch (error) {
-    console.error('Error cargando dependencias:', error)
-  }
+  } catch (e) { console.error('Error cargando dependencias:', e) }
 }
 
-/* ============================= */
-/* FUNCIONARIOS                  */
-/* ============================= */
-
 async function cargarFuncionarios() {
-
   const dependenciaId = document.getElementById('dependencia').value
   const select = document.getElementById('funcionario')
-
   select.innerHTML = ''
-
   if (!dependenciaId) {
     select.disabled = true
     select.innerHTML = '<option value="">Seleccione una dependencia</option>'
     return
   }
-
   try {
-
     const json = await apiFetch(`/api/usuarios?dependencia=${dependenciaId}`)
     if (!json) return
-
     const usuarios = json.data || json
-
     select.disabled = false
     select.innerHTML = '<option value="">Todos</option>'
-
     usuarios.forEach(u => {
-      const option = document.createElement('option')
-      option.value = u.id
-      option.textContent = u.nombre_completo
-      select.appendChild(option)
+      const o = document.createElement('option')
+      o.value = u.id
+      o.textContent = u.nombre_completo
+      select.appendChild(o)
     })
-
-  } catch (error) {
-    console.error('Error cargando funcionarios:', error)
-  }
+  } catch (e) { console.error('Error cargando funcionarios:', e) }
 }
-
-/* ============================= */
-/* CONSULTAR                     */
-/* ============================= */
 
 async function consultar() {
-
-  const dependencia = document.getElementById('dependencia').value
-  const funcionario = document.getElementById('funcionario').value
-  const fechaInicio = document.getElementById('fechaInicio').value
-  const fechaFin    = document.getElementById('fechaFin').value
-
-  const params = new URLSearchParams({ dependencia, funcionario, fechaInicio, fechaFin })
-
+  const params = obtenerParams()
   try {
-
     const json = await apiFetch(`/api/informes/actividades?${params}`)
     if (!json) return
-
-    renderTabla(json.data || [])
-
-  } catch (error) {
-    console.error('Error generando informe:', error)
+    const data = json.data || []
+    renderKPIs(data)
+    renderTabla(data)
+  } catch (e) {
+    console.error('Error generando informe:', e)
   }
 }
 
-/* ============================= */
-/* TABLA                         */
-/* ============================= */
+function renderKPIs(data) {
+  const total          = data.length
+  const analizadas     = data.filter(r => (r.estado_general || '').toLowerCase() === 'analizada').length
+  const caracterizadas = data.filter(r => (r.estado_general || '').toLowerCase() === 'caracterizada').length
+  const dependencias   = new Set(data.map(r => r.dependencia).filter(Boolean)).size
+
+  const kpisEl = document.getElementById('kpisContainer')
+  if (!kpisEl) return
+  kpisEl.style.display = 'grid'
+
+  document.getElementById('kpiTotal').textContent        = total
+  document.getElementById('kpiAnalizadas').textContent   = analizadas
+  document.getElementById('kpiCaracterizadas').textContent = caracterizadas
+  document.getElementById('kpiDependencias').textContent = dependencias
+
+  const resHead = document.getElementById('resultadosHead')
+  if (resHead) resHead.textContent = `Resultados — ${total} actividades`
+}
+
+function badgeEstado(estado) {
+  const e = (estado || '').toLowerCase()
+  if (e === 'analizada')
+    return `<span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#EAF3DE;color:#3B6D11;">Analizada</span>`
+  if (e === 'caracterizada')
+    return `<span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#E6F1FB;color:#185FA5;">Caracterizada</span>`
+  return `<span style="display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#F1EFE8;color:#5F5E5A;">${estado || '-'}</span>`
+}
 
 function renderTabla(data) {
-
   const tbody = document.querySelector('#tablaResultados tbody')
   tbody.innerHTML = ''
-
   if (!data || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="5">Sin resultados</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="6">Sin resultados</td></tr>'
     return
   }
-
   data.forEach(row => {
     const tr = document.createElement('tr')
     tr.innerHTML = `
-      <td>${row.nombre || ''}</td>
-      <td>${row.funcionario || ''}</td>
-      <td>${row.dependencia || ''}</td>
-      <td>${row.frecuencia || ''}</td>
+      <td>${row.nombre || '-'}</td>
+      <td>${row.funcionario || '-'}</td>
+      <td>${row.dependencia || '-'}</td>
+      <td>${row.frecuencia || '-'}</td>
+      <td>${badgeEstado(row.estado_general)}</td>
       <td>${formatFecha(row.created_at)}</td>
     `
     tbody.appendChild(tr)
@@ -201,44 +173,23 @@ function renderTabla(data) {
 }
 
 function formatFecha(fecha) {
-  if (!fecha) return ''
+  if (!fecha) return '-'
   return new Date(fecha).toLocaleDateString('es-CO')
 }
 
-/* ============================= */
-/* EXPORTAR WORD                 */
-/* ============================= */
-
 function exportarWord() {
-
-  const params = obtenerParams()
-  const token  = getToken()
-
-  window.open(`/api/informes/registro-actividades-word?${params}&token=${token}`)
+  window.open(`/api/informes/registro-actividades-word?${obtenerParams()}&token=${getToken()}`)
 }
-
-/* ============================= */
-/* EXPORTAR EXCEL                */
-/* ============================= */
 
 function exportarExcel() {
-
-  const params = obtenerParams()
-  const token  = getToken()
-
-  window.open(`/api/informes/registro-actividades-excel?${params}&token=${token}`)
+  window.open(`/api/informes/registro-actividades-excel?${obtenerParams()}&token=${getToken()}`)
 }
 
-/* ============================= */
-/* UTIL                          */
-/* ============================= */
-
 function obtenerParams() {
-
-  const dependencia = document.getElementById('dependencia').value
-  const funcionario = document.getElementById('funcionario').value
-  const fechaInicio = document.getElementById('fechaInicio').value
-  const fechaFin    = document.getElementById('fechaFin').value
-
-  return new URLSearchParams({ dependencia, funcionario, fechaInicio, fechaFin })
+  return new URLSearchParams({
+    dependencia: document.getElementById('dependencia').value,
+    funcionario: document.getElementById('funcionario').value,
+    fechaInicio: document.getElementById('fechaInicio').value,
+    fechaFin:    document.getElementById('fechaFin').value
+  })
 }
