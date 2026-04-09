@@ -56,13 +56,11 @@ function abrirModalPassword() {
   const modal = document.getElementById('modalPassword')
   if (!modal) return
 
-  // Si password-modal.js ya expuso su función, usarla
   if (typeof window.abrirModalPassword === 'function') {
     window.abrirModalPassword()
     return
   }
 
-  // Fallback: forzar overlay directamente
   modal.classList.remove('hidden')
   Object.assign(modal.style, {
     display        : 'flex',
@@ -140,7 +138,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   const limpiar = (texto) =>
     texto.replace(/^[\s\-–—]+/, '').replace(/\s+/g, ' ').trim()
 
-  const cargo      = limpiar(cargoRaw)
+  const cargo       = limpiar(cargoRaw)
   const dependencia = limpiar(dependenciaRaw)
 
   let cargoDependencia = ''
@@ -168,6 +166,12 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         <div class="pig-header-right">
           <nav class="pig-nav">
+
+            ${gestionEntidadId ? `
+              <button type="button" id="btnVolverEntidades" class="btn-nav-entidades">
+                ← Entidades
+              </button>
+            ` : ''}
 
             <button type="button" id="btnInicio"
               ${modulo === 'home' ? 'class="active"' : ''}>
@@ -235,6 +239,14 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.body.prepend(header)
 
+  // ── Volver a Entidades (solo superadmin gestionando una entidad) ─────────
+  document.getElementById('btnVolverEntidades')
+    ?.addEventListener('click', () => {
+      sessionStorage.removeItem('gestion_entidad_id')
+      sessionStorage.removeItem('gestion_entidad_nombre')
+      window.location.href = '/home/index.html'
+    })
+
   document.getElementById('btnInicio')
     ?.addEventListener('click', () => { window.location.href = '/home/index.html' })
 
@@ -250,7 +262,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   document.getElementById('btnInformes')
     ?.addEventListener('click', () => { window.location.href = '/informes/index.html' })
 
-  // ✅ FIX: usar función centralizada con overlay forzado
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', abrirModalPassword)
 
