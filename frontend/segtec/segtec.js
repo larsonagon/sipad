@@ -508,16 +508,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         && puedeAnalizar
       ) {
 
-        const textoBoton =
-          estado === 'analizada'
-          ? 'Reanalizar'
-          : 'Analizar';
-
         botonAnalizar = `
           <button
             class="btn-warning btn-sm analizar-btn"
             data-id="${a.id}">
-            ${textoBoton}
+            Analizar
           </button>
         `;
       }

@@ -131,8 +131,8 @@ const MATRIZ_SERIES = [
       { palabras: ['plan', 'inversion'],        subserie: 'Planes de inversión' },
       { palabras: ['plan', 'capacitacion'],     subserie: 'Planes de capacitación' },
       { palabras: ['plan'],                     subserie: 'Planes' },
-      { palabras: ['programa'],                 subserie: 'Programas' },
-      { palabras: ['proyecto'],                 subserie: 'Proyectos' }
+      { palabras: ['programa'],                 subserie: 'Programas' }
+      // ✅ FIX: 'proyecto' eliminado de PLANES — tiene su propia serie PROYECTOS
     ]
   },
 
@@ -181,7 +181,7 @@ const MATRIZ_SERIES = [
       { palabras: ['licencia', 'construccion'],  subserie: 'Licencias de construcción' },
       { palabras: ['licencia', 'ambiental'],     subserie: 'Licencias ambientales' },
       { palabras: ['permiso', 'mineria'],        subserie: 'Permisos mineros' },
-      { palabras: ['permiso', 'minero'],        subserie: 'Permisos mineros' },
+      { palabras: ['permiso', 'minero'],         subserie: 'Permisos mineros' },
       { palabras: ['permiso', 'subsistencia'],   subserie: 'Permisos mineros de subsistencia' },
       { palabras: ['permiso', 'ambiental'],      subserie: 'Permisos ambientales' },
       { palabras: ['permiso', 'funcionamiento'], subserie: 'Permisos de funcionamiento' },
@@ -206,17 +206,18 @@ const MATRIZ_SERIES = [
     ]
   },
 
-  // ── PROYECTOS DE INVERSIÓN ─────────────────────
+  // ── PROYECTOS ─────────────────────────────────
+  // ✅ Serie propia — no comparte tokens con PLANES
   {
     serie: 'PROYECTOS',
     reglas: [
-      { palabras: ['proyecto', 'inversion'],     subserie: 'Proyectos de inversión' },
-      { palabras: ['proyecto', 'infraestructura'],subserie: 'Proyectos de infraestructura' },
-      { palabras: ['proyecto', 'desarrollo'],    subserie: 'Proyectos de desarrollo' },
-      { palabras: ['formulacion', 'proyecto'],   subserie: 'Proyectos de inversión' },
-      { palabras: ['aprobacion', 'proyecto'],    subserie: 'Proyectos de inversión' },
-      { palabras: ['obra'],                      subserie: 'Proyectos de infraestructura' },
-      { palabras: ['proyecto'],                  subserie: 'Proyectos' }
+      { palabras: ['proyecto', 'inversion'],       subserie: 'Proyectos de inversión' },
+      { palabras: ['proyecto', 'infraestructura'], subserie: 'Proyectos de infraestructura' },
+      { palabras: ['proyecto', 'desarrollo'],      subserie: 'Proyectos de desarrollo' },
+      { palabras: ['formulacion', 'proyecto'],     subserie: 'Proyectos de inversión' },
+      { palabras: ['aprobacion', 'proyecto'],      subserie: 'Proyectos de inversión' },
+      { palabras: ['obra'],                        subserie: 'Proyectos de infraestructura' },
+      { palabras: ['proyecto'],                    subserie: 'Proyectos' }
     ]
   },
 
@@ -368,14 +369,12 @@ async function buscarEnCatalogo(db, tokensTexto) {
     const tokens = tokensTexto.filter(t => t.length > 3).slice(0, 5)
     if (tokens.length === 0) return null
 
-    // Condición OR por cada token individual
     const condiciones = tokens
       .map((_, i) => `(csub.nombre_normalizado ILIKE $${i + 1} OR cs.nombre_normalizado ILIKE $${i + 1})`)
       .join(' OR ')
 
     const valores = tokens.map(t => `%${t}%`)
 
-    // Buscar subserie (más específico)
     const resSubseries = await db.query(
       `SELECT
          cs.nombre   AS serie,
@@ -397,7 +396,6 @@ async function buscarEnCatalogo(db, tokensTexto) {
       }
     }
 
-    // Buscar solo serie
     const condicionesSeries = tokens
       .map((_, i) => `nombre_normalizado ILIKE $${i + 1}`)
       .join(' OR ')
