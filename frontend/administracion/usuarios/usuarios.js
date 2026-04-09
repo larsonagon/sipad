@@ -14,7 +14,6 @@ function getHeaders(extra = {}) {
     ...extra
   }
 
-  // ✅ FIX: gestion_entidad_id tiene prioridad sobre entidad_id
   const entidad =
     gestionEntidadId ||
     sessionStorage.getItem('gestion_entidad_id') ||
@@ -27,6 +26,14 @@ function getHeaders(extra = {}) {
 
 let usuariosCache = []
 
+// ── Paginación y ordenamiento ─────────────────────────────
+let datosActuales  = []   // set filtrado+ordenado en uso
+let paginaActual   = 1
+let porPagina      = 10
+let sortCol        = 'id'
+let sortDir        = 'asc'
+// ─────────────────────────────────────────────────────────
+
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = getToken()
@@ -35,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  // ✅ FIX: gestion_entidad_id tiene prioridad sobre entidad_id
   gestionEntidadId =
     sessionStorage.getItem('gestion_entidad_id') ||
     sessionStorage.getItem('entidad_id') ||
@@ -48,6 +54,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await new Promise(r => requestAnimationFrame(r))
   await new Promise(r => requestAnimationFrame(r))
   document.body.offsetHeight
+
+  // ── Inyectar wrapper de scroll + selector porPagina + contenedor paginación ──
+  _setupTableUI()
 
   await cargarUsuarios()
   await cargarRoles()
@@ -65,14 +74,156 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('show'))
     }
   })
+
+  // ── Ordenamiento por columna ──────────────────────────────
+  document.querySelectorAll('#tablaUsuarios thead th[data-sort]').forEach(th => {
+    th.style.cursor = 'pointer'
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc'
+      } else {
+        sortCol = col
+        sortDir = 'asc'
+      }
+      paginaActual = 1
+      _actualizarIconosSort()
+      renderTabla(datosActuales)
+    })
+  })
 })
 
+// ── Setup inicial de la UI de la tabla ───────────────────────────────────────
+function _setupTableUI() {
+
+  // 1. Envolver la tabla en un div con scroll horizontal
+  const tabla = document.getElementById('tablaUsuarios')
+  if (tabla && !tabla.parentElement.classList.contains('tabla-scroll-wrap')) {
+    const wrap = document.createElement('div')
+    wrap.className = 'tabla-scroll-wrap'
+    wrap.style.cssText = 'overflow-x:auto; overflow-y:visible; width:100%;'
+    tabla.parentNode.insertBefore(wrap, tabla)
+    wrap.appendChild(tabla)
+  }
+
+  // 2. Agregar atributos data-sort a los <th> de la tabla
+  const colMap = ['id','nombre_completo','username','email','cargo','nivel','dependencia','estado','bloqueado']
+  document.querySelectorAll('#tablaUsuarios thead th').forEach((th, i) => {
+    if (colMap[i]) {
+      th.dataset.sort = colMap[i]
+      th.innerHTML += ' <span class="sort-icono" style="font-size:10px;opacity:.5;user-select:none;">↕</span>'
+    }
+  })
+
+  // 3. Barra inferior: selector "por página" + paginación
+  const section = document.querySelector('#tablaUsuarios')?.closest('section')
+  if (section) {
+    const barraInferior = document.createElement('div')
+    barraInferior.id = 'barraTablaInferior'
+    barraInferior.style.cssText = 'display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:12px;'
+
+    barraInferior.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label for="selectPorPagina" style="font-size:13px;color:var(--color-muted,#666);">Mostrar</label>
+        <select id="selectPorPagina" class="input-search" style="width:auto;padding:4px 8px;font-size:13px;">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <span style="font-size:13px;color:var(--color-muted,#666);">por página</span>
+      </div>
+      <div id="infoPaginacion" style="font-size:13px;color:var(--color-muted,#666);"></div>
+      <div id="contenedorPaginacion" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+    `
+    section.appendChild(barraInferior)
+
+    document.getElementById('selectPorPagina').addEventListener('change', e => {
+      porPagina = parseInt(e.target.value)
+      paginaActual = 1
+      renderTabla(datosActuales)
+    })
+  }
+}
+
+// ── Iconos de sort en cabeceras ──────────────────────────────────────────────
+function _actualizarIconosSort() {
+  document.querySelectorAll('#tablaUsuarios thead th[data-sort]').forEach(th => {
+    const icono = th.querySelector('.sort-icono')
+    if (!icono) return
+    if (th.dataset.sort === sortCol) {
+      icono.textContent = sortDir === 'asc' ? ' ↑' : ' ↓'
+      icono.style.opacity = '1'
+    } else {
+      icono.textContent = ' ↕'
+      icono.style.opacity = '0.4'
+    }
+  })
+}
+
+// ── Ordenar array por columna ────────────────────────────────────────────────
+function _ordenar(arr) {
+  return [...arr].sort((a, b) => {
+    let av = a[sortCol] ?? ''
+    let bv = b[sortCol] ?? ''
+    if (typeof av === 'number' && typeof bv === 'number') {
+      return sortDir === 'asc' ? av - bv : bv - av
+    }
+    av = String(av).toLowerCase()
+    bv = String(bv).toLowerCase()
+    return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av)
+  })
+}
+
+// ── Renderizar paginación ────────────────────────────────────────────────────
+function _renderPaginacion(total) {
+  const totalPaginas = Math.max(1, Math.ceil(total / porPagina))
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas
+
+  const inicio = (paginaActual - 1) * porPagina + 1
+  const fin    = Math.min(paginaActual * porPagina, total)
+
+  const info = document.getElementById('infoPaginacion')
+  if (info) {
+    info.textContent = total === 0
+      ? 'Sin resultados'
+      : `Mostrando ${inicio}–${fin} de ${total} usuario${total !== 1 ? 's' : ''}`
+  }
+
+  const cont = document.getElementById('contenedorPaginacion')
+  if (!cont) return
+
+  const btnStyle = (activo) =>
+    `style="min-width:30px;height:28px;padding:0 6px;font-size:12px;border:1px solid ${activo ? '#555' : '#ccc'};border-radius:4px;background:${activo ? '#f0f0f0' : 'transparent'};cursor:pointer;font-weight:${activo ? '600' : '400'}"`
+
+  let html = `<button ${btnStyle(false)} ${paginaActual <= 1 ? 'disabled' : ''} onclick="window._irPagina(${paginaActual - 1})">‹</button>`
+
+  // rango visible de páginas
+  let desde = Math.max(1, paginaActual - 2)
+  let hasta  = Math.min(totalPaginas, paginaActual + 2)
+  if (desde > 1)           html += `<button ${btnStyle(false)} onclick="window._irPagina(1)">1</button>${desde > 2 ? '<span style="padding:0 2px;font-size:12px;">…</span>' : ''}`
+  for (let i = desde; i <= hasta; i++) {
+    html += `<button ${btnStyle(i === paginaActual)} onclick="window._irPagina(${i})">${i}</button>`
+  }
+  if (hasta < totalPaginas) html += `${hasta < totalPaginas - 1 ? '<span style="padding:0 2px;font-size:12px;">…</span>' : ''}<button ${btnStyle(false)} onclick="window._irPagina(${totalPaginas})">${totalPaginas}</button>`
+
+  html += `<button ${btnStyle(false)} ${paginaActual >= totalPaginas ? 'disabled' : ''} onclick="window._irPagina(${paginaActual + 1})">›</button>`
+
+  cont.innerHTML = html
+}
+
+window._irPagina = function(p) {
+  paginaActual = p
+  renderTabla(datosActuales)
+  // scroll suave al inicio de la tabla
+  document.getElementById('tablaUsuarios')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// ── Cargar usuarios desde la API ─────────────────────────────────────────────
 async function cargarUsuarios() {
-
   try {
-
     const res = await fetch('/api/usuarios', { headers: getHeaders() })
-
     if (!res.ok) throw new Error('Error cargando usuarios')
 
     const json = await res.json()
@@ -94,6 +245,7 @@ async function cargarUsuarios() {
   }
 }
 
+// ── Render principal (ahora con sort + paginación) ───────────────────────────
 function renderTabla(data) {
 
   const tbody = document.querySelector('#tablaUsuarios tbody')
@@ -102,49 +254,57 @@ function renderTabla(data) {
   tbody.innerHTML = ''
   if (!Array.isArray(data)) return
 
-  data.sort((a, b) => a.id - b.id)
+  // guardar el set actual para que la paginación pueda reutilizarlo
+  datosActuales = data
 
-  data.forEach(u => {
+  // ordenar
+  const ordenados = _ordenar(datosActuales)
 
-    const tr = document.createElement('tr')
+  // paginar
+  const totalPaginas = Math.max(1, Math.ceil(ordenados.length / porPagina))
+  if (paginaActual > totalPaginas) paginaActual = totalPaginas
+  const inicio = (paginaActual - 1) * porPagina
+  const slice  = ordenados.slice(inicio, inicio + porPagina)
 
-    tr.innerHTML = `
-      <td>${u.id ?? ''}</td>
-      <td>${u.nombre_completo ?? ''}</td>
-      <td>${u.username ?? ''}</td>
-      <td>${u.email ?? ''}</td>
-      <td>${u.cargo ?? '-'}</td>
-      <td>${u.nivel ?? '-'}</td>
-      <td>${u.dependencia ?? '-'}</td>
-      <td>${u.estado === 1 ? '<span class="badge-success">Activo</span>' : '<span class="badge-danger">Inactivo</span>'}</td>
-      <td>${u.bloqueado === 1 ? '<span class="badge-danger">Sí</span>' : '<span class="badge-success">No</span>'}</td>
-      <td>
-        <div class="acciones-menu">
-          <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
-          <div class="menu-dropdown" id="menu-${u.id}">
-            <button onclick="editarUsuario(${u.id})">Editar</button>
-            <button onclick="resetPassword(${u.id})">Reset password</button>
-            <button onclick="toggleEstado(${u.id})">${u.estado === 1 ? 'Desactivar' : 'Activar'}</button>
-            <button onclick="toggleBloqueo(${u.id})">${u.bloqueado === 1 ? 'Desbloquear' : 'Bloquear'}</button>
+  if (slice.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:2rem;color:#888;">No se encontraron usuarios.</td></tr>`
+  } else {
+    slice.forEach(u => {
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td>${u.id ?? ''}</td>
+        <td>${u.nombre_completo ?? ''}</td>
+        <td>${u.username ?? ''}</td>
+        <td>${u.email ?? ''}</td>
+        <td>${u.cargo ?? '-'}</td>
+        <td>${u.nivel ?? '-'}</td>
+        <td>${u.dependencia ?? '-'}</td>
+        <td>${u.estado === 1 ? '<span class="badge-success">Activo</span>' : '<span class="badge-danger">Inactivo</span>'}</td>
+        <td>${u.bloqueado === 1 ? '<span class="badge-danger">Sí</span>' : '<span class="badge-success">No</span>'}</td>
+        <td>
+          <div class="acciones-menu">
+            <button class="btn-menu" onclick="toggleMenu(${u.id})">⋮</button>
+            <div class="menu-dropdown" id="menu-${u.id}">
+              <button onclick="editarUsuario(${u.id})">Editar</button>
+              <button onclick="resetPassword(${u.id})">Reset password</button>
+              <button onclick="toggleEstado(${u.id})">${u.estado === 1 ? 'Desactivar' : 'Activar'}</button>
+              <button onclick="toggleBloqueo(${u.id})">${u.bloqueado === 1 ? 'Desbloquear' : 'Bloquear'}</button>
+            </div>
           </div>
-        </div>
-      </td>
-    `
+        </td>
+      `
+      tbody.appendChild(tr)
+    })
+  }
 
-    tbody.appendChild(tr)
-  })
+  _renderPaginacion(ordenados.length)
+  _actualizarIconosSort()
 }
 
-window.toggleMenu = function(id) {
-  const menu = document.getElementById(`menu-${id}`)
-  document.querySelectorAll('.menu-dropdown').forEach(m => {
-    if (m !== menu) m.classList.remove('show')
-  })
-  if (menu) menu.classList.toggle('show')
-}
-
+// ── Filtro de búsqueda ────────────────────────────────────────────────────────
 function filtrarUsuarios(e) {
   const texto = e.target.value.toLowerCase()
+  paginaActual = 1   // volver a la primera página al buscar
   const filtrados = usuariosCache.filter(u =>
     (u.nombre_completo ?? '').toLowerCase().includes(texto) ||
     (u.username ?? '').toLowerCase().includes(texto) ||
@@ -153,6 +313,16 @@ function filtrarUsuarios(e) {
   renderTabla(filtrados)
 }
 
+// ── Toggle menú contextual ────────────────────────────────────────────────────
+window.toggleMenu = function(id) {
+  const menu = document.getElementById(`menu-${id}`)
+  document.querySelectorAll('.menu-dropdown').forEach(m => {
+    if (m !== menu) m.classList.remove('show')
+  })
+  if (menu) menu.classList.toggle('show')
+}
+
+// ── Cargar selects del modal ──────────────────────────────────────────────────
 async function cargarRoles() {
   try {
     const res = await fetch('/api/roles', { headers: getHeaders() })
@@ -229,6 +399,7 @@ async function cargarNiveles() {
   }
 }
 
+// ── Modal: nuevo usuario ──────────────────────────────────────────────────────
 function abrirModalNuevo() {
   document.getElementById('modalTitle').textContent = 'Nuevo Usuario'
   document.getElementById('formUsuario').reset()
@@ -246,12 +417,12 @@ function cerrarModal() {
   document.getElementById('formUsuario').reset()
 }
 
+// ── Modal: editar usuario ─────────────────────────────────────────────────────
 window.editarUsuario = async function(id) {
   try {
     const res = await fetch(`/api/usuarios/${id}`, { headers: getHeaders() })
     const json = await res.json()
 
-    // ✅ FIX: verificar res.ok antes de leer los datos
     if (!res.ok) {
       alert(json.error || 'Error cargando usuario')
       return
@@ -283,13 +454,14 @@ window.editarUsuario = async function(id) {
   }
 }
 
+// ── Guardar usuario (POST / PUT) ──────────────────────────────────────────────
 async function guardarUsuario(e) {
 
   e.preventDefault()
 
-  const id = document.getElementById('inputUsuarioId').value
+  const id       = document.getElementById('inputUsuarioId').value
   const password = document.getElementById('inputPassword').value
-  const confirm = document.getElementById('inputPasswordConfirm').value
+  const confirm  = document.getElementById('inputPasswordConfirm').value
 
   if (password || confirm) {
     if (password !== confirm) {
@@ -301,38 +473,37 @@ async function guardarUsuario(e) {
   const toInt = v => v ? parseInt(v) : null
 
   let payload = {
-    email: document.getElementById('inputEmail').value,
-    id_rol: toInt(document.getElementById('selectRol').value),
+    email:          document.getElementById('inputEmail').value,
+    id_rol:         toInt(document.getElementById('selectRol').value),
     id_dependencia: toInt(document.getElementById('selectDependencia').value),
-    id_cargo: toInt(document.getElementById('selectCargo').value),
-    id_nivel: toInt(document.getElementById('selectNivel').value),
-    estado: document.getElementById('checkEstado').checked ? 1 : 0,
-    bloqueado: document.getElementById('checkBloqueado').checked ? 1 : 0,
+    id_cargo:       toInt(document.getElementById('selectCargo').value),
+    id_nivel:       toInt(document.getElementById('selectNivel').value),
+    estado:         document.getElementById('checkEstado').checked ? 1 : 0,
+    bloqueado:      document.getElementById('checkBloqueado').checked ? 1 : 0,
     password
   }
 
-  let url = '/api/usuarios'
+  let url    = '/api/usuarios'
   let method = 'POST'
 
   if (id) {
-    url = `/api/usuarios/${id}`
+    url    = `/api/usuarios/${id}`
     method = 'PUT'
   } else {
     payload = {
       nombre_completo: document.getElementById('inputNombre').value,
-      documento: document.getElementById('inputDocumento').value,
-      email: document.getElementById('inputEmail').value,
-      username: document.getElementById('inputUsername').value,
+      documento:       document.getElementById('inputDocumento').value,
+      email:           document.getElementById('inputEmail').value,
+      username:        document.getElementById('inputUsername').value,
       password,
-      id_rol: toInt(document.getElementById('selectRol').value),
-      id_dependencia: toInt(document.getElementById('selectDependencia').value),
-      id_cargo: toInt(document.getElementById('selectCargo').value),
-      id_nivel: toInt(document.getElementById('selectNivel').value)
+      id_rol:          toInt(document.getElementById('selectRol').value),
+      id_dependencia:  toInt(document.getElementById('selectDependencia').value),
+      id_cargo:        toInt(document.getElementById('selectCargo').value),
+      id_nivel:        toInt(document.getElementById('selectNivel').value)
     }
   }
 
   try {
-
     const res = await fetch(url, {
       method,
       headers: getHeaders({ 'Content-Type': 'application/json' }),
