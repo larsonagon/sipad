@@ -160,30 +160,32 @@ function renderTabla(data) {
         </span>
       </td>
 
-      <td>
-        <div class="acciones-menu">
+      <td class="acciones" style="display:flex; gap:6px; flex-wrap:nowrap;">
 
-          <button class="btn-menu" data-menu="${ent.id}">
-            ⋮
-          </button>
+        <button
+          class="btn-primary btn-sm"
+          data-action="gestionar"
+          data-id="${ent.id}"
+          data-nombre="${escapeHTML(ent.nombre)}">
+          Gestionar
+        </button>
 
-          <div class="menu-dropdown" id="menu-${ent.id}">
+        <button
+          class="btn-secondary btn-sm"
+          data-action="editar"
+          data-id="${ent.id}"
+          data-nombre="${escapeHTML(ent.nombre)}">
+          Editar
+        </button>
 
-            <button data-action="gestionar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
-              Gestionar entidad
-            </button>
+        <button
+          class="${activa ? 'btn-danger' : 'btn-success'} btn-sm"
+          data-action="toggle"
+          data-id="${ent.id}"
+          data-estado="${ent.estado}">
+          ${activa ? 'Desactivar' : 'Activar'}
+        </button>
 
-            <button data-action="editar" data-id="${ent.id}" data-nombre="${escapeHTML(ent.nombre)}">
-              Editar
-            </button>
-
-            <button data-action="toggle" data-id="${ent.id}" data-estado="${ent.estado}">
-              ${activa ? 'Desactivar' : 'Activar'}
-            </button>
-
-          </div>
-
-        </div>
       </td>
     `
 
