@@ -324,9 +324,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         .getElementById('btnCerrarAnalisis')
         ?.addEventListener('click', cerrarModal);
 
-      // ✅ FIX Chrome: forzar display además de remover clase
+      // ✅ FIX: forzar overlay completo por JS, independiente del CSS
       modal.classList.remove('hidden');
-      modal.style.display = 'flex';
+      Object.assign(modal.style, {
+        display        : 'flex',
+        position       : 'fixed',
+        top            : '0',
+        left           : '0',
+        width          : '100vw',
+        height         : '100vh',
+        background     : 'rgba(0,0,0,0.5)',
+        alignItems     : 'center',
+        justifyContent : 'center',
+        zIndex         : '9999'
+      });
 
     } catch (error) {
       console.error('Error en análisis:', error);
