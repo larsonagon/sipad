@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  renderHeader('TRD-AI')
+  const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null
+  renderHeader('TRD-AI', gestionEntidadNombre)
 
   document
     .getElementById('btnVerPropuestas')
@@ -23,12 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ======================================================
 // API FETCH
-// ✅ FIX: token desde sessionStorage + X-Entidad-Id
 // ======================================================
 
 async function apiFetch(url, options = {}) {
 
-  // ✅ FIX: era localStorage, debe ser sessionStorage
   const token = sessionStorage.getItem('token')
 
   const headers = {
@@ -37,7 +36,6 @@ async function apiFetch(url, options = {}) {
     ...(options.headers || {})
   }
 
-  // ✅ FIX: enviar entidad en contexto superadmin
   const entidadId =
     sessionStorage.getItem('gestion_entidad_id') ||
     sessionStorage.getItem('entidad_id') ||
