@@ -138,7 +138,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function cerrarModal() {
-    modal?.classList.add('hidden');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+    }
     if (modalBody)   modalBody.innerHTML   = '';
     if (modalFooter) modalFooter.innerHTML = '';
   }
@@ -276,7 +279,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         || a.disposition_final
         || '-';
 
-      // ✅ Usar modalTitle para el título, modalBody solo para el contenido
+      const serieLabel    = serie    !== '-' ? serie    : '<em style="color:var(--color-text-secondary);font-style:normal;">No determinada por la IA</em>';
+      const subserieLabel = subserie !== '-' ? subserie : '<em style="color:var(--color-text-secondary);font-style:normal;">No determinada por la IA</em>';
+
       document.getElementById('modalTitle').textContent =
         'Análisis técnico de la actividad';
 
@@ -285,12 +290,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           <div class="grid-item">
             <label>Serie documental sugerida:</label>
-            <strong>${serie}</strong>
+            <strong>${serieLabel}</strong>
           </div>
 
           <div class="grid-item">
             <label>Subserie sugerida:</label>
-            <strong>${subserie}</strong>
+            <strong>${subserieLabel}</strong>
           </div>
 
           <div class="grid-item">
@@ -319,7 +324,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         .getElementById('btnCerrarAnalisis')
         ?.addEventListener('click', cerrarModal);
 
+      // ✅ FIX Chrome: forzar display además de remover clase
       modal.classList.remove('hidden');
+      modal.style.display = 'flex';
 
     } catch (error) {
       console.error('Error en análisis:', error);
