@@ -5,18 +5,24 @@ export default class InformesRepository {
   }
 
   // ======================================
+  // UTILIDAD: QUERY POSTGRES
+  // ======================================
+
+  async query(sql, params = []) {
+    const result = await this.db.query(sql, params)
+    return result.rows
+  }
+
+  // ======================================
   // UTILIDAD: NORMALIZAR FECHA
   // ======================================
 
   normalizarFecha(fecha) {
-
     if (!fecha) return null
-
     if (fecha.includes('/')) {
       const [d, m, y] = fecha.split('/')
       return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
     }
-
     return fecha
   }
 
@@ -27,6 +33,8 @@ export default class InformesRepository {
 
   async obtenerActividades(filtros = {}) {
 
+    const params = []
+
     let sql = `
       SELECT
         a.id,
@@ -34,6 +42,7 @@ export default class InformesRepository {
         a.nombre,
         a.descripcion_funcional,
         a.frecuencia,
+        a.estado_general,
         u.nombre_completo AS funcionario,
         COALESCE(d.nombre, du.nombre) AS dependencia
       FROM segtec_actividades a
@@ -46,49 +55,40 @@ export default class InformesRepository {
       WHERE 1=1
     `
 
-    const params = []
-
     if (filtros.funcionario && !isNaN(filtros.funcionario)) {
-      sql += ` AND a.usuario_id = ?`
       params.push(Number(filtros.funcionario))
+      sql += ` AND a.usuario_id = $${params.length}`
     }
 
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
-
       const dep = Number(filtros.dependencia)
-
-      sql += `
-        AND (
-          a.dependencia_id = ?
-          OR u.id_dependencia = ?
-        )
-      `
-      params.push(dep, dep)
+      params.push(dep)
+      sql += ` AND (a.dependencia_id = $${params.length}`
+      params.push(dep)
+      sql += ` OR u.id_dependencia = $${params.length})`
     }
 
     const fechaInicio = this.normalizarFecha(filtros.fechaInicio)
-    const fechaFin = this.normalizarFecha(filtros.fechaFin)
+    const fechaFin    = this.normalizarFecha(filtros.fechaFin)
 
     if (fechaInicio) {
-      sql += ` AND date(a.created_at) >= date(?)`
       params.push(fechaInicio)
+      sql += ` AND a.created_at::date >= $${params.length}::date`
     }
 
     if (fechaFin) {
-      sql += ` AND date(a.created_at) <= date(?)`
       params.push(fechaFin)
+      sql += ` AND a.created_at::date <= $${params.length}::date`
     }
 
     sql += ` ORDER BY a.created_at DESC`
 
-    return await this.db.all(sql, params)
-
+    return await this.query(sql, params)
   }
-
 
   // ======================================
   // INFORME 2
-  // RESUMEN DE ACTIVIDADES POR DEPENDENCIA
+  // RESUMEN POR DEPENDENCIA
   // ======================================
 
   async obtenerResumenPorDependencia() {
@@ -100,10 +100,8 @@ export default class InformesRepository {
         COUNT(DISTINCT a.usuario_id) AS total_funcionarios,
         SUM(
           CASE
-            WHEN a.estado_general = 'analizada'
-            OR a.estado_general = 'caracterizada'
-            THEN 1
-            ELSE 0
+            WHEN a.estado_general IN ('analizada', 'caracterizada')
+            THEN 1 ELSE 0
           END
         ) AS actividades_analizadas
       FROM segtec_actividades a
@@ -113,14 +111,12 @@ export default class InformesRepository {
         ON d.id = a.dependencia_id
       LEFT JOIN dependencias du
         ON du.id = u.id_dependencia
-      GROUP BY dependencia
+      GROUP BY COALESCE(d.nombre, du.nombre)
       ORDER BY total_actividades DESC
     `
 
-    return await this.db.all(sql)
-
+    return await this.query(sql)
   }
-
 
   // ======================================
   // INFORME 3
@@ -128,6 +124,8 @@ export default class InformesRepository {
   // ======================================
 
   async obtenerProduccionDocumental(filtros = {}) {
+
+    const params = []
 
     let sql = `
       SELECT
@@ -148,68 +146,36 @@ export default class InformesRepository {
       AND a.genera_documentos <> ''
     `
 
-    const params = []
-
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
-
       const dep = Number(filtros.dependencia)
-
-      sql += `
-        AND (
-          a.dependencia_id = ?
-          OR u.id_dependencia = ?
-        )
-      `
-      params.push(dep, dep)
-
+      params.push(dep)
+      sql += ` AND (a.dependencia_id = $${params.length}`
+      params.push(dep)
+      sql += ` OR u.id_dependencia = $${params.length})`
     }
 
     sql += ` ORDER BY a.nombre ASC`
 
-    const rows = await this.db.all(sql, params)
+    const rows = await this.query(sql, params)
 
-    const data = rows.map(row => {
+    return rows.map(row => {
 
-      const docs = row.documentos_generados || ""
+      const docs  = row.documentos_generados || ''
+      const tipos = docs.split(',').map(d => d.trim()).filter(d => d.length > 0)
 
-      const tipos = docs
-        .split(',')
-        .map(d => d.trim())
-        .filter(d => d.length > 0)
-
-      let formato = row.formato_produccion
-
-      if (formato === 'digital') formato = 'Digital'
-      if (formato === 'fisico') formato = 'Físico'
-      if (formato === 'ambos') formato = 'Físico y digital'
-
-      let volumen = row.volumen_documental
-
-      if (volumen === 'menos_10') volumen = 'Menos de 10'
-      if (volumen === 'entre_10_50') volumen = 'Entre 10 y 50'
-      if (volumen === 'mas_50') volumen = 'Más de 50'
-
-      let frecuencia = row.frecuencia
-
-      if (frecuencia === 'diaria') frecuencia = 'Diaria'
-      if (frecuencia === 'semanal') frecuencia = 'Semanal'
-      if (frecuencia === 'mensual') frecuencia = 'Mensual'
-      if (frecuencia === 'eventual') frecuencia = 'Eventual'
+      const mapaFormato = { digital: 'Digital', fisico: 'Físico', ambos: 'Físico y digital' }
+      const mapaVolumen = { menos_10: 'Menos de 10', entre_10_50: 'Entre 10 y 50', mas_50: 'Más de 50' }
+      const mapaFrecuencia = { diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', eventual: 'Eventual' }
 
       return {
-        actividad: row.actividad,
-        dependencia: row.dependencia,
-        documentos_generados: tipos.join(', '),
+        actividad:               row.actividad,
+        dependencia:             row.dependencia,
+        documentos_generados:    tipos.join(', '),
         total_tipos_documentales: tipos.length,
-        formato,
-        volumen,
-        frecuencia
+        formato:                 mapaFormato[row.formato_produccion]  || row.formato_produccion,
+        volumen:                 mapaVolumen[row.volumen_documental]  || row.volumen_documental,
+        frecuencia:              mapaFrecuencia[row.frecuencia]       || row.frecuencia
       }
-
     })
-
-    return data
-
   }
-
 }
