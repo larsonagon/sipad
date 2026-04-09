@@ -85,7 +85,7 @@ import { TRDAIController }     from './backend/modules/trd-ai/trd-ai.controller.
 import { registerTRDAIRoutes } from './backend/modules/trd-ai/trd-ai.routes.js'
 
 // ✅ INFORMES
-import { buildInformesRouter } from './backend/modules/informes/InformesRouter.js'
+import { buildInformesRouter } from './backend/modules/informes/informes.routes.js'
 
 // ==========================================================
 // INIT
