@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const colDependencia = (esSuperAdmin || esArchivista)
-        ? `<td>${a.dependencia || '-'}</td>`
+        ? `<td>${a.dependencia || '-'}</td><td>${a.usuario_nombre || a.creado_por || '-'}</td>`
         : '';
 
       return `
@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     const thDependencia = (esSuperAdmin || esArchivista)
-      ? '<th>Dependencia</th>'
+      ? '<th>Dependencia</th><th>Funcionario</th>'
       : '';
 
     tablaContainer.innerHTML = `
