@@ -13,59 +13,6 @@ function getUserFromToken() {
 
 }
 
-async function cargarSelectorEntidad(user) {
-
-  if (!user) return;
-
-  if (!user.es_master_admin && user.rol !== 'Super Admin') {
-    return;
-  }
-
-  const select = document.getElementById('selectorEntidad');
-  if (!select) return;
-
-  select.style.display = 'inline-block';
-
-  try {
-
-    const res = await fetch('/api/entidades');
-    const json = await res.json();
-
-    if (!json.ok) return;
-
-    select.innerHTML = '';
-
-    json.data.forEach(e => {
-
-      const option = document.createElement('option');
-      option.value = e.id;
-      option.textContent = e.nombre;
-
-      select.appendChild(option);
-
-    });
-
-    const entidadActiva =
-      sessionStorage.getItem('entidad_id') || user.id_entidad;
-
-    select.value = entidadActiva;
-
-    select.addEventListener('change', () => {
-
-      sessionStorage.setItem('entidad_id', select.value);
-
-      location.reload();
-
-    });
-
-  } catch (err) {
-
-    console.error('Error cargando entidades:', err);
-
-  }
-
-}
-
 document.addEventListener('DOMContentLoaded', () => {
 
   const token = sessionStorage.getItem('token');
@@ -83,21 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  try {
-    renderHeader('home')
-  } catch (error) {
-    console.error('Error renderizando header:', error);
-  }
-
-  cargarSelectorEntidad(user);
-
-  // 🔥 NORMALIZACIÓN REAL
   const nivel    = Number(user.nivel_acceso || 0);
   const esMaster = user.es_master_admin === true;
 
-  // ✅ Super Admin sin entidad seleccionada → no puede usar módulos operativos
-  const gestionEntidadId    = sessionStorage.getItem('gestion_entidad_id') || null
-  const superAdminSinEntidad = esMaster && !gestionEntidadId
+  const gestionEntidadId    = sessionStorage.getItem('gestion_entidad_id') || null;
+  const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null;
+
+  // ✅ Super Admin sin entidad seleccionada → directo al listado de entidades
+  if (esMaster && !gestionEntidadId) {
+    window.location.href = '/administracion/entidades/index.html';
+    return;
+  }
+
+  try {
+    renderHeader('home', gestionEntidadNombre);
+  } catch (error) {
+    console.error('Error renderizando header:', error);
+  }
 
   // =====================================================
   // PERMISOS
@@ -110,31 +59,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (esMaster) {
     puedeAdmin    = true;
-    // ✅ Módulos operativos solo si tiene entidad seleccionada
-    puedeICAF     = !superAdminSinEntidad;
-    puedeInformes = !superAdminSinEntidad;
-    puedeTRDAI    = !superAdminSinEntidad;
+    puedeICAF     = true;
+    puedeInformes = true;
+    puedeTRDAI    = true;
   } else {
 
     switch (nivel) {
 
-      case 90: // ADMINISTRADOR
+      case 90:
         puedeICAF  = true;
         puedeAdmin = true;
         break;
 
-      case 70: // ARCHIVISTA
+      case 70:
         puedeICAF     = true;
         puedeInformes = true;
         puedeTRDAI    = true;
         break;
 
-      case 50: // JEFE
+      case 50:
         puedeICAF     = true;
         puedeInformes = true;
         break;
 
-      case 10: // GENERAL
+      case 10:
         puedeICAF = true;
         break;
 
@@ -159,9 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cardTRDAI)    cardTRDAI.style.display     = puedeTRDAI    ? '' : 'none';
   if (cardTRD)      cardTRD.style.display       = puedeTRDAI    ? '' : 'none';
   if (cardAdmin)    cardAdmin.style.display     = puedeAdmin    ? '' : 'none';
-  // ✅ Mostrar grid solo después de aplicar permisos (evita flash)
-  const grid = document.querySelector(".module-grid");
-  if (grid) grid.style.visibility = "visible";
+
+  const grid = document.querySelector('.module-grid');
+  if (grid) grid.style.visibility = 'visible';
 
   // =====================================================
   // NAVEGACIÓN

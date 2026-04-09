@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
 
-  // 🔥 Limpiar entidad gestionada al entrar a este módulo
+  // Limpiar entidad gestionada al entrar a este módulo
   sessionStorage.removeItem('gestion_entidad_id')
   sessionStorage.removeItem('gestion_entidad_nombre')
 
@@ -64,11 +64,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   await new Promise(r => requestAnimationFrame(r))
   document.body.offsetHeight
 
-  modal = document.getElementById('modalEntidad')
+  modal       = document.getElementById('modalEntidad')
   inputNombre = document.getElementById('inputNombre')
-  form = document.getElementById('formEntidad')
+  form        = document.getElementById('formEntidad')
   inputBuscar = document.getElementById('inputBuscarEntidad')
-  tabla = document.getElementById('tablaEntidades')
+  tabla       = document.getElementById('tablaEntidades')
 
   document.getElementById('btnNueva')
     .addEventListener('click', abrirModalNueva)
@@ -213,7 +213,7 @@ function manejarClicksTabla(e) {
   cerrarMenus()
 
   const action = actionBtn.dataset.action
-  const id = actionBtn.dataset.id
+  const id     = actionBtn.dataset.id
   const nombre = actionBtn.dataset.nombre
 
   if (action === 'gestionar') {
@@ -240,16 +240,16 @@ function cerrarMenus() {
 
 /* =========================================
    GESTIONAR ENTIDAD
+   ✅ FIX: redirige a /home en lugar de /administracion
 ========================================= */
 
 function gestionarEntidad(id, nombre) {
 
-  // 🔥 Guardar contexto de gestión en sessionStorage
   sessionStorage.setItem('gestion_entidad_id', id)
   sessionStorage.setItem('gestion_entidad_nombre', nombre)
 
-  // Redirigir a administración
-  window.location.href = '/administracion/index.html'
+  // ✅ Va directo al panel principal con todos los módulos
+  window.location.href = '/home/index.html'
 }
 
 /* =========================================
@@ -274,7 +274,7 @@ function filtrarEntidades() {
 function abrirModalNueva() {
 
   modoEdicion = false
-  idEditando = null
+  idEditando  = null
 
   document.getElementById('modalTitle').innerText = 'Nueva Entidad'
 
@@ -294,7 +294,7 @@ function cerrarModal() {
 function editar(id, nombre) {
 
   modoEdicion = true
-  idEditando = id
+  idEditando  = id
 
   document.getElementById('modalTitle').innerText = 'Editar Entidad'
 
@@ -320,7 +320,7 @@ async function guardarEntidad(e) {
       return
     }
 
-    const url = modoEdicion ? `${API}/${idEditando}` : API
+    const url    = modoEdicion ? `${API}/${idEditando}` : API
     const method = modoEdicion ? 'PATCH' : 'POST'
 
     const res = await fetch(url, {
