@@ -471,6 +471,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const actividades = json.data || [];
 
+      if (actividades.length) console.log('CAMPOS ACTIVIDAD:', Object.keys(actividades[0]), actividades[0]);
+
       if (!actividades.length) {
 
         tablaContainer.innerHTML = `
