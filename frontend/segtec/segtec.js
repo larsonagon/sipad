@@ -523,23 +523,25 @@ document.addEventListener('DOMContentLoaded', async () => {
           <td style="white-space:nowrap;">${capitalizar(a.frecuencia)}</td>
           <td style="white-space:nowrap;">${badgeEstado(a.estado_general)}</td>
           <td style="white-space:nowrap;">${formatearFecha(a.created_at)}</td>
-          <td class="acciones" style="white-space:nowrap;vertical-align:middle;">
+          <td style="vertical-align:middle;">
+            <div style="display:flex;gap:6px;align-items:center;justify-content:flex-start;">
 
-            <button
-              class="btn-primary btn-sm abrir-btn"
-              data-id="${a.id}">
-              Abrir
-            </button>
+              <button
+                class="btn-primary btn-sm abrir-btn"
+                data-id="${a.id}">
+                Abrir
+              </button>
 
-            ${botonAnalizar}
+              ${botonAnalizar}
 
-            <button
-              class="btn-danger btn-sm pdf-btn"
-              data-id="${a.id}"
-              style="width:70px;">
-              PDF
-            </button>
+              <button
+                class="btn-danger btn-sm pdf-btn"
+                data-id="${a.id}"
+                style="width:70px;">
+                PDF
+              </button>
 
+            </div>
           </td>
         </tr>
       `;
