@@ -423,12 +423,12 @@ async function buscarEnCatalogo(db, tokensTexto) {
 }
 
 // ===================================================
-// CAPA 0: CLAUDE AI
+// CAPA 0: OPENAI GPT-4o
 // ===================================================
 
-async function llamarClaude(actividad, configuracionDependencia) {
+async function llamarOpenAI(actividad, configuracionDependencia) {
 
-  if (!process.env.ANTHROPIC_API_KEY) return null
+  if (!process.env.OPENAI_API_KEY) return null
 
   const cfg = configuracionDependencia || {}
 
@@ -483,33 +483,41 @@ Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional:
 
   try {
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model:      'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages:   [{ role: 'user', content: prompt }]
+        model:       'gpt-4o',
+        temperature: 0.2,
+        messages: [
+          {
+            role:    'system',
+            content: 'Eres un experto archivista colombiano. Responde siempre con JSON válido únicamente, sin markdown ni texto adicional.'
+          },
+          {
+            role:    'user',
+            content: prompt
+          }
+        ]
       })
     })
 
     if (!response.ok) {
-      console.error('Claude API HTTP error:', response.status)
+      console.error('OpenAI API HTTP error:', response.status)
       return null
     }
 
-    const json    = await response.json()
-    const texto   = json.content?.[0]?.text || ''
-    const limpio  = texto.replace(/```json/gi, '').replace(/```/g, '').trim()
-    const result  = JSON.parse(limpio)
+    const json   = await response.json()
+    const texto  = json.choices?.[0]?.message?.content || ''
+    const limpio = texto.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const result = JSON.parse(limpio)
 
     if (!result.serie_documental) return null
 
-    console.log('Capa 0 Claude —', result.serie_documental, '→', result.subserie_documental)
+    console.log('Capa 0 GPT-4o —', result.serie_documental, '→', result.subserie_documental)
 
     return {
       serie_sugerida:    { nombre: result.serie_documental },
@@ -519,11 +527,11 @@ Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional:
       disposicion_final: result.disposicion_final || null,
       justificacion:     result.justificacion     || null,
       confianza:         result.confianza         || 0.85,
-      origen:            'claude'
+      origen:            'gpt-4o'
     }
 
   } catch (err) {
-    console.error('Error capa 0 Claude:', err.message)
+    console.error('Error capa 0 GPT-4o:', err.message)
     return null
   }
 }
@@ -551,10 +559,10 @@ export async function sugerirSerieDesdeActividad(actividad = {}, configuracionDe
   // CAPA 0: Claude AI (con contexto completo)
   // ---------------------------------------------------
 
-  const resultadoClaude = await llamarClaude(actividad, configuracionDependencia)
+  const resultadoIA = await llamarOpenAI(actividad, configuracionDependencia)
 
-  if (resultadoClaude) {
-    return resultadoClaude
+  if (resultadoIA) {
+    return resultadoIA
   }
 
   console.log('Capa 0 no disponible — usando motor heurístico')

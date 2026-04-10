@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  renderHeader('ICAF')
+  const gestionEntidadNombre = sessionStorage.getItem('gestion_entidad_nombre') || null;
+  renderHeader('ICAF', gestionEntidadNombre);
 
   const form = document.getElementById('formConfiguracion');
   const btnCancelar = document.getElementById('btnCancelar');
@@ -129,14 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (selectTipo && config.tipo_funcion) {
 
         const valor = normalizar(config.tipo_funcion);
-
         const opciones = [...selectTipo.options];
-
         const match = opciones.find(o => normalizar(o.value) === valor);
-
-        if (match) {
-          selectTipo.value = match.value;
-        }
+        if (match) selectTipo.value = match.value;
 
       }
 
@@ -149,14 +145,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (selectNivel && config.nivel_decisorio) {
 
         const valor = normalizar(config.nivel_decisorio);
-
         const opciones = [...selectNivel.options];
-
         const match = opciones.find(o => normalizar(o.value) === valor);
-
-        if (match) {
-          selectNivel.value = match.value;
-        }
+        if (match) selectNivel.value = match.value;
 
       }
 
@@ -164,24 +155,21 @@ document.addEventListener('DOMContentLoaded', async () => {
          CHECKBOX BOOLEANOS
       =============================== */
 
-      ['recibe_solicitudes','emite_actos','produce_decisiones']
+      ['recibe_solicitudes', 'emite_actos', 'produce_decisiones']
       .forEach(field => {
 
         const checkbox = form.querySelector(`input[name="${field}"]`);
-
         if (!checkbox) return;
 
         const valor = config[field];
 
         if (
-          valor === 1 ||
+          valor === 1    ||
           valor === true ||
-          valor === '1' ||
+          valor === '1'  ||
           valor === 'true'
         ) {
-
           checkbox.checked = true;
-
         }
 
       });
@@ -199,12 +187,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ].forEach(field => {
 
         const input = form.querySelector(`[name="${field}"]`);
-
-        if (input && config[field]) {
-
-          input.value = config[field];
-
-        }
+        if (input && config[field]) input.value = config[field];
 
       });
 
@@ -217,35 +200,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         let tipos = [];
 
         try {
-
           tipos = JSON.parse(config.tipos_documentales);
-
         } catch {
-
           tipos = [];
-
         }
 
         if (Array.isArray(tipos)) {
-
           tipos.forEach(valor => {
-
             const checkbox = form.querySelector(
               `input[name="tipos_documentales"][value="${valor}"]`
             );
-
             if (checkbox) checkbox.checked = true;
-
           });
-
         }
 
       }
 
     } catch (err) {
-
       console.error('Error cargando configuración:', err);
-
     }
 
   }
@@ -262,18 +234,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const data = {
 
-      tipo_funcion: formData.get('tipo_funcion') || null,
-
+      tipo_funcion:    formData.get('tipo_funcion')    || null,
       nivel_decisorio: formData.get('nivel_decisorio') || null,
 
       procesos_principales: formData.get('procesos_principales') || '',
-
-      tramites_frecuentes: formData.get('tramites_frecuentes') || '',
-
-      tipo_decisiones: formData.get('tipo_decisiones') || '',
-
-      otros_documentos: formData.get('otros_documentos') || '',
-
+      tramites_frecuentes:  formData.get('tramites_frecuentes')  || '',
+      tipo_decisiones:      formData.get('tipo_decisiones')      || '',
+      otros_documentos:     formData.get('otros_documentos')     || '',
       descripcion_funcional: formData.get('descripcion_funcional') || '',
 
       recibe_solicitudes:
@@ -285,8 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       produce_decisiones:
         form.querySelector('input[name="produce_decisiones"]')?.checked || false,
 
-      tipos_documentales:
-        formData.getAll('tipos_documentales')
+      tipos_documentales: formData.getAll('tipos_documentales')
 
     };
 
@@ -317,24 +283,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       const json = await resp.json();
 
       if (!resp.ok || !json.ok) {
-
         showToast(json.error || 'Error guardando estructura', 'error');
         return;
-
       }
 
       showToast('Estructura funcional registrada correctamente.');
 
       setTimeout(() => {
-
         window.location.href = '/segtec/segtec.html';
-
       }, 1700);
 
     } catch (err) {
 
       console.error(err);
-
       showToast('Error de conexión.', 'error');
 
     }

@@ -162,14 +162,18 @@ export function SEGTECActividadesRepository(db) {
         a.responsable_custodia,
         a.cargo_custodia,
         a.localizacion_documentos,
+        a.localizacion_otro,
         a.tiene_pasos_formales,
         a.requiere_otras_dependencias,
         a.dependencias_relacionadas,
         a.norma_aplicable,
-        a.tiene_plazo,
         a.plazo_legal,
         a.tiempo_ejecucion,
         a.genera_expediente_propio,
+        a.impacto_juridico_directo,
+        a.impacto_fiscal_contable,
+        a.actividad_permanente,
+        a.volumen_anual_personalizado,
         d.nombre AS dependencia
       FROM segtec_actividades a
       LEFT JOIN dependencias d ON a.dependencia_id = d.id
