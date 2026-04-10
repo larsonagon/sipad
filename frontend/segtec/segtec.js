@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   cerrarModalBtn?.addEventListener('click', cerrarModal);
 
   // =====================================================
+  // ESTADO FILTROS + PAGINACIÓN
+  // =====================================================
+
+  let actividadesCache = [];
+  let paginaActual     = 1;
+  const porPagina      = 10;
+
+  // =====================================================
   // API FETCH
   // =====================================================
 
@@ -464,21 +472,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      const actividades = json.data || [];
+      actividadesCache = json.data || [];
 
-      if (!actividades.length) {
-
+      if (!actividadesCache.length) {
         tablaContainer.innerHTML = `
           <div class="empty-state">
             <h3>No hay actividades técnicas registradas aún.</h3>
             <p>Al crear una nueva actividad, iniciará el proceso técnico.</p>
           </div>
         `;
-
         return;
       }
 
-      renderTabla(actividades);
+      if (esSuperAdmin || esArchivista) {
+        renderFiltros();
+      }
+
+      renderTabla(actividadesCache);
 
     } catch (error) {
       console.error(error);
@@ -487,69 +497,147 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // =====================================================
-  // RENDER TABLA
+  // FILTROS
+  // =====================================================
+
+  function renderFiltros() {
+
+    const contenedor = document.createElement('div');
+    contenedor.id = 'filtrosSegtec';
+    contenedor.style.cssText = `
+      display:flex;gap:10px;flex-wrap:wrap;
+      margin-bottom:16px;align-items:center;
+    `;
+
+    contenedor.innerHTML = `
+      <input
+        id="filtroTexto" type="text"
+        placeholder="Buscar por actividad, dependencia o funcionario..."
+        style="flex:1;min-width:220px;height:34px;padding:0 12px;font-size:13px;
+               border:1px solid var(--color-border);border-radius:6px;
+               font-family:inherit;box-sizing:border-box;">
+
+      <select id="filtroEstado"
+        style="height:34px;padding:0 10px;font-size:13px;
+               border:1px solid var(--color-border);border-radius:6px;
+               font-family:inherit;background:#fff;">
+        <option value="">Todos los estados</option>
+        <option value="borrador">Borrador</option>
+        <option value="caracterizada">Caracterizada</option>
+        <option value="analizada">Analizada</option>
+      </select>
+
+      <button id="btnLimpiarFiltros"
+        style="height:34px;padding:0 14px;font-size:13px;
+               border:1px solid var(--color-border);border-radius:6px;
+               background:#f3f4f6;color:#374151;cursor:pointer;font-family:inherit;">
+        Limpiar
+      </button>
+
+      <span id="infoFiltro"
+        style="font-size:12px;color:var(--color-text-muted);white-space:nowrap;margin-left:auto;">
+      </span>
+    `;
+
+    tablaContainer.parentNode.insertBefore(contenedor, tablaContainer);
+
+    document.getElementById('filtroTexto')
+      .addEventListener('input', aplicarFiltros);
+
+    document.getElementById('filtroEstado')
+      .addEventListener('change', aplicarFiltros);
+
+    document.getElementById('btnLimpiarFiltros')
+      .addEventListener('click', () => {
+        document.getElementById('filtroTexto').value  = '';
+        document.getElementById('filtroEstado').value = '';
+        paginaActual = 1;
+        renderTabla(actividadesCache);
+      });
+  }
+
+  function aplicarFiltros() {
+    const texto  = (document.getElementById('filtroTexto')?.value  || '').toLowerCase();
+    const estado = (document.getElementById('filtroEstado')?.value || '').toLowerCase();
+
+    const filtradas = actividadesCache.filter(a => {
+      const matchTexto = !texto || [
+        a.nombre      || '',
+        a.dependencia || '',
+        a.funcionario || ''
+      ].some(c => c.toLowerCase().includes(texto));
+
+      const matchEstado = !estado ||
+        (a.estado_general || '').toLowerCase() === estado;
+
+      return matchTexto && matchEstado;
+    });
+
+    paginaActual = 1;
+    renderTabla(filtradas);
+  }
+
+  // =====================================================
+  // RENDER TABLA + PAGINACIÓN
   // =====================================================
 
   function renderTabla(actividades) {
 
-    const filas = actividades.map(a => {
+    const total     = actividades.length;
+    const totalPags = Math.max(1, Math.ceil(total / porPagina));
+    if (paginaActual > totalPags) paginaActual = totalPags;
 
-      const estado = (a.estado_general || '').toLowerCase().trim();
+    const inicio = (paginaActual - 1) * porPagina;
+    const slice  = actividades.slice(inicio, inicio + porPagina);
 
-      let botonAnalizar = '';
-
-      if (
-        (estado === 'caracterizada' || estado === 'analizada')
-        && puedeAnalizar
-      ) {
-
-        botonAnalizar = `
-          <button
-            class="btn-warning btn-sm analizar-btn"
-            data-id="${a.id}">
-            Analizar
-          </button>
-        `;
-      }
-
-      const colDependencia = (esSuperAdmin || esArchivista)
-        ? `<td>${a.dependencia || '-'}</td><td>${a.funcionario || '-'}</td>`
-        : '';
-
-      return `
-        <tr style="vertical-align:middle;">
-          <td style="word-break:break-word;min-width:180px;"><strong>${a.nombre || '-'}</strong></td>
-          ${colDependencia}
-          <td style="white-space:nowrap;">${capitalizar(a.frecuencia)}</td>
-          <td style="white-space:nowrap;">${badgeEstado(a.estado_general)}</td>
-          <td style="white-space:nowrap;">${formatearFecha(a.created_at)}</td>
-          <td style="vertical-align:middle;">
-            <div style="display:flex;gap:6px;align-items:center;justify-content:flex-start;">
-
-              <button
-                class="btn-primary btn-sm abrir-btn"
-                data-id="${a.id}">
-                Abrir
-              </button>
-
-              ${botonAnalizar}
-
-              <button
-                class="btn-danger btn-sm pdf-btn"
-                data-id="${a.id}"
-                style="width:70px;">
-                PDF
-              </button>
-
-            </div>
-          </td>
-        </tr>
-      `;
-    });
+    const infoEl = document.getElementById('infoFiltro');
+    if (infoEl) {
+      const fin = Math.min(inicio + porPagina, total);
+      infoEl.textContent = total === 0
+        ? 'Sin resultados'
+        : `${inicio + 1}–${fin} de ${total}`;
+    }
 
     const thDependencia = (esSuperAdmin || esArchivista)
       ? '<th>Dependencia</th><th>Funcionario</th>'
       : '';
+
+    const filas = slice.length === 0
+      ? `<tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--color-text-muted);">No se encontraron actividades.</td></tr>`
+      : slice.map(a => {
+
+          const estado = (a.estado_general || '').toLowerCase().trim();
+
+          let botonAnalizar = '';
+          if ((estado === 'caracterizada' || estado === 'analizada') && puedeAnalizar) {
+            botonAnalizar = `
+              <button class="btn-warning btn-sm analizar-btn" data-id="${a.id}">
+                Analizar
+              </button>
+            `;
+          }
+
+          const colDependencia = (esSuperAdmin || esArchivista)
+            ? `<td>${a.dependencia || '-'}</td><td>${a.funcionario || '-'}</td>`
+            : '';
+
+          return `
+            <tr style="vertical-align:middle;">
+              <td style="word-break:break-word;min-width:180px;"><strong>${a.nombre || '-'}</strong></td>
+              ${colDependencia}
+              <td style="white-space:nowrap;">${capitalizar(a.frecuencia)}</td>
+              <td style="white-space:nowrap;">${badgeEstado(a.estado_general)}</td>
+              <td style="white-space:nowrap;">${formatearFecha(a.created_at)}</td>
+              <td style="vertical-align:middle;">
+                <div style="display:flex;gap:6px;align-items:center;justify-content:flex-start;">
+                  <button class="btn-primary btn-sm abrir-btn" data-id="${a.id}">Abrir</button>
+                  ${botonAnalizar}
+                  <button class="btn-danger btn-sm pdf-btn" data-id="${a.id}" style="width:70px;">PDF</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
 
     tablaContainer.innerHTML = `
       <div style="width:100%;overflow-x:auto;">
@@ -564,36 +652,93 @@ document.addEventListener('DOMContentLoaded', async () => {
               <th style="white-space:nowrap;width:210px;">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            ${filas.join('')}
-          </tbody>
+          <tbody>${filas}</tbody>
         </table>
       </div>
     `;
 
-    tablaContainer
-      .querySelectorAll('.abrir-btn')
-      .forEach(btn => {
-        btn.addEventListener('click', () => {
-          window.location.href = `/segtec/actividad.html?id=${btn.dataset.id}`;
-        });
-      });
+    // Paginación
+    if (totalPags > 1) {
+      const pag = document.createElement('div');
+      pag.style.cssText = `
+        display:flex;justify-content:center;align-items:center;
+        gap:6px;margin-top:16px;flex-wrap:wrap;
+      `;
 
-    tablaContainer
-      .querySelectorAll('.pdf-btn')
-      .forEach(btn => {
-        btn.addEventListener('click', () => {
-          descargarPDFActividad(btn.dataset.id);
-        });
-      });
+      const crearBtn = (label, pagina, activo, disabled) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.style.cssText = `
+          height:30px;min-width:30px;padding:0 8px;font-size:12px;
+          border:1px solid ${activo ? '#1d4ed8' : 'var(--color-border)'};
+          border-radius:6px;
+          background:${activo ? '#1d4ed8' : '#fff'};
+          color:${activo ? '#fff' : 'var(--color-text)'};
+          cursor:${disabled ? 'default' : 'pointer'};
+          opacity:${disabled ? '0.4' : '1'};
+          font-family:inherit;
+        `;
+        if (!disabled) {
+          b.addEventListener('click', () => {
+            paginaActual = pagina;
+            const texto  = document.getElementById('filtroTexto')?.value  || '';
+            const estado = document.getElementById('filtroEstado')?.value || '';
+            if (texto || estado) {
+              aplicarFiltros();
+            } else {
+              renderTabla(actividadesCache);
+            }
+            tablaContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+        return b;
+      };
 
-    tablaContainer
-      .querySelectorAll('.analizar-btn')
-      .forEach(btn => {
-        btn.addEventListener('click', () => {
-          abrirModalAnalisis(btn.dataset.id);
-        });
-      });
+      const dots = () => {
+        const s = document.createElement('span');
+        s.textContent = '…';
+        s.style.cssText = 'font-size:12px;color:var(--color-text-muted);';
+        return s;
+      };
+
+      pag.appendChild(crearBtn('‹', paginaActual - 1, false, paginaActual <= 1));
+
+      const desde = Math.max(1, paginaActual - 2);
+      const hasta  = Math.min(totalPags, paginaActual + 2);
+
+      if (desde > 1) {
+        pag.appendChild(crearBtn('1', 1, false, false));
+        if (desde > 2) pag.appendChild(dots());
+      }
+
+      for (let i = desde; i <= hasta; i++) {
+        pag.appendChild(crearBtn(String(i), i, i === paginaActual, false));
+      }
+
+      if (hasta < totalPags) {
+        if (hasta < totalPags - 1) pag.appendChild(dots());
+        pag.appendChild(crearBtn(String(totalPags), totalPags, false, false));
+      }
+
+      pag.appendChild(crearBtn('›', paginaActual + 1, false, paginaActual >= totalPags));
+
+      tablaContainer.appendChild(pag);
+    }
+
+    // Event listeners
+    tablaContainer.querySelectorAll('.abrir-btn').forEach(b =>
+      b.addEventListener('click', () => {
+        window.location.href = `/segtec/actividad.html?id=${b.dataset.id}`;
+      })
+    );
+
+    tablaContainer.querySelectorAll('.pdf-btn').forEach(b =>
+      b.addEventListener('click', () => descargarPDFActividad(b.dataset.id))
+    );
+
+    tablaContainer.querySelectorAll('.analizar-btn').forEach(b =>
+      b.addEventListener('click', () => abrirModalAnalisis(b.dataset.id))
+    );
   }
 
   // =====================================================
