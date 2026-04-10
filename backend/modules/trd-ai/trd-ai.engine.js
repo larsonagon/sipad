@@ -466,9 +466,12 @@ async function llamarOpenAI(actividad, configuracionDependencia) {
 - Localización de documentos: ${actividad.localizacion_documentos || 'No especificada'}
 - Tiene pasos formales: ${actividad.tiene_pasos_formales ? 'Sí' : 'No'}
 - Norma aplicable: ${actividad.norma_aplicable || 'No especificada'}
-- Tiene plazo legal: ${actividad.tiene_plazo ? 'Sí' : 'No'}
 - Plazo legal: ${actividad.plazo_legal || 'No especificado'}
 - Genera expediente propio: ${actividad.genera_expediente_propio ? 'Sí' : 'No'}
+- Impacto jurídico directo: ${actividad.impacto_juridico_directo ? 'Sí' : 'No'}
+- Impacto fiscal/contable: ${actividad.impacto_fiscal_contable ? 'Sí' : 'No'}
+- Actividad permanente: ${actividad.actividad_permanente ? 'Sí' : 'No'}
+- Localización específica: ${actividad.localizacion_otro || 'No especificada'}
 
 Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional:
 {
