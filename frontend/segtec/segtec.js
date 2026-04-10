@@ -517,13 +517,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         : '';
 
       return `
-        <tr>
-          <td><strong>${a.nombre || '-'}</strong></td>
+        <tr style="vertical-align:middle;">
+          <td style="word-break:break-word;min-width:180px;"><strong>${a.nombre || '-'}</strong></td>
           ${colDependencia}
-          <td>${capitalizar(a.frecuencia)}</td>
-          <td>${badgeEstado(a.estado_general)}</td>
-          <td>${formatearFecha(a.created_at)}</td>
-          <td class="acciones">
+          <td style="white-space:nowrap;">${capitalizar(a.frecuencia)}</td>
+          <td style="white-space:nowrap;">${badgeEstado(a.estado_general)}</td>
+          <td style="white-space:nowrap;">${formatearFecha(a.created_at)}</td>
+          <td class="acciones" style="white-space:nowrap;vertical-align:middle;">
 
             <button
               class="btn-primary btn-sm abrir-btn"
@@ -550,16 +550,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       : '';
 
     tablaContainer.innerHTML = `
-      <div style="width:100%;">
-        <table class="table" style="width:100%;">
+      <div style="width:100%;overflow-x:auto;">
+        <table class="table" style="width:100%;border-collapse:collapse;">
           <thead>
             <tr>
-              <th>Actividad</th>
+              <th style="min-width:180px;">Actividad</th>
               ${thDependencia}
-              <th>Frecuencia</th>
-              <th>Estado</th>
-              <th>Creado</th>
-              <th style="width:190px;">Acciones</th>
+              <th style="white-space:nowrap;width:100px;">Frecuencia</th>
+              <th style="white-space:nowrap;width:90px;">Estado</th>
+              <th style="white-space:nowrap;width:90px;">Creado</th>
+              <th style="white-space:nowrap;width:210px;">Acciones</th>
             </tr>
           </thead>
           <tbody>
