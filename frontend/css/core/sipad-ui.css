@@ -533,6 +533,7 @@ button{
 /* ✅ Todas las celdas centradas por defecto */
 .table td{
   text-align:center;
+  vertical-align:middle;
 }
 
 /* ✅ Primera columna alineada a la izquierda */
@@ -547,6 +548,7 @@ button{
   border-bottom:1px solid var(--color-border);
   font-size:13px;
   position:relative;
+  vertical-align:middle;
 }
 
 .table tbody tr{
