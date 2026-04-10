@@ -7,7 +7,8 @@ import crypto from 'crypto'
 export function SEGTECActividadesService(
   actividadesRepository,
   validacionRepository,
-  trdAIService
+  trdAIService,
+  db                    // ← necesario para consultar configuración dependencia
 ) {
 
   if (!actividadesRepository)
@@ -23,56 +24,55 @@ export function SEGTECActividadesService(
   // 🔒 VALIDACIÓN CENTRAL
   // =====================================================
 
-  function validarActividad(data){
+  function validarActividad(data) {
 
     const errores = []
 
-    if(!data.nombre)
+    if (!data.nombre)
       errores.push('1. Nombre de la actividad es obligatorio')
 
-    if(!data.tipo_funcion)
+    if (!data.tipo_funcion)
       errores.push('2. Clasificación funcional es obligatoria')
 
-    if(!data.frecuencia)
+    if (!data.frecuencia)
       errores.push('3. Periodicidad es obligatoria')
 
-    if(data.genera_documentos === null || data.genera_documentos === undefined)
+    if (data.genera_documentos === null || data.genera_documentos === undefined)
       errores.push('5. Debe indicar si genera documentos')
 
-    if(!data.formato_produccion)
+    if (!data.formato_produccion)
       errores.push('7. Formato de producción es obligatorio')
 
-    if(!data.responsable_custodia)
+    if (!data.responsable_custodia)
       errores.push('10. Responsabilidad de custodia es obligatoria')
 
-    if(!data.cargo_custodia)
+    if (!data.cargo_custodia)
       errores.push('10a. Cargo responsable de custodia es obligatorio')
 
-    if(!data.localizacion_documentos)
+    if (!data.localizacion_documentos)
       errores.push('11. Localización de documentos es obligatoria')
 
-    if(data.tiene_pasos_formales === null || data.tiene_pasos_formales === undefined)
+    if (data.tiene_pasos_formales === null || data.tiene_pasos_formales === undefined)
       errores.push('13. Debe indicar si tiene pasos formales')
 
-    if(data.requiere_otras_dependencias === null || data.requiere_otras_dependencias === undefined)
+    if (data.requiere_otras_dependencias === null || data.requiere_otras_dependencias === undefined)
       errores.push('14. Debe indicar si requiere otras dependencias')
 
-    if(data.tiene_plazo === null || data.tiene_plazo === undefined)
+    if (data.tiene_plazo === null || data.tiene_plazo === undefined)
       errores.push('15. Debe indicar si tiene plazo')
 
-    if(data.genera_expediente_propio === null || data.genera_expediente_propio === undefined)
+    if (data.genera_expediente_propio === null || data.genera_expediente_propio === undefined)
       errores.push('16. Debe indicar si genera expediente')
 
-    if(data.genera_documentos == 1 && !data.documentos_generados)
+    if (data.genera_documentos == 1 && !data.documentos_generados)
       errores.push('6. Debe especificar los documentos generados')
 
-    if(data.requiere_otras_dependencias == 1 && !data.dependencias_relacionadas)
+    if (data.requiere_otras_dependencias == 1 && !data.dependencias_relacionadas)
       errores.push('14a. Debe indicar las dependencias relacionadas')
 
-    if(errores.length > 0){
+    if (errores.length > 0) {
       throw new Error(errores.join(' | '))
     }
-
   }
 
   // =====================================================
@@ -81,8 +81,7 @@ export function SEGTECActividadesService(
 
   async function validarEditable(id) {
 
-    const actividad =
-      await actividadesRepository.obtenerActividadPorId(id)
+    const actividad = await actividadesRepository.obtenerActividadPorId(id)
 
     if (!actividad)
       throw new Error('Actividad no encontrada')
@@ -105,23 +104,47 @@ export function SEGTECActividadesService(
     if (!usuarioId)
       throw new Error('usuarioId requerido para multi-tenant')
 
-    const actividad =
-      await actividadesRepository.obtenerActividadPorId(id)
+    const actividad = await actividadesRepository.obtenerActividadPorId(id)
 
     if (!actividad)
       throw new Error('Actividad no encontrada')
 
-    const analisis =
-      await actividadesRepository.obtenerUltimoAnalisis(id)
+    const analisis = await actividadesRepository.obtenerUltimoAnalisis(id)
 
     let estado = 'caracterizada'
-
-    if (analisis)
-      estado = 'analizada'
+    if (analisis) estado = 'analizada'
 
     await actividadesRepository.actualizarEstadoGeneral(id, estado, usuarioId)
 
     return estado
+  }
+
+  // =====================================================
+  // OBTENER CONFIGURACIÓN DEPENDENCIA
+  // ─ Lee la configuración funcional activa de la
+  //   dependencia a la que pertenece la actividad.
+  //   Se usa para enriquecer el contexto del motor IA.
+  // =====================================================
+
+  async function obtenerConfiguracionDependencia(dependenciaId) {
+
+    if (!dependenciaId || !db) return null
+
+    try {
+      const config = await db.get(`
+        SELECT *
+        FROM segtec_configuracion_dependencia
+        WHERE id_dependencia = ?
+        AND activa = 1
+        ORDER BY version DESC
+        LIMIT 1
+      `, [dependenciaId])
+
+      return config || null
+    } catch (err) {
+      console.warn('No se pudo cargar configuración dependencia:', err.message)
+      return null
+    }
   }
 
   // =====================================================
@@ -138,24 +161,22 @@ export function SEGTECActividadesService(
 
     const procesoId = crypto.randomUUID()
 
-    const actividad =
-      await actividadesRepository.crearActividad({
-        dependencia_id: dependenciaId,
-        usuario_id: usuarioId,
-        proceso_id: procesoId,
-        estado_general: 'caracterizada'
-      })
+    const actividad = await actividadesRepository.crearActividad({
+      dependencia_id: dependenciaId,
+      usuario_id:     usuarioId,
+      proceso_id:     procesoId,
+      estado_general: 'caracterizada'
+    })
 
     return {
-      id: actividad.id,
-      proceso_id: procesoId,
+      id:             actividad.id,
+      proceso_id:     procesoId,
       estado_general: 'caracterizada'
     }
   }
 
   // =====================================================
   // LISTAR
-  // ✅ FIX: acepta entidadIdExterno para Super Admin
   // =====================================================
 
   async function listarPorUsuario(usuarioId, esAdmin = false, entidadIdExterno = null) {
@@ -175,30 +196,23 @@ export function SEGTECActividadesService(
     let actividad = null
 
     if (usuarioId) {
-      actividad =
-        await actividadesRepository
-          .obtenerActividadPorIdYUsuario(id, usuarioId)
+      actividad = await actividadesRepository.obtenerActividadPorIdYUsuario(id, usuarioId)
     }
 
     if (!actividad) {
-      actividad =
-        await actividadesRepository
-          .obtenerActividadPorId(id)
+      actividad = await actividadesRepository.obtenerActividadPorId(id)
     }
 
     if (!actividad)
       throw new Error('Actividad no encontrada')
 
-    const validacion =
-      await validacionRepository.obtenerPorActividad(id)
-
-    const analisis =
-      await actividadesRepository.listarAnalisisPorActividad(id)
+    const validacion = await validacionRepository.obtenerPorActividad(id)
+    const analisis   = await actividadesRepository.listarAnalisisPorActividad(id)
 
     return {
       ...actividad,
       validacion: validacion || null,
-      analisis: analisis || []
+      analisis:   analisis   || []
     }
   }
 
@@ -215,12 +229,7 @@ export function SEGTECActividadesService(
 
     validarActividad(data)
 
-    if (
-      data.nombre ||
-      data.frecuencia ||
-      data.tipo_funcion ||
-      data.descripcion_funcional
-    ) {
+    if (data.nombre || data.frecuencia || data.tipo_funcion || data.descripcion_funcional) {
       await actividadesRepository.actualizarBloque1(id, data, usuarioId)
     }
 
@@ -273,99 +282,98 @@ export function SEGTECActividadesService(
   // =====================================================
 
   async function actualizarBloque1(id, data, usuarioId) {
-
     await validarEditable(id)
-
-    if (!usuarioId)
-      throw new Error('usuarioId requerido para multi-tenant')
-
+    if (!usuarioId) throw new Error('usuarioId requerido para multi-tenant')
     await actividadesRepository.actualizarBloque1(id, data, usuarioId)
-
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   async function actualizarBloque2(id, data, usuarioId) {
-
     await validarEditable(id)
-
-    if (!usuarioId)
-      throw new Error('usuarioId requerido para multi-tenant')
-
+    if (!usuarioId) throw new Error('usuarioId requerido para multi-tenant')
     await actividadesRepository.actualizarBloque2(id, data, usuarioId)
-
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   async function actualizarBloque3(id, data, usuarioId) {
-
     await validarEditable(id)
-
-    if (!usuarioId)
-      throw new Error('usuarioId requerido para multi-tenant')
-
+    if (!usuarioId) throw new Error('usuarioId requerido para multi-tenant')
     await actividadesRepository.actualizarBloque3(id, data, usuarioId)
-
     if (data.genera_expediente_propio !== undefined) {
       await validacionRepository.guardar(id, data, usuarioId)
     }
-
     return recalcularEstadoActividad(id, usuarioId)
   }
 
   // =====================================================
-  // ANALIZAR
+  // ANALIZAR — versión mejorada con contexto completo
   // =====================================================
 
   async function analizarActividad(id, usuarioId) {
 
-    const actividad =
-      await actividadesRepository.obtenerActividadPorId(id)
+    // 1. Obtener la actividad completa
+    const actividad = await actividadesRepository.obtenerActividadPorId(id)
 
     if (!actividad)
       throw new Error('Actividad no encontrada')
 
+    // 2. Asegurar proceso_id
     let procesoId = actividad.proceso_id
 
     if (!procesoId) {
-
       procesoId = crypto.randomUUID()
-
       await actividadesRepository.asignarProcesoActividad(id, procesoId)
     }
 
-    const actividadesProceso =
-      await actividadesRepository.obtenerPorProcesoId(procesoId)
+    // 3. Obtener todas las actividades del proceso (ahora con campos completos)
+    const actividadesProceso = await actividadesRepository.obtenerPorProcesoId(procesoId)
 
     if (!actividadesProceso?.length)
       throw new Error('El proceso no tiene actividades registradas')
 
-    const contexto = {
-      actividades: actividadesProceso.map(a => ({
-        nombre: a.nombre,
-        descripcion_funcional: a.descripcion_funcional
-      }))
+    // 4. Obtener configuración funcional de la dependencia
+    const configuracionDependencia = await obtenerConfiguracionDependencia(
+      actividad.dependencia_id
+    )
+
+    if (configuracionDependencia) {
+      console.log('Configuración dependencia encontrada:',
+        configuracionDependencia.tipo_funcion,
+        configuracionDependencia.nivel_decisorio
+      )
+    } else {
+      console.warn('Sin configuración de dependencia — el motor tendrá menos contexto')
     }
 
-    const resultadoMotor =
-      await trdAIService.ejecutarMotorInteligente(contexto)
+    // 5. Ejecutar motor con contexto enriquecido
+    //    Pasamos la actividad principal + la configuración de su dependencia
+    const contexto = {
+      actividades:               actividadesProceso,
+      configuracionDependencia
+    }
+
+    const resultadoMotor = await trdAIService.ejecutarMotorInteligente(contexto)
 
     const resultado = resultadoMotor[0] || {}
 
+    // 6. Construir resultado final
+    //    Si Claude ya devolvió retenciones, usarlas;
+    //    si no, aplicar la matriz de retención como fallback
     const resultadoFinal = {
-      serie_propuesta: resultado.serie || null,
-      subserie_propuesta: resultado.subserie || null,
-      retencion_gestion: resultado.retencion_gestion || 3,
-      retencion_central: resultado.retencion_central || 5,
-      disposicion_final: resultado.disposicion_final || 'conservacion_parcial',
-      justificacion: resultado.justificacion || 'Resultado automático generado por TRD-AI',
-      motor_version: '1.2',
+      serie_propuesta:        resultado.serie          || null,
+      subserie_propuesta:     resultado.subserie        || null,
+      retencion_gestion:      resultado.retencion_gestion ?? 3,
+      retencion_central:      resultado.retencion_central ?? 5,
+      disposicion_final:      resultado.disposicion_final || 'conservacion_parcial',
+      justificacion:          resultado.justificacion   || 'Resultado generado por TRD-AI',
+      motor_version:          '2.0-claude',
       actividades_analizadas: actividadesProceso.length
     }
 
+    // 7. Persistir análisis
     await actividadesRepository.guardarAnalisisActividad(id, resultadoFinal)
 
-    const estado =
-      await recalcularEstadoActividad(id, usuarioId)
+    const estado = await recalcularEstadoActividad(id, usuarioId)
 
     return {
       ...resultadoFinal,
@@ -379,8 +387,7 @@ export function SEGTECActividadesService(
 
   async function marcarComoCompleta(id, usuarioId) {
 
-    const actividad =
-      await actividadesRepository.obtenerActividadPorId(id)
+    const actividad = await actividadesRepository.obtenerActividadPorId(id)
 
     if (!actividad)
       throw new Error('Actividad no encontrada')

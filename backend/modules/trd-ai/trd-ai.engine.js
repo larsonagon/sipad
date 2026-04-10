@@ -6,7 +6,7 @@
  * - Subseries
  * - Retención
  * - Detección por tipologías
- * V3 — fix pg + matriz expandida + capa 4 corregida
+ * V4 — Claude como capa 0 + fallback al motor heurístico original intacto
  */
 
 // ===================================================
@@ -132,7 +132,6 @@ const MATRIZ_SERIES = [
       { palabras: ['plan', 'capacitacion'],     subserie: 'Planes de capacitación' },
       { palabras: ['plan'],                     subserie: 'Planes' },
       { palabras: ['programa'],                 subserie: 'Programas' }
-      // ✅ FIX: 'proyecto' eliminado de PLANES — tiene su propia serie PROYECTOS
     ]
   },
 
@@ -207,7 +206,6 @@ const MATRIZ_SERIES = [
   },
 
   // ── PROYECTOS ─────────────────────────────────
-  // ✅ Serie propia — no comparte tokens con PLANES
   {
     serie: 'PROYECTOS',
     reglas: [
@@ -266,7 +264,7 @@ const MATRIZ_SERIES = [
     ]
   },
 
-  // ── EMPRENDIMIENTO Y DESARROLLO ────────────────
+  // ── FOMENTO Y DESARROLLO ───────────────────────
   {
     serie: 'FOMENTO Y DESARROLLO',
     reglas: [
@@ -425,14 +423,120 @@ async function buscarEnCatalogo(db, tokensTexto) {
 }
 
 // ===================================================
+// CAPA 0: CLAUDE AI
+// ===================================================
+
+async function llamarClaude(actividad, configuracionDependencia) {
+
+  if (!process.env.ANTHROPIC_API_KEY) return null
+
+  const cfg = configuracionDependencia || {}
+
+  const tiposDoc = (() => {
+    try {
+      const arr = typeof cfg.tipos_documentales === 'string'
+        ? JSON.parse(cfg.tipos_documentales)
+        : (cfg.tipos_documentales || [])
+      return Array.isArray(arr) ? arr.join(', ') : '-'
+    } catch { return '-' }
+  })()
+
+  const prompt = `Eres un experto archivista colombiano con dominio del Acuerdo 004 de 2019 del AGN y la Ley 594 de 2000. Propón la clasificación archivística correcta para esta actividad institucional.
+
+## CONTEXTO DE LA DEPENDENCIA
+- Tipo de función: ${cfg.tipo_funcion || 'No especificado'}
+- Nivel decisorio: ${cfg.nivel_decisorio || 'No especificado'}
+- Recibe solicitudes externas: ${cfg.recibe_solicitudes ? 'Sí' : 'No'}
+- Emite actos administrativos: ${cfg.emite_actos ? 'Sí' : 'No'}
+- Produce decisiones que afectan terceros: ${cfg.produce_decisiones ? 'Sí' : 'No'}
+- Procesos principales: ${cfg.procesos_principales || 'No especificado'}
+- Trámites frecuentes: ${cfg.tramites_frecuentes || 'No especificado'}
+- Tipo de decisiones: ${cfg.tipo_decisiones || 'No especificado'}
+- Tipos documentales que produce: ${tiposDoc}
+- Descripción funcional: ${cfg.descripcion_funcional || 'No especificada'}
+
+## ACTIVIDAD A CLASIFICAR
+- Nombre: ${actividad.nombre || 'Sin nombre'}
+- Tipo de función: ${actividad.tipo_funcion || 'No especificado'}
+- Frecuencia: ${actividad.frecuencia || 'No especificada'}
+- Descripción funcional: ${actividad.descripcion_funcional || 'No especificada'}
+- Genera documentos: ${actividad.genera_documentos ? 'Sí' : 'No'}
+- Documentos que genera: ${actividad.documentos_generados || 'No especificado'}
+- Formato de producción: ${actividad.formato_produccion || 'No especificado'}
+- Localización de documentos: ${actividad.localizacion_documentos || 'No especificada'}
+- Tiene pasos formales: ${actividad.tiene_pasos_formales ? 'Sí' : 'No'}
+- Norma aplicable: ${actividad.norma_aplicable || 'No especificada'}
+- Tiene plazo legal: ${actividad.tiene_plazo ? 'Sí' : 'No'}
+- Plazo legal: ${actividad.plazo_legal || 'No especificado'}
+- Genera expediente propio: ${actividad.genera_expediente_propio ? 'Sí' : 'No'}
+
+Responde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional:
+{
+  "serie_documental": "NOMBRE EN MAYÚSCULAS",
+  "subserie_documental": "Nombre de la subserie",
+  "retencion_gestion": número_entero,
+  "retencion_central": número_entero,
+  "disposicion_final": "conservacion_total" | "eliminacion" | "seleccion" | "microfilmacion",
+  "justificacion": "Explicación breve basada en normativa archivística colombiana",
+  "confianza": número_decimal_entre_0_y_1
+}`
+
+  try {
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':      'application/json',
+        'x-api-key':         process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        messages:   [{ role: 'user', content: prompt }]
+      })
+    })
+
+    if (!response.ok) {
+      console.error('Claude API HTTP error:', response.status)
+      return null
+    }
+
+    const json    = await response.json()
+    const texto   = json.content?.[0]?.text || ''
+    const limpio  = texto.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const result  = JSON.parse(limpio)
+
+    if (!result.serie_documental) return null
+
+    console.log('Capa 0 Claude —', result.serie_documental, '→', result.subserie_documental)
+
+    return {
+      serie_sugerida:    { nombre: result.serie_documental },
+      subserie_sugerida: { nombre: result.subserie_documental || null },
+      retencion_gestion: result.retencion_gestion || null,
+      retencion_central: result.retencion_central || null,
+      disposicion_final: result.disposicion_final || null,
+      justificacion:     result.justificacion     || null,
+      confianza:         result.confianza         || 0.85,
+      origen:            'claude'
+    }
+
+  } catch (err) {
+    console.error('Error capa 0 Claude:', err.message)
+    return null
+  }
+}
+
+// ===================================================
 // MOTOR DE CLASIFICACIÓN
 // ===================================================
 
-export async function sugerirSerieDesdeActividad(actividad = {}, db = null) {
+export async function sugerirSerieDesdeActividad(actividad = {}, configuracionDependencia = null, db = null) {
 
   const texto = normalizar(`
-    ${actividad.nombre              || ''}
-    ${actividad.descripcion         || ''}
+    ${actividad.nombre               || ''}
+    ${actividad.descripcion          || ''}
     ${actividad.descripcion_funcional || ''}
     ${actividad.documentos_generados  || ''}
   `)
@@ -442,6 +546,18 @@ export async function sugerirSerieDesdeActividad(actividad = {}, db = null) {
   console.log('\n========== TRD-AI DEBUG ==========')
   console.log('Texto analizado:', texto)
   console.log('Tokens actividad:', tokensTexto)
+
+  // ---------------------------------------------------
+  // CAPA 0: Claude AI (con contexto completo)
+  // ---------------------------------------------------
+
+  const resultadoClaude = await llamarClaude(actividad, configuracionDependencia)
+
+  if (resultadoClaude) {
+    return resultadoClaude
+  }
+
+  console.log('Capa 0 no disponible — usando motor heurístico')
 
   const tipologias = extraerTipologias(actividad.documentos_generados)
 

@@ -137,6 +137,8 @@ export function SEGTECActividadesRepository(db) {
 
   // =====================================================
   // PROCESO
+  // ✅ EXPANDIDO: devuelve todos los campos relevantes
+  //    para el motor IA (antes solo devolvía 4 campos)
   // =====================================================
 
   async function obtenerPorProcesoId(procesoId) {
@@ -144,10 +146,35 @@ export function SEGTECActividadesRepository(db) {
     if (!procesoId) return []
 
     return db.all(`
-      SELECT id,nombre,descripcion_funcional,proceso_id
-      FROM segtec_actividades
-      WHERE proceso_id = ?
-      ORDER BY created_at ASC
+      SELECT
+        a.id,
+        a.nombre,
+        a.tipo_funcion,
+        a.frecuencia,
+        a.descripcion_funcional,
+        a.proceso_id,
+        a.dependencia_id,
+        a.genera_documentos,
+        a.documentos_generados,
+        a.formato_produccion,
+        a.recepcion_externa,
+        a.volumen_documental,
+        a.responsable_custodia,
+        a.cargo_custodia,
+        a.localizacion_documentos,
+        a.tiene_pasos_formales,
+        a.requiere_otras_dependencias,
+        a.dependencias_relacionadas,
+        a.norma_aplicable,
+        a.tiene_plazo,
+        a.plazo_legal,
+        a.tiempo_ejecucion,
+        a.genera_expediente_propio,
+        d.nombre AS dependencia
+      FROM segtec_actividades a
+      LEFT JOIN dependencias d ON a.dependencia_id = d.id
+      WHERE a.proceso_id = ?
+      ORDER BY a.created_at ASC
     `, [procesoId])
   }
 
@@ -157,7 +184,7 @@ export function SEGTECActividadesRepository(db) {
       UPDATE segtec_actividades
       SET proceso_id = ?, updated_at = ?
       WHERE id = ?
-    `,[procesoId,nowISO(),id],"ASIGNAR PROCESO")
+    `, [procesoId, nowISO(), id], "ASIGNAR PROCESO")
   }
 
   // =====================================================
@@ -166,21 +193,21 @@ export function SEGTECActividadesRepository(db) {
 
   async function crearActividad(data = {}) {
 
-    const id = crypto.randomUUID()
+    const id  = crypto.randomUUID()
     const now = nowISO()
 
     const entidadId = await obtenerEntidadIdPorUsuario(data.usuario_id)
 
     await db.run(`
       INSERT INTO segtec_actividades (
-        id,proceso_id,dependencia_id,usuario_id,
-        nombre,frecuencia,tipo_funcion,descripcion_funcional,
-        estado_general,created_at,updated_at,entidad_id
+        id, proceso_id, dependencia_id, usuario_id,
+        nombre, frecuencia, tipo_funcion, descripcion_funcional,
+        estado_general, created_at, updated_at, entidad_id
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `,[
+    `, [
       id,
-      data.proceso_id || null,
+      data.proceso_id    || null,
       data.dependencia_id,
       data.usuario_id,
       null,
@@ -203,8 +230,6 @@ export function SEGTECActividadesRepository(db) {
 
   async function listarPorUsuario(usuarioId, esAdmin = false, entidadIdExterno = null) {
 
-    // Si viene entidadId externo (Super Admin gestionando otra entidad), usarlo
-    // Si no, obtenerlo desde la BD del usuario
     const entidadId = entidadIdExterno || await obtenerEntidadIdPorUsuario(usuarioId)
 
     const queryBase = `
@@ -223,7 +248,6 @@ export function SEGTECActividadesRepository(db) {
 
     if (esAdmin === true) {
 
-      // Super Admin y Archivista: todas las actividades de la entidad
       rows = await db.all(`
         ${queryBase}
         WHERE a.entidad_id = ?
@@ -236,13 +260,12 @@ export function SEGTECActividadesRepository(db) {
         throw new Error('usuarioId requerido para listar actividades')
       }
 
-      // Operativos: solo sus propias actividades
       rows = await db.all(`
         ${queryBase}
         WHERE a.usuario_id = ?
         AND a.entidad_id = ?
         ORDER BY a.created_at DESC
-      `,[usuarioId, entidadId])
+      `, [usuarioId, entidadId])
     }
 
     return rows.map(normalizarActividad)
@@ -252,43 +275,43 @@ export function SEGTECActividadesRepository(db) {
   // BLOQUE 1
   // =====================================================
 
-  async function actualizarBloque1(id,data={}) {
+  async function actualizarBloque1(id, data = {}) {
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
-      SET nombre=?,tipo_funcion=?,frecuencia=?,descripcion_funcional=?,updated_at=?
+      SET nombre=?, tipo_funcion=?, frecuencia=?, descripcion_funcional=?, updated_at=?
       WHERE id=?
-    `,[
+    `, [
       nullIfEmpty(data.nombre),
       nullIfEmpty(data.tipo_funcion),
       nullIfEmpty(data.frecuencia),
       nullIfEmpty(data.descripcion_funcional),
       nowISO(),
       id
-    ],"BLOQUE1")
+    ], "BLOQUE1")
   }
 
   // =====================================================
   // BLOQUE 2
   // =====================================================
 
-  async function actualizarBloque2(id,data={}) {
+  async function actualizarBloque2(id, data = {}) {
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET
-      genera_documentos=?,
-      documentos_generados=?,
-      formato_produccion=?,
-      recepcion_externa=?,
-      volumen_documental=?,
-      responsable_custodia=?,
-      cargo_custodia=?,
-      dependencia_custodia=?,
-      localizacion_documentos=?,
-      updated_at=?
+        genera_documentos=?,
+        documentos_generados=?,
+        formato_produccion=?,
+        recepcion_externa=?,
+        volumen_documental=?,
+        responsable_custodia=?,
+        cargo_custodia=?,
+        dependencia_custodia=?,
+        localizacion_documentos=?,
+        updated_at=?
       WHERE id=?
-    `,[
+    `, [
       data.genera_documentos ? 1 : 0,
       nullIfEmpty(data.documentos_generados),
       nullIfEmpty(data.formato_produccion),
@@ -300,30 +323,30 @@ export function SEGTECActividadesRepository(db) {
       nullIfEmpty(data.localizacion_documentos),
       nowISO(),
       id
-    ],"BLOQUE2")
+    ], "BLOQUE2")
   }
 
   // =====================================================
   // BLOQUE 3
   // =====================================================
 
-  async function actualizarBloque3(id,data={}) {
+  async function actualizarBloque3(id, data = {}) {
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
       SET
-      tiene_pasos_formales=?,
-      requiere_otras_dependencias=?,
-      norma_aplicable=?,
-      dependencias_relacionadas=?,
-      plazo_legal=?,
-      tiempo_ejecucion=?,
-      genera_expediente_propio=?,
-      updated_at=?
+        tiene_pasos_formales=?,
+        requiere_otras_dependencias=?,
+        norma_aplicable=?,
+        dependencias_relacionadas=?,
+        plazo_legal=?,
+        tiempo_ejecucion=?,
+        genera_expediente_propio=?,
+        updated_at=?
       WHERE id=?
-    `,[
-      data.tiene_pasos_formales ? 1 : 0,
-      data.requiere_otras_dependencias ? 1 : 0,
+    `, [
+      data.tiene_pasos_formales          ? 1 : 0,
+      data.requiere_otras_dependencias   ? 1 : 0,
       nullIfEmpty(data.norma_aplicable),
 
       data.dependencias_relacionadas
@@ -337,56 +360,59 @@ export function SEGTECActividadesRepository(db) {
 
       nowISO(),
       id
-    ],"BLOQUE3")
+    ], "BLOQUE3")
   }
 
   // =====================================================
   // ANALISIS
   // =====================================================
 
-  async function guardarAnalisisActividad(id,data){
+  async function guardarAnalisisActividad(id, data) {
 
     const analisisId = crypto.randomUUID()
 
     await db.run(`
-      INSERT INTO segtec_analisis_actividad
-      (id,actividad_id,serie_propuesta,subserie_propuesta,retencion_gestion,retencion_central,disposicion_final,justificacion,motor_version,creado_en)
-      VALUES (?,?,?,?,?,?,?,?,?,?)
-    `,[
+      INSERT INTO segtec_analisis_actividad (
+        id, actividad_id, serie_propuesta, subserie_propuesta,
+        retencion_gestion, retencion_central, disposicion_final,
+        justificacion, motor_version, creado_en
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
       analisisId,
       id,
-      data.serie_propuesta ?? null,
+      data.serie_propuesta    ?? null,
       data.subserie_propuesta ?? null,
-      data.retencion_gestion ?? null,
-      data.retencion_central ?? null,
-      data.disposicion_final ?? null,
-      data.justificacion ?? null,
-      data.motor_version ?? '1.0',
+      data.retencion_gestion  ?? null,
+      data.retencion_central  ?? null,
+      data.disposicion_final  ?? null,
+      data.justificacion      ?? null,
+      data.motor_version      ?? '1.0',
       nowISO()
     ])
 
     return { id: analisisId }
   }
 
-  async function obtenerUltimoAnalisis(id){
+  async function obtenerUltimoAnalisis(id) {
 
     return db.get(`
       SELECT *
       FROM segtec_analisis_actividad
-      WHERE actividad_id=?
+      WHERE actividad_id = ?
       ORDER BY creado_en DESC
       LIMIT 1
-    `,[id])
+    `, [id])
   }
 
-  async function listarAnalisisPorActividad(id){
+  async function listarAnalisisPorActividad(id) {
 
     const rows = await db.all(`
       SELECT *
       FROM segtec_analisis_actividad
-      WHERE actividad_id=?
+      WHERE actividad_id = ?
       ORDER BY creado_en DESC
-    `,[id])
+    `, [id])
 
     return rows || []
   }
@@ -395,30 +421,30 @@ export function SEGTECActividadesRepository(db) {
   // ESTADO
   // =====================================================
 
-  async function actualizarEstadoGeneral(id,estado){
+  async function actualizarEstadoGeneral(id, estado) {
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
-      SET estado_general=?,updated_at=?
+      SET estado_general=?, updated_at=?
       WHERE id=?
-    `,[estado,nowISO(),id],"ACTUALIZAR ESTADO")
+    `, [estado, nowISO(), id], "ACTUALIZAR ESTADO")
   }
 
-  async function marcarActividadComoCompleta(id){
+  async function marcarActividadComoCompleta(id) {
 
     return ejecutarUpdate(`
       UPDATE segtec_actividades
-      SET estado_general='caracterizada',updated_at=?
+      SET estado_general='caracterizada', updated_at=?
       WHERE id=?
-    `,[nowISO(),id],"MARCAR COMPLETA")
+    `, [nowISO(), id], "MARCAR COMPLETA")
   }
 
-  async function eliminarActividad(id){
+  async function eliminarActividad(id) {
 
     return ejecutarUpdate(`
       DELETE FROM segtec_actividades
       WHERE id=?
-    `,[id],"ELIMINAR")
+    `, [id], "ELIMINAR")
   }
 
   return {
