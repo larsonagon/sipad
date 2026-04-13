@@ -70,16 +70,22 @@ body{
     radial-gradient(circle at 20% 10%,rgba(13,63,119,.04),transparent 40%),
     radial-gradient(circle at 80% 0%,rgba(198,154,46,.05),transparent 35%),
     #f5f7fa;
-  display:flex;
-  flex-direction:column;
+
+  /* 🔥 CAMBIO CLAVE */
+  display:block;
+
   min-height:100vh;
-  /* espacio para header fijo y footer fijo */
+
+  /* se mantienen */
   padding-top:var(--header-height);
   padding-bottom:var(--footer-height);
 }
 
 main{
-  flex:1;
+  flex:1; /* 🔥 lo mantenemos por compatibilidad */
+  display:flex;
+  flex-direction:column;
+  min-height:calc(100vh - var(--header-height) - var(--footer-height));
 }
 
 .hidden{
