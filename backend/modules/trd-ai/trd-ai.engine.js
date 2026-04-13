@@ -371,16 +371,25 @@ async function buscarEnCatalogo(db, tokensTexto) {
       .map((_, i) => `(csub.nombre_normalizado ILIKE $${i + 1} OR cs.nombre_normalizado ILIKE $${i + 1})`)
       .join(' OR ')
 
+    const scoreSubserie = tokens
+      .map((_, i) => `CASE WHEN csub.nombre_normalizado ILIKE $${i + 1} THEN 2 ELSE 0 END`)
+      .join(' + ')
+
+    const scoreSerie = tokens
+      .map((_, i) => `CASE WHEN cs.nombre_normalizado ILIKE $${i + 1} THEN 1 ELSE 0 END`)
+      .join(' + ')
+
     const valores = tokens.map(t => `%${t}%`)
 
     const resSubseries = await db.query(
       `SELECT
          cs.nombre   AS serie,
-         csub.nombre AS subserie
+         csub.nombre AS subserie,
+         (${scoreSubserie}) + (${scoreSerie}) AS score
        FROM trd_catalogo_subseries csub
        JOIN trd_catalogo_series cs ON cs.id = csub.serie_id
        WHERE ${condiciones}
-       ORDER BY LENGTH(csub.nombre) ASC
+       ORDER BY score DESC, LENGTH(csub.nombre) DESC
        LIMIT 5`,
       valores
     )
