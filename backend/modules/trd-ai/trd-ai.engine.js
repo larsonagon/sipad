@@ -10,7 +10,7 @@
  */
 
 // ===================================================
-// MATRIZ BASE DE RETENCIÓN
+// MATRIZ BASE DE RETENCIÓNif (resSubseries.rows &&
 // ===================================================
 
 const MATRIZ_RETENCION = {
@@ -395,10 +395,23 @@ async function buscarEnCatalogo(db, tokensTexto) {
     )
 
     if (resSubseries.rows && resSubseries.rows.length > 0) {
+      const mejorCoincidencia = resSubseries.rows[0]
+      const score = Number(mejorCoincidencia.score || 0)
+
+      // Evitar subseries genéricas cuando solo coincide 1 token débil
+      if (score >= 4) {
+        return {
+          serie_sugerida:    { nombre: mejorCoincidencia.serie },
+          subserie_sugerida: { nombre: mejorCoincidencia.subserie },
+          confianza: 0.72,
+          origen: 'catalogo'
+        }
+      }
+
       return {
-        serie_sugerida:    { nombre: resSubseries.rows[0].serie },
-        subserie_sugerida: { nombre: resSubseries.rows[0].subserie },
-        confianza: 0.72,
+        serie_sugerida:    { nombre: mejorCoincidencia.serie },
+        subserie_sugerida: { nombre: null },
+        confianza: 0.60,
         origen: 'catalogo'
       }
     }
