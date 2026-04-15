@@ -72,7 +72,8 @@ body{
     #f5f7fa;
 
   /* 🔥 CAMBIO CLAVE */
-  display:block;
+  display:flex;
+  flex-direction:column;
 
   min-height:100vh;
 
@@ -668,6 +669,7 @@ button{
   padding:20px;
   box-sizing:border-box;
   z-index:9999;
+  background:rgba(0,0,0,.45);  /* ← AGREGAR ESTO */
 }
 
 .modal-content{
