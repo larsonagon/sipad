@@ -312,7 +312,54 @@ export function buildSEGTECRouter(db, trdAIService) {
   // =====================================================
 
   router.get('/actividades', attachContext, asyncHandler(controller.listar))
-  router.get('/actividades/:id', attachContext, asyncHandler(controller.obtenerPorId))
+
+  // ── GET por ID: resuelve nombres de dependencias antes de responder ──
+  router.get('/actividades/:id', attachContext, asyncHandler(async (req, res) => {
+
+    const usuarioId = getUsuarioId(req)
+    if (!usuarioId) {
+      return res.status(401).json({ ok: false, error: 'No autenticado' })
+    }
+
+    const actividad = await service.obtenerPorId(req.params.id, usuarioId)
+
+    if (!actividad) {
+      return res.status(404).json({ ok: false, error: 'Actividad no encontrada' })
+    }
+
+    // Resolver dependencias_relacionadas: IDs → objetos {id, nombre}
+    const depsRaw = normalizarDependencias(actividad.dependencias_relacionadas)
+
+    if (depsRaw.length > 0) {
+
+      const resueltas = []
+
+      for (const dep of depsRaw) {
+
+        if (dep.nombre) {
+          resueltas.push({ id: dep.id, nombre: dep.nombre })
+          continue
+        }
+
+        // Buscar nombre en BD
+        const row = await db.get(
+          'SELECT nombre FROM dependencias WHERE id = ?',
+          [dep.id]
+        )
+
+        resueltas.push({
+          id: dep.id,
+          nombre: row?.nombre || `Dependencia ${dep.id}`
+        })
+      }
+
+      actividad.dependencias_relacionadas = JSON.stringify(resueltas)
+    }
+
+    return res.status(200).json({ ok: true, data: actividad })
+
+  }))
+
   router.post('/actividades', attachContext, asyncHandler(controller.crear))
   router.put('/actividades/:id', attachContext, asyncHandler(controller.actualizar))
   router.delete('/actividades/:id', attachContext, asyncHandler(controller.eliminar))
