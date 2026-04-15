@@ -36,9 +36,8 @@
 #tablaUsuarios th:nth-child(7){min-width:180px;}
 
 /* ======================================================
-   MODAL USUARIOS – COMPACTO / MINIMALISTA
-   ⚠️ Ya NO usamos #modalUsuario para display/position;
-       eso lo maneja .modal en sipad-ui.css
+   MODAL USUARIOS – Solo sobreescribe hijos, NO el contenedor
+   .modal en sipad-ui.css maneja position/overlay/centrado
 ====================================================== */
 
 #modalUsuario .modal-content{
@@ -59,8 +58,6 @@
 }
 
 #modalUsuario .form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
   gap:12px 16px;
   margin-top:0;
 }
@@ -70,28 +67,19 @@
   gap:2px;
 }
 
-#modalUsuario .form-group.full{
-  grid-column:1 / -1;
-}
-
 #modalUsuario .form-group label{
   font-size:11px;
   font-weight:500;
   color:#64748b;
   text-transform:uppercase;
   letter-spacing:.3px;
-  margin-bottom:1px;
 }
 
 #modalUsuario input,
 #modalUsuario select{
-  width:100%;
-  box-sizing:border-box;
   padding:7px 10px;
   font-size:13px;
   border-radius:6px;
-  border:1px solid var(--color-border);
-  transition:border-color .15s;
 }
 
 #modalUsuario input:focus,
@@ -101,18 +89,7 @@
   box-shadow:0 0 0 2px rgba(13,63,119,.08);
 }
 
-#modalUsuario .switch-field{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:13px;
-  padding:2px 0;
-}
-
 #modalUsuario .modal-actions{
-  display:flex;
-  justify-content:flex-end;
-  gap:8px;
   margin-top:14px;
   padding-top:12px;
   border-top:1px solid var(--color-border-light, #f1f3f5);
@@ -179,7 +156,7 @@ autocomplete="off">
 
 </main>
 
-<!-- ⚠️ SIN estilos inline – .modal en sipad-ui.css maneja position/overlay -->
+<!-- .modal en sipad-ui.css controla position/inset/background/z-index -->
 <div id="modalUsuario" class="modal hidden">
 
 <div class="modal-content">
