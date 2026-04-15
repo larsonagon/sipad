@@ -104,51 +104,34 @@ export function buildSEGTECRouter(db, trdAIService) {
     })
   }
 
-  // ── RESOLVER DEPENDENCIAS A TEXTO ────────────────────
-  // Si el objeto ya trae nombre, lo usa directamente.
-  // Si no, consulta la BD por ID.
-  // Retorna string con nombres separados por coma.
+  // ── RESOLVER DEPENDENCIAS A TEXTO (para PDF) ─────────
+  // Trae TODAS las dependencias de la BD en un mapa,
+  // resuelve nombres y retorna string separado por coma.
   // ─────────────────────────────────────────────────────
 
   async function resolverDependencias(deps) {
 
     if (!deps?.length) return ''
 
-    const conNombre = []
-    const sinNombre = []
-
-    for (const dep of deps) {
-      if (dep.nombre) {
-        conNombre.push(dep.nombre)
-      } else if (dep.id) {
-        sinNombre.push(dep.id)
-      }
+    // Traer TODAS las dependencias
+    const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
+    const mapaDeps = {}
+    for (const d of todasDeps) {
+      mapaDeps[String(d.id)] = d.nombre
     }
 
-    // Consultar la BD solo para los que no tienen nombre
-    if (sinNombre.length > 0) {
+    const nombres = deps.map(dep => {
 
-      const placeholders = sinNombre.map(() => '?').join(',')
+      // Si ya trae nombre (formato nuevo)
+      if (dep.nombre) return dep.nombre
 
-      const rows = await db.all(`
-        SELECT id, nombre
-        FROM dependencias
-        WHERE id IN (${placeholders})
-      `, sinNombre)
+      // Buscar en mapa
+      const nombre = mapaDeps[String(dep.id)]
+      return nombre || `Dependencia ${dep.id}`
 
-      const mapa = {}
-      for (const r of rows) {
-        mapa[String(r.id)] = r.nombre
-      }
+    })
 
-      for (const id of sinNombre) {
-        const nombre = mapa[String(id)]
-        conNombre.push(nombre || `Dependencia ${id}`)
-      }
-
-    }
-
-    return conNombre.join(', ')
+    return nombres.join(', ')
   }
 
   // =====================================================
@@ -327,33 +310,50 @@ export function buildSEGTECRouter(db, trdAIService) {
       return res.status(404).json({ ok: false, error: 'Actividad no encontrada' })
     }
 
-    // Resolver dependencias_relacionadas: IDs → objetos {id, nombre}
-    const depsRaw = normalizarDependencias(actividad.dependencias_relacionadas)
+    // ── Resolver dependencias_relacionadas ──
+    try {
 
-    if (depsRaw.length > 0) {
+      const valorCrudo = actividad.dependencias_relacionadas
+      console.log('[SEGTEC] dependencias_relacionadas crudo:', valorCrudo, typeof valorCrudo)
 
-      const resueltas = []
+      const depsRaw = normalizarDependencias(valorCrudo)
+      console.log('[SEGTEC] deps normalizadas:', JSON.stringify(depsRaw))
 
-      for (const dep of depsRaw) {
+      if (depsRaw.length > 0) {
 
-        if (dep.nombre) {
-          resueltas.push({ id: dep.id, nombre: dep.nombre })
-          continue
+        // Traer TODAS las dependencias en un solo query
+        const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
+        const mapaDeps = {}
+        for (const d of todasDeps) {
+          mapaDeps[String(d.id)] = d.nombre
         }
 
-        // Buscar nombre en BD
-        const row = await db.get(
-          'SELECT nombre FROM dependencias WHERE id = ?',
-          [dep.id]
-        )
+        console.log('[SEGTEC] mapa deps IDs disponibles:', Object.keys(mapaDeps).join(', '))
 
-        resueltas.push({
-          id: dep.id,
-          nombre: row?.nombre || `Dependencia ${dep.id}`
+        const resueltas = depsRaw.map(dep => {
+
+          // Si ya trae nombre (formato nuevo), usarlo directo
+          if (dep.nombre) {
+            return { id: dep.id, nombre: dep.nombre }
+          }
+
+          // Buscar en el mapa por ID (probar como string y como número)
+          const idStr = String(dep.id)
+          const nombre = mapaDeps[idStr]
+
+          console.log('[SEGTEC] resolviendo dep id:', dep.id, '→', nombre || 'NO ENCONTRADA')
+
+          return {
+            id: dep.id,
+            nombre: nombre || `ID ${dep.id} (dependencia no encontrada)`
+          }
         })
+
+        actividad.dependencias_relacionadas = JSON.stringify(resueltas)
       }
 
-      actividad.dependencias_relacionadas = JSON.stringify(resueltas)
+    } catch (err) {
+      console.error('[SEGTEC] Error resolviendo dependencias:', err)
     }
 
     return res.status(200).json({ ok: true, data: actividad })
