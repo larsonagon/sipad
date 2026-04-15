@@ -58,80 +58,38 @@ export function buildSEGTECRouter(db, trdAIService) {
     return usuario?.id_dependencia || null
   }
 
-  // ── NORMALIZAR DEPENDENCIAS ──────────────────────────
-  // Soporta 3 formatos:
-  //   1. Array de objetos:  [{id:8, nombre:"X"}, ...]
-  //   2. Array de IDs:      [8, 12]
-  //   3. String JSON:       '[8,12]' o '[{"id":8,"nombre":"X"}]'
-  // Retorna siempre un array uniforme de {id, nombre|null}
-  // ─────────────────────────────────────────────────────
+  function normalizarDependencias(valor){
 
-  function normalizarDependencias(valor) {
+    if(!valor) return []
 
-    if (!valor) return []
+    if(Array.isArray(valor)) return valor
 
-    let arr = valor
+    if(typeof valor === 'string'){
 
-    if (typeof valor === 'string') {
-      try {
-        arr = JSON.parse(valor)
-      } catch {
-        return valor.split(',').map(x => ({
-          id: x.trim(),
-          nombre: null
-        }))
+      try{
+        return JSON.parse(valor)
+      }catch{
+        return valor.split(',').map(x=>x.trim())
       }
+
     }
 
-    if (!Array.isArray(arr)) return []
-
-    return arr.map(item => {
-
-      // Caso 1: ya es objeto {id, nombre}
-      if (typeof item === 'object' && item !== null) {
-        return {
-          id: item.id,
-          nombre: item.nombre || null
-        }
-      }
-
-      // Caso 2: es un ID simple (número o string)
-      return {
-        id: item,
-        nombre: null
-      }
-
-    })
+    return []
   }
 
-  // ── RESOLVER DEPENDENCIAS A TEXTO (para PDF) ─────────
-  // Trae TODAS las dependencias de la BD en un mapa,
-  // resuelve nombres y retorna string separado por coma.
-  // ─────────────────────────────────────────────────────
+  async function resolverDependencias(ids){
 
-  async function resolverDependencias(deps) {
+    if(!ids?.length) return ''
 
-    if (!deps?.length) return ''
+    const placeholders = ids.map(()=>'?').join(',')
 
-    // Traer TODAS las dependencias
-    const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
-    const mapaDeps = {}
-    for (const d of todasDeps) {
-      mapaDeps[String(d.id)] = d.nombre
-    }
+    const rows = await db.all(`
+      SELECT nombre
+      FROM dependencias
+      WHERE id IN (${placeholders})
+    `, ids)
 
-    const nombres = deps.map(dep => {
-
-      // Si ya trae nombre (formato nuevo)
-      if (dep.nombre) return dep.nombre
-
-      // Buscar en mapa
-      const nombre = mapaDeps[String(dep.id)]
-      return nombre || `Dependencia ${dep.id}`
-
-    })
-
-    return nombres.join(', ')
+    return rows.map(r=>r.nombre).join(', ')
   }
 
   // =====================================================
@@ -295,71 +253,7 @@ export function buildSEGTECRouter(db, trdAIService) {
   // =====================================================
 
   router.get('/actividades', attachContext, asyncHandler(controller.listar))
-
-  // ── GET por ID: resuelve nombres de dependencias antes de responder ──
-  router.get('/actividades/:id', attachContext, asyncHandler(async (req, res) => {
-
-    const usuarioId = getUsuarioId(req)
-    if (!usuarioId) {
-      return res.status(401).json({ ok: false, error: 'No autenticado' })
-    }
-
-    const actividad = await service.obtenerPorId(req.params.id, usuarioId)
-
-    if (!actividad) {
-      return res.status(404).json({ ok: false, error: 'Actividad no encontrada' })
-    }
-
-    // ── Resolver dependencias_relacionadas ──
-    try {
-
-      const valorCrudo = actividad.dependencias_relacionadas
-      console.log('[SEGTEC] dependencias_relacionadas crudo:', valorCrudo, typeof valorCrudo)
-
-      const depsRaw = normalizarDependencias(valorCrudo)
-      console.log('[SEGTEC] deps normalizadas:', JSON.stringify(depsRaw))
-
-      if (depsRaw.length > 0) {
-
-        // Traer TODAS las dependencias en un solo query
-        const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
-        const mapaDeps = {}
-        for (const d of todasDeps) {
-          mapaDeps[String(d.id)] = d.nombre
-        }
-
-        console.log('[SEGTEC] mapa deps IDs disponibles:', Object.keys(mapaDeps).join(', '))
-
-        const resueltas = depsRaw.map(dep => {
-
-          // Si ya trae nombre (formato nuevo), usarlo directo
-          if (dep.nombre) {
-            return { id: dep.id, nombre: dep.nombre }
-          }
-
-          // Buscar en el mapa por ID (probar como string y como número)
-          const idStr = String(dep.id)
-          const nombre = mapaDeps[idStr]
-
-          console.log('[SEGTEC] resolviendo dep id:', dep.id, '→', nombre || 'NO ENCONTRADA')
-
-          return {
-            id: dep.id,
-            nombre: nombre || `ID ${dep.id} (dependencia no encontrada)`
-          }
-        })
-
-        actividad.dependencias_relacionadas = JSON.stringify(resueltas)
-      }
-
-    } catch (err) {
-      console.error('[SEGTEC] Error resolviendo dependencias:', err)
-    }
-
-    return res.status(200).json({ ok: true, data: actividad })
-
-  }))
-
+  router.get('/actividades/:id', attachContext, asyncHandler(controller.obtenerPorId))
   router.post('/actividades', attachContext, asyncHandler(controller.crear))
   router.put('/actividades/:id', attachContext, asyncHandler(controller.actualizar))
   router.delete('/actividades/:id', attachContext, asyncHandler(controller.eliminar))
@@ -395,12 +289,11 @@ export function buildSEGTECRouter(db, trdAIService) {
           actividad.validacion.genera_expediente_propio
       }
 
-      // ── Resolver dependencias a nombres ──
-      const deps =
+      const depsIds =
         normalizarDependencias(actividad.dependencias_relacionadas)
 
       actividad.dependencias_relacionadas =
-        await resolverDependencias(deps)
+        await resolverDependencias(depsIds)
 
       if (actividad.cargo_custodia) {
 

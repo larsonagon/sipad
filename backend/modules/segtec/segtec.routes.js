@@ -54,6 +54,70 @@ const pdfController = SEGTECPDFController(
 )
 
 // =====================================================
+// HELPER: normalizar y resolver dependencias
+// =====================================================
+
+function normalizarDependencias(valor) {
+
+  if (!valor) return []
+
+  let arr = valor
+
+  if (typeof valor === 'string') {
+    try {
+      arr = JSON.parse(valor)
+    } catch {
+      return valor.split(',').map(x => ({
+        id: x.trim(),
+        nombre: null
+      }))
+    }
+  }
+
+  if (!Array.isArray(arr)) return []
+
+  return arr.map(item => {
+    if (typeof item === 'object' && item !== null) {
+      return { id: item.id, nombre: item.nombre || null }
+    }
+    return { id: item, nombre: null }
+  })
+}
+
+async function resolverDependenciasEnActividad(actividad) {
+
+  if (!actividad) return actividad
+
+  try {
+
+    const depsRaw = normalizarDependencias(actividad.dependencias_relacionadas)
+
+    if (depsRaw.length > 0) {
+
+      // Traer TODAS las dependencias en un solo query
+      const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
+      const mapaDeps = {}
+      for (const d of todasDeps) {
+        mapaDeps[String(d.id)] = d.nombre
+      }
+
+      const resueltas = depsRaw.map(dep => {
+        if (dep.nombre) return { id: dep.id, nombre: dep.nombre }
+        const nombre = mapaDeps[String(dep.id)]
+        return { id: dep.id, nombre: nombre || `Dependencia ${dep.id}` }
+      })
+
+      actividad.dependencias_relacionadas = JSON.stringify(resueltas)
+    }
+
+  } catch (err) {
+    console.error('[SEGTEC] Error resolviendo dependencias:', err)
+  }
+
+  return actividad
+}
+
+// =====================================================
 // CONFIGURACIÓN FUNCIONAL
 // =====================================================
 
@@ -193,10 +257,43 @@ router.post('/actividades', actividadesController.crear)
 router.delete('/actividades/:id', actividadesController.eliminar)
 
 // =====================================================
-// ACTIVIDAD POR ID
+// ACTIVIDAD POR ID (con resolución de dependencias)
 // =====================================================
 
-router.get('/actividades/:id', actividadesController.obtenerPorId)
+router.get('/actividades/:id', async (req, res) => {
+
+  try {
+
+    const usuarioId =
+      req.user?.id ||
+      req.user?.usuario_id ||
+      req.user?.sub ||
+      null
+
+    if (!usuarioId) {
+      return res.status(401).json({ ok: false, error: 'No autenticado' })
+    }
+
+    const actividad = await actividadesService.obtenerPorId(
+      req.params.id,
+      usuarioId
+    )
+
+    if (!actividad) {
+      return res.status(404).json({ ok: false, error: 'Actividad no encontrada' })
+    }
+
+    // Resolver nombres de dependencias
+    await resolverDependenciasEnActividad(actividad)
+
+    return res.status(200).json({ ok: true, data: actividad })
+
+  } catch (err) {
+    console.error('SEGTEC obtener por id error:', err)
+    return res.status(500).json({ ok: false, error: err.message })
+  }
+
+})
 
 // =====================================================
 // ✅ BLOQUES (rutas que el frontend usa al guardar)
