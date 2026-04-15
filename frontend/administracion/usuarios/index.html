@@ -36,27 +36,9 @@
 #tablaUsuarios th:nth-child(7){min-width:180px;}
 
 /* ======================================================
-   MODAL USUARIOS – Autosuficiente, no depende de .modal
+   MODAL USUARIOS – Solo estilos de hijos
+   El contenedor (#modalUsuario) lo maneja JS inline
 ====================================================== */
-
-#modalUsuario{
-  position:fixed !important;
-  top:0 !important;
-  left:0 !important;
-  right:0 !important;
-  bottom:0 !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  background:rgba(0,0,0,.45) !important;
-  z-index:9999 !important;
-  padding:20px;
-  box-sizing:border-box;
-}
-
-#modalUsuario.hidden{
-  display:none !important;
-}
 
 #modalUsuario .modal-content{
   background:#fff;
@@ -210,7 +192,8 @@ autocomplete="off">
 
 </main>
 
-<div id="modalUsuario" class="modal hidden">
+<!-- JS controla los estilos inline de este div -->
+<div id="modalUsuario" style="display:none;">
 
 <div class="modal-content">
 

@@ -27,12 +27,45 @@ function getHeaders(extra = {}) {
 let usuariosCache = []
 
 // ── Paginación y ordenamiento ─────────────────────────────
-let datosActuales  = []   // set filtrado+ordenado en uso
+let datosActuales  = []
 let paginaActual   = 1
 let porPagina      = 10
 let sortCol        = 'id'
 let sortDir        = 'asc'
 // ─────────────────────────────────────────────────────────
+
+// ══════════════════════════════════════════════════════════
+// MODAL – Apertura/cierre con inline styles (fix Chrome)
+// ══════════════════════════════════════════════════════════
+
+function mostrarModal() {
+  const modal = document.getElementById('modalUsuario')
+  if (!modal) return
+  modal.classList.remove('hidden')
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.45);
+    z-index: 9999;
+    padding: 20px;
+    box-sizing: border-box;
+  `
+}
+
+function ocultarModal() {
+  const modal = document.getElementById('modalUsuario')
+  if (!modal) return
+  modal.classList.add('hidden')
+  modal.style.cssText = 'display:none;'
+}
+
+// ══════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', async () => {
 
@@ -55,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await new Promise(r => requestAnimationFrame(r))
   document.body.offsetHeight
 
-  // ── Inyectar wrapper de scroll + selector porPagina + contenedor paginación ──
   _setupTableUI()
 
   await cargarUsuarios()
@@ -68,6 +100,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnCancelar')?.addEventListener('click', cerrarModal)
   document.getElementById('formUsuario')?.addEventListener('submit', guardarUsuario)
   document.getElementById('inputBuscarUsuario')?.addEventListener('input', filtrarUsuarios)
+
+  // cerrar modal al hacer clic en el fondo oscuro
+  document.getElementById('modalUsuario')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) cerrarModal()
+  })
 
   document.addEventListener('click', e => {
     if (!e.target.closest('.acciones-menu')) {
@@ -96,7 +133,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ── Setup inicial de la UI de la tabla ───────────────────────────────────────
 function _setupTableUI() {
 
-  // 1. Envolver la tabla en un div con scroll horizontal
   const tabla = document.getElementById('tablaUsuarios')
   if (tabla && !tabla.parentElement.classList.contains('tabla-scroll-wrap')) {
     const wrap = document.createElement('div')
@@ -106,7 +142,6 @@ function _setupTableUI() {
     wrap.appendChild(tabla)
   }
 
-  // 2. Agregar atributos data-sort a los <th> de la tabla
   const colMap = ['id','nombre_completo','username','email','cargo','nivel','dependencia','estado','bloqueado']
   document.querySelectorAll('#tablaUsuarios thead th').forEach((th, i) => {
     if (colMap[i]) {
@@ -115,7 +150,6 @@ function _setupTableUI() {
     }
   })
 
-  // 3. Barra inferior: selector "por página" + paginación
   const section = document.querySelector('#tablaUsuarios')?.closest('section')
   if (section) {
     const barraInferior = document.createElement('div')
@@ -147,7 +181,6 @@ function _setupTableUI() {
   }
 }
 
-// ── Iconos de sort en cabeceras ──────────────────────────────────────────────
 function _actualizarIconosSort() {
   document.querySelectorAll('#tablaUsuarios thead th[data-sort]').forEach(th => {
     const icono = th.querySelector('.sort-icono')
@@ -162,7 +195,6 @@ function _actualizarIconosSort() {
   })
 }
 
-// ── Ordenar array por columna ────────────────────────────────────────────────
 function _ordenar(arr) {
   return [...arr].sort((a, b) => {
     let av = a[sortCol] ?? ''
@@ -176,7 +208,6 @@ function _ordenar(arr) {
   })
 }
 
-// ── Renderizar paginación ────────────────────────────────────────────────────
 function _renderPaginacion(total) {
   const totalPaginas = Math.max(1, Math.ceil(total / porPagina))
   if (paginaActual > totalPaginas) paginaActual = totalPaginas
@@ -199,7 +230,6 @@ function _renderPaginacion(total) {
 
   let html = `<button ${btnStyle(false)} ${paginaActual <= 1 ? 'disabled' : ''} onclick="window._irPagina(${paginaActual - 1})">‹</button>`
 
-  // rango visible de páginas
   let desde = Math.max(1, paginaActual - 2)
   let hasta  = Math.min(totalPaginas, paginaActual + 2)
   if (desde > 1)           html += `<button ${btnStyle(false)} onclick="window._irPagina(1)">1</button>${desde > 2 ? '<span style="padding:0 2px;font-size:12px;">…</span>' : ''}`
@@ -216,7 +246,6 @@ function _renderPaginacion(total) {
 window._irPagina = function(p) {
   paginaActual = p
   renderTabla(datosActuales)
-  // scroll suave al inicio de la tabla
   document.getElementById('tablaUsuarios')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
@@ -245,7 +274,6 @@ async function cargarUsuarios() {
   }
 }
 
-// ── Render principal (ahora con sort + paginación) ───────────────────────────
 function renderTabla(data) {
 
   const tbody = document.querySelector('#tablaUsuarios tbody')
@@ -254,13 +282,10 @@ function renderTabla(data) {
   tbody.innerHTML = ''
   if (!Array.isArray(data)) return
 
-  // guardar el set actual para que la paginación pueda reutilizarlo
   datosActuales = data
 
-  // ordenar
   const ordenados = _ordenar(datosActuales)
 
-  // paginar
   const totalPaginas = Math.max(1, Math.ceil(ordenados.length / porPagina))
   if (paginaActual > totalPaginas) paginaActual = totalPaginas
   const inicio = (paginaActual - 1) * porPagina
@@ -301,10 +326,9 @@ function renderTabla(data) {
   _actualizarIconosSort()
 }
 
-// ── Filtro de búsqueda ────────────────────────────────────────────────────────
 function filtrarUsuarios(e) {
   const texto = e.target.value.toLowerCase()
-  paginaActual = 1   // volver a la primera página al buscar
+  paginaActual = 1
   const filtrados = usuariosCache.filter(u =>
     (u.nombre_completo ?? '').toLowerCase().includes(texto) ||
     (u.username ?? '').toLowerCase().includes(texto) ||
@@ -313,7 +337,6 @@ function filtrarUsuarios(e) {
   renderTabla(filtrados)
 }
 
-// ── Toggle menú contextual ────────────────────────────────────────────────────
 window.toggleMenu = function(id) {
   const menu = document.getElementById(`menu-${id}`)
   document.querySelectorAll('.menu-dropdown').forEach(m => {
@@ -409,11 +432,11 @@ function abrirModalNuevo() {
   document.getElementById('inputNombre').disabled = false
   document.getElementById('inputDocumento').disabled = false
   document.getElementById('inputUsername').disabled = false
-  document.getElementById('modalUsuario').classList.remove('hidden')
+  mostrarModal()
 }
 
 function cerrarModal() {
-  document.getElementById('modalUsuario').classList.add('hidden')
+  ocultarModal()
   document.getElementById('formUsuario').reset()
 }
 
@@ -447,7 +470,7 @@ window.editarUsuario = async function(id) {
     document.getElementById('inputNombre').disabled = true
     document.getElementById('inputDocumento').disabled = true
     document.getElementById('inputUsername').disabled = true
-    document.getElementById('modalUsuario').classList.remove('hidden')
+    mostrarModal()
   } catch (err) {
     console.error('Error cargando usuario', err)
     alert('No fue posible cargar el usuario.')
