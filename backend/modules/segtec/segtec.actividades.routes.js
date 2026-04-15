@@ -58,38 +58,97 @@ export function buildSEGTECRouter(db, trdAIService) {
     return usuario?.id_dependencia || null
   }
 
-  function normalizarDependencias(valor){
+  // ── NORMALIZAR DEPENDENCIAS ──────────────────────────
+  // Soporta 3 formatos:
+  //   1. Array de objetos:  [{id:8, nombre:"X"}, ...]
+  //   2. Array de IDs:      [8, 12]
+  //   3. String JSON:       '[8,12]' o '[{"id":8,"nombre":"X"}]'
+  // Retorna siempre un array uniforme de {id, nombre|null}
+  // ─────────────────────────────────────────────────────
 
-    if(!valor) return []
+  function normalizarDependencias(valor) {
 
-    if(Array.isArray(valor)) return valor
+    if (!valor) return []
 
-    if(typeof valor === 'string'){
+    let arr = valor
 
-      try{
-        return JSON.parse(valor)
-      }catch{
-        return valor.split(',').map(x=>x.trim())
+    if (typeof valor === 'string') {
+      try {
+        arr = JSON.parse(valor)
+      } catch {
+        return valor.split(',').map(x => ({
+          id: x.trim(),
+          nombre: null
+        }))
+      }
+    }
+
+    if (!Array.isArray(arr)) return []
+
+    return arr.map(item => {
+
+      // Caso 1: ya es objeto {id, nombre}
+      if (typeof item === 'object' && item !== null) {
+        return {
+          id: item.id,
+          nombre: item.nombre || null
+        }
+      }
+
+      // Caso 2: es un ID simple (número o string)
+      return {
+        id: item,
+        nombre: null
+      }
+
+    })
+  }
+
+  // ── RESOLVER DEPENDENCIAS A TEXTO ────────────────────
+  // Si el objeto ya trae nombre, lo usa directamente.
+  // Si no, consulta la BD por ID.
+  // Retorna string con nombres separados por coma.
+  // ─────────────────────────────────────────────────────
+
+  async function resolverDependencias(deps) {
+
+    if (!deps?.length) return ''
+
+    const conNombre = []
+    const sinNombre = []
+
+    for (const dep of deps) {
+      if (dep.nombre) {
+        conNombre.push(dep.nombre)
+      } else if (dep.id) {
+        sinNombre.push(dep.id)
+      }
+    }
+
+    // Consultar la BD solo para los que no tienen nombre
+    if (sinNombre.length > 0) {
+
+      const placeholders = sinNombre.map(() => '?').join(',')
+
+      const rows = await db.all(`
+        SELECT id, nombre
+        FROM dependencias
+        WHERE id IN (${placeholders})
+      `, sinNombre)
+
+      const mapa = {}
+      for (const r of rows) {
+        mapa[String(r.id)] = r.nombre
+      }
+
+      for (const id of sinNombre) {
+        const nombre = mapa[String(id)]
+        conNombre.push(nombre || `Dependencia ${id}`)
       }
 
     }
 
-    return []
-  }
-
-  async function resolverDependencias(ids){
-
-    if(!ids?.length) return ''
-
-    const placeholders = ids.map(()=>'?').join(',')
-
-    const rows = await db.all(`
-      SELECT nombre
-      FROM dependencias
-      WHERE id IN (${placeholders})
-    `, ids)
-
-    return rows.map(r=>r.nombre).join(', ')
+    return conNombre.join(', ')
   }
 
   // =====================================================
@@ -289,11 +348,12 @@ export function buildSEGTECRouter(db, trdAIService) {
           actividad.validacion.genera_expediente_propio
       }
 
-      const depsIds =
+      // ── Resolver dependencias a nombres ──
+      const deps =
         normalizarDependencias(actividad.dependencias_relacionadas)
 
       actividad.dependencias_relacionadas =
-        await resolverDependencias(depsIds)
+        await resolverDependencias(deps)
 
       if (actividad.cargo_custodia) {
 

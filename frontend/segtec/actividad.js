@@ -117,6 +117,9 @@ const generaExpediente = $('generaExpediente')
 let dependenciasSeleccionadas = []
 let estadoActual = "borrador"
 
+// ── MAPA COMPLETO DE DEPENDENCIAS (activas e inactivas) ──
+let mapaDependencias = {}
+
 
 // ======================================================
 // VALIDACIÓN VISUAL
@@ -473,6 +476,13 @@ async function cargarDependencias(){
 
 const data = await fetchSeguro('/api/dependencias')
 
+// ── Guardar TODAS las dependencias en el mapa (activas e inactivas)
+// para poder resolver nombres al cargar actividades guardadas
+mapaDependencias = {}
+data.forEach(dep => {
+mapaDependencias[String(dep.id)] = dep.nombre
+})
+
 selectDependencia.innerHTML =
 '<option value="">Seleccione dependencia...</option>'
 
@@ -570,6 +580,30 @@ return []
 }
 
 // ======================================================
+// RESOLVER NOMBRE DE DEPENDENCIA
+// ======================================================
+
+function resolverNombreDependencia(id){
+
+const idStr = String(id)
+
+// 1. Buscar en el mapa completo (activas + inactivas)
+if(mapaDependencias[idStr]){
+return mapaDependencias[idStr]
+}
+
+// 2. Fallback: buscar en el <select> por si acaso
+const option = [...selectDependencia.options]
+.find(o => String(o.value) === idStr)
+
+if(option) return option.textContent
+
+// 3. Último recurso (no debería llegar aquí)
+return `Dependencia ${id}`
+
+}
+
+// ======================================================
 // CARGAR ACTIVIDAD
 // ======================================================
 
@@ -663,25 +697,32 @@ normalizarBoolean(act.tiene_plazo) ? "si":"no"
 normaAplicable.value =
 act.norma_aplicable ?? ""
 
+// ── DEPENDENCIAS: resolver nombres correctamente ──
 const depsGuardadas =
 normalizarDependencias(act.dependencias_relacionadas)
 
 dependenciasSeleccionadas = depsGuardadas.map(dep => {
 
-if(typeof dep === "object"){
+// Caso 1: ya viene como objeto {id, nombre}
+if(typeof dep === "object" && dep.nombre){
 return {
 id: dep.id,
 nombre: dep.nombre
 }
 }
 
-const option =
-[...selectDependencia.options]
-.find(o => String(o.value) === String(dep))
+// Caso 2: viene como objeto pero sin nombre
+if(typeof dep === "object"){
+return {
+id: dep.id,
+nombre: resolverNombreDependencia(dep.id)
+}
+}
 
+// Caso 3: viene solo como ID (número o string)
 return {
 id: dep,
-nombre: option ? option.textContent : `Dependencia ${dep}`
+nombre: resolverNombreDependencia(dep)
 }
 
 })
@@ -765,8 +806,12 @@ genera_expediente_propio:generaExpediente.value==="si",
 
 norma_aplicable:normaAplicable.value,
 
+// ── Guardar objetos {id, nombre} para futuras cargas ──
 dependencias_relacionadas:
-dependenciasSeleccionadas.map(d=>d.id)
+dependenciasSeleccionadas.map(d => ({
+id: d.id,
+nombre: d.nombre
+}))
 
 })
 })
