@@ -3,346 +3,353 @@
 
 <head>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Actividad técnica – ICAF | SIPAD</title>
+  <title>Actividad técnica – ICAF | SIPAD</title>
 
-<link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
 
 </head>
 
 <body>
 
-<div id="header"></div>
+  <div id="header"></div>
 
-<main class="module-page segtec-premium">
+  <main class="module-page segtec-premium">
 
-<div class="contenido-documento">
+    <div class="contenido-documento">
 
-<div class="module-header flex-between">
+      <div class="module-header flex-between">
 
-  <div>
-    <h1>Caracterización técnica de actividad</h1>
-    <p class="module-subtext">
-      Instrumento técnico para identificación funcional y producción documental
-    </p>
-  </div>
+        <div>
+          <h1>Caracterización técnica de actividad</h1>
+          <p class="module-subtext">
+            Instrumento técnico para identificación funcional y producción documental
+          </p>
+        </div>
 
-  <span id="badgeEstado" class="badge badge-stage"></span>
+        <span id="badgeEstado" class="badge badge-stage"></span>
 
-</div>
+      </div>
 
 
-<!-- ====================================================== -->
-<!-- SECCIÓN 1 -->
-<!-- ====================================================== -->
+      <!-- ====================================================== -->
+      <!-- SECCIÓN 1 -->
+      <!-- ====================================================== -->
 
-<section class="segtec-card">
+      <section class="segtec-card">
 
-  <div class="card-header">
-    <h3>SECCIÓN 1 – Identificación básica de la actividad</h3>
-  </div>
+        <div class="card-header">
+          <h3>SECCIÓN 1 – Identificación básica de la actividad</h3>
+        </div>
 
-  <div class="card-body form-grid">
+        <div class="card-body form-grid">
 
-    <div class="form-group full">
-      <label>1. Nombre de la actividad *</label>
-      <span class="form-hint">
-        Denomine clara y específicamente la actividad desarrollada.
-      </span>
-      <input type="text" id="nombre" name="nombre" class="form-control">
+          <div class="form-group full">
+            <label>1. Nombre de la actividad *</label>
+            <span class="form-hint">
+              Denomine clara y específicamente la actividad desarrollada.
+            </span>
+            <input type="text" id="nombre" name="nombre" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>2. Clasificación funcional *</label>
+            <span class="form-hint">
+              Seleccione a qué tipo de proceso corresponde.
+            </span>
+            <select id="clasificacion" name="clasificacion" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="misional">Misional</option>
+              <option value="estrategica">Estratégica</option>
+              <option value="apoyo">De apoyo</option>
+              <option value="evaluacion">Evaluación y control</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>3. Periodicidad *</label>
+            <span class="form-hint">
+              Señale la frecuencia con la cual se desarrolla la actividad.
+            </span>
+            <select id="periodicidad" name="periodicidad" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="diaria">Diaria</option>
+              <option value="semanal">Semanal</option>
+              <option value="mensual">Mensual</option>
+              <option value="bimensual">Bimensual</option>
+              <option value="trimestral">Trimestral</option>
+              <option value="semestral">Semestral</option>
+              <option value="anual">Anual</option>
+              <option value="eventual">Eventual</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>4. Descripción detallada *</label>
+            <span class="form-hint">
+              Explique el procedimiento, alcance, propósito y resultado esperado.
+            </span>
+            <textarea id="descripcion" name="descripcion" class="form-control"></textarea>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ====================================================== -->
+      <!-- SECCIÓN 2 -->
+      <!-- ====================================================== -->
+
+      <section class="segtec-card">
+
+        <div class="card-header">
+          <h3>SECCIÓN 2 – Producción documental asociada</h3>
+        </div>
+
+        <div class="card-body form-grid">
+
+          <div class="form-group">
+            <label>5. ¿La actividad genera documentos?</label>
+            <select id="generaDoc" name="generaDoc" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>6. Registre los documentos generados.</label>
+            <span class="form-hint">Relacione los documentos producidos.</span>
+            <textarea id="documentosGenerados" name="documentosGenerados" class="form-control"
+              placeholder="Registre un documento por línea."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>7. Formato de producción</label>
+            <select id="formato" name="formato" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="fisico">Físico</option>
+              <option value="digital">Digital</option>
+              <option value="ambos">Ambos</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>8. Documentos requeridos para iniciar la actividad</label>
+            <span class="form-hint">
+              Relacione los documentos provenientes de terceros o de otras dependencias necesarios para la actividad.
+            </span>
+            <textarea id="recepcionExterna" name="recepcionExterna" class="form-control"
+              placeholder="Registre un documento por línea"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>9. Volumen documental estimado</label>
+            <span class="form-hint">
+              Indique aproximadamente cuántos documentos produce esta actividad.
+            </span>
+            <select id="volumenCategoria" name="volumenCategoria" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="menos_10">Menos de 10 al mes</option>
+              <option value="entre_10_50">Entre 10 y 50 al mes</option>
+              <option value="mas_50">Más de 50 al mes</option>
+              <option value="anual">Estimación anual</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupoVolumenAnual" style="display:none">
+            <label>Estimación anual</label>
+            <input type="number" id="volumenAnualPersonalizado"
+              name="volumenAnualPersonalizado" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>10. Responsabilidad de custodia</label>
+            <span class="form-hint">
+              Indique quién conserva el documento original o principal.
+            </span>
+            <select id="custodiaTipo" name="custodiaTipo" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="misma_dependencia">La misma dependencia</option>
+              <option value="archivo_central">Archivo central</option>
+              <option value="otra_dependencia">Otra dependencia</option>
+              <option value="digital_unico">Digital únicamente</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>10a. Cargo responsable de custodia</label>
+            <span class="form-hint">
+              Seleccione el cargo del funcionario responsable de la custodia.
+            </span>
+            <select id="cargoCustodia" name="cargoCustodia" class="form-control">
+              <option value="">Seleccione cargo...</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="grupoDependenciaCustodia" style="display:none">
+            <label>Dependencia responsable</label>
+            <span class="form-hint">
+              Seleccione la dependencia responsable de la custodia.
+            </span>
+            <select id="dependenciaCustodia" name="dependenciaCustodia" class="form-control">
+              <option value="">Seleccione dependencia...</option>
+            </select>
+          </div>
+
+          <!-- ====================================================== -->
+          <!-- 11. LOCALIZACIÓN (MÚLTIPLE – tipo dependencias) -->
+          <!-- ====================================================== -->
+          <div class="form-group">
+            <label>11. Localización actual de los documentos</label>
+            <span class="form-hint">
+              Seleccione dónde se archivan los documentos. Puede elegir varias opciones.
+            </span>
+            <select id="localizacionTipo" name="localizacionTipo" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="carpeta_oficina">Carpeta física en oficina</option>
+              <option value="archivador">Archivador</option>
+              <option value="computador_personal">Computador</option>
+              <option value="carpeta_red">Carpeta compartida</option>
+              <option value="otro">Otro</option>
+            </select>
+            <div id="localizacionTags" class="tags-container"></div>
+          </div>
+
+          <div class="form-group full" id="grupoOtraLocalizacion" style="display:none">
+            <label>Especificar otra localización</label>
+            <input type="text" id="localizacionOtro" name="localizacionOtro" class="form-control">
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ====================================================== -->
+      <!-- SECCIÓN 3 -->
+      <!-- ====================================================== -->
+
+      <section class="segtec-card">
+
+        <div class="card-header">
+          <h3>SECCIÓN 3 – Gestión y trámite</h3>
+        </div>
+
+        <div class="card-body form-grid">
+
+          <div class="form-group full">
+            <label>13. ¿Tiene pasos formales que deben seguirse?</label>
+            <span class="form-hint">
+              (Ejemplo: un procedimiento definido, un trámite establecido o un proceso que siempre se hace de la misma manera).
+            </span>
+            <select id="pasosFormales" name="pasosFormales" class="form-control campo-corto">
+              <option value="">Seleccione...</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>14. ¿Requiere apoyo de otras dependencias?</label>
+            <select id="otrasDep" name="otrasDep" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>14a. Dependencias que apoyan</label>
+            <select id="selectDependencia" name="selectDependencia" class="form-control" disabled>
+              <option value="">Seleccione dependencia...</option>
+            </select>
+            <div id="dependenciasTags" class="tags-container"></div>
+          </div>
+
+          <div class="form-group full">
+            <label>15. ¿Tiene un tiempo límite para cumplirse?</label>
+            <span class="form-hint">
+              (Ejemplo: plazos legales, fechas máximas de respuesta o términos obligatorios).
+            </span>
+            <select id="tienePlazo" name="tienePlazo" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>15a. Plazo legal establecido</label>
+            <span class="form-hint">(Norma, ley o término formal definido)</span>
+            <input type="text" id="plazoLegal" name="plazoLegal" class="form-control"
+              placeholder="Ej: Ley 1437 de 2011 – 15 días">
+          </div>
+
+          <div class="form-group">
+            <label>15b. Tiempo promedio real de ejecución</label>
+            <span class="form-hint">
+              (Tiempo que usualmente tarda la actividad en la práctica administrativa)
+            </span>
+            <input type="text" id="tiempoPromedio" name="tiempoPromedio" class="form-control"
+              placeholder="Ej: 3 días">
+          </div>
+
+          <div class="form-group">
+            <label>16. ¿Genera un conjunto de documentos que se organizan por caso o asunto?</label>
+            <span class="form-hint">Expediente</span>
+            <select id="generaExpediente" name="generaExpediente" class="form-control">
+              <option value="">Seleccione...</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>17. Norma aplicable</label>
+            <textarea id="normaAplicable" name="normaAplicable" class="form-control"></textarea>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <div class="module-actions">
+        <button class="btn-secondary" id="btnCancelar">Cancelar</button>
+        <button id="guardarActividadCompleta" class="btn-primary btn-xl">Guardar</button>
+      </div>
+
     </div>
+  </main>
 
-    <div class="form-group">
-      <label>2. Clasificación funcional *</label>
-      <span class="form-hint">
-        Seleccione a qué tipo de proceso corresponde.
-      </span>
-      <select id="clasificacion" name="clasificacion" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="misional">Misional</option>
-        <option value="estrategica">Estratégica</option>
-        <option value="apoyo">De apoyo</option>
-        <option value="evaluacion">Evaluación y control</option>
-      </select>
-    </div>
+  <div id="sipad-notifications"></div>
 
-    <div class="form-group">
-      <label>3. Periodicidad *</label>
-      <span class="form-hint">
-        Señale la frecuencia con la cual se desarrolla la actividad.
-      </span>
-      <select id="periodicidad" name="periodicidad" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="diaria">Diaria</option>
-        <option value="semanal">Semanal</option>
-        <option value="mensual">Mensual</option>
-        <option value="eventual">Eventual</option>
-      </select>
-    </div>
+  <!-- ✅ Renderizar header y footer -->
+  <script type="module">
+    import { renderHeader } from '/components/header.js';
+    renderHeader('ICAF');
+  </script>
 
-    <div class="form-group full">
-      <label>4. Descripción detallada *</label>
-      <span class="form-hint">
-        Explique el procedimiento, alcance, propósito y resultado esperado.
-      </span>
-      <textarea id="descripcion" name="descripcion" class="form-control"></textarea>
-    </div>
+  <script type="module" src="/components/notifications.js"></script>
+  <script type="module" src="/segtec/actividad.js"></script>
 
-  </div>
-</section>
-
-
-<!-- ====================================================== -->
-<!-- SECCIÓN 2 -->
-<!-- ====================================================== -->
-
-<section class="segtec-card">
-
-  <div class="card-header">
-    <h3>SECCIÓN 2 – Producción documental asociada</h3>
-  </div>
-
-  <div class="card-body form-grid">
-
-    <div class="form-group">
-      <label>5. ¿La actividad genera documentos?</label>
-      <select id="generaDoc" name="generaDoc" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="form-group full">
-      <label>6. Registre los documentos generados.</label>
-      <span class="form-hint">Relacione los documentos producidos.</span>
-      <textarea id="documentosGenerados" name="documentosGenerados" class="form-control"
-        placeholder="Registre un documento por línea."></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>7. Formato de producción</label>
-      <select id="formato" name="formato" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="fisico">Físico</option>
-        <option value="digital">Digital</option>
-        <option value="ambos">Ambos</option>
-      </select>
-    </div>
-
-    <div class="form-group full">
-      <label>8. Documentos requeridos para iniciar la actividad</label>
-      <span class="form-hint">
-        Relacione los documentos provenientes de terceros o de otras dependencias necesarios para la actividad.
-      </span>
-      <textarea id="recepcionExterna" name="recepcionExterna" class="form-control"
-        placeholder="Registre un documento por línea"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>9. Volumen documental estimado</label>
-      <span class="form-hint">
-        Indique aproximadamente cuántos documentos produce esta actividad.
-      </span>
-      <select id="volumenCategoria" name="volumenCategoria" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="menos_10">Menos de 10 al mes</option>
-        <option value="entre_10_50">Entre 10 y 50 al mes</option>
-        <option value="mas_50">Más de 50 al mes</option>
-        <option value="anual">Estimación anual</option>
-      </select>
-    </div>
-
-    <div class="form-group" id="grupoVolumenAnual" style="display:none">
-      <label>Estimación anual</label>
-      <input type="number" id="volumenAnualPersonalizado"
-        name="volumenAnualPersonalizado" class="form-control">
-    </div>
-
-    <div class="form-group">
-      <label>10. Responsabilidad de custodia</label>
-      <span class="form-hint">
-        Indique quién conserva el documento original o principal.
-      </span>
-      <select id="custodiaTipo" name="custodiaTipo" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="misma_dependencia">La misma dependencia</option>
-        <option value="archivo_central">Archivo central</option>
-        <option value="otra_dependencia">Otra dependencia</option>
-        <option value="digital_unico">Digital únicamente</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>10a. Cargo responsable de custodia</label>
-      <span class="form-hint">
-        Seleccione el cargo del funcionario responsable de la custodia.
-      </span>
-      <select id="cargoCustodia" name="cargoCustodia" class="form-control">
-        <option value="">Seleccione cargo...</option>
-      </select>
-    </div>
-
-    <div class="form-group" id="grupoDependenciaCustodia" style="display:none">
-      <label>Dependencia responsable</label>
-      <span class="form-hint">
-        Seleccione la dependencia responsable de la custodia.
-      </span>
-      <select id="dependenciaCustodia" name="dependenciaCustodia" class="form-control">
-        <option value="">Seleccione dependencia...</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>11. Localización actual de los documentos</label>
-      <span class="form-hint">
-        Seleccione dónde se archivan los documentos.
-      </span>
-      <select id="localizacionTipo" name="localizacionTipo" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="carpeta_oficina">Carpeta física en oficina</option>
-        <option value="archivador">Archivador</option>
-        <option value="computador_personal">Computador personal</option>
-        <option value="carpeta_red">Carpeta compartida</option>
-        <option value="servidor">Servidor institucional</option>
-        <option value="otro">Otro</option>
-      </select>
-    </div>
-
-    <div class="form-group full" id="grupoOtraLocalizacion" style="display:none">
-      <label>Especificar otra localización</label>
-      <input type="text" id="localizacionOtro" name="localizacionOtro" class="form-control">
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ====================================================== -->
-<!-- SECCIÓN 3 -->
-<!-- ====================================================== -->
-
-<section class="segtec-card">
-
-  <div class="card-header">
-    <h3>SECCIÓN 3 – Gestión y trámite</h3>
-  </div>
-
-  <div class="card-body form-grid">
-
-    <div class="form-group full">
-      <label>13. ¿Tiene pasos formales que deben seguirse?</label>
-      <span class="form-hint">
-        (Ejemplo: un procedimiento definido, un trámite establecido o un proceso que siempre se hace de la misma manera).
-      </span>
-      <select id="pasosFormales" name="pasosFormales" class="form-control campo-corto">
-        <option value="">Seleccione...</option>
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>14. ¿Requiere apoyo de otras dependencias?</label>
-      <select id="otrasDep" name="otrasDep" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>14a. Dependencias que apoyan</label>
-      <select id="selectDependencia" name="selectDependencia" class="form-control" disabled>
-        <option value="">Seleccione dependencia...</option>
-      </select>
-      <div id="dependenciasTags" class="tags-container"></div>
-    </div>
-
-    <div class="form-group full">
-      <label>15. ¿Tiene un tiempo límite para cumplirse?</label>
-      <span class="form-hint">
-        (Ejemplo: plazos legales, fechas máximas de respuesta o términos obligatorios).
-      </span>
-      <select id="tienePlazo" name="tienePlazo" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>15a. Plazo legal establecido</label>
-      <span class="form-hint">(Norma, ley o término formal definido)</span>
-      <input type="text" id="plazoLegal" name="plazoLegal" class="form-control"
-        placeholder="Ej: Ley 1437 de 2011 – 15 días">
-    </div>
-
-    <div class="form-group">
-      <label>15b. Tiempo promedio real de ejecución</label>
-      <span class="form-hint">
-        (Tiempo que usualmente tarda la actividad en la práctica administrativa)
-      </span>
-      <input type="text" id="tiempoPromedio" name="tiempoPromedio" class="form-control"
-        placeholder="Ej: 3 días">
-    </div>
-
-    <div class="form-group">
-      <label>16. ¿Genera un conjunto de documentos que se organizan por caso o asunto?</label>
-      <span class="form-hint">Expediente</span>
-      <select id="generaExpediente" name="generaExpediente" class="form-control">
-        <option value="">Seleccione...</option>
-        <option value="si">Sí</option>
-        <option value="no">No</option>
-      </select>
-    </div>
-
-    <div class="form-group full">
-      <label>17. Norma aplicable</label>
-      <textarea id="normaAplicable" name="normaAplicable" class="form-control"></textarea>
-    </div>
-
-  </div>
-
-</section>
-
-
-<div class="module-actions">
-  <button class="btn-secondary" id="btnCancelar">Cancelar</button>
-  <button id="guardarActividadCompleta" class="btn-primary btn-xl">Guardar</button>
-</div>
-
-</div>
-</main>
-
-<div id="sipad-notifications"></div>
-
-<!-- ✅ Renderizar header y footer -->
-<script type="module">
-  import { renderHeader } from '/components/header.js';
-  renderHeader('ICAF');
-</script>
-
-<script type="module" src="/components/notifications.js"></script>
-<script type="module" src="/segtec/actividad.js"></script>
-
-<script>
-window.addEventListener("load", () => {
-  const token = sessionStorage.getItem("token")
-  const firma = document.getElementById("firmaFuncionario")
-  if (!token || !firma) return
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    const nombre = payload.nombre || ""
-    const cargo  = payload.cargo  || ""
-    firma.innerText = `${nombre} – ${cargo}`
-  } catch(e) {
-    console.warn("No se pudo leer el JWT")
-  }
-})
-</script>
+  <script>
+    window.addEventListener("load", () => {
+      const token = sessionStorage.getItem("token")
+      const firma = document.getElementById("firmaFuncionario")
+      if (!token || !firma) return
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const nombre = payload.nombre || ""
+        const cargo = payload.cargo || ""
+        firma.innerText = `${nombre} – ${cargo}`
+      } catch (e) {
+        console.warn("No se pudo leer el JWT")
+      }
+    })
+  </script>
 
 </body>
 </html>
