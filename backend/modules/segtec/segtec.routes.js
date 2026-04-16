@@ -12,6 +12,7 @@ import { SEGTECValidacionTecnicaService } from './segtec.validacion.tecnica.serv
 import { SEGTECValidacionTecnicaController } from './segtec.validacion.tecnica.controller.js'
 
 import { SEGTECPDFController } from './segtec.pdf.controller.js'
+import { generarPDFActividad } from './segtec.pdf.service.js'
 
 import { TRDAIRepository } from '../trd-ai/trd-ai.repository.js'
 import { TRDAIService } from '../trd-ai/trd-ai.service.js'
@@ -312,10 +313,107 @@ router.put('/actividades/:id/bloque3', actividadesController.actualizarBloque3)
 router.put('/actividades/:id/tecnico', actividadesController.actualizar)
 
 // =====================================================
-// PDF
+// PDF (con resolución de dependencias y cargo)
 // =====================================================
 
-router.get('/actividades/:id/pdf', pdfController.generar)
+router.get('/actividades/:id/pdf', async (req, res) => {
+
+  try {
+
+    const usuarioId =
+      req.user?.id ||
+      req.user?.usuario_id ||
+      req.user?.sub ||
+      null
+
+    if (!usuarioId) {
+      return res.status(401).json({ ok: false, error: 'No autenticado' })
+    }
+
+    const actividad = await actividadesService.obtenerPorId(
+      req.params.id,
+      usuarioId
+    )
+
+    if (!actividad) {
+      return res.status(404).json({ ok: false, error: 'Actividad no encontrada' })
+    }
+
+    if (actividad.validacion) {
+      actividad.genera_expediente_propio =
+        actividad.validacion.genera_expediente_propio
+    }
+
+    // ── Resolver dependencias a texto ──
+    const depsRaw = normalizarDependencias(actividad.dependencias_relacionadas)
+
+    if (depsRaw.length > 0) {
+
+      const todasDeps = await db.all('SELECT id, nombre FROM dependencias')
+      const mapaDeps = {}
+      for (const d of todasDeps) {
+        mapaDeps[String(d.id)] = d.nombre
+      }
+
+      const nombres = depsRaw.map(dep => {
+        if (dep.nombre) return dep.nombre
+        return mapaDeps[String(dep.id)] || `Dependencia ${dep.id}`
+      })
+
+      actividad.dependencias_relacionadas = nombres.join(', ')
+
+    } else {
+      actividad.dependencias_relacionadas = ''
+    }
+
+    // ── Resolver cargo custodia ──
+    if (actividad.cargo_custodia) {
+
+      const cargo = await db.get(
+        'SELECT nombre FROM cargos WHERE id = ?',
+        [actividad.cargo_custodia]
+      )
+
+      if (cargo) {
+        actividad.cargo_custodia = cargo.nombre
+      }
+    }
+
+    actividad.volumen_categoria =
+      actividad.volumen_categoria ||
+      actividad.volumen_documental ||
+      ''
+
+    actividad.custodia_tipo =
+      actividad.custodia_tipo ||
+      actividad.responsable_custodia ||
+      ''
+
+    actividad.localizacion_tipo =
+      actividad.localizacion_tipo ||
+      actividad.localizacion_documentos ||
+      ''
+
+    actividad.tiene_plazo =
+      actividad.tiene_plazo ?? 0
+
+    const pdfBuffer = await generarPDFActividad(actividad)
+
+    res.setHeader('Content-Type', 'application/pdf')
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="actividad-segtec-${req.params.id}.pdf"`
+    )
+    res.setHeader('Content-Length', pdfBuffer.length)
+
+    return res.send(pdfBuffer)
+
+  } catch (err) {
+    console.error('SEGTEC PDF error:', err)
+    return res.status(500).json({ ok: false, error: 'Error generando PDF' })
+  }
+
+})
 
 // =====================================================
 // ANÁLISIS
