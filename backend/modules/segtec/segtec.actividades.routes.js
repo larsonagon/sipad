@@ -81,15 +81,72 @@ export function buildSEGTECRouter(db, trdAIService) {
 
     if(!ids?.length) return ''
 
-    const placeholders = ids.map(()=>'?').join(',')
+    // Si los items son objetos {id, nombre}, ya vienen resueltos
+    if(typeof ids[0] === 'object' && ids[0].nombre){
+      return ids.map(d => d.nombre).join(', ')
+    }
+
+    // Si son solo IDs, resolver contra la base de datos
+    const soloIds = ids.map(x => typeof x === 'object' ? x.id : x)
+
+    const placeholders = soloIds.map(()=>'?').join(',')
 
     const rows = await db.all(`
       SELECT nombre
       FROM dependencias
       WHERE id IN (${placeholders})
-    `, ids)
+    `, soloIds)
 
     return rows.map(r=>r.nombre).join(', ')
+  }
+
+  // =====================================================
+  // RESOLVER LOCALIZACIONES
+  // ─ Convierte el JSON string / array de localizaciones
+  //   en un texto legible para el PDF
+  // =====================================================
+
+  function resolverLocalizaciones(valor){
+
+    if(!valor) return ''
+
+    // Mapa de etiquetas legibles
+    const etiquetas = {
+      carpeta_oficina:     'Carpeta física en oficina',
+      archivador:          'Archivador',
+      computador_personal: 'Computador',
+      carpeta_red:         'Carpeta compartida',
+      otro:                'Otro'
+    }
+
+    const items = normalizarDependencias(valor)
+
+    // Si no se pudo normalizar como array, usar valor simple (formato antiguo)
+    if(!items.length){
+
+      if(typeof valor === 'string' && valor.trim()){
+        return etiquetas[valor] || valor
+      }
+
+      return ''
+    }
+
+    return items.map(item => {
+
+      // Caso 1: objeto {value, nombre}
+      if(typeof item === 'object' && item.nombre){
+        return item.nombre
+      }
+
+      // Caso 2: objeto {value} sin nombre
+      if(typeof item === 'object' && item.value){
+        return etiquetas[item.value] || item.value
+      }
+
+      // Caso 3: string simple
+      return etiquetas[item] || item
+
+    }).join(', ')
   }
 
   // =====================================================
@@ -266,7 +323,7 @@ export function buildSEGTECRouter(db, trdAIService) {
   router.post('/actividades/:id/completar', attachContext, asyncHandler(controller.marcarCompleta))
 
   // =====================================================
-  // PDF (CORREGIDO)
+  // PDF
   // =====================================================
 
   router.get(
@@ -289,12 +346,13 @@ export function buildSEGTECRouter(db, trdAIService) {
           actividad.validacion.genera_expediente_propio
       }
 
-      const depsIds =
-        normalizarDependencias(actividad.dependencias_relacionadas)
+      // ── DEPENDENCIAS RELACIONADAS ──
+      const deps = normalizarDependencias(actividad.dependencias_relacionadas)
 
       actividad.dependencias_relacionadas =
-        await resolverDependencias(depsIds)
+        await resolverDependencias(deps)
 
+      // ── CARGO DE CUSTODIA ──
       if (actividad.cargo_custodia) {
 
         const cargo = await db.get(`
@@ -309,6 +367,7 @@ export function buildSEGTECRouter(db, trdAIService) {
 
       }
 
+      // ── CAMPOS NORMALIZADOS ──
       actividad.volumen_categoria =
         actividad.volumen_categoria ||
         actividad.volumen_documental ||
@@ -319,10 +378,14 @@ export function buildSEGTECRouter(db, trdAIService) {
         actividad.responsable_custodia ||
         ''
 
-      actividad.localizacion_tipo =
+      // ── LOCALIZACIONES: resolver a texto legible ──
+      const locRaw =
         actividad.localizacion_tipo ||
         actividad.localizacion_documentos ||
         ''
+
+      actividad.localizacion_tipo = resolverLocalizaciones(locRaw)
+      actividad.localizacion_documentos = actividad.localizacion_tipo
 
       actividad.tiene_plazo =
         actividad.tiene_plazo ?? 0
