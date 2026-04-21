@@ -533,7 +533,7 @@ origen='autoevolutivo'
 
 if(!serie){
 
-const clasificacion=await sugerirSerieDesdeActividad(actividad, db)
+const clasificacion=await sugerirSerieDesdeActividad(actividad, null, db)
 
 if(clasificacion && clasificacion.serie_sugerida?.nombre &&
    clasificacion.serie_sugerida.nombre !== 'DOCUMENTACION GENERAL'){

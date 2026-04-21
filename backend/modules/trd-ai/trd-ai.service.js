@@ -3,7 +3,7 @@ import {
   sugerirRetencionContextual
 } from './trd-ai.engine.js'
 
-export const TRDAIService = (repository) => ({
+export const TRDAIService = (repository, db) => ({
 
   // ===================================================
   // DASHBOARD
@@ -88,7 +88,8 @@ export const TRDAIService = (repository) => ({
       // ✅ Pasar configuracionDependencia al engine
       const clasificacion = await sugerirSerieDesdeActividad(
         actividad,
-        configuracionDependencia
+        configuracionDependencia,
+        db
       )
 
       resultados.push({

@@ -361,88 +361,50 @@ function calcularScore(tokensTexto, palabras) {
 // ===================================================
 
 async function buscarEnCatalogo(db, tokensTexto) {
+
   if (!db) return null
 
   try {
-    const tokens = tokensTexto.filter(t => t.length > 3).slice(0, 5)
+
+    const tokens = tokensTexto
+      .filter(t => t.length > 3)
+      .slice(0, 8)
+
     if (tokens.length === 0) return null
 
-    const condiciones = tokens
-      .map((_, i) => `(csub.nombre_normalizado ILIKE $${i + 1} OR cs.nombre_normalizado ILIKE $${i + 1})`)
-      .join(' OR ')
-
-    const scoreSubserie = tokens
-      .map((_, i) => `CASE WHEN csub.nombre_normalizado ILIKE $${i + 1} THEN 2 ELSE 0 END`)
-      .join(' + ')
-
-    const scoreSerie = tokens
-      .map((_, i) => `CASE WHEN cs.nombre_normalizado ILIKE $${i + 1} THEN 1 ELSE 0 END`)
-      .join(' + ')
-
-    const valores = tokens.map(t => `%${t}%`)
-
-    const resSubseries = await db.query(
-      `SELECT
-         cs.nombre   AS serie,
-         csub.nombre AS subserie,
-         (${scoreSubserie}) + (${scoreSerie}) AS score
-       FROM trd_catalogo_subseries csub
-       JOIN trd_catalogo_series cs ON cs.id = csub.serie_id
-       WHERE ${condiciones}
-       ORDER BY score DESC, LENGTH(csub.nombre) DESC
-       LIMIT 5`,
-      valores
+    const result = await db.query(
+      `SELECT serie, subserie, gestion, central, disposicion, score
+       FROM trd_buscar_clasificacion($1)
+       WHERE score > 0
+       LIMIT 1`,
+      [tokens]
     )
 
-    if (resSubseries.rows && resSubseries.rows.length > 0) {
-      const mejorCoincidencia = resSubseries.rows[0]
-      const score = Number(mejorCoincidencia.score || 0)
+    if (!result.rows || result.rows.length === 0) return null
 
-      // Evitar subseries genéricas cuando solo coincide 1 token débil
-      if (score >= 4) {
-        return {
-          serie_sugerida:    { nombre: mejorCoincidencia.serie },
-          subserie_sugerida: { nombre: mejorCoincidencia.subserie },
-          confianza: 0.72,
-          origen: 'catalogo'
-        }
-      }
+    const mejor = result.rows[0]
+    const score = Number(mejor.score || 0)
 
-      return {
-        serie_sugerida:    { nombre: mejorCoincidencia.serie },
-        subserie_sugerida: { nombre: null },
-        confianza: 0.60,
-        origen: 'catalogo'
-      }
+    if (score < 2) return null
+
+    console.log('Capa 4 catálogo:', mejor.serie, '→', mejor.subserie, 'score:', score)
+
+    return {
+      serie_sugerida:    { nombre: mejor.serie },
+      subserie_sugerida: { nombre: mejor.subserie || null },
+      retencion_gestion: mejor.gestion   ? Number(mejor.gestion)   : null,
+      retencion_central: mejor.central   ? Number(mejor.central)   : null,
+      disposicion_final: mejor.disposicion || null,
+      confianza:         Math.min(0.50 + (score * 0.04), 0.92),
+      origen:            'catalogo'
     }
 
-    const condicionesSeries = tokens
-      .map((_, i) => `nombre_normalizado ILIKE $${i + 1}`)
-      .join(' OR ')
-
-    const resSeries = await db.query(
-      `SELECT nombre AS serie
-       FROM trd_catalogo_series
-       WHERE ${condicionesSeries}
-       LIMIT 3`,
-      valores
-    )
-
-    if (resSeries.rows && resSeries.rows.length > 0) {
-      return {
-        serie_sugerida:    { nombre: resSeries.rows[0].serie },
-        subserie_sugerida: { nombre: null },
-        confianza: 0.60,
-        origen: 'catalogo'
-      }
+    } catch (err) {
+      console.error('TRD-AI capa 4 error:', err.message)
+      return null
     }
-
-  } catch (err) {
-    console.error('TRD-AI capa 4 error:', err.message)
   }
 
-  return null
-}
 
 // ===================================================
 // CAPA 0: OPENAI GPT-4o

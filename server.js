@@ -141,7 +141,7 @@ async function init() {
     // ==================================================
 
     const trdAIRepository = TRDAIRepository(db)
-    const trdAIService    = TRDAIService(trdAIRepository)
+    const trdAIService    = TRDAIService(trdAIRepository, db)
     const trdAIController = TRDAIController(trdAIService)
 
     // ==================================================
