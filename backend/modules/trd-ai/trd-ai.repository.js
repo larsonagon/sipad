@@ -289,7 +289,7 @@ export const TRDAIRepository = (db) => {
             WHEN 'borrador'  THEN 1
             ELSE 2
           END,
-          rowid DESC
+          id DESC
         LIMIT 1
       `)
 

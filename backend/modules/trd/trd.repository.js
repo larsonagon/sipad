@@ -33,7 +33,7 @@ export const TRDRepository = (db) => ({
           (SELECT COUNT(*) FROM series s WHERE s.trd_version_id = v.id) AS total_series
         FROM trd_versiones v
         WHERE v.entidad_id = ?
-        ORDER BY v.rowid DESC
+        ORDER BY v.id DESC
       `, [entidadId])
     }
 
@@ -41,7 +41,7 @@ export const TRDRepository = (db) => ({
       SELECT v.*,
         (SELECT COUNT(*) FROM series s WHERE s.trd_version_id = v.id) AS total_series
       FROM trd_versiones v
-      ORDER BY v.rowid DESC
+      ORDER BY v.id DESC
     `)
   },
 
