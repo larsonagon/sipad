@@ -12,7 +12,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/dashboard',
-    
     requireLevel(60),
     controller.obtenerDashboardTRDAI
   )
@@ -23,7 +22,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/analizar',
-    
     controller.analizarSeries
   )
 
@@ -33,7 +31,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/generar-propuestas',
-    
     requireLevel(60),
     controller.generarPropuestas
   )
@@ -44,9 +41,18 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/series-propuestas',
-    
     requireLevel(60),
     controller.listarPropuestas
+  )
+
+  // =====================================================
+  // EDITAR PROPUESTA (serie, subserie, tipologías)
+  // =====================================================
+
+  router.patch(
+    '/series-propuestas/:id/editar',
+    requireLevel(60),
+    controller.editarPropuesta
   )
 
   // =====================================================
@@ -55,7 +61,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.patch(
     '/series-propuestas/:id/aprobar',
-    
     requireLevel(60),
     controller.aprobarPropuesta
   )
@@ -66,7 +71,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.patch(
     '/series-propuestas/:id/rechazar',
-    
     requireLevel(60),
     controller.rechazarPropuesta
   )
@@ -77,7 +81,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/series-propuestas/:id/incorporar',
-    
     requireLevel(60),
     controller.incorporarASerieOficial
   )
@@ -88,14 +91,12 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.post(
     '/series-propuestas/:propuestaId/retencion',
-    
     requireLevel(60),
     controller.guardarReglaRetencion
   )
 
   router.get(
     '/series-propuestas/:propuestaId/retencion',
-    
     requireLevel(60),
     controller.obtenerReglaRetencion
   )
@@ -106,7 +107,6 @@ export function registerTRDAIRoutes(app, controller) {
 
   router.get(
     '/series-propuestas/:propuestaId/retencion-automatica',
-    
     requireLevel(60),
     controller.sugerirRetencionAutomatica
   )

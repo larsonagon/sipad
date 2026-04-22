@@ -278,6 +278,22 @@ export const TRDAIRepository = (db) => {
 
     createSeriePropuesta,
 
+    async editarPropuesta(id, data) {
+      await db.run(`
+        UPDATE trd_series_propuestas
+        SET nombre_serie          = ?,
+            nombre_subserie       = ?,
+            tipologia_documental  = ?
+        WHERE id = ?
+      `, [
+        data.nombre_serie,
+        data.nombre_subserie       || null,
+        data.tipologia_documental  || null,
+        id
+      ])
+      return true
+    },
+
     async cambiarEstado(id, nuevoEstado, usuario, obs) {
       const propuesta = await db.get(
         `SELECT id FROM trd_series_propuestas WHERE id = ?`, [id]

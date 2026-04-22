@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // =====================================================
 // API FETCH
-// ✅ Fix: solo master admin envía X-Entidad-Id
 // =====================================================
 
 function esMasterAdmin() {
@@ -44,15 +43,12 @@ async function apiFetch(url, options = {}) {
     if (eid) headers['X-Entidad-Id'] = eid
   }
 
-  if (options.body) {
-    headers['Content-Type'] = 'application/json'
-  }
+  if (options.body) headers['Content-Type'] = 'application/json'
 
   const resp = await fetch(url, { ...options, headers })
 
   if (resp.status === 401) {
     sessionStorage.clear()
-    localStorage.clear()
     window.location.href = '/'
     return null
   }
@@ -70,7 +66,6 @@ async function cargarPropuestas() {
 
     const resp = await apiFetch('/api/trd-ai/series-propuestas')
     if (!resp) return
-
     if (!resp.ok) throw new Error('Error cargando propuestas')
 
     const json = await resp.json()
@@ -88,10 +83,14 @@ async function cargarPropuestas() {
 // UTILIDADES
 // =====================================================
 
-function capitalizar(texto) {
-  if (!texto) return '-'
-  const limpio = texto.toString().toLowerCase().trim()
-  return limpio.charAt(0).toUpperCase() + limpio.slice(1)
+function parseTipologias(raw) {
+  if (!raw) return []
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : [parsed]
+  } catch {
+    return [raw]
+  }
 }
 
 function estadoChip(estado) {
@@ -106,10 +105,7 @@ function estadoChip(estado) {
 }
 
 // =====================================================
-// AGRUPAR POR SERIE + SUBSERIE
-// ✅ Fix: el estado del grupo es el del primer id,
-//    pero ahora mostramos una fila por propuesta
-//    individual para que el estado sea exacto
+// AGRUPAR POR SERIE + SUBSERIE + ESTADO
 // =====================================================
 
 function agruparSeries(lista) {
@@ -117,7 +113,6 @@ function agruparSeries(lista) {
   const mapa = {}
 
   lista.forEach(p => {
-
     const serie    = p.nombre_serie    || 'Serie sin nombre'
     const subserie = p.nombre_subserie || ''
     const key      = `${serie}__${subserie}__${p.estado}`
@@ -126,10 +121,11 @@ function agruparSeries(lista) {
       mapa[key] = {
         serie,
         subserie,
-        estado:   p.estado || 'propuesta',
-        cantidad: 0,
-        ids:      [],
-        id:       p.id  // id representativo para acciones
+        estado:      p.estado || 'propuesta',
+        cantidad:    0,
+        ids:         [],
+        id:          p.id,
+        tipologias:  parseTipologias(p.tipologia_documental)
       }
     }
 
@@ -149,7 +145,7 @@ function renderTabla(lista) {
   const tbody = document.getElementById('tablaPropuestas')
 
   if (!lista || !lista.length) {
-    tbody.innerHTML = `<tr><td colspan="5">No hay propuestas registradas</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="6">No hay propuestas registradas</td></tr>`
     return
   }
 
@@ -158,24 +154,30 @@ function renderTabla(lista) {
   tbody.innerHTML = agrupadas.map(p => {
 
     const estado = (p.estado || '').toLowerCase()
-    const idAccion = p.id
+    const id     = p.id
 
-    // Botones según estado
+    const tipHtml = p.tipologias.length
+      ? p.tipologias.map(t =>
+          `<span style="display:inline-block;background:#f1f5f9;border-radius:4px;
+                        padding:2px 6px;font-size:11px;margin:2px 2px 2px 0;
+                        color:#374151;">${t}</span>`
+        ).join('')
+      : '<span style="color:#9ca3af;font-size:12px;">Sin tipologías</span>'
+
+    const btnEditar = estado !== 'incorporada'
+      ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')" title="Editar serie, subserie y tipologías">✏️ Editar</button>`
+      : ''
+
     const btnAprobar = estado === 'propuesta'
-      ? `<button class="btn-aprobar" onclick="aprobar('${idAccion}', this)">Aprobar</button>`
+      ? `<button class="btn-aprobar" onclick="aprobar('${id}', this)">Aprobar</button>`
       : ''
 
     const btnRechazar = estado === 'propuesta'
-      ? `<button class="btn-rechazar" onclick="rechazar('${idAccion}', this)">Rechazar</button>`
+      ? `<button class="btn-rechazar" onclick="rechazar('${id}', this)">Rechazar</button>`
       : ''
 
-    const btnRetencion = (estado === 'propuesta' || estado === 'aprobada')
-      ? `<button class="btn-retencion" onclick="retencion('${idAccion}')">Retención</button>`
-      : ''
-
-    // ✅ Botón Incorporar — solo para aprobadas
     const btnIncorporar = estado === 'aprobada'
-      ? `<button class="btn-incorporar" onclick="incorporar('${idAccion}', this)"
+      ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)"
            style="background:#7c3aed;color:white;padding:6px 12px;border-radius:6px;
                   font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
            Incorporar a TRD
@@ -183,15 +185,16 @@ function renderTabla(lista) {
       : ''
 
     return `
-      <tr data-id="${idAccion}">
+      <tr data-id="${id}">
         <td class="serie-nombre"><strong>${p.serie}</strong></td>
-        <td class="subserie">${(p.subserie || '-').replace(/\\n/g, '<br>')}</td>
+        <td class="subserie">${p.subserie || '—'}</td>
         <td>${p.cantidad}</td>
+        <td style="max-width:280px;line-height:1.6;">${tipHtml}</td>
         <td class="td-estado">${estadoChip(p.estado)}</td>
         <td class="trd-actions">
+          ${btnEditar}
           ${btnAprobar}
           ${btnRechazar}
-          ${btnRetencion}
           ${btnIncorporar}
         </td>
       </tr>
@@ -201,7 +204,6 @@ function renderTabla(lista) {
 
 // =====================================================
 // ACTUALIZAR FILA EN SITIO
-// ✅ Evita re-render completo de la tabla
 // =====================================================
 
 function actualizarFila(id, nuevoEstado) {
@@ -209,15 +211,17 @@ function actualizarFila(id, nuevoEstado) {
   const fila = document.querySelector(`tr[data-id="${id}"]`)
   if (!fila) return
 
-  // Actualizar chip
   const tdEstado = fila.querySelector('.td-estado')
   if (tdEstado) tdEstado.innerHTML = estadoChip(nuevoEstado)
 
-  // Actualizar botones
   const tdAcciones = fila.querySelector('.trd-actions')
   if (!tdAcciones) return
 
   const estado = nuevoEstado.toLowerCase()
+
+  const btnEditar = estado !== 'incorporada'
+    ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')" title="Editar">✏️ Editar</button>`
+    : ''
 
   const btnAprobar = estado === 'propuesta'
     ? `<button class="btn-aprobar" onclick="aprobar('${id}', this)">Aprobar</button>`
@@ -225,10 +229,6 @@ function actualizarFila(id, nuevoEstado) {
 
   const btnRechazar = estado === 'propuesta'
     ? `<button class="btn-rechazar" onclick="rechazar('${id}', this)">Rechazar</button>`
-    : ''
-
-  const btnRetencion = (estado === 'propuesta' || estado === 'aprobada')
-    ? `<button class="btn-retencion" onclick="retencion('${id}')">Retención</button>`
     : ''
 
   const btnIncorporar = estado === 'aprobada'
@@ -239,7 +239,7 @@ function actualizarFila(id, nuevoEstado) {
        </button>`
     : ''
 
-  tdAcciones.innerHTML = `${btnAprobar}${btnRechazar}${btnRetencion}${btnIncorporar}`
+  tdAcciones.innerHTML = `${btnEditar}${btnAprobar}${btnRechazar}${btnIncorporar}`
 }
 
 // =====================================================
@@ -252,7 +252,6 @@ async function generarPropuestas() {
 
     const resp = await apiFetch('/api/trd-ai/generar-propuestas', { method: 'POST' })
     if (!resp) return
-
     if (!resp.ok) throw new Error('Error ejecutando el motor')
 
     const json = await resp.json()
@@ -268,7 +267,107 @@ async function generarPropuestas() {
 }
 
 // =====================================================
-// ACCIONES
+// EDITAR PROPUESTA
+// =====================================================
+
+window.editarPropuesta = async function(id) {
+
+  // Obtener datos actuales de la fila
+  const fila = document.querySelector(`tr[data-id="${id}"]`)
+  if (!fila) return
+
+  const serieActual    = fila.querySelector('.serie-nombre strong')?.textContent || ''
+  const subserieActual = fila.querySelector('.subserie')?.textContent?.trim() || ''
+
+  // Extraer tipologías actuales del DOM
+  const tipChips = fila.querySelectorAll('td:nth-child(4) span')
+  const tipActuales = Array.from(tipChips)
+    .map(s => s.textContent.trim())
+    .filter(t => t && t !== 'Sin tipologías')
+    .join('\n')
+
+  const overlay = document.createElement('div')
+  overlay.className = 'modal'
+
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:520px;">
+      <h3>Editar propuesta</h3>
+      <p style="margin:0 0 16px;font-size:13px;color:var(--color-text-muted);">
+        Corrige los nombres o tipologías antes de aprobar e incorporar a la TRD.
+      </p>
+
+      <div class="form-group">
+        <label>Serie documental</label>
+        <input type="text" id="editSerie" class="form-control" value="${serieActual}">
+      </div>
+
+      <div class="form-group">
+        <label>Subserie documental</label>
+        <input type="text" id="editSubserie" class="form-control" value="${subserieActual !== '—' ? subserieActual : ''}">
+      </div>
+
+      <div class="form-group">
+        <label>Tipos documentales <span style="font-weight:400;color:var(--color-text-muted);">(uno por línea)</span></label>
+        <textarea id="editTipologias" class="form-control" style="height:120px;resize:vertical;">${tipActuales}</textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnCancelarEditar">Cancelar</button>
+        <button class="btn-primary"   id="btnGuardarEditar">Guardar cambios</button>
+      </div>
+    </div>
+  `
+
+  document.body.appendChild(overlay)
+
+  overlay.querySelector('#btnCancelarEditar').addEventListener('click', () => overlay.remove())
+
+  overlay.querySelector('#btnGuardarEditar').addEventListener('click', async () => {
+
+    const serie     = document.getElementById('editSerie').value.trim()
+    const subserie  = document.getElementById('editSubserie').value.trim()
+    const tipRaw    = document.getElementById('editTipologias').value
+    const tipologias = tipRaw.split('\n').map(t => t.trim()).filter(Boolean)
+
+    if (!serie) { mostrarToast('El nombre de la serie es obligatorio', 'error'); return }
+
+    const btn = overlay.querySelector('#btnGuardarEditar')
+    btn.disabled = true; btn.textContent = 'Guardando...'
+
+    try {
+
+      const resp = await apiFetch(`/api/trd-ai/series-propuestas/${id}/editar`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          nombre_serie:         serie,
+          nombre_subserie:      subserie || null,
+          tipologia_documental: JSON.stringify(tipologias)
+        })
+      })
+
+      if (!resp || !resp.ok) throw new Error('Error guardando cambios')
+
+      const json = await resp.json()
+      if (!json.ok) throw new Error(json.error)
+
+      overlay.remove()
+      mostrarToast('Propuesta actualizada', 'success')
+      await cargarPropuestas()
+
+    } catch (err) {
+      console.error(err)
+      mostrarToast('No fue posible guardar los cambios', 'error')
+      btn.disabled = false; btn.textContent = 'Guardar cambios'
+    }
+  })
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove()
+  })
+}
+
+// =====================================================
+// APROBAR — integra retención automática
 // =====================================================
 
 window.aprobar = async function(id, btn) {
@@ -277,17 +376,21 @@ window.aprobar = async function(id, btn) {
 
   try {
 
+    // 1. Aprobar la propuesta
     const resp = await apiFetch(
       `/api/trd-ai/series-propuestas/${id}/aprobar`,
       { method: 'PATCH' }
     )
     if (!resp) return
-
     const json = await resp.json()
     if (!json.ok) throw new Error(json.error)
 
+    // 2. Obtener retención automática en segundo plano
+    apiFetch(`/api/trd-ai/series-propuestas/${id}/retencion-automatica`)
+      .catch(() => {}) // silencioso si falla
+
     mostrarToast('Propuesta aprobada', 'success')
-    actualizarFila(id, 'aprobada')  // ✅ actualización reactiva en sitio
+    actualizarFila(id, 'aprobada')
 
   } catch (err) {
     console.error(err)
@@ -295,6 +398,10 @@ window.aprobar = async function(id, btn) {
     if (btn) { btn.disabled = false; btn.textContent = 'Aprobar' }
   }
 }
+
+// =====================================================
+// RECHAZAR
+// =====================================================
 
 window.rechazar = async function(id, btn) {
 
@@ -307,12 +414,11 @@ window.rechazar = async function(id, btn) {
       { method: 'PATCH' }
     )
     if (!resp) return
-
     const json = await resp.json()
     if (!json.ok) throw new Error(json.error)
 
     mostrarToast('Propuesta rechazada', 'warning')
-    actualizarFila(id, 'rechazada')  // ✅ actualización reactiva en sitio
+    actualizarFila(id, 'rechazada')
 
   } catch (err) {
     console.error(err)
@@ -321,76 +427,8 @@ window.rechazar = async function(id, btn) {
   }
 }
 
-window.retencion = async function(id) {
-
-  try {
-
-    const resp = await apiFetch(
-      `/api/trd-ai/series-propuestas/${id}/retencion-automatica`
-    )
-    if (!resp) return
-
-    const json = await resp.json()
-    if (!json.ok) throw new Error(json.error)
-
-    const regla = json.data || {}
-    const gestion    = regla.retencion_gestion  ?? '-'
-    const central    = regla.retencion_central   ?? '-'
-    const disposicion = regla.disposicion_final  ?? '-'
-    const norma      = regla.fundamento_normativo ?? 'No especificado'
-
-    mostrarToast(
-      `Retención: Gestión ${gestion} años · Central ${central} años · ${disposicion}`,
-      'success'
-    )
-
-  } catch (err) {
-    console.error(err)
-    mostrarToast('No fue posible generar la retención automática', 'error')
-  }
-}
-
 // =====================================================
-// MODAL DE CONFIRMACIÓN (reemplaza confirm() nativo)
-// =====================================================
-
-function confirmarAccion(mensaje) {
-  return new Promise((resolve) => {
-
-    const overlay = document.createElement('div')
-    overlay.className = 'modal'
-
-    overlay.innerHTML = `
-      <div class="modal-content" style="max-width:420px;">
-        <h3>Confirmar acción</h3>
-        <p style="margin:0 0 8px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
-        <div class="modal-actions">
-          <button class="btn-secondary" id="btnCancelarConfirm">Cancelar</button>
-          <button class="btn-primary" id="btnAceptarConfirm" autofocus>Aceptar</button>
-        </div>
-      </div>
-    `
-
-    document.body.appendChild(overlay)
-
-    overlay.querySelector('#btnAceptarConfirm').addEventListener('click', () => {
-      overlay.remove()
-      resolve(true)
-    })
-
-    overlay.querySelector('#btnCancelarConfirm').addEventListener('click', () => {
-      overlay.remove()
-      resolve(false)
-    })
-
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) { overlay.remove(); resolve(false) }
-    })
-  })
-}
-
-// =====================================================
-// ✅ INCORPORAR A TRD OFICIAL
+// INCORPORAR
 // =====================================================
 
 window.incorporar = async function(id, btn) {
@@ -409,7 +447,6 @@ window.incorporar = async function(id, btn) {
       { method: 'POST' }
     )
     if (!resp) return
-
     const json = await resp.json()
     if (!json.ok) throw new Error(json.error)
 
@@ -424,7 +461,42 @@ window.incorporar = async function(id, btn) {
 }
 
 // =====================================================
-// TOAST — usa el sistema existente #sipad-notifications
+// MODAL DE CONFIRMACIÓN
+// =====================================================
+
+function confirmarAccion(mensaje) {
+  return new Promise((resolve) => {
+
+    const overlay = document.createElement('div')
+    overlay.className = 'modal'
+
+    overlay.innerHTML = `
+      <div class="modal-content" style="max-width:420px;">
+        <h3>Confirmar acción</h3>
+        <p style="margin:0 0 8px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="btnCancelarConfirm">Cancelar</button>
+          <button class="btn-primary"   id="btnAceptarConfirm" autofocus>Aceptar</button>
+        </div>
+      </div>
+    `
+
+    document.body.appendChild(overlay)
+
+    overlay.querySelector('#btnAceptarConfirm').addEventListener('click', () => {
+      overlay.remove(); resolve(true)
+    })
+    overlay.querySelector('#btnCancelarConfirm').addEventListener('click', () => {
+      overlay.remove(); resolve(false)
+    })
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { overlay.remove(); resolve(false) }
+    })
+  })
+}
+
+// =====================================================
+// TOAST — usa sistema existente #sipad-notifications
 // =====================================================
 
 function mostrarToast(mensaje, tipo = 'info') {
@@ -442,7 +514,6 @@ function mostrarToast(mensaje, tipo = 'info') {
   toast.textContent = mensaje
   contenedor.appendChild(toast)
 
-  // Trigger animation
   requestAnimationFrame(() => {
     requestAnimationFrame(() => toast.classList.add('visible'))
   })

@@ -51,7 +51,6 @@ function getUserFromToken() {
   }
 }
 
-// ✅ Función centralizada para abrir el modal de contraseña
 function abrirModalPassword() {
   const modal = document.getElementById('modalPassword')
   if (!modal) return
@@ -112,6 +111,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   let puedeAdmin       = false
   let puedeTRDAI       = false
+  let puedeTRD         = false
   let puedeVerInformes = false
   let puedeICAF        = true
   let esGeneral        = false
@@ -119,12 +119,17 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   if (esMaster) {
     puedeAdmin       = true
     puedeTRDAI       = !superAdminSinEntidad
+    puedeTRD         = !superAdminSinEntidad
     puedeVerInformes = !superAdminSinEntidad
     puedeICAF        = !superAdminSinEntidad
   } else {
     switch (nivelAcceso) {
       case 90: puedeAdmin = true; break
-      case 70: puedeTRDAI = true; puedeVerInformes = true; break
+      case 70:
+        puedeTRDAI       = true
+        puedeTRD         = true
+        puedeVerInformes = true
+        break
       case 50: puedeVerInformes = true; break
       case 10: esGeneral = true; break
     }
@@ -199,6 +204,13 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
               </button>
             ` : ''}
 
+            ${puedeTRD ? `
+              <button type="button" id="btnTRD"
+                ${modulo === 'TRD' ? 'class="active"' : ''}>
+                TRD
+              </button>
+            ` : ''}
+
             ${puedeVerInformes ? `
               <button type="button" id="btnInformes"
                 ${modulo === 'Informes' ? 'class="active"' : ''}>
@@ -239,7 +251,6 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.body.prepend(header)
 
-  // ── Volver a Entidades (solo superadmin gestionando una entidad) ─────────
   document.getElementById('btnVolverEntidades')
     ?.addEventListener('click', () => {
       sessionStorage.removeItem('gestion_entidad_id')
@@ -258,6 +269,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnTRDAI')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-dashboard.html' })
+
+  document.getElementById('btnTRD')
+    ?.addEventListener('click', () => { window.location.href = '/trd/trd.html' })
 
   document.getElementById('btnInformes')
     ?.addEventListener('click', () => { window.location.href = '/informes/index.html' })

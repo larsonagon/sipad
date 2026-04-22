@@ -11,13 +11,13 @@ export const TRDAIService = (repository, db) => ({
 
   async obtenerDashboard() {
 
-    const total           = await repository.countAll()
-    const estados         = await repository.countByEstado()
+    const total            = await repository.countAll()
+    const estados          = await repository.countByEstado()
     const ultimasAprobadas = await repository.getUltimasAprobadas()
 
-    let aprobadas   = 0
-    let rechazadas  = 0
-    let pendientes  = 0
+    let aprobadas    = 0
+    let rechazadas   = 0
+    let pendientes   = 0
     let incorporadas = 0
 
     if (Array.isArray(estados)) {
@@ -56,10 +56,6 @@ export const TRDAIService = (repository, db) => ({
 
   async ejecutarMotorInteligente(contexto = null) {
 
-    // --------------------------------------------------
-    // MODO AUTOMÁTICO (usa repository)
-    // --------------------------------------------------
-
     if (!contexto) {
       const resultado = await repository.ejecutarMotorInteligente()
       if (!resultado) return []
@@ -72,10 +68,6 @@ export const TRDAIService = (repository, db) => ({
       }))
     }
 
-    // --------------------------------------------------
-    // MODO CONTEXTUAL — ahora usa Claude
-    // --------------------------------------------------
-
     const { actividades, configuracionDependencia } = contexto
 
     if (!Array.isArray(actividades) || !actividades.length)
@@ -85,7 +77,6 @@ export const TRDAIService = (repository, db) => ({
 
     for (const actividad of actividades) {
 
-      // ✅ Pasar configuracionDependencia al engine
       const clasificacion = await sugerirSerieDesdeActividad(
         actividad,
         configuracionDependencia,
@@ -93,19 +84,14 @@ export const TRDAIService = (repository, db) => ({
       )
 
       resultados.push({
-
         serie:    clasificacion?.serie_sugerida?.nombre    || null,
         subserie: clasificacion?.subserie_sugerida?.nombre || null,
-
-        // ✅ Claude ya propone retenciones — usarlas si existen
         retencion_gestion: clasificacion?.retencion_gestion ?? null,
         retencion_central: clasificacion?.retencion_central ?? null,
         disposicion_final: clasificacion?.disposicion_final ?? null,
-
         confianza:     clasificacion?.confianza     ?? 0.6,
         justificacion: clasificacion?.justificacion ?? 'Clasificación generada por TRD-AI',
         origen:        clasificacion?.origen        ?? 'engine'
-
       })
     }
 
@@ -135,6 +121,22 @@ export const TRDAIService = (repository, db) => ({
       throw new Error('Solo se pueden rechazar propuestas en estado propuesta')
     return await repository.cambiarEstado(id, 'rechazada', usuarioId)
   },
+
+  // ===================================================
+  // EDITAR PROPUESTA
+  // ===================================================
+
+  async editarPropuesta(id, data) {
+    const propuesta = await repository.getById(id)
+    if (!propuesta) throw new Error('Propuesta no encontrada')
+    if (propuesta.estado === 'incorporada')
+      throw new Error('No se puede editar una propuesta ya incorporada')
+    return await repository.editarPropuesta(id, data)
+  },
+
+  // ===================================================
+  // INCORPORAR A TRD OFICIAL
+  // ===================================================
 
   async incorporarASerieOficial(id) {
     const propuesta = await repository.getById(id)
@@ -177,44 +179,42 @@ export const TRDAIService = (repository, db) => ({
 
     if (existente) {
       return {
-        propuesta_id:        propuestaId,
-        retencion_gestion:   existente.retencion_gestion,
-        retencion_central:   existente.retencion_central,
-        disposicion_final:   existente.disposicion_final,
+        propuesta_id:         propuestaId,
+        retencion_gestion:    existente.retencion_gestion,
+        retencion_central:    existente.retencion_central,
+        disposicion_final:    existente.disposicion_final,
         fundamento_normativo: existente.fundamento_normativo,
-        origen:              'existente'
+        origen:               'existente'
       }
     }
 
-    // Fallback contextual (los valores hardcodeados se mantienen
-    // solo si Claude no pudo proponer retenciones en el análisis)
     const sugerencia = sugerirRetencionContextual({
-      tipo_funcion:         'apoyo',
-      nivel_riesgo:         'medio',
-      confianza_lexica:     propuesta.confianza || 0.6,
-      impacto_juridico:     'bajo',
-      funcion_permanente:   'no',
+      tipo_funcion:          'apoyo',
+      nivel_riesgo:          'medio',
+      confianza_lexica:      propuesta.confianza || 0.6,
+      impacto_juridico:      'bajo',
+      funcion_permanente:    'no',
       requiere_conservacion: 'no',
-      soporte_principal:    'digital'
+      soporte_principal:     'digital'
     })
 
     await repository.guardarReglaRetencion({
-      propuesta_id:        propuestaId,
-      retencion_gestion:   sugerencia.gestion,
-      retencion_central:   sugerencia.central,
-      disposicion_final:   sugerencia.disposicion,
+      propuesta_id:         propuestaId,
+      retencion_gestion:    sugerencia.gestion,
+      retencion_central:    sugerencia.central,
+      disposicion_final:    sugerencia.disposicion,
       fundamento_normativo: sugerencia.justificacion,
-      nivel_confianza:     sugerencia.nivel_confianza,
-      tipo_regla:          'automatica'
+      nivel_confianza:      sugerencia.nivel_confianza,
+      tipo_regla:           'automatica'
     })
 
     return {
-      propuesta_id:        propuestaId,
-      retencion_gestion:   sugerencia.gestion,
-      retencion_central:   sugerencia.central,
-      disposicion_final:   sugerencia.disposicion,
+      propuesta_id:         propuestaId,
+      retencion_gestion:    sugerencia.gestion,
+      retencion_central:    sugerencia.central,
+      disposicion_final:    sugerencia.disposicion,
       fundamento_normativo: sugerencia.justificacion,
-      origen:              'automatica'
+      origen:               'automatica'
     }
   }
 

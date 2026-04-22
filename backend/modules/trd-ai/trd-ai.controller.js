@@ -1,260 +1,162 @@
 export const TRDAIController = (service) => ({
 
-  // ============================================
-  // DASHBOARD ANALÍTICO
-  // ============================================
+  // ===================================================
+  // DASHBOARD
+  // ===================================================
 
   obtenerDashboardTRDAI: async (req, res) => {
     try {
-
-      const result = await service.obtenerDashboard()
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Dashboard Error:', error)
-      return res.status(500).json({
-        ok: false,
-        error: 'Error generando dashboard TRD-AI'
-      })
+      const data = await service.obtenerDashboard()
+      return res.json({ ok: true, data })
+    } catch (err) {
+      console.error('TRD-AI dashboard error:', err)
+      return res.status(500).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
+  // ===================================================
   // ANALIZAR SERIES
-  // ============================================
+  // ===================================================
 
   analizarSeries: async (req, res) => {
     try {
-
-      const result = await service.analizarSeries()
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Analizar Error:', error)
-      return res.status(500).json({
-        ok: false,
-        error: 'Error al analizar series'
-      })
+      const data = await service.analizarSeries()
+      return res.json({ ok: true, data })
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
+  // ===================================================
   // GENERAR PROPUESTAS
-  // ============================================
+  // ===================================================
 
   generarPropuestas: async (req, res) => {
     try {
-
-      const result = await service.ejecutarMotorInteligente()
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Motor Error:', error)
-      return res.status(500).json({
-        ok: false,
-        error: 'Error generando propuestas'
-      })
+      const resultado = await service.ejecutarMotorInteligente()
+      return res.json({ ok: true, data: resultado })
+    } catch (err) {
+      console.error('TRD-AI generar propuestas error:', err)
+      return res.status(500).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
+  // ===================================================
   // LISTAR PROPUESTAS
-  // ============================================
+  // ===================================================
 
   listarPropuestas: async (req, res) => {
     try {
-
-      const result = await service.listarPropuestas()
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Listar Error:', error)
-      return res.status(500).json({
-        ok: false,
-        error: 'Error al obtener propuestas'
-      })
+      const data = await service.listarPropuestas()
+      return res.json({ ok: true, data })
+    } catch (err) {
+      return res.status(500).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
-  // APROBAR
-  // ============================================
+  // ===================================================
+  // APROBAR PROPUESTA
+  // ===================================================
 
   aprobarPropuesta: async (req, res) => {
     try {
-
-      const { id } = req.params
-      const usuarioId = req.user?.sub
-
-      if (!usuarioId) {
-        return res.status(401).json({
-          ok: false,
-          error: 'Usuario no autenticado'
-        })
-      }
-
-      const result = await service.aprobarPropuesta(id, usuarioId)
-
-      return res.status(200).json({
-        ok: true,
-        mensaje: 'Propuesta aprobada correctamente',
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Aprobar Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      const usuarioId = req.user?.sub || req.user?.id || null
+      await service.aprobarPropuesta(req.params.id, usuarioId)
+      return res.json({ ok: true })
+    } catch (err) {
+      console.error('TRD-AI Aprobar Error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
-  // RECHAZAR
-  // ============================================
+  // ===================================================
+  // RECHAZAR PROPUESTA
+  // ===================================================
 
   rechazarPropuesta: async (req, res) => {
     try {
-
-      const { id } = req.params
-      const usuarioId = req.user?.sub
-
-      if (!usuarioId) {
-        return res.status(401).json({
-          ok: false,
-          error: 'Usuario no autenticado'
-        })
-      }
-
-      const result = await service.rechazarPropuesta(id, usuarioId)
-
-      return res.status(200).json({
-        ok: true,
-        mensaje: 'Propuesta rechazada correctamente',
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Rechazar Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      const usuarioId = req.user?.sub || req.user?.id || null
+      await service.rechazarPropuesta(req.params.id, usuarioId)
+      return res.json({ ok: true })
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
-  // INCORPORAR
-  // ============================================
+  // ===================================================
+  // EDITAR PROPUESTA
+  // ===================================================
+
+  editarPropuesta: async (req, res) => {
+    try {
+      const { nombre_serie, nombre_subserie, tipologia_documental } = req.body
+      if (!nombre_serie) {
+        return res.status(400).json({ ok: false, error: 'nombre_serie es obligatorio' })
+      }
+      await service.editarPropuesta(req.params.id, {
+        nombre_serie,
+        nombre_subserie:      nombre_subserie      || null,
+        tipologia_documental: tipologia_documental || null
+      })
+      return res.json({ ok: true })
+    } catch (err) {
+      console.error('TRD-AI editar propuesta error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
+    }
+  },
+
+  // ===================================================
+  // INCORPORAR A TRD OFICIAL
+  // ===================================================
 
   incorporarASerieOficial: async (req, res) => {
     try {
-
-      const { id } = req.params
-
-      const result = await service.incorporarASerieOficial(id)
-
-      return res.status(200).json({
-        ok: true,
-        mensaje: 'Serie incorporada a TRD oficial',
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Incorporar Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      const resultado = await service.incorporarASerieOficial(req.params.id)
+      return res.json({ ok: true, data: resultado })
+    } catch (err) {
+      console.error('TRD-AI incorporar error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
-  // 🔥 RETENCIÓN DOCUMENTAL (MANUAL)
-  // ============================================
+  // ===================================================
+  // REGLAS RETENCIÓN
+  // ===================================================
 
   guardarReglaRetencion: async (req, res) => {
     try {
-
-      const data = req.body
-
-      const result = await service.guardarReglaRetencion(data)
-
-      return res.status(200).json({
-        ok: true,
-        mensaje: 'Regla de retención guardada correctamente',
-        data: result
+      const id = await service.guardarReglaRetencion({
+        ...req.body,
+        propuesta_id: req.params.propuestaId
       })
-
-    } catch (error) {
-      console.error('TRD-AI Retención Guardar Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      return res.json({ ok: true, id })
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message })
     }
   },
 
   obtenerReglaRetencion: async (req, res) => {
     try {
-
-      const { propuestaId } = req.params
-
-      const result = await service.obtenerReglaRetencion(propuestaId)
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Retención Obtener Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      const data = await service.obtenerReglaRetencion(req.params.propuestaId)
+      return res.json({ ok: true, data })
+    } catch (err) {
+      return res.status(400).json({ ok: false, error: err.message })
     }
   },
 
-  // ============================================
-  // 🧠 NUEVO: SUGERENCIA AUTOMÁTICA DE RETENCIÓN
-  // ============================================
+  // ===================================================
+  // SUGERIR RETENCIÓN AUTOMÁTICA
+  // ===================================================
 
   sugerirRetencionAutomatica: async (req, res) => {
     try {
-
-      const { propuestaId } = req.params
-
-      const result = await service.sugerirRetencionAutomaticaParaPropuesta(propuestaId)
-
-      return res.status(200).json({
-        ok: true,
-        data: result
-      })
-
-    } catch (error) {
-      console.error('TRD-AI Retención Automática Error:', error)
-      return res.status(400).json({
-        ok: false,
-        error: error.message
-      })
+      const data = await service.sugerirRetencionAutomaticaParaPropuesta(
+        req.params.propuestaId
+      )
+      return res.json({ ok: true, data })
+    } catch (err) {
+      console.error('TRD-AI Retención Automática Error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
     }
   }
 
