@@ -556,18 +556,94 @@ export async function sugerirSerieDesdeActividad(actividad = {}, configuracionDe
 
   const tipologias = extraerTipologias(actividad.documentos_generados)
 
+  // =================================================================
+// FIX — trd-ai.engine.js
+// Problema: Capa 1 detecta "REGISTRO DE ASISTENCIA" como tipología
+//           y clasifica como REGISTROS, ignorando que la actividad
+//           es una ACCIÓN DE TUTELA.
+//
+// Solución: Antes de iterar tipologías, intentar clasificar por el
+//           NOMBRE de la actividad. Si el nombre da señal fuerte,
+//           usar esa clasificación. Solo usar tipologías si el nombre
+//           no produce resultado.
+// =================================================================
+
+// En sugerirSerieDesdeActividad, reemplaza el bloque completo
+// "CAPA 1: detectar por tipologías" con esto:
+
+// ---------------------------------------------------
+// CAPA 1A: detectar por NOMBRE de la actividad (prioridad alta)
+// ---------------------------------------------------
+
+const nombreNormalizado = normalizar(actividad.nombre || '')
+
+// Mapa directo nombre → serie/subserie para casos comunes
+const MAPA_NOMBRE_DIRECTO = [
+  { palabras: ['tutela'],                     serie: 'ACCIONES CONSTITUCIONALES', subserie: 'Acciones de tutela' },
+  { palabras: ['accion', 'popular'],          serie: 'ACCIONES CONSTITUCIONALES', subserie: 'Acciones populares' },
+  { palabras: ['accion', 'cumplimiento'],     serie: 'ACCIONES CONSTITUCIONALES', subserie: 'Acciones de cumplimiento' },
+  { palabras: ['habeas', 'corpus'],           serie: 'ACCIONES CONSTITUCIONALES', subserie: 'Acciones de tutela' },
+  { palabras: ['derecho', 'peticion'],        serie: 'PQRS',                       subserie: 'Derechos de petición' },
+  { palabras: ['queja'],                      serie: 'PQRS',                       subserie: 'Quejas y reclamos' },
+  { palabras: ['contrato', 'prestacion'],     serie: 'CONTRATOS',                  subserie: 'Contratos de prestación de servicios' },
+  { palabras: ['contrato', 'obra'],           serie: 'CONTRATOS',                  subserie: 'Contratos de obra' },
+  { palabras: ['historia', 'laboral'],        serie: 'HISTORIAS LABORALES',        subserie: 'Historias laborales de servidores públicos' },
+  { palabras: ['historia', 'clinica'],        serie: 'HISTORIAS CLÍNICAS',         subserie: 'Historias clínicas de pacientes' },
+  { palabras: ['licencia', 'construccion'],   serie: 'LICENCIAS Y PERMISOS',       subserie: 'Licencias de construcción' },
+  { palabras: ['matricula', 'vehiculo'],      serie: 'REGISTRO AUTOMOTOR',         subserie: 'Matrículas de vehículos' },
+  { palabras: ['comparendo'],                 serie: 'INFRACCIONES DE TRÁNSITO',   subserie: 'Comparendos por infracciones de tránsito' },
+  { palabras: ['accidente', 'transito'],      serie: 'ACCIDENTES DE TRÁNSITO',     subserie: 'Informes de accidentes de tránsito' },
+  { palabras: ['alumbrado'],                  serie: 'PROYECTOS DE INVERSIÓN',     subserie: 'Proyectos de alumbrado público' },
+  { palabras: ['presupuesto'],                serie: 'PRESUPUESTO',                subserie: 'Presupuesto anual de rentas y gastos' },
+  { palabras: ['nomina'],                     serie: 'NÓMINA Y SEGURIDAD SOCIAL',  subserie: 'Nómina de personal' },
+  { palabras: ['plan', 'desarrollo'],         serie: 'PLANES',                     subserie: 'Plan de desarrollo' },
+  { palabras: ['plan', 'ordenamiento'],       serie: 'PLANES',                     subserie: 'Plan de ordenamiento territorial - POT' },
+  { palabras: ['rendicion', 'cuenta'],        serie: 'INFORMES',                   subserie: 'Informes de rendición de cuentas' },
+  { palabras: ['victima'],                    serie: 'ATENCIÓN A VÍCTIMAS',        subserie: 'Caracterización de víctimas del conflicto' },
+]
+
+const tokensNombre = tokenizar(actividad.nombre || '')
+
+for (const entrada of MAPA_NOMBRE_DIRECTO) {
+  const coincidencias = entrada.palabras.filter(p => tokensNombre.includes(p))
+  if (coincidencias.length === entrada.palabras.length) {
+    console.log('Capa 1A — nombre actividad:', entrada.serie, '→', entrada.subserie)
+    return {
+      serie_sugerida:    { nombre: entrada.serie },
+      subserie_sugerida: { nombre: entrada.subserie },
+      confianza: 0.95,
+      origen: 'nombre_actividad'
+    }
+  }
+}
+
   // ---------------------------------------------------
-  // CAPA 1: detectar por tipologías
+  // CAPA 1B: detectar por tipologías documentales
+  // Solo si el nombre no produjo resultado
+  // FILTRO: excluir tipologías genéricas que contaminan
   // ---------------------------------------------------
 
-  for (const tipologia of tipologias) {
+  const TIPOLOGIAS_IGNORAR = [
+    'registro de asistencia',
+    'registros',
+    'solicitudes',
+    'comunicaciones',
+    'oficios',
+  ]
+
+  const tipologiasFiltradas = tipologias.filter(t => {
+    const tn = normalizar(t)
+    return !TIPOLOGIAS_IGNORAR.some(ignorar => tn === ignorar || tn.startsWith(ignorar))
+  })
+
+  for (const tipologia of tipologiasFiltradas) {
     const patron = detectarPatronDocumental(tipologia)
     if (patron) {
-      console.log('Capa 1 — clasificación por tipología:', patron.serie)
+      console.log('Capa 1B — clasificación por tipología:', patron.serie)
       return {
         serie_sugerida:    { nombre: patron.serie },
         subserie_sugerida: { nombre: tipologia },
-        confianza: 0.92,
+        confianza: 0.88,
         origen: 'patron'
       }
     }
