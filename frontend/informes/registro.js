@@ -14,6 +14,16 @@ function getUserFromToken() {
   }
 }
 
+// ✅ Solo master admin puede cambiar de entidad
+function esMasterAdmin() {
+  const token = getToken()
+  if (!token) return false
+  try {
+    const p = JSON.parse(atob(token.split('.')[1]))
+    return p.es_master_admin === true || p.es_master_admin === 1
+  } catch { return false }
+}
+
 async function apiFetch(url) {
 
   const token = getToken()
@@ -23,12 +33,13 @@ async function apiFetch(url) {
     'Content-Type': 'application/json'
   }
 
-  const entidadId =
-    sessionStorage.getItem('gestion_entidad_id') ||
-    sessionStorage.getItem('entidad_id') ||
-    null
-
-  if (entidadId) headers['X-Entidad-Id'] = entidadId
+  if (esMasterAdmin()) {
+    const entidadId =
+      sessionStorage.getItem('gestion_entidad_id') ||
+      sessionStorage.getItem('entidad_id') ||
+      null
+    if (entidadId) headers['X-Entidad-Id'] = entidadId
+  }
 
   const res = await fetch(url, { headers })
 
@@ -133,10 +144,10 @@ function renderKPIs(data) {
   if (!kpisEl) return
   kpisEl.style.display = 'grid'
 
-  document.getElementById('kpiTotal').textContent        = total
-  document.getElementById('kpiAnalizadas').textContent   = analizadas
+  document.getElementById('kpiTotal').textContent          = total
+  document.getElementById('kpiAnalizadas').textContent     = analizadas
   document.getElementById('kpiCaracterizadas').textContent = caracterizadas
-  document.getElementById('kpiDependencias').textContent = dependencias
+  document.getElementById('kpiDependencias').textContent   = dependencias
 
   const resHead = document.getElementById('resultadosHead')
   if (resHead) resHead.textContent = `Resultados — ${total} actividades`
