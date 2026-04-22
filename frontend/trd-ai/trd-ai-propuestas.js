@@ -359,11 +359,11 @@ function confirmarAccion(mensaje) {
 
     const overlay = document.createElement('div')
     overlay.className = 'modal'
-    overlay.style.cssText = 'z-index:999999 !important; position:fixed !important; inset:0 !important;'
+
     overlay.innerHTML = `
       <div class="modal-content" style="max-width:420px;">
-        <h3 style="margin:0 0 12px;">Confirmar acción</h3>
-        <p style="margin:0 0 20px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
+        <h3>Confirmar acción</h3>
+        <p style="margin:0 0 8px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
         <div class="modal-actions">
           <button class="btn-secondary" id="btnCancelarConfirm">Cancelar</button>
           <button class="btn-primary" id="btnAceptarConfirm" autofocus>Aceptar</button>
@@ -373,12 +373,12 @@ function confirmarAccion(mensaje) {
 
     document.body.appendChild(overlay)
 
-    document.getElementById('btnAceptarConfirm').addEventListener('click', () => {
+    overlay.querySelector('#btnAceptarConfirm').addEventListener('click', () => {
       overlay.remove()
       resolve(true)
     })
 
-    document.getElementById('btnCancelarConfirm').addEventListener('click', () => {
+    overlay.querySelector('#btnCancelarConfirm').addEventListener('click', () => {
       overlay.remove()
       resolve(false)
     })
@@ -424,43 +424,31 @@ window.incorporar = async function(id, btn) {
 }
 
 // =====================================================
-// TOAST
+// TOAST — usa el sistema existente #sipad-notifications
 // =====================================================
 
 function mostrarToast(mensaje, tipo = 'info') {
 
-  const colores = {
-    success : '#27ae60',
-    error   : '#e74c3c',
-    warning : '#f39c12',
-    info    : '#2c7be5'
+  let contenedor = document.getElementById('sipad-notifications')
+
+  if (!contenedor) {
+    contenedor = document.createElement('div')
+    contenedor.id = 'sipad-notifications'
+    document.body.appendChild(contenedor)
   }
 
   const toast = document.createElement('div')
-
+  toast.className = `sipad-toast ${tipo}`
   toast.textContent = mensaje
+  contenedor.appendChild(toast)
 
-  Object.assign(toast.style, {
-    position       : 'fixed',
-    top            : '50%',
-    left           : '50%',
-    transform      : 'translate(-50%, -50%)',
-    background     : colores[tipo] || colores.info,
-    color          : 'white',
-    padding        : '14px 28px',
-    borderRadius   : '10px',
-    fontSize       : '14px',
-    fontWeight     : '500',
-    zIndex         : '999999',
-    boxShadow      : '0 8px 24px rgba(0,0,0,0.2)',
-    maxWidth       : '480px',
-    width          : 'max-content',
-    lineHeight     : '1.5',
-    whiteSpace     : 'pre-line',
-    textAlign      : 'center'
+  // Trigger animation
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('visible'))
   })
 
-  document.body.appendChild(toast)
-
-  setTimeout(() => toast.remove(), 4000)
+  setTimeout(() => {
+    toast.classList.remove('visible')
+    setTimeout(() => toast.remove(), 300)
+  }, 3500)
 }
