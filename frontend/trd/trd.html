@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TRD – SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+    <div class="contenido-documento">
+
+      <!-- HEADER -->
+      <div class="module-header centered">
+        <h1>Tablas de Retención Documental</h1>
+        <p class="module-subtext">
+          Gestión del Cuadro de Clasificación Documental y Tablas de Retención
+        </p>
+      </div>
+
+      <!-- VISTA: LISTADO DE VERSIONES -->
+      <div id="vistaVersiones">
+
+        <section class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+            <h3 style="margin:0;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+              Versiones TRD
+            </h3>
+            <button class="btn-primary" id="btnNuevaVersion" style="font-size:13px;">
+              + Nueva versión
+            </button>
+          </div>
+
+          <div id="listaVersiones">
+            <p style="color:var(--text-secondary);font-size:13px;">Cargando versiones...</p>
+          </div>
+        </section>
+
+        <!-- FORM NUEVA VERSIÓN (oculto) -->
+        <section class="card" id="formNuevaVersion" style="display:none;margin-top:1rem;">
+          <h3 style="margin:0 0 1rem;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+            Nueva versión TRD
+          </h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nombre de la versión</label>
+              <input type="text" id="inputNombreVersion" class="form-control"
+                placeholder="Ej: TRD 2025 - Versión 1">
+            </div>
+            <div class="form-group">
+              <label>Modo de creación</label>
+              <select id="selectModoCreacion" class="form-control">
+                <option value="asistido">Asistido (TRD-AI)</option>
+                <option value="manual">Manual</option>
+                <option value="mixto">Mixto</option>
+              </select>
+            </div>
+          </div>
+          <div class="module-actions" style="margin-top:1rem;">
+            <button class="btn-primary"   id="btnGuardarVersion">Crear versión</button>
+            <button class="btn-secondary" id="btnCancelarVersion">Cancelar</button>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- VISTA: CCD / TRD POR VERSIÓN -->
+      <div id="vistaDetalle" style="display:none;">
+
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+          <button class="btn-secondary" id="btnVolverVersiones" style="font-size:13px;">
+            ← Volver
+          </button>
+          <h2 id="tituloVersion" style="margin:0;font-size:1.1rem;font-weight:600;"></h2>
+          <span id="badgeEstadoVersion"></span>
+          <div style="margin-left:auto;display:flex;gap:.5rem;">
+            <button class="btn-secondary" id="btnAprobarVersion" style="font-size:12px;display:none;">
+              Aprobar versión
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabs CCD / TRD -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--color-border);margin-bottom:1.25rem;">
+          <button class="tab-btn active" id="tabCCD" style="
+            padding:8px 20px;font-size:13px;font-weight:500;background:none;border:none;
+            border-bottom:2px solid var(--color-primary,#1e40af);margin-bottom:-2px;
+            color:var(--color-primary,#1e40af);cursor:pointer;">
+            Cuadro de Clasificación (CCD)
+          </button>
+          <button class="tab-btn" id="tabTRD" style="
+            padding:8px 20px;font-size:13px;font-weight:500;background:none;border:none;
+            color:var(--text-secondary);cursor:pointer;">
+            Tabla de Retención (TRD)
+          </button>
+        </div>
+
+        <!-- Contenido CCD -->
+        <div id="contenidoCCD">
+          <div id="ccdContainer">
+            <p style="color:var(--text-secondary);font-size:13px;">Cargando CCD...</p>
+          </div>
+        </div>
+
+        <!-- Contenido TRD -->
+        <div id="contenidoTRD" style="display:none;">
+          <div id="trdContainer">
+            <p style="color:var(--text-secondary);font-size:13px;">Cargando TRD...</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="errorMsg"></div>
+
+    </div>
+  </main>
+
+  <script src="/components/password-modal.js"></script>
+  <script type="module" src="/trd/trd.js"></script>
+
+</body>
+</html>
