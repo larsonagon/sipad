@@ -123,7 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (cardTRD) {
     cardTRD.onclick = () => {
-      alert('TRD en construcción');
+      window.location.href = '/trd/trd.html';
+      //alert('TRD en construcción');
     };
   }
 
