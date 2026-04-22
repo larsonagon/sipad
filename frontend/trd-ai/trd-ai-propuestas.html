@@ -12,189 +12,133 @@
 
 <style>
 
-/* =========================
-CTA PRINCIPAL
-========================= */
-
-.premium-cta{
-display:flex;
-justify-content:center;
-align-items:center;
-margin:32px 0 28px 0;
+/* Página más ancha para esta vista */
+.module-page {
+  max-width: 1300px !important;
 }
 
-.premium-cta .btn-cta{
-min-width:220px;
-font-weight:600;
+/* ── Tabla ── */
+.trd-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 13px;
 }
 
-
-/* =========================
-TABLA
-========================= */
-
-.table-container{
-width:100%;
-overflow-x:auto;
+.trd-table th {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 2px solid #e6e6e6;
+  font-weight: 600;
+  font-size: 12px;
+  color: #555;
+  letter-spacing: .2px;
+  white-space: nowrap;
 }
 
-.trd-table{
-width:100%;
-border-collapse:collapse;
-background:white;
+.trd-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
 }
 
-.trd-table th{
-text-align:left;
-padding:12px 14px;
-border-bottom:2px solid #e6e6e6;
-font-weight:600;
-font-size:13px;
-color:#555;
-letter-spacing:.2px;
+.trd-table tr:hover td {
+  background: #fafafa;
 }
 
-.trd-table td{
-padding:14px;
-border-bottom:1px solid #f0f0f0;
-font-size:13px;
-vertical-align:middle;
+/* ── Columnas fijas ── */
+.col-serie     { width: 160px; min-width: 140px; }
+.col-subserie  { width: 200px; min-width: 160px; }
+.col-cantidad  { width: 60px;  text-align: center; }
+.col-tipos     { min-width: 220px; }
+.col-estado    { width: 100px; text-align: center; }
+.col-acciones  { width: 220px; white-space: nowrap; }
+
+/* ── Serie ── */
+.serie-nombre {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: .2px;
 }
 
-.trd-table tr:hover{
-background:#fafafa;
+.subserie-texto {
+  font-size: 13px;
+  color: #374151;
 }
 
-
-/* =========================
-SERIE / SUBSERIE
-========================= */
-
-.serie-nombre{
-font-size:14px;
-font-weight:600;
-color:#2c3e50;
-letter-spacing:.2px;
+/* ── Tipologías como lista ── */
+.tip-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.subserie{
-font-size:13px;
-color:#6b7280;
+.tip-lista li {
+  font-size: 12px;
+  color: #374151;
+  padding-left: 10px;
+  position: relative;
 }
 
-.actividades-count{
-font-size:13px;
-font-weight:500;
-color:#374151;
+.tip-lista li::before {
+  content: "·";
+  position: absolute;
+  left: 2px;
+  color: #9ca3af;
 }
 
-
-/* =========================
-ACCIONES
-========================= */
-
-.trd-actions{
-display:flex;
-gap:6px;
-flex-wrap:nowrap;
-align-items:center;
+/* ── Chips estado ── */
+.estado-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  white-space: nowrap;
 }
 
+.estado-propuesta  { background: #f1f3f5; color: #555; }
+.estado-aprobada   { background: #d4edda; color: #1e7e34; }
+.estado-rechazada  { background: #f8d7da; color: #842029; }
 
-/* =========================
-BOTONES
-========================= */
-
-.trd-actions button{
-padding:6px 12px;
-border-radius:6px;
-font-size:12px;
-font-weight:600;
-border:none;
-cursor:pointer;
-transition:all .15s ease;
-white-space:nowrap;
+/* ── Botones acciones ── */
+.trd-actions {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-/* aprobar */
-
-.btn-aprobar{
-background:#27ae60;
-color:white;
+.trd-actions button {
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
 }
 
-.btn-aprobar:hover{
-background:#1f8a4d;
-}
+.btn-editar     { background: #f3f4f6; color: #374151; }
+.btn-editar:hover { background: #e5e7eb; }
+.btn-aprobar    { background: #27ae60; color: white; }
+.btn-aprobar:hover { background: #1f8a4d; }
+.btn-rechazar   { background: #e74c3c; color: white; }
+.btn-rechazar:hover { background: #c0392b; }
+.btn-incorporar { background: #7c3aed; color: white; }
+.btn-incorporar:hover { background: #6d28d9; }
 
-/* rechazar */
-
-.btn-rechazar{
-background:#e74c3c;
-color:white;
-}
-
-.btn-rechazar:hover{
-background:#c0392b;
-}
-
-/* retención */
-
-.btn-retencion{
-background:#2c7be5;
-color:white;
-}
-
-.btn-retencion:hover{
-background:#1a68d1;
-}
-
-
-/* =========================
-CHIPS ESTADO
-========================= */
-
-.estado-chip{
-display:inline-block;
-padding:4px 10px;
-border-radius:14px;
-font-size:11px;
-font-weight:600;
-letter-spacing:.2px;
-white-space:nowrap;
-}
-
-.estado-propuesta{
-background:#f1f3f5;
-color:#555;
-}
-
-.estado-aprobada{
-background:#d4edda;
-color:#1e7e34;
-}
-
-.estado-rechazada{
-background:#f8d7da;
-color:#842029;
-}
-
-
-/* =========================
-CABECERA
-========================= */
-
-.module-header h1{
-font-size:22px;
-font-weight:600;
-color:#2c3e50;
-}
-
-.module-subtext{
-font-size:14px;
-color:#6b7280;
-max-width:640px;
-margin:auto;
+/* ── CTA ── */
+.premium-cta {
+  display: flex;
+  justify-content: center;
+  margin: 28px 0 24px;
 }
 
 </style>
@@ -203,71 +147,49 @@ margin:auto;
 
 <body>
 
-<div id="header"></div>
+  <div id="header"></div>
 
-<main class="module-page">
+  <main class="module-page">
 
-<div class="module-header premium-header">
+    <div class="module-header premium-header">
+      <h1>TRD-AI – Propuestas de series y subseries</h1>
+      <p class="module-subtext">
+        El sistema propone series y subseries documentales a partir del análisis
+        de actividades identificadas en el módulo ICAF.
+      </p>
+    </div>
 
-<h1>TRD-AI – Propuestas de series y subseries</h1>
+    <div class="module-content">
 
-<p class="module-subtext">
-El sistema propone series y subseries documentales a partir del análisis
-de actividades identificadas en el módulo ICAF.
-</p>
+      <div class="premium-cta">
+        <button id="btnGenerarPropuestas" class="btn-primary btn-cta"
+          style="min-width:220px;font-weight:600;height:auto;padding:10px 24px;">
+          Generar nuevas propuestas
+        </button>
+      </div>
 
-</div>
+      <div class="table-container">
+        <table class="trd-table">
+          <thead>
+            <tr>
+              <th class="col-serie">Serie documental</th>
+              <th class="col-subserie">Subserie documental</th>
+              <th class="col-cantidad" style="text-align:center;">Act.</th>
+              <th class="col-tipos">Tipos documentales</th>
+              <th class="col-estado" style="text-align:center;">Estado</th>
+              <th class="col-acciones">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPropuestas">
+          </tbody>
+        </table>
+      </div>
 
+    </div>
 
-<div class="module-content">
+  </main>
 
-<div class="premium-cta">
-
-<button
-id="btnGenerarPropuestas"
-class="btn-primary btn-cta">
-
-Generar nuevas propuestas
-
-</button>
-
-</div>
-
-
-<div class="table-container">
-
-<table class="trd-table">
-
-<thead>
-
-<tr>
-
-<th>Serie documental</th>
-<th>Subserie documental</th>
-<th>Actividades origen</th>
-<th>Estado</th>
-<th>Acciones</th>
-
-</tr>
-
-</thead>
-
-<tbody id="tablaPropuestas">
-
-<!-- render JS -->
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</main>
-
-
-<script type="module" src="/trd-ai/trd-ai-propuestas.js"></script>
+  <script type="module" src="/trd-ai/trd-ai-propuestas.js"></script>
 
 </body>
 </html>

@@ -93,6 +93,12 @@ function parseTipologias(raw) {
   }
 }
 
+function sentenceCase(text) {
+  if (!text) return ''
+  const s = text.toString().trim()
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
+
 function estadoChip(estado) {
   const e = (estado || '').toLowerCase()
   if (e === 'aprobada')
@@ -157,15 +163,15 @@ function renderTabla(lista) {
     const id     = p.id
 
     const tipHtml = p.tipologias.length
-      ? p.tipologias.map(t =>
-          `<span style="display:inline-block;background:#f1f5f9;border-radius:4px;
-                        padding:2px 6px;font-size:11px;margin:2px 2px 2px 0;
-                        color:#374151;">${t}</span>`
-        ).join('')
+      ? `<ul class="tip-lista">${
+          p.tipologias.map(t =>
+            `<li>${sentenceCase(t)}</li>`
+          ).join('')
+        }</ul>`
       : '<span style="color:#9ca3af;font-size:12px;">Sin tipologías</span>'
 
     const btnEditar = estado !== 'incorporada'
-      ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')" title="Editar serie, subserie y tipologías">✏️ Editar</button>`
+      ? `<button class="btn-editar" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
       : ''
 
     const btnAprobar = estado === 'propuesta'
@@ -177,11 +183,7 @@ function renderTabla(lista) {
       : ''
 
     const btnIncorporar = estado === 'aprobada'
-      ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)"
-           style="background:#7c3aed;color:white;padding:6px 12px;border-radius:6px;
-                  font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
-           Incorporar a TRD
-         </button>`
+      ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
       : ''
 
     return `
@@ -220,7 +222,7 @@ function actualizarFila(id, nuevoEstado) {
   const estado = nuevoEstado.toLowerCase()
 
   const btnEditar = estado !== 'incorporada'
-    ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')" title="Editar">✏️ Editar</button>`
+    ? `<button class="btn-editar" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
     : ''
 
   const btnAprobar = estado === 'propuesta'
@@ -232,11 +234,7 @@ function actualizarFila(id, nuevoEstado) {
     : ''
 
   const btnIncorporar = estado === 'aprobada'
-    ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)"
-         style="background:#7c3aed;color:white;padding:6px 12px;border-radius:6px;
-                font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
-         Incorporar a TRD
-       </button>`
+    ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
     : ''
 
   tdAcciones.innerHTML = `${btnEditar}${btnAprobar}${btnRechazar}${btnIncorporar}`
