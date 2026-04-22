@@ -51,8 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // API FETCH
-  // ✅ FIX: Archivista también envía X-Entidad-Id
-  //         para obtener la vista global de la entidad
+  // ✅ Solo Super Admin envía X-Entidad-Id (para cambiar
+  //    de entidad). El Archivista usa su entidad del token
+  //    y el controller ya le da la vista global.
   // =====================================================
 
   async function apiFetch(url, options = {}) {
@@ -62,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...(options.headers || {})
     };
 
-    if (esSuperAdmin || esArchivista) {
+    if (esSuperAdmin) {
       const entidadId =
         sessionStorage.getItem('gestion_entidad_id') ||
         sessionStorage.getItem('entidad_id') ||
