@@ -154,6 +154,25 @@ function detectarSerieEmergente(tipologias) {
 }
 
 // =====================================================
+// MAPEAR DISPOSICIÓN FINAL
+// Convierte valores largos al código del check constraint
+// de la tabla series: CT, EL, ST, MT
+// =====================================================
+
+function mapearDisposicion(valor) {
+  if (!valor) return null
+  const v = valor.toString().toLowerCase().trim()
+  if (v === 'ct' || v === 'conservacion_total' || v === 'conservación total') return 'CT'
+  if (v === 'el' || v === 'eliminacion'        || v === 'eliminación')        return 'EL'
+  if (v === 'st' || v === 'seleccion'          || v === 'selección')          return 'ST'
+  if (v === 'mt' || v === 'medio_tecnico'      || v === 'microfilmación')     return 'MT'
+  if (['CT','EL','ST','MT'].includes(valor.toString().toUpperCase())) {
+    return valor.toString().toUpperCase()
+  }
+  return null
+}
+
+// =====================================================
 // REPOSITORY
 // =====================================================
 
@@ -332,7 +351,8 @@ export const TRDAIRepository = (db) => {
 
       const tiempoGestion = retencion?.retencion_gestion ?? null
       const tiempoCentral = retencion?.retencion_central ?? null
-      const disposicion   = retencion?.disposicion_final ?? propuesta.disposicion_final ?? null
+      const disposicionRaw = retencion?.disposicion_final ?? propuesta.disposicion_final ?? null
+      const disposicion   = mapearDisposicion(disposicionRaw)
       const dependenciaId = propuesta.act_dependencia_id ?? null
       const entidadId     = propuesta.act_entidad_id     ?? null
 
@@ -427,7 +447,7 @@ export const TRDAIRepository = (db) => {
     async ejecutarMotorInteligente() {
 
       const actividades = await db.all(`
-        SELECT id, nombre, descripcion_funcional, documentos_generados
+        SELECT id, nombre, descripcion_funcional, documentos_generados, recepcion_externa
         FROM segtec_actividades
         WHERE estado_general IN ('analizada', 'caracterizada')
       `)
@@ -444,7 +464,17 @@ export const TRDAIRepository = (db) => {
 
         if (existente) continue
 
-        const tipologias = extraerTipologias(actividad.documentos_generados)
+        // ✅ Tipologías = documentos generados + documentos requeridos
+        const tipologiasGenerados  = extraerTipologias(actividad.documentos_generados)
+        const tipologiasRequeridos = extraerTipologias(actividad.recepcion_externa)
+        const tipologias = [
+          ...tipologiasGenerados,
+          ...tipologiasRequeridos.filter(t =>
+            t.toLowerCase() !== 'no aplica' &&
+            t.toLowerCase() !== 'no aplica.' &&
+            !tipologiasGenerados.includes(t)
+          )
+        ]
 
         let serie    = null
         let subserie = null
