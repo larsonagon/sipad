@@ -171,19 +171,19 @@ function renderTabla(lista) {
       : '<span style="color:#9ca3af;font-size:12px;">Sin tipologías</span>'
 
     const btnEditar = estado !== 'incorporada'
-      ? `<button class="btn-editar" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
+      ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
       : ''
 
     const btnAprobar = estado === 'propuesta'
-      ? `<button class="btn-aprobar" onclick="aprobar('${id}', this)">Aprobar</button>`
+      ? `<button class="btn-success btn-sm" onclick="aprobar('${id}', this)">Aprobar</button>`
       : ''
 
     const btnRechazar = estado === 'propuesta'
-      ? `<button class="btn-rechazar" onclick="rechazar('${id}', this)">Rechazar</button>`
+      ? `<button class="btn-danger btn-sm" onclick="rechazar('${id}', this)">Rechazar</button>`
       : ''
 
     const btnIncorporar = estado === 'aprobada'
-      ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
+      ? `<button class="btn-primary btn-sm btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
       : ''
 
     return `
@@ -222,19 +222,19 @@ function actualizarFila(id, nuevoEstado) {
   const estado = nuevoEstado.toLowerCase()
 
   const btnEditar = estado !== 'incorporada'
-    ? `<button class="btn-editar" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
+    ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
     : ''
 
   const btnAprobar = estado === 'propuesta'
-    ? `<button class="btn-aprobar" onclick="aprobar('${id}', this)">Aprobar</button>`
+    ? `<button class="btn-success btn-sm" onclick="aprobar('${id}', this)">Aprobar</button>`
     : ''
 
   const btnRechazar = estado === 'propuesta'
-    ? `<button class="btn-rechazar" onclick="rechazar('${id}', this)">Rechazar</button>`
+    ? `<button class="btn-danger btn-sm" onclick="rechazar('${id}', this)">Rechazar</button>`
     : ''
 
   const btnIncorporar = estado === 'aprobada'
-    ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
+    ? `<button class="btn-primary btn-sm btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
     : ''
 
   tdAcciones.innerHTML = `${btnEditar}${btnAprobar}${btnRechazar}${btnIncorporar}`

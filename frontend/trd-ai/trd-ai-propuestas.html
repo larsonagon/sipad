@@ -14,7 +14,7 @@
 
 /* Página más ancha para esta vista */
 .module-page {
-  max-width: 1300px !important;
+  max-width: 1400px !important;
 }
 
 /* ── Tabla ── */
@@ -46,25 +46,11 @@
   background: #fafafa;
 }
 
-/* ── Columnas fijas ── */
-.col-serie     { width: 160px; min-width: 140px; }
-.col-subserie  { width: 200px; min-width: 160px; }
-.col-cantidad  { width: 60px;  text-align: center; }
-.col-tipos     { min-width: 220px; }
-.col-estado    { width: 100px; text-align: center; }
-.col-acciones  { width: 220px; white-space: nowrap; }
-
 /* ── Serie ── */
 .serie-nombre {
   font-size: 13px;
   font-weight: 700;
   color: #2c3e50;
-  letter-spacing: .2px;
-}
-
-.subserie-texto {
-  font-size: 13px;
-  color: #374151;
 }
 
 /* ── Tipologías como lista ── */
@@ -98,7 +84,6 @@
   border-radius: 14px;
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: .2px;
   white-space: nowrap;
 }
 
@@ -106,77 +91,58 @@
 .estado-aprobada   { background: #d4edda; color: #1e7e34; }
 .estado-rechazada  { background: #f8d7da; color: #842029; }
 
-/* ── Botones acciones — mismo patrón que ICAF ── */
+/* ── Acciones: una sola línea, sin separadores ── */
 .trd-actions {
   display: flex;
   gap: 5px;
   align-items: center;
   flex-wrap: nowrap;
-}
-
-.btn-aprobar {
-  background: #27ae60;
-  color: white;
-  height: 24px;
-  font-size: 12px;
-  padding: 0 10px;
-  border-radius: 6px;
   border: none;
-  cursor: pointer;
-  font-weight: 600;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
 }
-.btn-aprobar:hover { background: #1f8a4d; }
 
-.btn-rechazar {
-  background: #e74c3c;
-  color: white;
-  height: 24px;
+/* ── Tabla ── */
+.trd-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  font-size: 13px;
+}
+
+.trd-table th {
+  text-align: left;
+  padding: 11px 14px;
+  border-bottom: 2px solid #e6e6e6;
+  font-weight: 600;
   font-size: 12px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
+  color: #555;
+  letter-spacing: .2px;
   white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
 }
-.btn-rechazar:hover { background: #c0392b; }
 
+.trd-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
+}
+
+.trd-table tr:hover td {
+  background: #fafafa;
+}
+
+/* ── Columnas fijas ── */
+.col-serie     { width: 150px; min-width: 130px; }
+.col-subserie  { width: 180px; min-width: 160px; }
+.col-cantidad  { width: 50px;  text-align: center; }
+.col-tipos     { min-width: 240px; }
+.col-estado    { width: 100px; text-align: center; }
+.col-acciones  { width: 240px; min-width: 240px; }
+
+/* ── Botón incorporar (único color fuera del sistema) ── */
 .btn-incorporar {
-  background: #7c3aed;
-  color: white;
-  height: 24px;
-  font-size: 12px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
+  background: #7c3aed !important;
+  color: white !important;
 }
-.btn-incorporar:hover { background: #6d28d9; }
-
-.btn-editar {
-  background: #f3f4f6;
-  color: #374151;
-  height: 24px;
-  font-size: 12px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: 1px solid #e5e7eb;
-  cursor: pointer;
-  font-weight: 500;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-}
-.btn-editar:hover { background: #e5e7eb; }
+.btn-incorporar:hover { background: #6d28d9 !important; }
 
 /* ── CTA ── */
 .premium-cta {
