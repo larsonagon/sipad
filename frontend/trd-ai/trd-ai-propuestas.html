@@ -106,33 +106,77 @@
 .estado-aprobada   { background: #d4edda; color: #1e7e34; }
 .estado-rechazada  { background: #f8d7da; color: #842029; }
 
-/* ── Botones acciones ── */
+/* ── Botones acciones — mismo patrón que ICAF ── */
 .trd-actions {
   display: flex;
   gap: 5px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
-.trd-actions button {
-  padding: 5px 11px;
-  border-radius: 6px;
+.btn-aprobar {
+  background: #27ae60;
+  color: white;
+  height: 24px;
   font-size: 12px;
-  font-weight: 600;
+  padding: 0 10px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: all .15s;
+  font-weight: 600;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
-
-.btn-editar     { background: #f3f4f6; color: #374151; }
-.btn-editar:hover { background: #e5e7eb; }
-.btn-aprobar    { background: #27ae60; color: white; }
 .btn-aprobar:hover { background: #1f8a4d; }
-.btn-rechazar   { background: #e74c3c; color: white; }
+
+.btn-rechazar {
+  background: #e74c3c;
+  color: white;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
 .btn-rechazar:hover { background: #c0392b; }
-.btn-incorporar { background: #7c3aed; color: white; }
+
+.btn-incorporar {
+  background: #7c3aed;
+  color: white;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
 .btn-incorporar:hover { background: #6d28d9; }
+
+.btn-editar {
+  background: #f3f4f6;
+  color: #374151;
+  height: 24px;
+  font-size: 12px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-editar:hover { background: #e5e7eb; }
 
 /* ── CTA ── */
 .premium-cta {
