@@ -39,6 +39,11 @@ function configurarCards() {
       window.location.href = '/informes/resumen-dependencias.html'
     })
 
+  document.getElementById('cardProduccion')
+    ?.addEventListener('click', () => {
+      window.location.href = '/informes/produccion.html'
+    })
+
   document.querySelectorAll('.module-card').forEach(card => {
     card.addEventListener('keypress', e => {
       if (e.key === 'Enter') card.click()
