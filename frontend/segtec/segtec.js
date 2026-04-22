@@ -51,6 +51,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // API FETCH
+  // ✅ FIX: Archivista también envía X-Entidad-Id
+  //         para obtener la vista global de la entidad
   // =====================================================
 
   async function apiFetch(url, options = {}) {
@@ -60,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       ...(options.headers || {})
     };
 
-    if (esSuperAdmin) {
+    if (esSuperAdmin || esArchivista) {
       const entidadId =
         sessionStorage.getItem('gestion_entidad_id') ||
         sessionStorage.getItem('entidad_id') ||
@@ -350,11 +352,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // =====================================================
   // MARCO FUNCIONAL
+  // ✅ FIX: Archivista también obtiene vista global
+  //         sin pasar por la validación de dependencia,
+  //         pero SÍ puede crear actividades
   // =====================================================
 
   async function cargarMarcoFuncional() {
 
-    if (esSuperAdmin) {
+    if (esSuperAdmin || esArchivista) {
 
       panelMarco.innerHTML = `
         <div class="card">
