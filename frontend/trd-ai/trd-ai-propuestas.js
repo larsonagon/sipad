@@ -171,7 +171,7 @@ function renderTabla(lista) {
       : '<span style="color:#9ca3af;font-size:12px;">Sin tipologías</span>'
 
     const btnEditar = estado !== 'incorporada'
-      ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
+      ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">Editar</button>`
       : ''
 
     const btnAprobar = estado === 'propuesta'
@@ -222,7 +222,7 @@ function actualizarFila(id, nuevoEstado) {
   const estado = nuevoEstado.toLowerCase()
 
   const btnEditar = estado !== 'incorporada'
-    ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">✏️ Editar</button>`
+    ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">Editar</button>`
     : ''
 
   const btnAprobar = estado === 'propuesta'

@@ -4,7 +4,6 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>TRD-AI – Propuestas</title>
 
 <link rel="stylesheet" href="/css/core/sipad-ui.css">
@@ -12,10 +11,7 @@
 
 <style>
 
-/* Página más ancha para esta vista */
-.module-page {
-  max-width: 1400px !important;
-}
+.module-page { max-width: 1400px !important; }
 
 /* ── Tabla ── */
 .trd-table {
@@ -29,6 +25,8 @@
   text-align: left;
   padding: 11px 14px;
   border-bottom: 2px solid #e6e6e6;
+  border-right: none;
+  border-left: none;
   font-weight: 600;
   font-size: 12px;
   color: #555;
@@ -39,21 +37,25 @@
 .trd-table td {
   padding: 12px 14px;
   border-bottom: 1px solid #f0f0f0;
+  border-right: none;
+  border-left: none;
   vertical-align: top;
 }
 
-.trd-table tr:hover td {
-  background: #fafafa;
-}
+.trd-table tr:hover td { background: #fafafa; }
+
+/* ── Columnas ── */
+.col-serie    { width: 150px; min-width: 130px; }
+.col-subserie { width: 180px; min-width: 160px; }
+.col-cantidad { width: 50px;  text-align: center; }
+.col-tipos    { min-width: 260px; }
+.col-estado   { width: 110px; text-align: center; }
+.col-acciones { width: 230px; min-width: 230px; }
 
 /* ── Serie ── */
-.serie-nombre {
-  font-size: 13px;
-  font-weight: 700;
-  color: #2c3e50;
-}
+.serie-nombre { font-size: 13px; font-weight: 700; color: #2c3e50; }
 
-/* ── Tipologías como lista ── */
+/* ── Tipologías ── */
 .tip-lista {
   list-style: none;
   margin: 0;
@@ -62,14 +64,12 @@
   flex-direction: column;
   gap: 3px;
 }
-
 .tip-lista li {
   font-size: 12px;
   color: #374151;
   padding-left: 10px;
   position: relative;
 }
-
 .tip-lista li::before {
   content: "·";
   position: absolute;
@@ -77,7 +77,7 @@
   color: #9ca3af;
 }
 
-/* ── Chips estado ── */
+/* ── Estado chips ── */
 .estado-chip {
   display: inline-block;
   padding: 3px 10px;
@@ -86,63 +86,21 @@
   font-weight: 600;
   white-space: nowrap;
 }
+.estado-propuesta { background: #f1f3f5; color: #555; }
+.estado-aprobada  { background: #d4edda; color: #1e7e34; }
+.estado-rechazada { background: #f8d7da; color: #842029; }
 
-.estado-propuesta  { background: #f1f3f5; color: #555; }
-.estado-aprobada   { background: #d4edda; color: #1e7e34; }
-.estado-rechazada  { background: #f8d7da; color: #842029; }
-
-/* ── Acciones: una sola línea, sin separadores ── */
+/* ── Acciones ── */
 .trd-actions {
   display: flex;
   gap: 5px;
   align-items: center;
   flex-wrap: nowrap;
-  border: none;
 }
 
-/* ── Tabla ── */
-.trd-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  font-size: 13px;
-}
-
-.trd-table th {
-  text-align: left;
-  padding: 11px 14px;
-  border-bottom: 2px solid #e6e6e6;
-  font-weight: 600;
-  font-size: 12px;
-  color: #555;
-  letter-spacing: .2px;
-  white-space: nowrap;
-}
-
-.trd-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: top;
-}
-
-.trd-table tr:hover td {
-  background: #fafafa;
-}
-
-/* ── Columnas fijas ── */
-.col-serie     { width: 150px; min-width: 130px; }
-.col-subserie  { width: 180px; min-width: 160px; }
-.col-cantidad  { width: 50px;  text-align: center; }
-.col-tipos     { min-width: 240px; }
-.col-estado    { width: 100px; text-align: center; }
-.col-acciones  { width: 240px; min-width: 240px; }
-
-/* ── Botón incorporar (único color fuera del sistema) ── */
-.btn-incorporar {
-  background: #7c3aed !important;
-  color: white !important;
-}
-.btn-incorporar:hover { background: #6d28d9 !important; }
+/* ── Incorporar (único color fuera del sistema) ── */
+.btn-incorporar             { background: #7c3aed !important; color: white !important; }
+.btn-incorporar:hover       { background: #6d28d9 !important; }
 
 /* ── CTA ── */
 .premium-cta {
@@ -152,7 +110,6 @@
 }
 
 </style>
-
 </head>
 
 <body>
@@ -172,8 +129,8 @@
     <div class="module-content">
 
       <div class="premium-cta">
-        <button id="btnGenerarPropuestas" class="btn-primary btn-cta"
-          style="min-width:220px;font-weight:600;height:auto;padding:10px 24px;">
+        <button id="btnGenerarPropuestas" class="btn-primary"
+          style="min-width:220px;font-weight:600;height:auto;padding:10px 24px;font-size:13px;">
           Generar nuevas propuestas
         </button>
       </div>
@@ -184,14 +141,13 @@
             <tr>
               <th class="col-serie">Serie documental</th>
               <th class="col-subserie">Subserie documental</th>
-              <th class="col-cantidad" style="text-align:center;">Act.</th>
+              <th class="col-cantidad">Act.</th>
               <th class="col-tipos">Tipos documentales</th>
-              <th class="col-estado" style="text-align:center;">Estado</th>
+              <th class="col-estado">Estado</th>
               <th class="col-acciones">Acciones</th>
             </tr>
           </thead>
-          <tbody id="tablaPropuestas">
-          </tbody>
+          <tbody id="tablaPropuestas"></tbody>
         </table>
       </div>
 
