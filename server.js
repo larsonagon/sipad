@@ -72,6 +72,7 @@ import configuracionRoutes from './backend/modules/configuracion/configuracion.r
 import auditoriaRoutes from './backend/modules/auditoria/auditoria.routes.js'
 
 import { runTRDMigration } from './backend/modules/trd/trd.migration.js'
+import { runTRDExtendMigration } from './backend/modules/trd/trd.extend.migration.js'
 import { runActividadesMigration } from './backend/modules/actividades/actividades.migration.js'
 
 // ✅ SEGTEC
@@ -83,6 +84,9 @@ import { TRDAIRepository }     from './backend/modules/trd-ai/trd-ai.repository.
 import { TRDAIService }        from './backend/modules/trd-ai/trd-ai.service.js'
 import { TRDAIController }     from './backend/modules/trd-ai/trd-ai.controller.js'
 import { registerTRDAIRoutes } from './backend/modules/trd-ai/trd-ai.routes.js'
+
+// ✅ TRD
+import { registerTRDRoutes } from './backend/modules/trd/trd.routes.js'
 
 // ✅ INFORMES
 import { buildInformesRouter } from './backend/modules/informes/informes.routes.js'
@@ -130,6 +134,7 @@ async function init() {
       await seedConfiguracionDefault(db)
 
       await runTRDMigration(db)
+      await runTRDExtendMigration(db)
       await runActividadesMigration(db)
 
       await runTRDAIMigration(db)
@@ -186,6 +191,9 @@ async function init() {
 
     // ✅ TRD-AI
     registerTRDAIRoutes(app, trdAIController)
+
+    // ✅ TRD
+    registerTRDRoutes(app, db)
 
     // ✅ INFORMES
     app.use('/api/informes', buildInformesRouter(db))
