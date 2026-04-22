@@ -20,7 +20,7 @@
       </div>
 
       <!-- KPIs -->
-      <div id="kpisContainer" style="display:none;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;">
+      <div id="kpisContainer" style="display:none;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:1.5rem;">
         <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
           <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Dependencias</p>
           <p id="kpiDeps" style="margin:0;font-size:24px;font-weight:600;">0</p>
@@ -36,6 +36,10 @@
         <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
           <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Analizadas</p>
           <p id="kpiAnalizadas" style="margin:0;font-size:24px;font-weight:600;color:#059669;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Funcionarios activos</p>
+          <p id="kpiFuncionarios" style="margin:0;font-size:24px;font-weight:600;color:#2563eb;">0</p>
         </div>
       </div>
 
@@ -92,7 +96,8 @@
                 <th>Dependencia</th>
                 <th style="text-align:center;width:80px;">Total</th>
                 <th style="text-align:center;width:90px;">Analizadas</th>
-                <th style="width:180px;">Progreso</th>
+                <th style="text-align:center;width:100px;">Func. activos</th>
+                <th style="width:160px;">Progreso</th>
                 <th style="text-align:center;width:100px;">Estado</th>
               </tr>
             </thead>

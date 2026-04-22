@@ -103,10 +103,11 @@ async function cargarDatos() {
 // =====================================================
 
 function renderKPIs(rows) {
-  document.getElementById('kpiDeps').textContent       = rows.length
-  document.getElementById('kpiConAct').textContent     = rows.filter(r => totalR(r) > 0).length
-  document.getElementById('kpiTotal').textContent      = rows.reduce((s, r) => s + totalR(r), 0)
-  document.getElementById('kpiAnalizadas').textContent = rows.reduce((s, r) => s + analizadasR(r), 0)
+  document.getElementById('kpiDeps').textContent         = rows.length
+  document.getElementById('kpiConAct').textContent       = rows.filter(r => totalR(r) > 0).length
+  document.getElementById('kpiTotal').textContent        = rows.reduce((s, r) => s + totalR(r), 0)
+  document.getElementById('kpiAnalizadas').textContent   = rows.reduce((s, r) => s + analizadasR(r), 0)
+  document.getElementById('kpiFuncionarios').textContent = rows.reduce((s, r) => s + Number(r.funcionarios_activos ?? 0), 0)
 }
 
 // =====================================================
@@ -173,10 +174,10 @@ function renderCharts(rows) {
     completa      : '#4ade80'
   }
 
-  const acum = {}
+  const acum = { borrador: 0, identificada: 0, caracterizada: 0, analizada: 0, completa: 0 }
   rows.forEach(r => {
-    ['borrador', 'identificada', 'caracterizada', 'analizada', 'completa'].forEach(e => {
-      acum[e] = (acum[e] || 0) + (r[e] || r[`total_${e}`] || 0)
+    Object.keys(acum).forEach(e => {
+      acum[e] += Number(r[e] ?? 0)
     })
   })
   const eKeys = Object.keys(acum).filter(k => acum[k] > 0)
@@ -266,6 +267,7 @@ function renderTabla(rows) {
               title="${nombreR(r)}">${nombreR(r)}</td>
           <td style="text-align:center;font-weight:600;">${t}</td>
           <td style="text-align:center;font-weight:600;color:#059669;">${a}</td>
+          <td style="text-align:center;font-weight:600;color:#2563eb;">${Number(r.funcionarios_activos ?? 0)}</td>
           <td>
             <div style="display:flex;align-items:center;gap:8px;">
               <div style="flex:1;height:6px;background:#e5e7eb;border-radius:99px;overflow:hidden;">

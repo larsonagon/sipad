@@ -68,9 +68,23 @@ export default class InformesRepository {
     const sql = `
       SELECT
         COALESCE(d.nombre, du.nombre) AS dependencia,
+
+        -- Total de actividades
         COUNT(a.id) AS total_actividades,
-        COUNT(DISTINCT a.usuario_id) AS total_funcionarios,
+
+        -- Funcionarios que han registrado al menos una actividad
+        COUNT(DISTINCT a.usuario_id) AS funcionarios_activos,
+
+        -- Desglose por estado individual
+        SUM(CASE WHEN a.estado_general = 'borrador'      THEN 1 ELSE 0 END) AS borrador,
+        SUM(CASE WHEN a.estado_general = 'identificada'  THEN 1 ELSE 0 END) AS identificada,
+        SUM(CASE WHEN a.estado_general = 'caracterizada' THEN 1 ELSE 0 END) AS caracterizada,
+        SUM(CASE WHEN a.estado_general = 'analizada'     THEN 1 ELSE 0 END) AS analizada,
+        SUM(CASE WHEN a.estado_general = 'completa'      THEN 1 ELSE 0 END) AS completa,
+
+        -- Campo legacy mantenido por compatibilidad
         SUM(CASE WHEN a.estado_general IN ('analizada','caracterizada') THEN 1 ELSE 0 END) AS actividades_analizadas
+
       FROM segtec_actividades a
       LEFT JOIN usuarios u ON u.id = a.usuario_id
       LEFT JOIN dependencias d ON d.id = a.dependencia_id
