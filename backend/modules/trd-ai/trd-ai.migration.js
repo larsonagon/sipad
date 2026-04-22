@@ -106,5 +106,27 @@ export async function runTRDAIMigration(db) {
     `)
   } catch { /* ignorar */ }
 
+  // =====================================================
+  // ✅ LIMPIEZA: propuestas con tipología simple (no JSON)
+  // Las propuestas antiguas tienen solo una tipología
+  // como string. Se eliminan las que están en estado
+  // 'propuesta' para que el motor las regenere completas.
+  // Las aprobadas/incorporadas se conservan.
+  // =====================================================
+
+  try {
+    await db.exec(`
+      DELETE FROM trd_series_propuestas
+      WHERE estado = 'propuesta'
+      AND (
+        tipologia_documental IS NULL
+        OR tipologia_documental NOT LIKE '[%'
+      )
+    `)
+    console.log('✅ Propuestas antiguas (tipología simple) limpiadas')
+  } catch (err) {
+    console.warn('⚠️ No se pudo limpiar propuestas antiguas:', err.message)
+  }
+
   console.log('✅ TRD-AI migration ejecutada')
 }

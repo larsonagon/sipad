@@ -351,12 +351,53 @@ window.retencion = async function(id) {
 }
 
 // =====================================================
-// ✅ NUEVO: INCORPORAR A TRD OFICIAL
+// MODAL DE CONFIRMACIÓN (reemplaza confirm() nativo)
+// =====================================================
+
+function confirmarAccion(mensaje) {
+  return new Promise((resolve) => {
+
+    const overlay = document.createElement('div')
+    overlay.className = 'modal'
+    overlay.innerHTML = `
+      <div class="modal-content" style="max-width:420px;">
+        <h3 style="margin:0 0 12px;">Confirmar acción</h3>
+        <p style="margin:0 0 20px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="btnCancelarConfirm">Cancelar</button>
+          <button class="btn-primary" id="btnAceptarConfirm">Aceptar</button>
+        </div>
+      </div>
+    `
+
+    document.body.appendChild(overlay)
+
+    document.getElementById('btnAceptarConfirm').addEventListener('click', () => {
+      overlay.remove()
+      resolve(true)
+    })
+
+    document.getElementById('btnCancelarConfirm').addEventListener('click', () => {
+      overlay.remove()
+      resolve(false)
+    })
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) { overlay.remove(); resolve(false) }
+    })
+  })
+}
+
+// =====================================================
+// ✅ INCORPORAR A TRD OFICIAL
 // =====================================================
 
 window.incorporar = async function(id, btn) {
 
-  if (!confirm('¿Incorporar esta serie a la TRD oficial? Se creará la entrada en el módulo TRD.')) return
+  const confirmado = await confirmarAccion(
+    '¿Incorporar esta serie a la TRD oficial? Se creará la entrada en el módulo TRD.'
+  )
+  if (!confirmado) return
 
   if (btn) { btn.disabled = true; btn.textContent = 'Incorporando...' }
 
@@ -372,7 +413,7 @@ window.incorporar = async function(id, btn) {
     if (!json.ok) throw new Error(json.error)
 
     mostrarToast('Serie incorporada a la TRD oficial ✓', 'success')
-    actualizarFila(id, 'incorporada')  // ✅ actualización reactiva en sitio
+    actualizarFila(id, 'incorporada')
 
   } catch (err) {
     console.error(err)

@@ -379,13 +379,34 @@ export const TRDAIRepository = (db) => {
           `, [subserieId, serieId, propuesta.nombre_subserie,
               tiempoGestion, tiempoCentral, disposicion])
 
-          // 5. Tipología
-          if (propuesta.tipologia_documental) {
+      // 5. Tipologías — insertar todas las del array
+      if (propuesta.tipologia_documental) {
+
+        let tipologias = []
+
+        try {
+          const parsed = JSON.parse(propuesta.tipologia_documental)
+          tipologias = Array.isArray(parsed) ? parsed : [parsed]
+        } catch {
+          // formato antiguo: string simple
+          tipologias = [propuesta.tipologia_documental]
+        }
+
+        for (const nombreTip of tipologias) {
+          if (!nombreTip?.trim()) continue
+
+          const tipExistente = await db.get(`
+            SELECT id FROM tipologias WHERE subserie_id = ? AND nombre = ?
+          `, [subserieId, nombreTip.trim()])
+
+          if (!tipExistente) {
             await db.run(`
               INSERT INTO tipologias (id, subserie_id, nombre)
               VALUES (?, ?, ?)
-            `, [randomUUID(), subserieId, propuesta.tipologia_documental])
+            `, [randomUUID(), subserieId, nombreTip.trim()])
           }
+        }
+      }
         }
       }
 
@@ -479,7 +500,9 @@ export const TRDAIRepository = (db) => {
 
         if (!serie) continue
 
-        const tipologiaPrincipal = tipologias.length ? tipologias[0] : null
+        const tipologiaPrincipal = tipologias.length
+          ? JSON.stringify(tipologias)  // ✅ guarda TODAS como JSON array
+          : null
 
         const propuestaID = await createSeriePropuesta({
           actividad_id:          actividad.id,
