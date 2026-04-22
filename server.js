@@ -71,9 +71,11 @@ import configuracionRoutes from './backend/modules/configuracion/configuracion.r
 
 import auditoriaRoutes from './backend/modules/auditoria/auditoria.routes.js'
 
-import { runTRDMigration } from './backend/modules/trd/trd.migration.js'
-import { runTRDExtendMigration } from './backend/modules/trd/trd.extend.migration.js'
 import { runActividadesMigration } from './backend/modules/actividades/actividades.migration.js'
+
+// ✅ TRD — migraciones fuera de isSQLite para correr en PostgreSQL
+import { runTRDMigration }       from './backend/modules/trd/trd.migration.js'
+import { runTRDExtendMigration } from './backend/modules/trd/trd.extend.migration.js'
 
 // ✅ SEGTEC
 import segtecRoutes from './backend/modules/segtec/segtec.routes.js'
@@ -113,7 +115,7 @@ async function init() {
     app.use('/api/auth/login', loginLimiter)
 
     // ==================================================
-    // MIGRACIONES
+    // MIGRACIONES SQLite (solo desarrollo local)
     // ==================================================
 
     if (isSQLite) {
@@ -133,13 +135,17 @@ async function init() {
       await runConfiguracionMigration(db)
       await seedConfiguracionDefault(db)
 
-      await runTRDMigration(db)
-      await runTRDExtendMigration(db)
       await runActividadesMigration(db)
 
-      await runTRDAIMigration(db)
-
     }
+
+    // ==================================================
+    // MIGRACIONES TRD — corren siempre (SQLite + PostgreSQL)
+    // ==================================================
+
+    await runTRDMigration(db)
+    await runTRDExtendMigration(db)
+    await runTRDAIMigration(db)
 
     // ==================================================
     // INSTANCIAR TRD-AI
