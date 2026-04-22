@@ -318,8 +318,8 @@ async function exportarExcel() {
 // =====================================================
 
 function nombreR(r)     { return r.dependencia || r.nombre || r.nombre_dependencia || 'Sin nombre' }
-function totalR(r)      { return r.total || r.total_actividades || r.actividades || 0 }
-function analizadasR(r) { return r.analizadas || r.analizada || r.total_analizada || 0 }
+function totalR(r)      { return Number(r.total ?? r.total_actividades ?? r.actividades ?? 0) }
+function analizadasR(r) { return Number(r.analizadas ?? r.analizada ?? r.total_analizada ?? 0) }
 
 // =====================================================
 // UTILIDADES
