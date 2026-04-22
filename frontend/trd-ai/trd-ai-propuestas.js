@@ -3,405 +3,419 @@ import { renderHeader } from '../components/header.js'
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = sessionStorage.getItem('token')
+  if (!token) { window.location.href = '/'; return }
 
-  if (!token) {
-    window.location.href = '/'
-    return
-  }
-
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-
-  renderHeader({
-    modulo:'TRD-AI',
-    seccion:'Propuestas',
-    usuario:user.nombre || 'Usuario'
-  })
+  renderHeader('TRD-AI', sessionStorage.getItem('gestion_entidad_nombre') || null)
 
   document
     .getElementById('btnGenerarPropuestas')
     ?.addEventListener('click', generarPropuestas)
 
   await cargarPropuestas()
-
 })
 
-
-
 // =====================================================
-// API
+// API FETCH
+// ✅ Fix: solo master admin envía X-Entidad-Id
 // =====================================================
+
+function esMasterAdmin() {
+  const token = sessionStorage.getItem('token')
+  if (!token) return false
+  try {
+    const p = JSON.parse(atob(token.split('.')[1]))
+    return p.es_master_admin === true || p.es_master_admin === 1
+  } catch { return false }
+}
 
 async function apiFetch(url, options = {}) {
 
   const token = sessionStorage.getItem('token')
 
   const headers = {
-    Authorization:`Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     ...(options.headers || {})
   }
 
-  if(options.body){
+  if (esMasterAdmin()) {
+    const eid =
+      sessionStorage.getItem('gestion_entidad_id') ||
+      sessionStorage.getItem('entidad_id') || null
+    if (eid) headers['X-Entidad-Id'] = eid
+  }
+
+  if (options.body) {
     headers['Content-Type'] = 'application/json'
   }
 
-  const resp = await fetch(url,{
-    ...options,
-    headers
-  })
+  const resp = await fetch(url, { ...options, headers })
 
-  if(resp.status === 401){
-
+  if (resp.status === 401) {
     sessionStorage.clear()
     localStorage.clear()
     window.location.href = '/'
     return null
-
   }
 
   return resp
-
 }
-
-
 
 // =====================================================
 // CARGAR PROPUESTAS
 // =====================================================
 
-async function cargarPropuestas(){
+async function cargarPropuestas() {
 
-  try{
+  try {
 
     const resp = await apiFetch('/api/trd-ai/series-propuestas')
+    if (!resp) return
 
-    if(!resp) return
-
-    if(!resp.ok){
-      throw new Error('Error cargando propuestas')
-    }
+    if (!resp.ok) throw new Error('Error cargando propuestas')
 
     const json = await resp.json()
-
-    if(!json.ok){
-      throw new Error(json.error)
-    }
+    if (!json.ok) throw new Error(json.error)
 
     renderTabla(json.data)
 
-  }catch(err){
-
+  } catch (err) {
     console.error(err)
-    mostrarToast('No fue posible cargar las propuestas','error')
-
+    mostrarToast('No fue posible cargar las propuestas', 'error')
   }
-
 }
-
-
 
 // =====================================================
 // UTILIDADES
 // =====================================================
 
-function capitalizar(texto){
-
-  if(!texto) return '-'
-
+function capitalizar(texto) {
+  if (!texto) return '-'
   const limpio = texto.toString().toLowerCase().trim()
-
   return limpio.charAt(0).toUpperCase() + limpio.slice(1)
-
 }
 
-
-
-function estadoChip(estado){
-
+function estadoChip(estado) {
   const e = (estado || '').toLowerCase()
-
-  if(e === 'aprobada')
+  if (e === 'aprobada')
     return `<span class="estado-chip estado-aprobada">Aprobada</span>`
-
-  if(e === 'rechazada')
+  if (e === 'rechazada')
     return `<span class="estado-chip estado-rechazada">Rechazada</span>`
-
+  if (e === 'incorporada')
+    return `<span class="estado-chip" style="background:#dbeafe;color:#1e40af;">Incorporada</span>`
   return `<span class="estado-chip estado-propuesta">Propuesta</span>`
-
 }
-
-
 
 // =====================================================
 // AGRUPAR POR SERIE + SUBSERIE
+// ✅ Fix: el estado del grupo es el del primer id,
+//    pero ahora mostramos una fila por propuesta
+//    individual para que el estado sea exacto
 // =====================================================
 
-function agruparSeries(lista){
+function agruparSeries(lista) {
 
   const mapa = {}
 
   lista.forEach(p => {
 
-    const serie = p.nombre_serie || 'Serie sin nombre'
+    const serie    = p.nombre_serie    || 'Serie sin nombre'
     const subserie = p.nombre_subserie || ''
+    const key      = `${serie}__${subserie}__${p.estado}`
 
-    const key = `${serie}__${subserie}`
-
-    if(!mapa[key]){
-
+    if (!mapa[key]) {
       mapa[key] = {
         serie,
         subserie,
-        estado: p.estado || 'propuesta',
+        estado:   p.estado || 'propuesta',
         cantidad: 0,
-        ids: []
+        ids:      [],
+        id:       p.id  // id representativo para acciones
       }
-
     }
 
     mapa[key].cantidad++
     mapa[key].ids.push(p.id)
-
   })
 
   return Object.values(mapa)
-
 }
-
-
 
 // =====================================================
 // RENDER TABLA
 // =====================================================
 
-function renderTabla(lista){
+function renderTabla(lista) {
 
   const tbody = document.getElementById('tablaPropuestas')
 
-  if(!lista || !lista.length){
-
-    tbody.innerHTML =
-      `<tr>
-        <td colspan="5">No hay propuestas registradas</td>
-      </tr>`
-
+  if (!lista || !lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5">No hay propuestas registradas</td></tr>`
     return
   }
 
   const agrupadas = agruparSeries(lista)
 
-  let html=''
+  tbody.innerHTML = agrupadas.map(p => {
 
-  agrupadas.forEach(p=>{
+    const estado = (p.estado || '').toLowerCase()
+    const idAccion = p.id
 
-    const idAccion = p.ids[0]
+    // Botones según estado
+    const btnAprobar = estado === 'propuesta'
+      ? `<button class="btn-aprobar" onclick="aprobar('${idAccion}', this)">Aprobar</button>`
+      : ''
 
-    html+=`
+    const btnRechazar = estado === 'propuesta'
+      ? `<button class="btn-rechazar" onclick="rechazar('${idAccion}', this)">Rechazar</button>`
+      : ''
 
-<tr>
+    const btnRetencion = (estado === 'propuesta' || estado === 'aprobada')
+      ? `<button class="btn-retencion" onclick="retencion('${idAccion}')">Retención</button>`
+      : ''
 
-<td class="serie-nombre">
-<strong>${p.serie}</strong>
-</td>
+    // ✅ Botón Incorporar — solo para aprobadas
+    const btnIncorporar = estado === 'aprobada'
+      ? `<button class="btn-incorporar" onclick="incorporar('${idAccion}', this)"
+           style="background:#7c3aed;color:white;padding:6px 12px;border-radius:6px;
+                  font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
+           Incorporar a TRD
+         </button>`
+      : ''
 
-<td class="subserie">
-${(p.subserie || '-').replace(/\\n/g,'<br>')}
-</td>
-
-<td>
-${p.cantidad}
-</td>
-
-<td>
-${estadoChip(p.estado)}
-</td>
-
-<td class="trd-actions">
-
-<button
-class="btn-aprobar"
-onclick="aprobar('${idAccion}')">
-Aprobar
-</button>
-
-<button
-class="btn-rechazar"
-onclick="rechazar('${idAccion}')">
-Rechazar
-</button>
-
-<button
-class="btn-retencion"
-onclick="retencion('${idAccion}')">
-Retención
-</button>
-
-</td>
-
-</tr>
-`
-
-  })
-
-  tbody.innerHTML = html
-
+    return `
+      <tr data-id="${idAccion}">
+        <td class="serie-nombre"><strong>${p.serie}</strong></td>
+        <td class="subserie">${(p.subserie || '-').replace(/\\n/g, '<br>')}</td>
+        <td>${p.cantidad}</td>
+        <td class="td-estado">${estadoChip(p.estado)}</td>
+        <td class="trd-actions">
+          ${btnAprobar}
+          ${btnRechazar}
+          ${btnRetencion}
+          ${btnIncorporar}
+        </td>
+      </tr>
+    `
+  }).join('')
 }
 
+// =====================================================
+// ACTUALIZAR FILA EN SITIO
+// ✅ Evita re-render completo de la tabla
+// =====================================================
 
+function actualizarFila(id, nuevoEstado) {
+
+  const fila = document.querySelector(`tr[data-id="${id}"]`)
+  if (!fila) return
+
+  // Actualizar chip
+  const tdEstado = fila.querySelector('.td-estado')
+  if (tdEstado) tdEstado.innerHTML = estadoChip(nuevoEstado)
+
+  // Actualizar botones
+  const tdAcciones = fila.querySelector('.trd-actions')
+  if (!tdAcciones) return
+
+  const estado = nuevoEstado.toLowerCase()
+
+  const btnAprobar = estado === 'propuesta'
+    ? `<button class="btn-aprobar" onclick="aprobar('${id}', this)">Aprobar</button>`
+    : ''
+
+  const btnRechazar = estado === 'propuesta'
+    ? `<button class="btn-rechazar" onclick="rechazar('${id}', this)">Rechazar</button>`
+    : ''
+
+  const btnRetencion = (estado === 'propuesta' || estado === 'aprobada')
+    ? `<button class="btn-retencion" onclick="retencion('${id}')">Retención</button>`
+    : ''
+
+  const btnIncorporar = estado === 'aprobada'
+    ? `<button class="btn-incorporar" onclick="incorporar('${id}', this)"
+         style="background:#7c3aed;color:white;padding:6px 12px;border-radius:6px;
+                font-size:12px;font-weight:600;border:none;cursor:pointer;white-space:nowrap;">
+         Incorporar a TRD
+       </button>`
+    : ''
+
+  tdAcciones.innerHTML = `${btnAprobar}${btnRechazar}${btnRetencion}${btnIncorporar}`
+}
 
 // =====================================================
 // GENERAR PROPUESTAS
 // =====================================================
 
-async function generarPropuestas(){
+async function generarPropuestas() {
 
-  try{
+  try {
 
-    const resp = await apiFetch(
-      '/api/trd-ai/generar-propuestas',
-      { method:'POST' }
-    )
+    const resp = await apiFetch('/api/trd-ai/generar-propuestas', { method: 'POST' })
+    if (!resp) return
 
-    if(!resp) return
-
-    if(!resp.ok){
-      throw new Error('Error ejecutando el motor')
-    }
+    if (!resp.ok) throw new Error('Error ejecutando el motor')
 
     const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
 
-    if(!json.ok){
-      throw new Error(json.error)
-    }
-
-    mostrarToast('Motor TRD-AI ejecutado correctamente','success')
-
+    mostrarToast('Motor TRD-AI ejecutado correctamente', 'success')
     await cargarPropuestas()
 
-  }catch(err){
-
+  } catch (err) {
     console.error(err)
-    mostrarToast('No fue posible ejecutar el motor TRD-AI','error')
-
+    mostrarToast('No fue posible ejecutar el motor TRD-AI', 'error')
   }
-
 }
-
-
 
 // =====================================================
 // ACCIONES
 // =====================================================
 
-window.aprobar = async function(id){
+window.aprobar = async function(id, btn) {
 
-  try{
+  if (btn) { btn.disabled = true; btn.textContent = '...' }
+
+  try {
 
     const resp = await apiFetch(
       `/api/trd-ai/series-propuestas/${id}/aprobar`,
-      { method:'PATCH' }
+      { method: 'PATCH' }
     )
-
-    if(!resp) return
-
-    if(!resp.ok){
-      throw new Error('Error aprobando propuesta')
-    }
+    if (!resp) return
 
     const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
 
-    if(!json.ok){
-      throw new Error(json.error)
-    }
+    mostrarToast('Propuesta aprobada', 'success')
+    actualizarFila(id, 'aprobada')  // ✅ actualización reactiva en sitio
 
-    mostrarToast('Propuesta aprobada','success')
-
-    await cargarPropuestas()
-
-  }catch(err){
-
+  } catch (err) {
     console.error(err)
-    mostrarToast('No fue posible aprobar la propuesta','error')
-
+    mostrarToast('No fue posible aprobar la propuesta', 'error')
+    if (btn) { btn.disabled = false; btn.textContent = 'Aprobar' }
   }
-
 }
 
+window.rechazar = async function(id, btn) {
 
+  if (btn) { btn.disabled = true; btn.textContent = '...' }
 
-window.rechazar = async function(id){
-
-  try{
+  try {
 
     const resp = await apiFetch(
       `/api/trd-ai/series-propuestas/${id}/rechazar`,
-      { method:'PATCH' }
+      { method: 'PATCH' }
     )
-
-    if(!resp) return
-
-    if(!resp.ok){
-      throw new Error('Error rechazando propuesta')
-    }
+    if (!resp) return
 
     const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
 
-    if(!json.ok){
-      throw new Error(json.error)
-    }
+    mostrarToast('Propuesta rechazada', 'warning')
+    actualizarFila(id, 'rechazada')  // ✅ actualización reactiva en sitio
 
-    mostrarToast('Propuesta rechazada','warning')
-
-    await cargarPropuestas()
-
-  }catch(err){
-
+  } catch (err) {
     console.error(err)
-    mostrarToast('No fue posible rechazar la propuesta','error')
-
+    mostrarToast('No fue posible rechazar la propuesta', 'error')
+    if (btn) { btn.disabled = false; btn.textContent = 'Rechazar' }
   }
-
 }
 
+window.retencion = async function(id) {
 
-
-window.retencion = async function(id){
-
-  try{
+  try {
 
     const resp = await apiFetch(
       `/api/trd-ai/series-propuestas/${id}/retencion-automatica`
     )
-
-    if(!resp) return
-
-    if(!resp.ok){
-      throw new Error('Error generando retención')
-    }
+    if (!resp) return
 
     const json = await resp.json()
-
-    if(!json.ok){
-      throw new Error(json.error)
-    }
+    if (!json.ok) throw new Error(json.error)
 
     const regla = json.data || {}
-
-    const gestion = regla.retencion_gestion ?? '-'
-    const central = regla.retencion_central ?? '-'
-    const disposicion = regla.disposicion_final ?? '-'
-    const norma = regla.fundamento_normativo ?? 'No especificado'
+    const gestion    = regla.retencion_gestion  ?? '-'
+    const central    = regla.retencion_central   ?? '-'
+    const disposicion = regla.disposicion_final  ?? '-'
+    const norma      = regla.fundamento_normativo ?? 'No especificado'
 
     mostrarToast(
-`Retención sugerida:
-Gestión: ${gestion} años | Central: ${central} años | Disposición: ${disposicion}`,
-'success'
+      `Retención: Gestión ${gestion} años · Central ${central} años · ${disposicion}`,
+      'success'
     )
 
-  }catch(err){
-
+  } catch (err) {
     console.error(err)
-    mostrarToast('No fue posible generar la retención automática','error')
+    mostrarToast('No fue posible generar la retención automática', 'error')
+  }
+}
 
+// =====================================================
+// ✅ NUEVO: INCORPORAR A TRD OFICIAL
+// =====================================================
+
+window.incorporar = async function(id, btn) {
+
+  if (!confirm('¿Incorporar esta serie a la TRD oficial? Se creará la entrada en el módulo TRD.')) return
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Incorporando...' }
+
+  try {
+
+    const resp = await apiFetch(
+      `/api/trd-ai/series-propuestas/${id}/incorporar`,
+      { method: 'POST' }
+    )
+    if (!resp) return
+
+    const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
+
+    mostrarToast('Serie incorporada a la TRD oficial ✓', 'success')
+    actualizarFila(id, 'incorporada')  // ✅ actualización reactiva en sitio
+
+  } catch (err) {
+    console.error(err)
+    mostrarToast('No fue posible incorporar la serie: ' + err.message, 'error')
+    if (btn) { btn.disabled = false; btn.textContent = 'Incorporar a TRD' }
+  }
+}
+
+// =====================================================
+// TOAST
+// =====================================================
+
+function mostrarToast(mensaje, tipo = 'info') {
+
+  const colores = {
+    success : '#27ae60',
+    error   : '#e74c3c',
+    warning : '#f39c12',
+    info    : '#2c7be5'
   }
 
+  const toast = document.createElement('div')
+
+  toast.textContent = mensaje
+
+  Object.assign(toast.style, {
+    position       : 'fixed',
+    bottom         : '24px',
+    right          : '24px',
+    background     : colores[tipo] || colores.info,
+    color          : 'white',
+    padding        : '12px 20px',
+    borderRadius   : '8px',
+    fontSize       : '13px',
+    fontWeight     : '500',
+    zIndex         : '9999',
+    boxShadow      : '0 4px 12px rgba(0,0,0,0.15)',
+    maxWidth       : '360px',
+    lineHeight     : '1.4',
+    whiteSpace     : 'pre-line'
+  })
+
+  document.body.appendChild(toast)
+
+  setTimeout(() => toast.remove(), 4000)
 }
