@@ -442,20 +442,20 @@ function mostrarToast(mensaje, tipo = 'info') {
 
   Object.assign(toast.style, {
     position       : 'fixed',
-    bottom         : '24px',
+    top            : '50%',
     left           : '50%',
-    transform      : 'translateX(-50%)',
+    transform      : 'translate(-50%, -50%)',
     background     : colores[tipo] || colores.info,
     color          : 'white',
-    padding        : '12px 24px',
-    borderRadius   : '8px',
-    fontSize       : '13px',
+    padding        : '14px 28px',
+    borderRadius   : '10px',
+    fontSize       : '14px',
     fontWeight     : '500',
     zIndex         : '999999',
-    boxShadow      : '0 4px 12px rgba(0,0,0,0.15)',
+    boxShadow      : '0 8px 24px rgba(0,0,0,0.2)',
     maxWidth       : '480px',
     width          : 'max-content',
-    lineHeight     : '1.4',
+    lineHeight     : '1.5',
     whiteSpace     : 'pre-line',
     textAlign      : 'center'
   })
