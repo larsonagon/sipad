@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen por dependencia – SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+    <div class="contenido-documento">
+
+      <div class="module-header centered">
+        <h1>Resumen por dependencia</h1>
+        <p class="module-subtext">Análisis del avance en el registro de actividades por unidad administrativa</p>
+      </div>
+
+      <!-- KPIs -->
+      <div id="kpisContainer" style="display:none;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem;">
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Dependencias</p>
+          <p id="kpiDeps" style="margin:0;font-size:24px;font-weight:600;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Con actividades</p>
+          <p id="kpiConAct" style="margin:0;font-size:24px;font-weight:600;color:#059669;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Total actividades</p>
+          <p id="kpiTotal" style="margin:0;font-size:24px;font-weight:600;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Analizadas</p>
+          <p id="kpiAnalizadas" style="margin:0;font-size:24px;font-weight:600;color:#059669;">0</p>
+        </div>
+      </div>
+
+      <!-- GRÁFICAS -->
+      <div id="chartsContainer" style="display:none;">
+
+        <section class="card" style="margin-bottom:1rem;">
+          <h3 style="margin:0 0 1rem;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+            Actividades registradas por dependencia
+          </h3>
+          <div style="position:relative;height:320px;">
+            <canvas id="chartBarras"></canvas>
+          </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+
+          <section class="card">
+            <h3 style="margin:0 0 1rem;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+              Distribución por estado
+            </h3>
+            <div style="position:relative;height:240px;">
+              <canvas id="chartEstados"></canvas>
+            </div>
+          </section>
+
+          <section class="card">
+            <h3 style="margin:0 0 1rem;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+              Cobertura de dependencias
+            </h3>
+            <div style="position:relative;height:240px;">
+              <canvas id="chartCobertura"></canvas>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+      <!-- TABLA DETALLE -->
+      <section class="card" id="tablaCard" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <h3 style="margin:0;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">
+            Detalle por dependencia
+          </h3>
+          <button class="btn-secondary" id="btnExcel" style="font-size:12px;padding:6px 12px;">
+            Exportar Excel
+          </button>
+        </div>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Dependencia</th>
+                <th style="text-align:center;width:80px;">Total</th>
+                <th style="text-align:center;width:90px;">Analizadas</th>
+                <th style="width:180px;">Progreso</th>
+                <th style="text-align:center;width:100px;">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyDetalle"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- EMPTY -->
+      <section class="card" id="emptyState" style="display:none;text-align:center;padding:3rem 1rem;">
+        <p style="margin:0 0 6px;font-weight:500;">Sin datos disponibles</p>
+        <p style="margin:0;color:var(--text-secondary);font-size:.875rem;">
+          No se encontraron actividades registradas en el sistema.
+        </p>
+      </section>
+
+      <div id="errorMsg"></div>
+
+    </div>
+  </main>
+
+  <script src="/components/password-modal.js"></script>
+  <script type="module" src="/informes/resumen-dependencias.js"></script>
+
+</body>
+</html>

@@ -36,7 +36,7 @@ function configurarCards() {
 
   document.getElementById('cardDependencia')
     ?.addEventListener('click', () => {
-      window.location.href = '/informes/dependencia.html'
+      window.location.href = '/informes/resumen-dependencias.html'
     })
 
   document.querySelectorAll('.module-card').forEach(card => {

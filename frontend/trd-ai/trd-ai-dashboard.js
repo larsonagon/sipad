@@ -24,7 +24,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // ======================================================
 // API FETCH
+// ✅ FIX: X-Entidad-Id solo para master admin
+//         Los demás usan la entidad de su propio token
 // ======================================================
+
+function esMasterAdmin() {
+  const token = sessionStorage.getItem('token')
+  if (!token) return false
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.es_master_admin === true || payload.es_master_admin === 1
+  } catch {
+    return false
+  }
+}
 
 async function apiFetch(url, options = {}) {
 
@@ -36,13 +49,15 @@ async function apiFetch(url, options = {}) {
     ...(options.headers || {})
   }
 
-  const entidadId =
-    sessionStorage.getItem('gestion_entidad_id') ||
-    sessionStorage.getItem('entidad_id') ||
-    null
+  if (esMasterAdmin()) {
+    const entidadId =
+      sessionStorage.getItem('gestion_entidad_id') ||
+      sessionStorage.getItem('entidad_id') ||
+      null
 
-  if (entidadId) {
-    headers['X-Entidad-Id'] = entidadId
+    if (entidadId) {
+      headers['X-Entidad-Id'] = entidadId
+    }
   }
 
   const resp = await fetch(url, {
