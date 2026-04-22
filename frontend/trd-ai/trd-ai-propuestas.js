@@ -277,11 +277,11 @@ window.editarPropuesta = async function(id) {
   const serieActual    = fila.querySelector('.serie-nombre strong')?.textContent || ''
   const subserieActual = fila.querySelector('.subserie')?.textContent?.trim() || ''
 
-  // Extraer tipologías actuales del DOM
-  const tipChips = fila.querySelectorAll('td:nth-child(4) span')
-  const tipActuales = Array.from(tipChips)
-    .map(s => s.textContent.trim())
-    .filter(t => t && t !== 'Sin tipologías')
+  // Extraer tipologías actuales del DOM — ahora son <li> en .tip-lista
+  const tipItems = fila.querySelectorAll('td:nth-child(4) .tip-lista li')
+  const tipActuales = Array.from(tipItems)
+    .map(li => li.textContent.trim())
+    .filter(t => t)
     .join('\n')
 
   const overlay = document.createElement('div')
