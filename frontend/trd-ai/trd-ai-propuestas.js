@@ -359,13 +359,14 @@ function confirmarAccion(mensaje) {
 
     const overlay = document.createElement('div')
     overlay.className = 'modal'
+    overlay.style.cssText = 'z-index:999999 !important; position:fixed !important; inset:0 !important;'
     overlay.innerHTML = `
       <div class="modal-content" style="max-width:420px;">
         <h3 style="margin:0 0 12px;">Confirmar acción</h3>
         <p style="margin:0 0 20px;font-size:14px;color:var(--color-text-muted);">${mensaje}</p>
         <div class="modal-actions">
           <button class="btn-secondary" id="btnCancelarConfirm">Cancelar</button>
-          <button class="btn-primary" id="btnAceptarConfirm">Aceptar</button>
+          <button class="btn-primary" id="btnAceptarConfirm" autofocus>Aceptar</button>
         </div>
       </div>
     `
@@ -442,18 +443,21 @@ function mostrarToast(mensaje, tipo = 'info') {
   Object.assign(toast.style, {
     position       : 'fixed',
     bottom         : '24px',
-    right          : '24px',
+    left           : '50%',
+    transform      : 'translateX(-50%)',
     background     : colores[tipo] || colores.info,
     color          : 'white',
-    padding        : '12px 20px',
+    padding        : '12px 24px',
     borderRadius   : '8px',
     fontSize       : '13px',
     fontWeight     : '500',
-    zIndex         : '9999',
+    zIndex         : '999999',
     boxShadow      : '0 4px 12px rgba(0,0,0,0.15)',
-    maxWidth       : '360px',
+    maxWidth       : '480px',
+    width          : 'max-content',
     lineHeight     : '1.4',
-    whiteSpace     : 'pre-line'
+    whiteSpace     : 'pre-line',
+    textAlign      : 'center'
   })
 
   document.body.appendChild(toast)
