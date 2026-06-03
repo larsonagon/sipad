@@ -13,7 +13,11 @@ export default class InformesRepository {
     return fecha
   }
 
-  async obtenerActividades(filtros = {}) {
+  async obtenerActividades(entidadId, filtros = {}) {
+
+    if (!entidadId) {
+      throw new Error('entidadId requerido')
+    }
 
     let sql = `
       SELECT
@@ -29,10 +33,10 @@ export default class InformesRepository {
       LEFT JOIN usuarios u ON u.id = a.usuario_id
       LEFT JOIN dependencias d ON d.id = a.dependencia_id
       LEFT JOIN dependencias du ON du.id = u.id_dependencia
-      WHERE 1=1
+      WHERE a.entidad_id = ?
     `
 
-    const params = []
+    const params = [entidadId]
 
     if (filtros.funcionario && !isNaN(filtros.funcionario)) {
       sql += ` AND a.usuario_id = ?`
@@ -41,7 +45,14 @@ export default class InformesRepository {
 
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
       const dep = Number(filtros.dependencia)
-      sql += ` AND (a.dependencia_id = ? OR u.id_dependencia = ?)`
+
+      sql += `
+        AND (
+          a.dependencia_id = ?
+          OR u.id_dependencia = ?
+        )
+      `
+
       params.push(dep, dep)
     }
 
@@ -63,40 +74,52 @@ export default class InformesRepository {
     return await this.db.all(sql, params)
   }
 
-  async obtenerResumenPorDependencia() {
+  async obtenerResumenPorDependencia(entidadId) {
+
+    if (!entidadId) {
+      throw new Error('entidadId requerido')
+    }
 
     const sql = `
       SELECT
         COALESCE(d.nombre, du.nombre) AS dependencia,
 
-        -- Total de actividades
         COUNT(a.id) AS total_actividades,
-
-        -- Funcionarios que han registrado al menos una actividad
         COUNT(DISTINCT a.usuario_id) AS funcionarios_activos,
 
-        -- Desglose por estado individual
         SUM(CASE WHEN a.estado_general = 'borrador'      THEN 1 ELSE 0 END) AS borrador,
         SUM(CASE WHEN a.estado_general = 'identificada'  THEN 1 ELSE 0 END) AS identificada,
         SUM(CASE WHEN a.estado_general = 'caracterizada' THEN 1 ELSE 0 END) AS caracterizada,
         SUM(CASE WHEN a.estado_general = 'analizada'     THEN 1 ELSE 0 END) AS analizada,
         SUM(CASE WHEN a.estado_general = 'completa'      THEN 1 ELSE 0 END) AS completa,
 
-        -- Campo legacy mantenido por compatibilidad
-        SUM(CASE WHEN a.estado_general IN ('analizada','caracterizada') THEN 1 ELSE 0 END) AS actividades_analizadas
+        SUM(
+          CASE
+            WHEN a.estado_general IN ('analizada','caracterizada')
+            THEN 1
+            ELSE 0
+          END
+        ) AS actividades_analizadas
 
       FROM segtec_actividades a
       LEFT JOIN usuarios u ON u.id = a.usuario_id
       LEFT JOIN dependencias d ON d.id = a.dependencia_id
       LEFT JOIN dependencias du ON du.id = u.id_dependencia
+
+      WHERE a.entidad_id = ?
+
       GROUP BY COALESCE(d.nombre, du.nombre)
       ORDER BY total_actividades DESC
     `
 
-    return await this.db.all(sql)
+    return await this.db.all(sql, [entidadId])
   }
 
-  async obtenerProduccionDocumental(filtros = {}) {
+  async obtenerProduccionDocumental(entidadId, filtros = {}) {
+
+    if (!entidadId) {
+      throw new Error('entidadId requerido')
+    }
 
     let sql = `
       SELECT
@@ -110,15 +133,24 @@ export default class InformesRepository {
       LEFT JOIN usuarios u ON u.id = a.usuario_id
       LEFT JOIN dependencias d ON d.id = a.dependencia_id
       LEFT JOIN dependencias du ON du.id = u.id_dependencia
-      WHERE a.genera_documentos IS NOT NULL
-      AND a.genera_documentos <> ''
+      WHERE a.entidad_id = ?
+        AND a.genera_documentos IS NOT NULL
+        AND a.genera_documentos <> ''
     `
 
-    const params = []
+    const params = [entidadId]
 
     if (filtros.dependencia && !isNaN(filtros.dependencia)) {
+
       const dep = Number(filtros.dependencia)
-      sql += ` AND (a.dependencia_id = ? OR u.id_dependencia = ?)`
+
+      sql += `
+        AND (
+          a.dependencia_id = ?
+          OR u.id_dependencia = ?
+        )
+      `
+
       params.push(dep, dep)
     }
 
@@ -126,21 +158,42 @@ export default class InformesRepository {
 
     const rows = await this.db.all(sql, params)
 
-    const mapaFormato    = { digital: 'Digital', fisico: 'Físico', ambos: 'Físico y digital' }
-    const mapaVolumen    = { menos_10: 'Menos de 10', entre_10_50: 'Entre 10 y 50', mas_50: 'Más de 50' }
-    const mapaFrecuencia = { diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', eventual: 'Eventual' }
+    const mapaFormato = {
+      digital: 'Digital',
+      fisico: 'Físico',
+      ambos: 'Físico y digital'
+    }
+
+    const mapaVolumen = {
+      menos_10: 'Menos de 10',
+      entre_10_50: 'Entre 10 y 50',
+      mas_50: 'Más de 50'
+    }
+
+    const mapaFrecuencia = {
+      diaria: 'Diaria',
+      semanal: 'Semanal',
+      mensual: 'Mensual',
+      eventual: 'Eventual'
+    }
 
     return rows.map(row => {
-      const docs  = row.documentos_generados || ''
-      const tipos = docs.split(',').map(d => d.trim()).filter(d => d.length > 0)
+
+      const docs = row.documentos_generados || ''
+
+      const tipos = docs
+        .split(',')
+        .map(d => d.trim())
+        .filter(d => d.length > 0)
+
       return {
-        actividad:                row.actividad,
-        dependencia:              row.dependencia,
-        documentos_generados:     tipos.join(', '),
+        actividad: row.actividad,
+        dependencia: row.dependencia,
+        documentos_generados: tipos.join(', '),
         total_tipos_documentales: tipos.length,
-        formato:                  mapaFormato[row.formato_produccion]  || row.formato_produccion,
-        volumen:                  mapaVolumen[row.volumen_documental]   || row.volumen_documental,
-        frecuencia:               mapaFrecuencia[row.frecuencia]        || row.frecuencia
+        formato: mapaFormato[row.formato_produccion] || row.formato_produccion,
+        volumen: mapaVolumen[row.volumen_documental] || row.volumen_documental,
+        frecuencia: mapaFrecuencia[row.frecuencia] || row.frecuencia
       }
     })
   }

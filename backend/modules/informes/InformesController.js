@@ -63,7 +63,9 @@ export default class InformesController {
     try {
 
       const datos =
-        await this.service.obtenerResumenDependencias()
+        await this.service.obtenerResumenDependencias(
+          req.entidad_id
+        )
 
       res.json({
         success: true,
@@ -171,7 +173,10 @@ export default class InformesController {
       const filtros = this.obtenerFiltros(req)
 
       const datos =
-        await this.service.obtenerProduccionDocumental(filtros)
+        await this.service.obtenerProduccionDocumental(
+          req.entidad_id,
+          filtros
+        )
 
       res.json({
         success: true,

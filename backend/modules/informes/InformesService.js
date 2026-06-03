@@ -53,29 +53,33 @@ export default class InformesService {
 
   }
 
+
   // ======================================
   // INFORME 2
   // RESUMEN POR DEPENDENCIA
   // ======================================
 
-  async obtenerResumenDependencias() {
+  async obtenerResumenDependencias(entidadId) {
 
     const resultados =
-      await this.repository.obtenerResumenPorDependencia()
+      await this.repository.obtenerResumenPorDependencia(entidadId)
 
     return resultados
 
   }
+
+  
 
   // ======================================
   // INFORME 3
   // PRODUCCIÓN DOCUMENTAL
   // ======================================
 
-  async obtenerProduccionDocumental(filtros = {}) {
-
-    return await this.repository.obtenerProduccionDocumental(filtros)
-
+  async obtenerProduccionDocumental(entidadId, filtros = {}) {
+    return await this.repository.obtenerProduccionDocumental(
+      entidadId,
+      filtros
+    )
   }
 
 }
