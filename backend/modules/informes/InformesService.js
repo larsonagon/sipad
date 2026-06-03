@@ -12,12 +12,12 @@ export default class InformesService {
   // REGISTRO COMPLETO DE ACTIVIDADES
   // ======================================
 
-  async obtenerInformeActividades(filtros = {}) {
+  async obtenerInformeActividades(entidadId, filtros = {}) {
 
-    const resultados =
-      await this.repository.obtenerActividades(filtros)
-
-    return resultados
+    return await this.repository.obtenerActividades(
+      entidadId,
+      filtros
+    )
 
   }
 
@@ -25,15 +25,15 @@ export default class InformesService {
   // GENERAR WORD
   // ======================================
 
-  async generarInformeWord(filtros = {}) {
+  async generarInformeWord(entidadId, filtros = {}) {
 
     const datos =
-      await this.repository.obtenerActividades(filtros)
+      await this.repository.obtenerActividades(
+        entidadId,
+        filtros
+      )
 
-    const buffer =
-      await generarInformeWord(datos)
-
-    return buffer
+    return await generarInformeWord(datos)
 
   }
 
@@ -41,15 +41,15 @@ export default class InformesService {
   // GENERAR EXCEL
   // ======================================
 
-  async generarInformeExcel(filtros = {}) {
+  async generarInformeExcel(entidadId, filtros = {}) {
 
     const datos =
-      await this.repository.obtenerActividades(filtros)
+      await this.repository.obtenerActividades(
+        entidadId,
+        filtros
+      )
 
-    const buffer =
-      await generarInformeExcel(datos)
-
-    return buffer
+    return await generarInformeExcel(datos)
 
   }
 

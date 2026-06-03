@@ -32,7 +32,10 @@ export default class InformesController {
       const filtros = this.obtenerFiltros(req)
 
       const datos =
-        await this.service.obtenerInformeActividades(filtros)
+      await this.service.obtenerInformeActividades(
+        req.entidad_id,
+        filtros
+      )
 
       res.json({
         success: true,
@@ -58,9 +61,11 @@ export default class InformesController {
   // RESUMEN POR DEPENDENCIA
   // =====================================
 
-  obtenerResumenDependencias = async (req, res) => {
+    obtenerResumenDependencias = async (req, res) => {
 
     try {
+
+      console.log('ENTIDAD INFORME:', req.entidad_id)
 
       const datos =
         await this.service.obtenerResumenDependencias(
@@ -97,7 +102,10 @@ export default class InformesController {
       const filtros = this.obtenerFiltros(req)
 
       const buffer =
-        await this.service.generarInformeWord(filtros)
+      await this.service.generarInformeWord(
+        req.entidad_id,
+        filtros
+      )
 
       res.setHeader(
         "Content-Type",
@@ -135,7 +143,10 @@ export default class InformesController {
       const filtros = this.obtenerFiltros(req)
 
       const buffer =
-        await this.service.generarInformeExcel(filtros)
+      await this.service.generarInformeExcel(
+        req.entidad_id,
+        filtros
+      )
 
       res.setHeader(
         "Content-Type",
