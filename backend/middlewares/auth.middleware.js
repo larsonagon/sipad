@@ -15,8 +15,10 @@ export function verificarJWT(req, res, next) {
   }
 
   // ======================================
-  // TOKEN: header o query param
-  // ✅ FIX: permite ?token= para descargas
+  // TOKEN: solo desde el header Authorization
+  // ⚠️ Ya NO se acepta ?token= en la URL: exponía el JWT en el historial
+  //    del navegador y en los logs. Las descargas (Word/Excel/PDF) usan
+  //    fetch con header Authorization + blob.
   // ======================================
 
   let token = null
@@ -25,8 +27,6 @@ export function verificarJWT(req, res, next) {
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     token = authHeader.split(' ')[1]?.trim()
-  } else if (req.query.token) {
-    token = req.query.token
   }
 
   if (!token) {

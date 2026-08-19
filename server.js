@@ -7,6 +7,10 @@
   const app = express()
   const PORT = process.env.PORT || 3001
 
+  // ✅ Detrás del proxy de Render: permite que express-rate-limit identifique
+  //    la IP real del cliente (X-Forwarded-For) en lugar de la del proxy.
+  app.set('trust proxy', 1)
+
   const __filename = fileURLToPath(import.meta.url)
   const __dirname = path.dirname(__filename)
   const FRONTEND_PATH = path.join(__dirname, 'frontend')
@@ -159,8 +163,10 @@
       // DEBUG REQUESTS
       // ==================================================
 
+      // ✅ Se loguea solo la ruta (req.path), NO el query string, para no
+      //    filtrar tokens u otros datos sensibles a los logs de Render.
       app.use((req, res, next) => {
-        console.log(`➡️ ${req.method} ${req.originalUrl}`)
+        console.log(`➡️ ${req.method} ${req.path}`)
         next()
       })
 
