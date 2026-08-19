@@ -14,13 +14,8 @@ function esMasterAdmin() {
   } catch { return false }
 }
 
-async function apiFetch(url, options = {}) {
-
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    ...(options.headers || {})
-  }
-
+function buildHeaders(extra = {}) {
+  const headers = { Authorization: `Bearer ${token}`, ...extra }
   if (esMasterAdmin()) {
     const eid =
       sessionStorage.getItem('gestion_entidad_id') ||
@@ -28,8 +23,15 @@ async function apiFetch(url, options = {}) {
       null
     if (eid) headers['X-Entidad-Id'] = eid
   }
+  return headers
+}
 
-  const resp = await fetch(url, { ...options, headers })
+async function apiFetch(url, options = {}) {
+
+  const resp = await fetch(url, {
+    ...options,
+    headers: buildHeaders(options.headers || {})
+  })
 
   if (resp.status === 401) {
     sessionStorage.clear()
@@ -72,12 +74,11 @@ async function cargarDatos() {
 
     const json = await resp.json()
 
-    // Normaliza cualquier estructura que devuelva el backend
     const rows =
-      Array.isArray(json)       ? json            :
-      json.data                 ? json.data        :
+      Array.isArray(json)       ? json             :
+      json.data                 ? json.data         :
       json.dependencias         ? json.dependencias :
-      json.resumen              ? json.resumen     : []
+      json.resumen              ? json.resumen      : []
 
     if (!rows.length) {
       document.getElementById('emptyState').style.display = 'block'
@@ -119,7 +120,6 @@ function renderCharts(rows) {
   const sorted = [...rows].sort((a, b) => totalR(b) - totalR(a))
   const labels = sorted.map(r => truncar(nombreR(r), 28))
 
-  // ── Barra horizontal: total vs analizadas ────────
   new Chart(document.getElementById('chartBarras').getContext('2d'), {
     type: 'bar',
     data: {
@@ -165,7 +165,6 @@ function renderCharts(rows) {
     }
   })
 
-  // ── Donut: distribución por estado ───────────────
   const COLORES = {
     borrador      : '#d1d5db',
     identificada  : '#fde68a',
@@ -206,7 +205,6 @@ function renderCharts(rows) {
     }
   })
 
-  // ── Donut: cobertura de dependencias ─────────────
   const conAct = rows.filter(r => totalR(r) > 0).length
   const sinAct = rows.length - conAct
 
@@ -284,6 +282,8 @@ function renderTabla(rows) {
 
 // =====================================================
 // EXPORTAR EXCEL
+// ✅ FIX: antes llamaba a /registro-actividades-excel (informe equivocado).
+//    Ahora usa el endpoint real del resumen por dependencia.
 // =====================================================
 
 async function exportarExcel() {
@@ -293,7 +293,7 @@ async function exportarExcel() {
   btn.textContent = 'Generando...'
 
   try {
-    const resp = await apiFetch('/api/informes/registro-actividades-excel')
+    const resp = await apiFetch('/api/informes/dependencias-excel')
     if (!resp || !resp.ok) throw new Error()
 
     const blob = await resp.blob()
@@ -316,7 +316,6 @@ async function exportarExcel() {
 
 // =====================================================
 // NORMALIZACIÓN FLEXIBLE DE CAMPOS
-// Soporta cualquier nombre que devuelva el backend
 // =====================================================
 
 function nombreR(r)     { return r.dependencia || r.nombre || r.nombre_dependencia || 'Sin nombre' }

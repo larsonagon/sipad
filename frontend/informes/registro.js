@@ -24,15 +24,15 @@ function esMasterAdmin() {
   } catch { return false }
 }
 
-async function apiFetch(url) {
-
+// ======================================================
+// Cabeceras comunes (auth + entidad activa del master)
+// ======================================================
+function buildHeaders(extra = {}) {
   const token = getToken()
-
   const headers = {
     Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json'
+    ...extra
   }
-
   if (esMasterAdmin()) {
     const entidadId =
       sessionStorage.getItem('gestion_entidad_id') ||
@@ -40,8 +40,14 @@ async function apiFetch(url) {
       null
     if (entidadId) headers['X-Entidad-Id'] = entidadId
   }
+  return headers
+}
 
-  const res = await fetch(url, { headers })
+async function apiFetch(url) {
+
+  const res = await fetch(url, {
+    headers: buildHeaders({ 'Content-Type': 'application/json' })
+  })
 
   if (res.status === 401) {
     sessionStorage.clear()
@@ -55,6 +61,46 @@ async function apiFetch(url) {
   }
 
   return res.json()
+}
+
+// ======================================================
+// Descarga de archivos (Word / Excel)
+// ✅ FIX: usa fetch con headers en vez de window.open(?token=)
+//    - No expone el JWT en la URL / historial / logs
+//    - Respeta la entidad activa del master admin (X-Entidad-Id)
+// ======================================================
+async function descargarArchivo(url, nombreArchivo, btn) {
+
+  const textoOriginal = btn ? btn.textContent : null
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando…' }
+
+  try {
+    const res = await fetch(url, { headers: buildHeaders() })
+
+    if (res.status === 401) {
+      sessionStorage.clear()
+      window.location.href = '/'
+      return
+    }
+
+    if (!res.ok) throw new Error(`Error ${res.status}`)
+
+    const blob = await res.blob()
+    const objUrl = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = objUrl
+    a.download = nombreArchivo
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(objUrl), 1500)
+
+  } catch (e) {
+    console.error('Error descargando archivo:', e)
+    alert('No se pudo generar el archivo. Intente nuevamente.')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = textoOriginal }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -188,12 +234,20 @@ function formatFecha(fecha) {
   return new Date(fecha).toLocaleDateString('es-CO')
 }
 
-function exportarWord() {
-  window.open(`/api/informes/registro-actividades-word?${obtenerParams()}&token=${getToken()}`)
+function exportarWord(e) {
+  descargarArchivo(
+    `/api/informes/registro-actividades-word?${obtenerParams()}`,
+    'informe_actividades.docx',
+    e?.currentTarget
+  )
 }
 
-function exportarExcel() {
-  window.open(`/api/informes/registro-actividades-excel?${obtenerParams()}&token=${getToken()}`)
+function exportarExcel(e) {
+  descargarArchivo(
+    `/api/informes/registro-actividades-excel?${obtenerParams()}`,
+    'informe_actividades.xlsx',
+    e?.currentTarget
+  )
 }
 
 function obtenerParams() {

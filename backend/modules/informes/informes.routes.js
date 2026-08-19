@@ -3,7 +3,6 @@ import InformesRepository from './InformesRepository.js'
 import InformesService from './InformesService.js'
 import InformesController from './InformesController.js'
 
-// 🔥 NUEVO (middleware de seguridad)
 import { verificarJWT } from '../../middlewares/auth.middleware.js'
 import { attachPermissions, requireInformes } from '../../middlewares/role.middleware.js'
 
@@ -17,74 +16,37 @@ export function buildInformesRouter(db) {
   const service = new InformesService(repository)
   const controller = new InformesController(service)
 
-  // ======================================
-  // INFORME 1
-  // REGISTRO COMPLETO DE ACTIVIDADES
-  // ======================================
-
-  router.get(
-    '/actividades',
-    verificarJWT,
-    attachPermissions,
-    requireInformes,
-    controller.obtenerActividades
-  )
-
-  router.get(
-    '/registro-actividades-word',
-    verificarJWT,
-    attachPermissions,
-    requireInformes,
-    controller.generarWord
-  )
-
-  router.get(
-    '/registro-actividades-excel',
-    verificarJWT,
-    attachPermissions,
-    requireInformes,
-    controller.generarExcel
-  )
+  // Middlewares comunes a todo el módulo
+  const guard = [verificarJWT, attachPermissions, requireInformes]
 
   // ======================================
-  // INFORME 2
-  // RESUMEN POR DEPENDENCIA
+  // INFORME 1 — REGISTRO COMPLETO DE ACTIVIDADES
   // ======================================
 
-  router.get(
-    '/dependencias',
-    verificarJWT,
-    attachPermissions,
-    requireInformes,
-    controller.obtenerResumenDependencias
-  )
+  router.get('/actividades', ...guard, controller.obtenerActividades)
+  router.get('/registro-actividades-word', ...guard, controller.generarWord)
+  router.get('/registro-actividades-excel', ...guard, controller.generarExcel)
 
   // ======================================
-  // INFORME 3
-  // PRODUCCIÓN DOCUMENTAL
+  // INFORME 2 — RESUMEN POR DEPENDENCIA
   // ======================================
 
-  router.get(
-    '/produccion-documental',
-    verificarJWT,
-    attachPermissions,
-    requireInformes,
-    controller.obtenerProduccionDocumental
-  )
+  router.get('/dependencias', ...guard, controller.obtenerResumenDependencias)
+  router.get('/dependencias-excel', ...guard, controller.generarResumenDependenciasExcel)
+
+  // ======================================
+  // INFORME 3 — PRODUCCIÓN DOCUMENTAL
+  // ======================================
+
+  router.get('/produccion-documental', ...guard, controller.obtenerProduccionDocumental)
 
   // ======================================
   // HEALTHCHECK
   // ======================================
 
   router.get('/health', (req, res) => {
-
-    res.json({
-      modulo: 'informes',
-      estado: 'activo'
-    })
-
+    res.json({ modulo: 'informes', estado: 'activo' })
   })
 
   return router
-
 }
