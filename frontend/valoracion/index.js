@@ -1,4 +1,5 @@
 import { renderHeader } from '../components/header.js'
+import { toast, confirmar, preguntar } from './ui.js'
 
 // ============================================================
 // AUTH / FETCH
@@ -28,6 +29,8 @@ async function api(url, opts = {}) {
 }
 
 const esc = s => (s ?? '').toString().replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]))
+const ESTADO_DIL = { en_proceso:'En proceso', finalizado:'Finalizado' }
+const estadoDilLabel = e => ESTADO_DIL[e] || e || '—'
 
 // ============================================================
 // ESTADO
@@ -90,7 +93,7 @@ async function cargarDiligenciamientos() {
     if (!items.length) { cont.innerHTML = `<p class="muted">Sin diligenciamientos todavía.</p>`; return }
     cont.innerHTML = items.map(d => `
       <div class="lvd-card">
-        <span class="lvd-tag">${esc(d.estado)}</span>
+        <span class="lvd-tag">${estadoDilLabel(d.estado)}</span>
         <h4 style="margin:8px 0 4px;">${esc(d.titulo || 'Sin título')}</h4>
         <p class="muted" style="margin:0 0 12px;">${new Date(d.created_at).toLocaleString('es-CO')}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -118,7 +121,7 @@ async function generarFicha(dilId, btn) {
     // Abrir la ficha borrador ya pre-llenada
     window.location.href = `/valoracion/ficha.html?id=${json.id}`
   } catch (e) {
-    alert('No se pudo generar el borrador: ' + e.message)
+    toast('No se pudo generar el borrador: ' + e.message, 'error')
     btn.disabled = false; btn.textContent = original
   }
 }
@@ -127,7 +130,7 @@ async function generarFicha(dilId, btn) {
 // DILIGENCIAR
 // ============================================================
 async function iniciarDiligenciamiento(plantillaId) {
-  const titulo = prompt('Título para este diligenciamiento (ej. dependencia o fecha):', '')
+  const titulo = await preguntar('Nombre de la subserie o proceso que vas a levantar (p. ej. "Historias de Vehículos"):', '', { titulo:'Nuevo levantamiento', ok:'Empezar' })
   if (titulo === null) return
   try {
     const json = await api('/api/valoracion/diligenciamientos', {
@@ -135,7 +138,7 @@ async function iniciarDiligenciamiento(plantillaId) {
     })
     if (!json) return
     await abrirDiligenciamiento(plantillaId, json.id)
-  } catch (e) { alert('No se pudo iniciar: ' + e.message) }
+  } catch (e) { toast('No se pudo iniciar: ' + e.message, 'error') }
 }
 
 async function abrirDiligenciamiento(plantillaId, dilId) {
@@ -151,7 +154,7 @@ async function abrirDiligenciamiento(plantillaId, dilId) {
     document.getElementById('vistaCatalogo').classList.add('hidden')
     document.getElementById('vistaDiligenciar').classList.remove('hidden')
     window.scrollTo(0, 0)
-  } catch (e) { alert('No se pudo abrir: ' + e.message) }
+  } catch (e) { toast('No se pudo abrir: ' + e.message, 'error') }
 }
 
 function renderInstrumento(plantilla, dil) {
@@ -223,17 +226,18 @@ async function guardarRespuestas() {
       method: 'PUT', body: JSON.stringify({ respuestas: recogerRespuestas() })
     })
     estado.textContent = 'Guardado ✓ ' + new Date().toLocaleTimeString('es-CO')
-  } catch (e) { estado.textContent = 'Error al guardar'; alert(e.message) }
+  } catch (e) { estado.textContent = 'Error al guardar'; toast(e.message, 'error') }
 }
 
 async function finalizar() {
-  if (!confirm('¿Marcar este diligenciamiento como finalizado? Podrás seguir consultándolo.')) return
+  const ok = await confirmar('¿Marcar este diligenciamiento como finalizado? Podrás seguir consultándolo.', { titulo:'Finalizar', ok:'Finalizar' })
+  if (!ok) return
   try {
     await guardarRespuestas()
     await api(`/api/valoracion/diligenciamientos/${diligenciamientoId}/finalizar`, { method: 'POST' })
-    alert('Diligenciamiento finalizado.')
+    toast('Diligenciamiento finalizado.', 'exito')
     mostrarCatalogo()
-  } catch (e) { alert(e.message) }
+  } catch (e) { toast(e.message, 'error') }
 }
 
 // ============================================================
@@ -288,7 +292,7 @@ function agregarCasoUI(caso = null) {
         method: 'POST', body: JSON.stringify(payload)
       })
       estado.textContent = 'Guardado ✓'
-    } catch (e) { estado.textContent = 'Error'; alert(e.message) }
+    } catch (e) { estado.textContent = 'Error'; toast(e.message, 'error') }
   })
 }
 

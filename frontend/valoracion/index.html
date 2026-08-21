@@ -43,13 +43,32 @@
 
       <!-- VISTA CATÁLOGO -->
       <section id="vistaCatalogo">
+
+        <!-- Cómo funciona (3 pasos) -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 1.6rem;">
+          <div style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#0d3f77;">PASO 1 · Responder</div>
+            <p class="muted" style="margin:6px 0 0;">Diligencia el instrumento <b>una sola vez por subserie</b> (con el funcionario). Registra 2-3 expedientes reales como casos.</p>
+          </div>
+          <div style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#0f8a5f;">PASO 2 · Generar ficha</div>
+            <p class="muted" style="margin:6px 0 0;">Pulsa <b>⚙️ Generar ficha</b> en el levantamiento: el sistema propone valores, tiempos y disposición ya justificados.</p>
+          </div>
+          <div style="background:#fff;border:1px solid var(--color-border);border-radius:12px;padding:14px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#b45309;">PASO 3 · Informe</div>
+            <p class="muted" style="margin:6px 0 0;">Ajustas la ficha y descargas el <b>Informe Técnico</b> en Word, listo para la TRD. (En <b>Fichas de valoración →</b>)</p>
+          </div>
+        </div>
+
         <div style="display:flex;align-items:center;justify-content:space-between;">
-          <h3 style="margin:0;">Instrumentos disponibles</h3>
+          <h3 style="margin:0;">1 · Instrumentos (cuestionarios reutilizables)</h3>
           <span id="msgCatalogo" class="muted"></span>
         </div>
+        <p class="muted" style="margin:4px 0 0;">No se crean preguntas por subserie: el mismo instrumento sirve para todas. Elige uno y responde.</p>
         <div id="listaPlantillas" class="lvd-grid"></div>
 
-        <h3 style="margin-top:2rem;">Diligenciamientos recientes</h3>
+        <h3 style="margin-top:2rem;">2 · Levantamientos realizados</h3>
+        <p class="muted" style="margin:4px 0 0;">Cada uno es un levantamiento hecho (uno por subserie). Genera su ficha desde aquí.</p>
         <div id="listaDiligenciamientos" class="lvd-grid"></div>
       </section>
 

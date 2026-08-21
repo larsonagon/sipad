@@ -1,4 +1,5 @@
 import { renderHeader } from '../components/header.js'
+import { toast, confirmar } from './ui.js'
 
 // ================= AUTH / FETCH =================
 const getToken = () => sessionStorage.getItem('token')
@@ -15,6 +16,8 @@ async function api(url,opts={}){
   return r.status===204?null:r.json()
 }
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const ESTADO = { borrador:'Borrador', en_revision:'En revisión', lista:'Lista' }
+const estadoLabel = e => ESTADO[e] || e || '—'
 
 // ================= CATÁLOGO DE VALORES (modelo normativo) =================
 const PRIMARIOS = [
@@ -83,12 +86,11 @@ function selectorReferentes(){
   </div>`
 }
 
-function aplicarReferente(clave){
+async function aplicarReferente(clave){
   const r = refIndex[clave]; if(!r) return
-  if(!confirm(`Aplicar el referente "${r.subserie}"? Reemplazará los campos de la ficha con la línea base (podrás ajustarla).`)) {
-    const sel = document.getElementById('selReferente'); if(sel) sel.value=''
-    return
-  }
+  const ok = await confirmar(`Se reemplazarán los campos de la ficha con la línea base de "${r.subserie}". Podrás ajustarla después.`,
+    { titulo:'Aplicar referente', ok:'Aplicar' })
+  if(!ok){ const sel = document.getElementById('selReferente'); if(sel) sel.value=''; return }
   const campos = ['serie','subserie','unidad_documental','funcion','tipologias','valores_primarios',
     'valores_secundarios','hecho_cierre','reglas_excepcion','tiempo_gestion','tiempo_central',
     'disposicion_final','muestreo_porcentaje','muestreo_metodo','criterios_conservacion','fundamento_normativo']
@@ -109,7 +111,7 @@ async function cargarLista(){
       return `<div class="fv-list-item">
         <div>
           <div style="font-weight:600;">${esc(f.serie||'—')} · ${esc(f.subserie||'(sin subserie)')}</div>
-          <div class="muted">${f.tiempo_gestion??'?'}+${f.tiempo_central??'?'} años · estado: ${esc(f.estado||'')}</div>
+          <div class="muted">${f.tiempo_gestion??'?'}+${f.tiempo_central??'?'} años · ${estadoLabel(f.estado)}</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
           ${f.disposicion_final?`<span class="tag ${d}">${esc(f.disposicion_final)}</span>`:''}
@@ -127,7 +129,7 @@ async function nuevaFicha(){
     const j=await api('/api/valoracion/fichas',{method:'POST',body:JSON.stringify({estado:'borrador'})})
     if(!j)return
     await abrir(j.id)
-  }catch(e){alert('No se pudo crear: '+e.message)}
+  }catch(e){toast('No se pudo crear: '+e.message,'error')}
 }
 async function abrir(id){
   try{
@@ -137,7 +139,7 @@ async function abrir(id){
     document.getElementById('vistaLista').classList.add('hidden')
     document.getElementById('vistaForm').classList.remove('hidden')
     window.scrollTo(0,0)
-  }catch(e){alert(e.message)}
+  }catch(e){toast(e.message,'error')}
 }
 function mostrarLista(){
   document.getElementById('vistaForm').classList.add('hidden')
@@ -210,7 +212,7 @@ function renderForm(){
     <div class="fv-field" style="grid-column:1/3;"><label>Riesgos</label><textarea id="f_riesgos" rows="2" class="form-control">${esc(f.riesgos||'')}</textarea></div>
     <div class="fv-field" style="grid-column:1/3;"><label>Fundamento normativo</label><textarea id="f_fundamento_normativo" rows="2" class="form-control">${esc(f.fundamento_normativo||'')}</textarea></div>
     <div class="fv-field"><label>Estado</label><select id="f_estado" class="form-control">
-      ${['borrador','en_revision','lista'].map(e=>`<option value="${e}" ${(f.estado||'borrador')===e?'selected':''}>${e}</option>`).join('')}</select></div>
+      ${['borrador','en_revision','lista'].map(e=>`<option value="${e}" ${(f.estado||'borrador')===e?'selected':''}>${ESTADO[e]}</option>`).join('')}</select></div>
   </div></div>
 
   <div class="save-bar">
@@ -243,7 +245,7 @@ async function descargarInforme(){
     document.body.appendChild(a); a.click(); a.remove()
     setTimeout(()=>URL.revokeObjectURL(url),1500)
     est.textContent='Informe generado ✓'
-  }catch(e){est.textContent='Error';alert('No se pudo generar el informe: '+e.message)}
+  }catch(e){est.textContent='Error';toast('No se pudo generar el informe: '+e.message,'error')}
   finally{btn.disabled=false}
 }
 
@@ -278,5 +280,5 @@ async function guardar(){
     const j=await api(`/api/valoracion/fichas/${fichaId}`,{method:'PUT',body:JSON.stringify(payload)})
     ficha=j.data||ficha
     est.textContent='Guardado ✓ '+new Date().toLocaleTimeString('es-CO')
-  }catch(e){est.textContent='Error';alert(e.message)}
+  }catch(e){est.textContent='Error';toast(e.message,'error')}
 }
