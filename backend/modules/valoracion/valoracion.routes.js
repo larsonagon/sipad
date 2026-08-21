@@ -42,6 +42,7 @@ export function buildValoracionRouter(db) {
   router.put('/diligenciamientos/:id/respuestas', ...guard, controller.guardarRespuestas)
   router.post('/diligenciamientos/:id/finalizar', ...guard, controller.finalizar)
   router.post('/diligenciamientos/:id/casos', ...guard, controller.agregarCaso)
+  router.post('/diligenciamientos/:id/borrador-ficha', ...guard, soloValoracion, controller.generarBorradorFicha)
 
   // Fichas de valoración (las llena/valida el archivista)
   router.get('/fichas', ...guard, controller.listarFichas)

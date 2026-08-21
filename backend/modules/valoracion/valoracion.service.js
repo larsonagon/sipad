@@ -1,4 +1,5 @@
 // backend/modules/valoracion/valoracion.service.js
+import { generarBorradorDesdeEvidencia } from './valoracion.reglas.js'
 
 export default class ValoracionService {
 
@@ -89,5 +90,22 @@ export default class ValoracionService {
     }
     await this.repository.actualizarFicha(id, entidadId, data || {})
     return this.repository.obtenerFicha(id, entidadId)
+  }
+
+  // -------- Motor de reglas: borrador de ficha desde la evidencia --------
+
+  async generarBorradorFicha(diligenciamientoId, entidadId) {
+    const dil = await this.repository.obtenerDiligenciamiento(diligenciamientoId, entidadId)
+    if (!dil) throw new Error('Diligenciamiento no encontrado para esta entidad')
+
+    const plantilla = await this.repository.obtenerPlantillaCompleta(dil.plantilla_id, entidadId)
+    if (!plantilla) throw new Error('Plantilla no encontrada')
+
+    const borrador = generarBorradorDesdeEvidencia(plantilla, dil)
+    const notas = borrador._notas || []
+    delete borrador._notas
+
+    const id = await this.repository.crearFicha(entidadId, borrador)
+    return { id, notas }
   }
 }

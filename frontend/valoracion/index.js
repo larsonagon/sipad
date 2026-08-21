@@ -93,12 +93,34 @@ async function cargarDiligenciamientos() {
         <span class="lvd-tag">${esc(d.estado)}</span>
         <h4 style="margin:8px 0 4px;">${esc(d.titulo || 'Sin título')}</h4>
         <p class="muted" style="margin:0 0 12px;">${new Date(d.created_at).toLocaleString('es-CO')}</p>
-        <button class="btn-secondary" data-dil="${d.id}" data-plantilla="${d.plantilla_id}">Abrir</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn-secondary" data-dil="${d.id}" data-plantilla="${d.plantilla_id}">Abrir</button>
+          <button class="btn-primary btn-ficha" data-dil="${d.id}" title="Genera un borrador de ficha de valoración a partir de esta evidencia">⚙️ Generar ficha</button>
+        </div>
       </div>
     `).join('')
-    cont.querySelectorAll('button[data-dil]').forEach(b =>
+    cont.querySelectorAll('button[data-dil]:not(.btn-ficha)').forEach(b =>
       b.addEventListener('click', () => abrirDiligenciamiento(b.dataset.plantilla, b.dataset.dil)))
+    cont.querySelectorAll('button.btn-ficha').forEach(b =>
+      b.addEventListener('click', () => generarFicha(b.dataset.dil, b)))
   } catch (e) { console.error(e) }
+}
+
+// ============================================================
+// GENERAR FICHA DESDE EVIDENCIA (motor de reglas)
+// ============================================================
+async function generarFicha(dilId, btn) {
+  const original = btn.textContent
+  btn.disabled = true; btn.textContent = 'Generando…'
+  try {
+    const json = await api(`/api/valoracion/diligenciamientos/${dilId}/borrador-ficha`, { method: 'POST' })
+    if (!json) return
+    // Abrir la ficha borrador ya pre-llenada
+    window.location.href = `/valoracion/ficha.html?id=${json.id}`
+  } catch (e) {
+    alert('No se pudo generar el borrador: ' + e.message)
+    btn.disabled = false; btn.textContent = original
+  }
 }
 
 // ============================================================

@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('btnNueva').addEventListener('click',()=>nuevaFicha())
   document.getElementById('btnVolver').addEventListener('click',mostrarLista)
   await cargarLista()
+  // Abrir directo una ficha si viene ?id= (p. ej. tras generar borrador)
+  const id = new URLSearchParams(location.search).get('id')
+  if (id) abrir(id)
 })
 
 // ================= LISTA =================
@@ -116,7 +119,12 @@ function renderForm(){
   const f=ficha
   const reglas = Array.isArray(f.reglas_excepcion)?f.reglas_excepcion:[]
   const disp = f.disposicion_final||''
-  document.getElementById('form').innerHTML = `
+  const bannerMotor = f.origen === 'motor'
+    ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 14px;margin-bottom:6px;">
+         <b>Borrador generado por el motor</b> a partir de la evidencia del levantamiento.
+         <span class="muted">Revisa y ajusta cada valor; la propuesta cita la evidencia y la norma.</span>
+       </div>` : ''
+  document.getElementById('form').innerHTML = bannerMotor + `
 
   <div class="fv-sec"><h3>Identificación</h3><div class="fv-body fv-grid">
     <div class="fv-field"><label>Serie</label><input id="f_serie" class="form-control" value="${esc(f.serie||'')}"></div>

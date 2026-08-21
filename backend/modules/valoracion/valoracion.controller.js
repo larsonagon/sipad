@@ -159,4 +159,16 @@ export default class ValoracionController {
       res.status(400).json({ success: false, message: e.message || 'Error actualizando ficha' })
     }
   }
+
+  // POST /api/valoracion/diligenciamientos/:id/borrador-ficha
+  // Genera una ficha borrador desde la evidencia (motor de reglas)
+  generarBorradorFicha = async (req, res) => {
+    try {
+      const out = await this.service.generarBorradorFicha(req.params.id, req.entidad_id)
+      res.status(201).json({ success: true, ...out })
+    } catch (e) {
+      console.error('Error generar borrador ficha:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error generando borrador' })
+    }
+  }
 }
