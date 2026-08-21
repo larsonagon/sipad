@@ -17,6 +17,17 @@ export default class ValoracionController {
     }
   }
 
+  // GET /api/valoracion/referentes
+  listarReferentes = async (req, res) => {
+    try {
+      const data = this.service.listarReferentes()
+      res.json({ success: true, data })
+    } catch (e) {
+      console.error('Error listar referentes:', e)
+      res.status(500).json({ success: false, message: 'Error cargando referentes' })
+    }
+  }
+
   // GET /api/valoracion/plantillas/:id
   obtenerPlantilla = async (req, res) => {
     try {

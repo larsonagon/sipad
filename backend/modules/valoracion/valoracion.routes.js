@@ -30,6 +30,9 @@ export function buildValoracionRouter(db) {
 
   const guard = [verificarJWT, attachPermissions]
 
+  // Referentes por sector (línea base de valoración)
+  router.get('/referentes', ...guard, controller.listarReferentes)
+
   // Plantillas (catálogo de instrumentos por entidad)
   router.get('/plantillas', ...guard, controller.listarPlantillas)
   router.get('/plantillas/:id', ...guard, controller.obtenerPlantilla)

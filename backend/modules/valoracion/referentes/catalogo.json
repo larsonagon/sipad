@@ -1,0 +1,256 @@
+{
+  "_nota": "Referentes ORIENTATIVOS por sector, como línea base para la valoración. NO reemplazan el análisis del archivista ni la validación cuantitativa del fondo local. Ajuste tiempos, valores y disposición a la realidad de su entidad y a la normatividad vigente.",
+  "sectores": [
+    {
+      "sector": "Tránsito y transporte",
+      "referentes": [
+        {
+          "clave": "historias-vehiculos",
+          "serie": "HISTORIAS", "subserie": "HISTORIAS DE VEHÍCULOS",
+          "unidad_documental": "Expediente individual por vehículo",
+          "funcion": "Registro y control del parque automotor",
+          "tipologias": "Formulario Único Nacional (FUN), factura de venta, contrato de prenda, cartas de pignoración/despignoración, actos de cancelación de matrícula, certificado de libertad y tradición, oficios de medidas cautelares y levantamientos.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Se consulta para nuevos trámites del vehículo"},
+            {"clave":"legal","nivel":"alto","sustento":"Requerido como prueba por autoridades judiciales y de control"},
+            {"clave":"juridico","nivel":"alto","sustento":"Documenta propiedad, tradición y situación registral"},
+            {"clave":"contable","nivel":"na","sustento":""},
+            {"clave":"fiscal","nivel":"na","sustento":""},
+            {"clave":"tecnico","nivel":"na","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"selectivo","sustento":"Expedientes excepcionales (falsedad, hurto, decisiones relevantes)"},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"medio","sustento":"Documentos únicos no recuperables de RUNT/SIMIT"}
+          ],
+          "hecho_cierre": "Cancelación definitiva de matrícula debidamente acreditada",
+          "reglas_excepcion": ["Expediente activo","Actuaciones pendientes","Estado registral desconocido"],
+          "tiempo_gestion": 3, "tiempo_central": 10,
+          "disposicion_final": "S", "muestreo_porcentaje": 10,
+          "muestreo_metodo": "estratificado sistemático + criterios cualitativos",
+          "criterios_conservacion": "Conservar permanentemente expedientes con falsedad, hurto/recuperación, conflictos de propiedad, decisiones excepcionales o valor testimonial.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 769 de 2002; Acuerdo AGN 004 de 2019; Acuerdo AGN 001 de 2024",
+          "nota": "La antigüedad no equivale a pérdida de valor: un vehículo activo puede requerir su historia. Validar contra muestra física local."
+        },
+        {
+          "clave": "procesos-contravencionales",
+          "serie": "PROCESOS", "subserie": "PROCESOS CONTRAVENCIONALES DE TRÁNSITO",
+          "unidad_documental": "Expediente del proceso contravencional",
+          "funcion": "Trámite sancionatorio por infracciones de tránsito",
+          "tipologias": "Orden de comparendo, informe del agente, citación, acta de audiencia, pruebas, resolución que decide, recursos y su resolución, constancia de ejecutoria.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"medio","sustento":"Uso durante el trámite y el cobro"},
+            {"clave":"legal","nivel":"alto","sustento":"Prueba de un proceso sancionatorio con recursos"},
+            {"clave":"juridico","nivel":"alto","sustento":"Afecta derechos del sancionado; sujeto a control jurisdiccional"},
+            {"clave":"contable","nivel":"medio","sustento":"Asociado al recaudo de la multa"},
+            {"clave":"fiscal","nivel":"bajo","sustento":""},
+            {"clave":"tecnico","nivel":"na","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"bajo","sustento":""},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Ejecutoria de la decisión (o pago total de la multa)",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 2, "tiempo_central": 8,
+          "disposicion_final": "S", "muestreo_porcentaje": 10,
+          "muestreo_metodo": "sistemático + casos con recursos o decisiones relevantes",
+          "criterios_conservacion": "Conservar procesos con decisiones judiciales relevantes o precedentes.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 769 de 2002; Acuerdo AGN 004 de 2019",
+          "nota": "Separar del comparendo simple pagado, que suele tener menor complejidad documental."
+        },
+        {
+          "clave": "licencias-conduccion",
+          "serie": "HISTORIAS", "subserie": "HISTORIAS DE CONDUCTORES / LICENCIAS DE CONDUCCIÓN",
+          "unidad_documental": "Expediente por conductor",
+          "funcion": "Expedición y control de licencias de conducción",
+          "tipologias": "Solicitud, exámenes médicos, certificados de aptitud, licencia, renovaciones, suspensiones.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Renovaciones y verificaciones recurrentes"},
+            {"clave":"legal","nivel":"alto","sustento":"Prueba de aptitud y de sanciones/suspensiones"},
+            {"clave":"juridico","nivel":"medio","sustento":"Afecta el derecho a conducir"},
+            {"clave":"contable","nivel":"na","sustento":""},
+            {"clave":"fiscal","nivel":"na","sustento":""},
+            {"clave":"tecnico","nivel":"bajo","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"bajo","sustento":""},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Cancelación de la licencia o inactividad registral verificada",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 3, "tiempo_central": 10,
+          "disposicion_final": "S", "muestreo_porcentaje": 10,
+          "muestreo_metodo": "estratificado sistemático",
+          "criterios_conservacion": "Conservar casos con sanciones o litigios relevantes.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 769 de 2002; Acuerdo AGN 004 de 2019",
+          "nota": "Contiene datos sensibles de salud; aplicar reserva."
+        }
+      ]
+    },
+    {
+      "sector": "Salud",
+      "referentes": [
+        {
+          "clave": "historias-clinicas",
+          "serie": "HISTORIAS", "subserie": "HISTORIAS CLÍNICAS",
+          "unidad_documental": "Historia clínica por paciente",
+          "funcion": "Atención en salud",
+          "tipologias": "Registros de atención, epicrisis, resultados de exámenes, consentimientos informados, notas médicas y de enfermería.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Continuidad de la atención"},
+            {"clave":"legal","nivel":"alto","sustento":"Prueba en responsabilidad médica y reclamaciones"},
+            {"clave":"juridico","nivel":"alto","sustento":"Derechos del paciente"},
+            {"clave":"contable","nivel":"bajo","sustento":""},
+            {"clave":"fiscal","nivel":"na","sustento":""},
+            {"clave":"tecnico","nivel":"medio","sustento":"Información clínica"}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"selectivo","sustento":"Casos de relevancia epidemiológica o institucional"},
+            {"clave":"cientifico","nivel":"medio","sustento":"Investigación en salud"},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Última atención registrada al paciente",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 5, "tiempo_central": 10,
+          "disposicion_final": "S", "muestreo_porcentaje": 10,
+          "muestreo_metodo": "cualitativo (casos relevantes) + estadístico",
+          "criterios_conservacion": "Conservar historias de valor científico, epidemiológico o de casos hito.",
+          "fundamento_normativo": "Ley 594 de 2000; Resolución 839 de 2017; Resolución 1995 de 1999; Acuerdo AGN 004 de 2019",
+          "nota": "Retención mínima de 15 años desde la última atención (Res. 839 de 2017). Información reservada."
+        },
+        {
+          "clave": "historias-laborales-salud",
+          "serie": "HISTORIAS", "subserie": "HISTORIAS LABORALES",
+          "unidad_documental": "Historia laboral por servidor",
+          "funcion": "Administración del talento humano",
+          "tipologias": "Hoja de vida, actos de nombramiento, novedades, evaluaciones, retiro.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Gestión del personal"},
+            {"clave":"legal","nivel":"alto","sustento":"Prueba laboral y pensional"},
+            {"clave":"juridico","nivel":"alto","sustento":"Derechos laborales y pensionales"},
+            {"clave":"contable","nivel":"medio","sustento":"Soporte de pagos"},
+            {"clave":"fiscal","nivel":"bajo","sustento":""},
+            {"clave":"tecnico","nivel":"na","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"medio","sustento":"Memoria institucional del personal"},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"medio","sustento":"Testimonio de la trayectoria de servidores"}
+          ],
+          "hecho_cierre": "Retiro definitivo del servidor",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 2, "tiempo_central": 80,
+          "disposicion_final": "CT",
+          "criterios_conservacion": "Conservación por su valor probatorio pensional y testimonial.",
+          "fundamento_normativo": "Ley 594 de 2000; Circular AGN sobre historias laborales; Acuerdo AGN 004 de 2019",
+          "nota": "Suelen requerir retención muy larga por derechos pensionales; validar política institucional."
+        }
+      ]
+    },
+    {
+      "sector": "Administración municipal (alcaldías / institutos)",
+      "referentes": [
+        {
+          "clave": "contratos",
+          "serie": "CONTRATOS", "subserie": "CONTRATOS",
+          "unidad_documental": "Expediente contractual",
+          "funcion": "Gestión contractual",
+          "tipologias": "Estudios previos, pliegos, propuesta, contrato, actas, pagos, liquidación, garantías.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Ejecución y seguimiento"},
+            {"clave":"legal","nivel":"alto","sustento":"Prueba en controversias contractuales"},
+            {"clave":"juridico","nivel":"alto","sustento":"Obligaciones y derechos de las partes"},
+            {"clave":"contable","nivel":"alto","sustento":"Soporte de pagos y ejecución presupuestal"},
+            {"clave":"fiscal","nivel":"alto","sustento":"Control fiscal de recursos públicos"},
+            {"clave":"tecnico","nivel":"medio","sustento":"Según el objeto"}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"selectivo","sustento":"Obras o contratos de impacto"},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Liquidación del contrato",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 2, "tiempo_central": 20,
+          "disposicion_final": "S", "muestreo_porcentaje": 10,
+          "muestreo_metodo": "cualitativo (contratos representativos) + estadístico",
+          "criterios_conservacion": "Conservar contratos de obra de impacto, hitos institucionales o litigios relevantes.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 80 de 1993; Acuerdo AGN 004 de 2019",
+          "nota": "Los tiempos suelen contarse desde la liquidación; verificar garantías y procesos pendientes."
+        },
+        {
+          "clave": "pqrs",
+          "serie": "PQRS", "subserie": "PETICIONES, QUEJAS, RECLAMOS Y SUGERENCIAS",
+          "unidad_documental": "Expediente de PQRS",
+          "funcion": "Atención al ciudadano",
+          "tipologias": "Petición, soportes, respuesta, constancia de notificación.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"medio","sustento":"Seguimiento a la atención"},
+            {"clave":"legal","nivel":"medio","sustento":"Prueba del derecho de petición"},
+            {"clave":"juridico","nivel":"medio","sustento":"Cumplimiento de términos legales"},
+            {"clave":"contable","nivel":"na","sustento":""},
+            {"clave":"fiscal","nivel":"na","sustento":""},
+            {"clave":"tecnico","nivel":"na","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"bajo","sustento":""},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Respuesta definitiva notificada",
+          "reglas_excepcion": [],
+          "tiempo_gestion": 2, "tiempo_central": 8,
+          "disposicion_final": "S", "muestreo_porcentaje": 5,
+          "muestreo_metodo": "estadístico",
+          "criterios_conservacion": "Conservar PQRS que originaron cambios de política o litigios.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 1755 de 2015; Acuerdo AGN 004 de 2019",
+          "nota": "Alto volumen y repetitividad; buen candidato a selección."
+        }
+      ]
+    },
+    {
+      "sector": "Servicios públicos",
+      "referentes": [
+        {
+          "clave": "usuarios-servicios",
+          "serie": "HISTORIAS", "subserie": "HISTORIAS DE USUARIOS DEL SERVICIO",
+          "unidad_documental": "Expediente por usuario/matrícula del servicio",
+          "funcion": "Gestión comercial del servicio público",
+          "tipologias": "Solicitud de conexión, contrato de servicios, facturación, reclamaciones, suspensiones/reconexiones.",
+          "valores_primarios": [
+            {"clave":"administrativo","nivel":"alto","sustento":"Gestión comercial vigente"},
+            {"clave":"legal","nivel":"medio","sustento":"Prueba en reclamaciones"},
+            {"clave":"juridico","nivel":"medio","sustento":"Relación contractual con el usuario"},
+            {"clave":"contable","nivel":"alto","sustento":"Facturación y recaudo"},
+            {"clave":"fiscal","nivel":"medio","sustento":""},
+            {"clave":"tecnico","nivel":"bajo","sustento":""}
+          ],
+          "valores_secundarios": [
+            {"clave":"historico","nivel":"bajo","sustento":""},
+            {"clave":"cientifico","nivel":"bajo","sustento":""},
+            {"clave":"cultural","nivel":"bajo","sustento":""},
+            {"clave":"patrimonial","nivel":"bajo","sustento":""}
+          ],
+          "hecho_cierre": "Terminación del contrato de servicios / retiro del usuario",
+          "reglas_excepcion": ["Actuaciones pendientes"],
+          "tiempo_gestion": 3, "tiempo_central": 10,
+          "disposicion_final": "S", "muestreo_porcentaje": 5,
+          "muestreo_metodo": "estadístico",
+          "criterios_conservacion": "Conservar casos con litigios o decisiones relevantes.",
+          "fundamento_normativo": "Ley 594 de 2000; Ley 142 de 1994; Acuerdo AGN 004 de 2019",
+          "nota": "Alto volumen; verificar retención contable/tributaria mínima."
+        }
+      ]
+    }
+  ]
+}

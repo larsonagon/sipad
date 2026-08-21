@@ -45,17 +45,58 @@ const METODOS = ['por ejemplares','cualitativo / selectivo','sistemático / cuan
 // ================= ESTADO =================
 let fichaId = null
 let ficha = {}
+let referentes = null      // catálogo por sector
+let refIndex = {}          // clave -> referente
 
 document.addEventListener('DOMContentLoaded', async ()=>{
   if(!getToken()){location.href='/';return}
   renderHeader('Valoración')
   document.getElementById('btnNueva').addEventListener('click',()=>nuevaFicha())
   document.getElementById('btnVolver').addEventListener('click',mostrarLista)
+  await cargarReferentes()
   await cargarLista()
   // Abrir directo una ficha si viene ?id= (p. ej. tras generar borrador)
   const id = new URLSearchParams(location.search).get('id')
   if (id) abrir(id)
 })
+
+// ================= REFERENTES =================
+async function cargarReferentes(){
+  try{
+    const j = await api('/api/valoracion/referentes'); if(!j) return
+    referentes = j.data?.sectores || []
+    refIndex = {}
+    referentes.forEach(s => (s.referentes||[]).forEach(r => { refIndex[r.clave] = r }))
+  }catch(e){ console.error('Referentes:', e); referentes = [] }
+}
+
+function selectorReferentes(){
+  if(!referentes || !referentes.length) return ''
+  const opts = referentes.map(s =>
+    `<optgroup label="${esc(s.sector)}">` +
+    (s.referentes||[]).map(r => `<option value="${esc(r.clave)}">${esc(r.subserie)}</option>`).join('') +
+    `</optgroup>`).join('')
+  return `<div style="background:#f9fafb;border:1px solid var(--color-border);border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <b style="font-size:13px;">Aplicar referente (línea base):</b>
+    <select id="selReferente" class="form-control" style="max-width:420px;"><option value="">— elige una subserie de referencia —</option>${opts}</select>
+    <span class="muted">Pre-llena la ficha; luego ajusta a tu entidad.</span>
+  </div>`
+}
+
+function aplicarReferente(clave){
+  const r = refIndex[clave]; if(!r) return
+  if(!confirm(`Aplicar el referente "${r.subserie}"? Reemplazará los campos de la ficha con la línea base (podrás ajustarla).`)) {
+    const sel = document.getElementById('selReferente'); if(sel) sel.value=''
+    return
+  }
+  const campos = ['serie','subserie','unidad_documental','funcion','tipologias','valores_primarios',
+    'valores_secundarios','hecho_cierre','reglas_excepcion','tiempo_gestion','tiempo_central',
+    'disposicion_final','muestreo_porcentaje','muestreo_metodo','criterios_conservacion','fundamento_normativo']
+  campos.forEach(k => { if(r[k] !== undefined) ficha[k] = r[k] })
+  ficha.disposicion_justificacion = ficha.disposicion_justificacion ||
+    (r.nota ? `Referente aplicado: ${r.nota}` : '')
+  renderForm()
+}
 
 // ================= LISTA =================
 async function cargarLista(){
@@ -124,7 +165,7 @@ function renderForm(){
          <b>Borrador generado por el motor</b> a partir de la evidencia del levantamiento.
          <span class="muted">Revisa y ajusta cada valor; la propuesta cita la evidencia y la norma.</span>
        </div>` : ''
-  document.getElementById('form').innerHTML = bannerMotor + `
+  document.getElementById('form').innerHTML = bannerMotor + selectorReferentes() + `
 
   <div class="fv-sec"><h3>Identificación</h3><div class="fv-body fv-grid">
     <div class="fv-field"><label>Serie</label><input id="f_serie" class="form-control" value="${esc(f.serie||'')}"></div>
@@ -183,6 +224,7 @@ function renderForm(){
   }))
   document.getElementById('btnGuardar').addEventListener('click',guardar)
   document.getElementById('btnInforme').addEventListener('click',descargarInforme)
+  document.getElementById('selReferente')?.addEventListener('change', e => aplicarReferente(e.target.value))
 }
 
 async function descargarInforme(){

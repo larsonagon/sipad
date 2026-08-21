@@ -1,6 +1,7 @@
 // backend/modules/valoracion/valoracion.service.js
 import { generarBorradorDesdeEvidencia } from './valoracion.reglas.js'
 import { generarInformeValoracion } from './valoracion.informe.js'
+import { cargarReferentes } from './valoracion.referentes.js'
 
 export default class ValoracionService {
 
@@ -10,6 +11,11 @@ export default class ValoracionService {
 
   listarPlantillas(entidadId, opts) {
     return this.repository.listarPlantillas(entidadId, opts)
+  }
+
+  // Catálogo de referentes por sector (línea base de valoración)
+  listarReferentes() {
+    return cargarReferentes()
   }
 
   obtenerPlantilla(plantillaId, entidadId) {
