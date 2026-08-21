@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Valoración documental – SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <style>
+    .lvd-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; margin-top:1rem; }
+    .lvd-card { border:1px solid var(--border,#e5e7eb); border-radius:10px; padding:1rem; background:var(--bg-card,#fff); }
+    .lvd-tag { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:#EEF2FF; color:#3730A3; }
+    .lvd-tag.val { background:#ECFDF5; color:#065F46; }
+    .lvd-seccion { border:1px solid var(--border,#e5e7eb); border-radius:10px; margin-top:1rem; overflow:hidden; }
+    .lvd-seccion-head { background:var(--bg-secondary,#f9fafb); padding:12px 16px; }
+    .lvd-seccion-head h3 { margin:0; font-size:15px; }
+    .lvd-seccion-head p { margin:4px 0 0; font-size:12px; color:var(--text-secondary,#6b7280); }
+    .lvd-preg { padding:14px 16px; border-top:1px solid var(--border,#f0f0f0); }
+    .lvd-preg label { display:block; font-weight:600; font-size:14px; margin-bottom:4px; }
+    .lvd-preg .ayuda { font-size:12px; color:var(--text-secondary,#6b7280); margin:0 0 8px; }
+    .lvd-preg textarea, .lvd-preg input[type=text] { width:100%; box-sizing:border-box; }
+    .lvd-cod { color:#6366F1; font-weight:700; margin-right:6px; }
+    .req { color:#dc2626; }
+    .lvd-doc-row { display:flex; gap:8px; margin-bottom:6px; }
+    .lvd-doc-row input { flex:1; }
+    .muted { color:var(--text-secondary,#6b7280); font-size:13px; }
+    .hidden { display:none; }
+    .save-bar { position:sticky; bottom:0; background:var(--bg-card,#fff); border-top:1px solid var(--border,#e5e7eb); padding:12px 0; display:flex; gap:8px; justify-content:flex-end; }
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+
+  <main class="module-page">
+    <div class="contenido-documento">
+
+      <div class="module-header centered">
+        <h1>Valoración documental</h1>
+        <p class="module-subtext">Instrumentos de levantamiento y valoración por entidad y subserie</p>
+      </div>
+
+      <!-- VISTA CATÁLOGO -->
+      <section id="vistaCatalogo">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h3 style="margin:0;">Instrumentos disponibles</h3>
+          <span id="msgCatalogo" class="muted"></span>
+        </div>
+        <div id="listaPlantillas" class="lvd-grid"></div>
+
+        <h3 style="margin-top:2rem;">Diligenciamientos recientes</h3>
+        <div id="listaDiligenciamientos" class="lvd-grid"></div>
+      </section>
+
+      <!-- VISTA DILIGENCIAR -->
+      <section id="vistaDiligenciar" class="hidden">
+        <button class="btn-secondary" id="btnVolver" style="margin-bottom:1rem;">← Volver al catálogo</button>
+        <div class="card">
+          <h2 id="tituloInstrumento" style="margin:0 0 4px;"></h2>
+          <p id="descInstrumento" class="muted" style="margin:0;"></p>
+        </div>
+
+        <div id="secciones"></div>
+
+        <!-- CASOS -->
+        <div class="lvd-seccion" style="margin-top:1.5rem;">
+          <div class="lvd-seccion-head">
+            <h3>Expedientes reales anonimizados (casos)</h3>
+            <p>Registra los ejemplos reales y la lista ordenada de documentos de cada expediente.</p>
+          </div>
+          <div id="casos" style="padding:14px 16px;"></div>
+          <div style="padding:0 16px 14px;">
+            <button class="btn-secondary" id="btnAgregarCaso">+ Agregar caso</button>
+          </div>
+        </div>
+
+        <div class="save-bar">
+          <span id="estadoGuardado" class="muted"></span>
+          <button class="btn-secondary" id="btnFinalizar">Marcar como finalizado</button>
+          <button class="btn-primary" id="btnGuardar">Guardar respuestas</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script type="module" src="/valoracion/index.js"></script>
+  <script src="/components/password-modal.js"></script>
+</body>
+</html>

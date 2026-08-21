@@ -97,6 +97,10 @@
   // ✅ INFORMES
   import { buildInformesRouter } from './backend/modules/informes/informes.routes.js'
 
+  // ✅ VALORACIÓN (motor de levantamiento y valoración documental)
+  import { runValoracionMigration } from './backend/modules/valoracion/valoracion.migration.js'
+  import { buildValoracionRouter } from './backend/modules/valoracion/valoracion.routes.js'
+
   // ==========================================================
   // INIT
   // ==========================================================
@@ -150,6 +154,13 @@
       await runTRDMigration(db)
       await runTRDExtendMigration(db)
       await runTRDAIMigration(db)
+
+      // ✅ VALORACIÓN — defensivo: si falla, NO debe tumbar el arranque
+      try {
+        await runValoracionMigration(db)
+      } catch (errVal) {
+        console.error('⚠️ Migración VALORACIÓN falló (el servidor continúa):', errVal.message)
+      }
 
       // ==================================================
       // INSTANCIAR TRD-AI
@@ -209,6 +220,9 @@
 
       // ✅ INFORMES
       app.use('/api/informes', buildInformesRouter(db))
+
+      // ✅ VALORACIÓN
+      app.use('/api/valoracion', buildValoracionRouter(db))
 
       // ==================================================
       // 404 API

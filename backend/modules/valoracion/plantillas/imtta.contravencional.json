@@ -1,0 +1,148 @@
+{
+  "tipo": "levantamiento",
+  "estado": "activa",
+  "nombre": "Levantamiento operativo — Infracciones y proceso contravencional",
+  "descripcion": "Instrumento de campo para evidenciar cómo funciona realmente el proceso, de la infracción al cobro. Que respondan pensando en cómo funciona el Instituto, no en cómo debería funcionar según la norma. Meta: reconstruir la unidad documental real y conseguir tres expedientes reales anonimizados (A: comparendo pagado; B: contravencional con sanción; C: terminado con exoneración/archivo).",
+  "secciones": [
+    {
+      "titulo": "BLOQUE 1 — ¿Qué hace realmente el Instituto?",
+      "instrucciones": "Que describan la operación real, paso a paso.",
+      "preguntas": [
+        { "codigo": "1", "tipo": "texto_largo", "obligatoria": true, "enunciado": "Cuando un agente detecta una infracción de tránsito, ¿cuál es el procedimiento completo desde que la detecta hasta que queda registrada?", "ayuda": "Pídeles que lo describan paso a paso." },
+        { "codigo": "2", "tipo": "texto_largo", "obligatoria": true, "enunciado": "¿Qué plataforma o sistema utilizan para generar y registrar los comparendos?", "ayuda": "Anota: nombre de la plataforma; si es propia o contratada; quién la administra; si está conectada con RUNT/SIMIT; si permite adjuntar documentos, fotografías o videos." },
+        { "codigo": "3", "tipo": "texto_largo", "obligatoria": true, "enunciado": "¿El comparendo se genera físicamente, electrónicamente o de las dos formas? Si existen ambos, ¿cuál es el documento oficial que conserva el Instituto?", "ayuda": "Físico / electrónico / híbrido, e identificar el oficial." },
+        { "codigo": "4", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué información queda almacenada en la plataforma cuando se genera un comparendo?", "ayuda": "Si es posible, que muestren un ejemplo sin datos personales. Verificar si aparecen: número de comparendo, fecha y hora, lugar, placa, infracción, agente, identificación del infractor, fotografías, video, observaciones, estado, notificación, pago, etc." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 2 — Documentos del comparendo",
+      "instrucciones": "No dar opciones inicialmente; que ellos hagan el listado.",
+      "preguntas": [
+        { "codigo": "5", "tipo": "lista", "obligatoria": true, "enunciado": "¿Qué documentos produce o recibe el Instituto cuando se genera un comparendo?", "ayuda": "Que ellos hagan el listado, sin sugerirles opciones." },
+        { "codigo": "6", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Se conserva una copia de la orden de comparendo? Si sí, ¿dónde: físico, plataforma, ambos?", "ayuda": "" },
+        { "codigo": "7", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué ocurre con las fotografías o videos que sirven como evidencia de la infracción?", "ayuda": "¿Dónde se almacenan? ¿Quién los conserva? ¿Quedan asociados al comparendo? ¿Por cuánto tiempo? ¿Pueden recuperarse después?" },
+        { "codigo": "8", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Los informes de los agentes de tránsito hacen parte del expediente del comparendo? Si sí, ¿qué tipo de informe?", "ayuda": "" },
+        { "codigo": "9", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Se generan otros documentos antes de que el ciudadano pague o impugne?", "ayuda": "Por ejemplo: citaciones, notificaciones, constancias, comunicaciones, informes, etc." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 3 — ¿Qué pasa cuando el ciudadano acepta?",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "10", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Cuando el ciudadano acepta el comparendo y paga la multa, ¿qué documentos quedan en el Instituto?", "ayuda": "" },
+        { "codigo": "11", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿El pago se registra únicamente en la plataforma o el Instituto conserva algún comprobante?", "ayuda": "" },
+        { "codigo": "12", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Después de pagado, ¿el expediente se cierra inmediatamente o permanece activo un tiempo?", "ayuda": "Muy importante para la futura retención." },
+        { "codigo": "13", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué ocurre físicamente con los documentos de un comparendo pagado?", "ayuda": "Se archivan / digitalizan / guardan en carpeta / conservan en plataforma / destruyen después de un tiempo / otro." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 4 — Cuando el ciudadano no acepta",
+      "instrucciones": "Aquí empieza el estudio del proceso contravencional.",
+      "preguntas": [
+        { "codigo": "14", "tipo": "texto_largo", "obligatoria": true, "enunciado": "Cuando una persona no acepta el comparendo, ¿qué sucede exactamente?", "ayuda": "Que describan el procedimiento completo." },
+        { "codigo": "15", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Quién realiza la audiencia?", "ayuda": "Dependencia, cargo, funcionario, autoridad competente." },
+        { "codigo": "16", "tipo": "texto_largo", "obligatoria": true, "enunciado": "¿Se abre un expediente independiente para esa actuación? ¿El comparendo se convierte en expediente contravencional o se crea otro relacionado?", "ayuda": "Una de las preguntas más importantes." },
+        { "codigo": "17", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿El expediente contravencional es físico, electrónico o híbrido?", "ayuda": "" },
+        { "codigo": "18", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Cómo se identifica el expediente?", "ayuda": "Número de comparendo, número de proceso, placa, identificación del ciudadano, otro consecutivo. Pedir ejemplo anonimizado." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 5 — Documentos del proceso contravencional",
+      "instrucciones": "Preferir ver un expediente real, no responder de memoria.",
+      "preguntas": [
+        { "codigo": "19", "tipo": "texto_largo", "obligatoria": true, "enunciado": "Muéstrenme un proceso contravencional completo, ya terminado, y díganme qué documentos tiene desde el primero hasta el último.", "ayuda": "Probablemente la pregunta más valiosa. Anotar los documentos en el orden en que aparecen (usar el Caso B)." },
+        { "codigo": "20", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué documento da inicio formal al proceso contravencional?", "ayuda": "" },
+        { "codigo": "21", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué documentos se generan durante la audiencia?", "ayuda": "Acta, grabación, constancia, versión libre, descargos, pruebas, etc." },
+        { "codigo": "22", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿El ciudadano puede aportar pruebas? Si sí, ¿qué documentos o evidencias se incorporan?", "ayuda": "" },
+        { "codigo": "23", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿La autoridad puede ordenar o practicar pruebas? Si sí, ¿qué documentos genera esa actuación?", "ayuda": "" },
+        { "codigo": "24", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Se genera una decisión o resolución al finalizar? ¿Cómo se denomina exactamente?", "ayuda": "Pedir el nombre textual del documento." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 6 — Recursos",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "25", "tipo": "si_no", "obligatoria": false, "enunciado": "Cuando la decisión sanciona al ciudadano, ¿puede interponer recursos?", "ayuda": "" },
+        { "codigo": "26", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué recursos se presentan realmente ante el Instituto?", "ayuda": "Reposición, apelación, otros." },
+        { "codigo": "27", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿El recurso genera un expediente nuevo o se incorpora al mismo expediente contravencional?", "ayuda": "" },
+        { "codigo": "28", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué documentos produce la resolución del recurso?", "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 7 — Cierre del proceso",
+      "instrucciones": "Fundamental para la futura TRD. No dar respuestas; que ellos definan el momento.",
+      "preguntas": [
+        { "codigo": "29", "tipo": "texto_largo", "obligatoria": true, "enunciado": "¿Cuándo consideran que un proceso contravencional está oficialmente terminado?", "ayuda": "Que ellos definan el hecho de cierre." },
+        { "codigo": "30", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Qué documento demuestra que el proceso quedó terminado?", "ayuda": "" },
+        { "codigo": "31", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Puede reabrirse o tener actuaciones después de ese momento? Si sí, ¿en qué circunstancias?", "ayuda": "" },
+        { "codigo": "32", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Después de terminado, ¿qué ocurre con el expediente?", "ayuda": "¿Permanece en la dependencia? ¿Se entrega a archivo? ¿Se digitaliza? ¿Se conserva en plataforma? ¿Se remite a otra dependencia?" }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 8 — Cobro",
+      "instrucciones": "Separar sanción de cobro.",
+      "preguntas": [
+        { "codigo": "33", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Cuando una multa queda en firme y el ciudadano no paga, ¿qué ocurre?", "ayuda": "" },
+        { "codigo": "34", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Quién realiza el cobro?", "ayuda": "" },
+        { "codigo": "35", "tipo": "si_no", "obligatoria": false, "enunciado": "¿El expediente contravencional se remite a otra dependencia para cobro coactivo?", "ayuda": "" },
+        { "codigo": "36", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Si es así, ¿qué documentos se envían al área de cobro?", "ayuda": "" },
+        { "codigo": "37", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿El expediente original permanece en tránsito o se traslada completamente al área de cobro?", "ayuda": "Importante para definir la responsabilidad documental." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 9 — Plataformas y documentos electrónicos",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "38", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué plataformas utilizan para gestionar comparendos, multas y procesos contravencionales?", "ayuda": "Anotar el nombre exacto de cada una." },
+        { "codigo": "39", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué información queda en RUNT?", "ayuda": "" },
+        { "codigo": "40", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué información queda en SIMIT?", "ayuda": "" },
+        { "codigo": "41", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué información queda exclusivamente en la plataforma del Instituto?", "ayuda": "" },
+        { "codigo": "42", "tipo": "texto_largo", "obligatoria": true, "enunciado": "Si mañana desapareciera la plataforma del Instituto, ¿qué documentos o información perdería que no pueda recuperar de RUNT o SIMIT?", "ayuda": "Pregunta de valoración documental extremadamente importante." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 10 — Archivo físico",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "43", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Existen expedientes físicos de comparendos? Si sí, ¿desde qué años aproximadamente?", "ayuda": "" },
+        { "codigo": "44", "tipo": "si_no", "obligatoria": false, "enunciado": "¿Existen expedientes físicos de procesos contravencionales?", "ayuda": "" },
+        { "codigo": "45", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Cuánto espacio físico ocupan aproximadamente?", "ayuda": "Aproximado: 10 cajas / 100 cajas / un cuarto / varios archivadores, etc." },
+        { "codigo": "46", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Existen documentos anteriores que ya no deberían estar físicamente en la dependencia?", "ayuda": "" },
+        { "codigo": "47", "tipo": "si_no", "obligatoria": false, "enunciado": "¿Alguna vez han hecho transferencias al Archivo Central de comparendos o procesos contravencionales?", "ayuda": "" },
+        { "codigo": "48", "tipo": "texto_largo", "obligatoria": false, "enunciado": "Si sí, ¿qué se transfirió, cuándo y con qué criterio?", "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 11 — Consulta y valor",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "49", "tipo": "opcion_multiple", "obligatoria": false, "enunciado": "¿Quién solicita actualmente estos expedientes después de que terminan?", "ayuda": "Marcar todas las que apliquen.", "opciones": ["Ciudadano", "Abogado", "Jueces", "Fiscalía", "Policía", "Organismos de control", "Aseguradoras", "Otras entidades", "Funcionarios del Instituto"] },
+        { "codigo": "50", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Para qué se solicitan principalmente?", "ayuda": "" },
+        { "codigo": "51", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Han tenido casos en los que se haya necesitado consultar un proceso de hace muchos años? Si sí, ¿por qué?", "ayuda": "" },
+        { "codigo": "52", "tipo": "si_no", "obligatoria": false, "enunciado": "¿Han tenido procesos requeridos judicialmente después de haber terminado?", "ayuda": "" },
+        { "codigo": "53", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Han tenido problemas porque no aparece un expediente, documento o prueba de un comparendo/proceso antiguo?", "ayuda": "Importantísima para determinar riesgo documental." }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 12 — Volumen",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "54", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Cuántos comparendos aproximadamente se generan al año?", "ayuda": "No tiene que ser exacto." },
+        { "codigo": "55", "tipo": "texto_largo", "obligatoria": false, "enunciado": "¿Qué porcentaje termina en pago y qué porcentaje llega a impugnación/proceso contravencional?", "ayuda": "Aproximación si no tienen la cifra." },
+        { "codigo": "56", "tipo": "texto_corto", "obligatoria": false, "enunciado": "¿Cuántos procesos contravencionales aproximadamente se tramitan al año?", "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "BLOQUE 13 — Pregunta final",
+      "instrucciones": "Formularla literalmente.",
+      "preguntas": [
+        { "codigo": "57", "tipo": "texto_largo", "obligatoria": true, "enunciado": "Si tuvieran que decir cuáles son los documentos indispensables para demostrar, dentro de 5, 10 o 20 años, que una infracción fue correctamente detectada, notificada, tramitada y sancionada —o archivada/exonerada—, ¿cuáles conservarían?", "ayuda": "Que respondan libremente." }
+      ]
+    }
+  ],
+  "casos_sugeridos": [
+    { "etiqueta": "A", "tipo_caso": "comparendo_pagado", "titulo": "Comparendo pagado y cerrado" },
+    { "etiqueta": "B", "tipo_caso": "contravencional_sancion", "titulo": "Proceso contravencional terminado con sanción" },
+    { "etiqueta": "C", "tipo_caso": "exoneracion_archivo", "titulo": "Proceso terminado con exoneración/archivo (si existe)" }
+  ]
+}

@@ -2,3 +2,19 @@ node_modules/
 .env
 .DS_Store
 .claude/
+# --- Datos, backups y artefactos generados (no versionar) ---
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.pdf
+/backup_sipad.sql
+/sipad_data.sql
+/usuarios_data.sql
+/usuarios_insert.sql
+/seed_usuarios_sipad.sql
+/trd_seed_final.sql
+/seed_segtec_actividades.sql
+/z0900863494000220004e60d/
+/z0900863494000220004e60d 2/
+/z0900863494000220004e60d.zip
+/backup_views/

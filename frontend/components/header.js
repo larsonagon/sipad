@@ -218,6 +218,13 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
               </button>
             ` : ''}
 
+            ${puedeTRD ? `
+              <button type="button" id="btnValoracion"
+                ${modulo === 'Valoración' ? 'class="active"' : ''}>
+                Valoración
+              </button>
+            ` : ''}
+
           </nav>
         </div>
 
@@ -275,6 +282,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnInformes')
     ?.addEventListener('click', () => { window.location.href = '/informes/index.html' })
+
+  document.getElementById('btnValoracion')
+    ?.addEventListener('click', () => { window.location.href = '/valoracion/index.html' })
 
   document.getElementById('btnCambiarPassword')
     ?.addEventListener('click', abrirModalPassword)
