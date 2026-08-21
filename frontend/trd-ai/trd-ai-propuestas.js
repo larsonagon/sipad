@@ -284,8 +284,27 @@ function actualizarBulkBar() {
   const ids    = idsDeSeleccion().length
   const bar = document.getElementById('bulkBarTrd')
   const cnt = document.getElementById('bulkCountTrd')
-  if (bar) bar.style.display = grupos > 0 ? 'flex' : 'none'
-  if (cnt) cnt.textContent = `${grupos} fila${grupos === 1 ? '' : 's'} · ${ids} propuesta${ids === 1 ? '' : 's'}`
+
+  // La barra queda SIEMPRE visible; los botones se activan al seleccionar.
+  if (bar) bar.style.display = 'flex'
+
+  const botones = ['btnAprobarSel', 'btnRechazarSel', 'btnFusionarSel', 'btnCancelarSel']
+    .map(id => document.getElementById(id))
+
+  if (grupos > 0) {
+    if (cnt) {
+      cnt.style.color = '#1e40af'
+      cnt.textContent = `${grupos} fila${grupos === 1 ? '' : 's'} · ${ids} propuesta${ids === 1 ? '' : 's'} seleccionada${ids === 1 ? '' : 's'}`
+    }
+    botones.forEach(b => b && (b.disabled = false))
+  } else {
+    if (cnt) {
+      cnt.style.color = '#64748b'
+      cnt.textContent = 'Marca filas (o el encabezado) para aprobar, rechazar o fusionar en lote'
+    }
+    botones.forEach(b => b && (b.disabled = true))
+  }
+
   const chkAll = document.getElementById('chkAllTrd')
   const todas = document.querySelectorAll('.chk-prop')
   if (chkAll) chkAll.checked = todas.length > 0 && grupos === todas.length

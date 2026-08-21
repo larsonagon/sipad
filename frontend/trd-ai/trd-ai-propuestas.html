@@ -118,6 +118,7 @@
   margin-bottom: 14px;
 }
 .bulk-bar {
+  display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 14px;
@@ -125,6 +126,10 @@
   background: #eff6ff;
   border: 1px solid #bfdbfe;
   border-radius: 10px;
+}
+.bulk-bar button:disabled {
+  opacity: .45;
+  cursor: default;
 }
 .col-chk { width: 34px; text-align: center; }
 
@@ -171,7 +176,7 @@
         <span id="contadorPropuestas" style="margin-left:auto;color:var(--color-text-muted);font-size:13px;"></span>
       </div>
 
-      <div id="bulkBarTrd" class="bulk-bar" style="display:none;">
+      <div id="bulkBarTrd" class="bulk-bar">
         <span id="bulkCountTrd" style="font-weight:600;color:#1e40af;"></span>
         <div style="margin-left:auto;display:flex;gap:8px;">
           <button id="btnAprobarSel" class="btn-success btn-sm">Aprobar</button>
