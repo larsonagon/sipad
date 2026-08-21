@@ -134,6 +134,23 @@ export const TRDAIService = (repository, db) => ({
     return await repository.editarPropuesta(id, data)
   },
 
+  // ── Curación en lote ──
+  async cambiarEstadoLote(ids, estado, usuarioId, entidadId) {
+    if (!['aprobada', 'rechazada'].includes(estado))
+      throw new Error('Estado inválido')
+    if (!Array.isArray(ids) || ids.length === 0)
+      throw new Error('Se requiere una lista de propuestas')
+    return await repository.cambiarEstadoLote(ids, estado, usuarioId, entidadId)
+  },
+
+  async editarLote(ids, data, entidadId) {
+    if (!Array.isArray(ids) || ids.length === 0)
+      throw new Error('Se requiere una lista de propuestas')
+    if (!data?.nombre_serie)
+      throw new Error('nombre_serie es obligatorio')
+    return await repository.editarLote(ids, data, entidadId)
+  },
+
   // ===================================================
   // INCORPORAR A TRD OFICIAL
   // ===================================================

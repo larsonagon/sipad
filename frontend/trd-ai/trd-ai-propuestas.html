@@ -109,6 +109,25 @@
   margin: 28px 0 24px;
 }
 
+/* ── Curación: filtros y lote ── */
+.curacion-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.bulk-bar {
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+}
+.col-chk { width: 34px; text-align: center; }
+
 </style>
 </head>
 
@@ -135,10 +154,38 @@
         </button>
       </div>
 
+      <div class="curacion-bar">
+        <input id="filtroBusqueda" class="form-control" placeholder="Buscar serie o subserie…" style="max-width:280px;">
+        <select id="filtroEstado" class="form-control" style="max-width:180px;">
+          <option value="">Todos los estados</option>
+          <option value="propuesta">Propuesta</option>
+          <option value="aprobada">Aprobada</option>
+          <option value="rechazada">Rechazada</option>
+          <option value="incorporada">Incorporada</option>
+        </select>
+        <select id="filtroConfianza" class="form-control" style="max-width:200px;">
+          <option value="">Toda confianza</option>
+          <option value="baja">Confianza baja (&lt; 70%)</option>
+          <option value="alta">Confianza alta (≥ 70%)</option>
+        </select>
+        <span id="contadorPropuestas" style="margin-left:auto;color:var(--color-text-muted);font-size:13px;"></span>
+      </div>
+
+      <div id="bulkBarTrd" class="bulk-bar" style="display:none;">
+        <span id="bulkCountTrd" style="font-weight:600;color:#1e40af;"></span>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <button id="btnAprobarSel" class="btn-success btn-sm">Aprobar</button>
+          <button id="btnRechazarSel" class="btn-danger btn-sm">Rechazar</button>
+          <button id="btnFusionarSel" class="btn-secondary btn-sm">Fusionar</button>
+          <button id="btnCancelarSel" class="btn-secondary btn-sm">Cancelar</button>
+        </div>
+      </div>
+
       <div class="table-container">
         <table class="trd-table">
           <thead>
             <tr>
+              <th class="col-chk"><input type="checkbox" id="chkAllTrd" title="Seleccionar todo"></th>
               <th class="col-serie">Serie documental</th>
               <th class="col-subserie">Subserie documental</th>
               <th class="col-cantidad">Act.</th>

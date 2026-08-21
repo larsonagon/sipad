@@ -1,5 +1,8 @@
 import { renderHeader } from '../components/header.js'
 
+// Lista completa sin filtrar (para filtrar en el cliente)
+let listaCruda = []
+
 document.addEventListener('DOMContentLoaded', async () => {
 
   const token = sessionStorage.getItem('token')
@@ -10,6 +13,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   document
     .getElementById('btnGenerarPropuestas')
     ?.addEventListener('click', generarPropuestas)
+
+  // Filtros
+  document.getElementById('filtroBusqueda')?.addEventListener('input', aplicarFiltros)
+  document.getElementById('filtroEstado')?.addEventListener('change', aplicarFiltros)
+  document.getElementById('filtroConfianza')?.addEventListener('change', aplicarFiltros)
+
+  // Acciones en lote
+  document.getElementById('btnAprobarSel')?.addEventListener('click', () => accionLoteSeleccion('aprobada'))
+  document.getElementById('btnRechazarSel')?.addEventListener('click', () => accionLoteSeleccion('rechazada'))
+  document.getElementById('btnFusionarSel')?.addEventListener('click', fusionarSeleccion)
+  document.getElementById('btnCancelarSel')?.addEventListener('click', limpiarSeleccion)
+  document.getElementById('chkAllTrd')?.addEventListener('change', (e) => {
+    document.querySelectorAll('.chk-prop').forEach(c => (c.checked = e.target.checked))
+    actualizarBulkBar()
+  })
 
   await cargarPropuestas()
 })
@@ -71,12 +89,41 @@ async function cargarPropuestas() {
     const json = await resp.json()
     if (!json.ok) throw new Error(json.error)
 
-    renderTabla(json.data)
+    listaCruda = json.data || []
+    aplicarFiltros()
 
   } catch (err) {
     console.error(err)
     mostrarToast('No fue posible cargar las propuestas', 'error')
   }
+}
+
+// =====================================================
+// FILTROS (cliente)
+// =====================================================
+
+function aplicarFiltros() {
+  const q      = (document.getElementById('filtroBusqueda')?.value || '').toLowerCase().trim()
+  const estado = document.getElementById('filtroEstado')?.value || ''
+  const conf   = document.getElementById('filtroConfianza')?.value || ''
+
+  const filtrada = listaCruda.filter(p => {
+    if (estado && (p.estado || 'propuesta') !== estado) return false
+    const c = Number(p.confianza ?? 0)
+    if (conf === 'baja' && !(c < 0.7)) return false
+    if (conf === 'alta' && !(c >= 0.7)) return false
+    if (q) {
+      const txt = `${p.nombre_serie || ''} ${p.nombre_subserie || ''}`.toLowerCase()
+      if (!txt.includes(q)) return false
+    }
+    return true
+  })
+
+  const cont = document.getElementById('contadorPropuestas')
+  if (cont) cont.textContent = `${filtrada.length} de ${listaCruda.length} propuestas`
+
+  renderTabla(filtrada)
+  limpiarSeleccion()
 }
 
 // =====================================================
@@ -151,7 +198,8 @@ function renderTabla(lista) {
   const tbody = document.getElementById('tablaPropuestas')
 
   if (!lista || !lista.length) {
-    tbody.innerHTML = `<tr><td colspan="6">No hay propuestas registradas</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:1.5rem;">No hay propuestas que coincidan.</td></tr>`
+    actualizarBulkBar()
     return
   }
 
@@ -161,6 +209,7 @@ function renderTabla(lista) {
 
     const estado = (p.estado || '').toLowerCase()
     const id     = p.id
+    const idsJson = JSON.stringify(p.ids)
 
     const tipHtml = p.tipologias.length
       ? `<ul class="tip-lista">${
@@ -175,11 +224,11 @@ function renderTabla(lista) {
       : ''
 
     const btnAprobar = estado === 'propuesta'
-      ? `<button class="btn-success btn-sm" onclick="aprobar('${id}', this)">Aprobar</button>`
+      ? `<button class="btn-success btn-sm" onclick="aprobarGrupo(this)">Aprobar</button>`
       : ''
 
     const btnRechazar = estado === 'propuesta'
-      ? `<button class="btn-danger btn-sm" onclick="rechazar('${id}', this)">Rechazar</button>`
+      ? `<button class="btn-danger btn-sm" onclick="rechazarGrupo(this)">Rechazar</button>`
       : ''
 
     const btnIncorporar = estado === 'aprobada'
@@ -187,7 +236,8 @@ function renderTabla(lista) {
       : ''
 
     return `
-      <tr data-id="${id}">
+      <tr data-id="${id}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
+        <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
         <td class="serie-nombre"><strong>${p.serie}</strong></td>
         <td class="subserie">${p.subserie || '—'}</td>
         <td>${p.cantidad}</td>
@@ -202,6 +252,177 @@ function renderTabla(lista) {
       </tr>
     `
   }).join('')
+
+  // Casillas → actualizar barra de lote
+  tbody.querySelectorAll('.chk-prop').forEach(c =>
+    c.addEventListener('change', actualizarBulkBar)
+  )
+  const chkAll = document.getElementById('chkAllTrd')
+  if (chkAll) chkAll.checked = false
+  actualizarBulkBar()
+}
+
+// =====================================================
+// SELECCIÓN / ACCIONES EN LOTE
+// =====================================================
+
+function filasSeleccionadas() {
+  return Array.from(document.querySelectorAll('#tablaPropuestas tr'))
+    .filter(tr => tr.querySelector('.chk-prop')?.checked)
+}
+
+function idsDeSeleccion() {
+  const ids = []
+  filasSeleccionadas().forEach(tr => {
+    try { JSON.parse(tr.dataset.ids || '[]').forEach(x => ids.push(x)) } catch {}
+  })
+  return ids
+}
+
+function actualizarBulkBar() {
+  const grupos = filasSeleccionadas().length
+  const ids    = idsDeSeleccion().length
+  const bar = document.getElementById('bulkBarTrd')
+  const cnt = document.getElementById('bulkCountTrd')
+  if (bar) bar.style.display = grupos > 0 ? 'flex' : 'none'
+  if (cnt) cnt.textContent = `${grupos} fila${grupos === 1 ? '' : 's'} · ${ids} propuesta${ids === 1 ? '' : 's'}`
+  const chkAll = document.getElementById('chkAllTrd')
+  const todas = document.querySelectorAll('.chk-prop')
+  if (chkAll) chkAll.checked = todas.length > 0 && grupos === todas.length
+}
+
+function limpiarSeleccion() {
+  document.querySelectorAll('.chk-prop').forEach(c => (c.checked = false))
+  const chkAll = document.getElementById('chkAllTrd')
+  if (chkAll) chkAll.checked = false
+  actualizarBulkBar()
+}
+
+async function accionLoteSeleccion(estado) {
+  const ids = idsDeSeleccion()
+  if (!ids.length) return
+  const verbo = estado === 'aprobada' ? 'aprobar' : 'rechazar'
+  const ok = await confirmarAccion(`¿${verbo.charAt(0).toUpperCase() + verbo.slice(1)} ${ids.length} propuesta(s) seleccionada(s)?`)
+  if (!ok) return
+  try {
+    const resp = await apiFetch('/api/trd-ai/series-propuestas/estado-lote', {
+      method: 'POST',
+      body: JSON.stringify({ ids, estado })
+    })
+    const json = resp && await resp.json()
+    if (!resp || !json?.ok) throw new Error(json?.error || 'Error')
+    mostrarToast(`${json.actualizadas} propuesta(s) ${estado === 'aprobada' ? 'aprobadas' : 'rechazadas'}`, estado === 'aprobada' ? 'success' : 'warning')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible actualizar las propuestas', 'error')
+  }
+}
+
+async function fusionarSeleccion() {
+  const filas = filasSeleccionadas()
+  if (filas.length < 2) {
+    mostrarToast('Seleccione al menos dos filas para fusionar', 'warning')
+    return
+  }
+  const ids = idsDeSeleccion()
+  const serieBase = filas[0].querySelector('.serie-nombre strong')?.textContent || ''
+  const subBase   = filas[0].querySelector('.subserie')?.textContent?.trim() || ''
+  const destino = await pedirDestinoFusion(serieBase, subBase === '—' ? '' : subBase, ids.length)
+  if (!destino) return
+  try {
+    const resp = await apiFetch('/api/trd-ai/series-propuestas/editar-lote', {
+      method: 'POST',
+      body: JSON.stringify({ ids, nombre_serie: destino.serie, nombre_subserie: destino.subserie })
+    })
+    const json = resp && await resp.json()
+    if (!resp || !json?.ok) throw new Error(json?.error || 'Error')
+    mostrarToast(`${json.actualizadas} propuesta(s) fusionadas en "${destino.serie}"`, 'success')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible fusionar las propuestas', 'error')
+  }
+}
+
+// Modal para capturar serie/subserie destino de la fusión
+function pedirDestinoFusion(serie, subserie, nProps) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div')
+    overlay.className = 'modal'
+    overlay.innerHTML = `
+      <div class="modal-content" style="max-width:460px;">
+        <h3>Fusionar propuestas</h3>
+        <p style="margin:0 0 12px;font-size:14px;color:var(--color-text-muted);">
+          Se renombrarán ${nProps} propuesta(s) a la misma serie y subserie, quedando en una sola fila.
+        </p>
+        <div class="form-group">
+          <label>Serie documental *</label>
+          <input type="text" id="fusSerie" class="form-control" value="${(serie || '').replace(/"/g, '&quot;')}">
+        </div>
+        <div class="form-group">
+          <label>Subserie documental</label>
+          <input type="text" id="fusSub" class="form-control" value="${(subserie || '').replace(/"/g, '&quot;')}">
+        </div>
+        <div class="modal-actions" style="margin-top:14px;display:flex;gap:8px;justify-content:flex-end;">
+          <button id="fusCancel" class="btn-secondary btn-sm">Cancelar</button>
+          <button id="fusOk" class="btn-primary btn-sm">Fusionar</button>
+        </div>
+      </div>`
+    document.body.appendChild(overlay)
+    const cerrar = (val) => { overlay.remove(); resolve(val) }
+    overlay.querySelector('#fusCancel').addEventListener('click', () => cerrar(null))
+    overlay.querySelector('#fusOk').addEventListener('click', () => {
+      const s = overlay.querySelector('#fusSerie').value.trim()
+      const sub = overlay.querySelector('#fusSub').value.trim()
+      if (!s) { mostrarToast('La serie es obligatoria', 'error'); return }
+      cerrar({ serie: s, subserie: sub || null })
+    })
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar(null) })
+  })
+}
+
+// Aprobar/Rechazar un grupo completo (todas sus propuestas)
+window.aprobarGrupo = async function(btn) {
+  const tr = btn.closest('tr')
+  let ids = []
+  try { ids = JSON.parse(tr?.dataset.ids || '[]') } catch {}
+  if (!ids.length) return
+  btn.disabled = true; btn.textContent = '...'
+  try {
+    const resp = await apiFetch('/api/trd-ai/series-propuestas/estado-lote', {
+      method: 'POST', body: JSON.stringify({ ids, estado: 'aprobada' })
+    })
+    const json = resp && await resp.json()
+    if (!resp || !json?.ok) throw new Error(json?.error || 'Error')
+    // Retención automática en segundo plano para cada propuesta del grupo
+    ids.forEach(id => apiFetch(`/api/trd-ai/series-propuestas/${id}/retencion-automatica`).catch(() => {}))
+    mostrarToast(`${json.actualizadas} propuesta(s) aprobadas`, 'success')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e); mostrarToast('No fue posible aprobar', 'error')
+    btn.disabled = false; btn.textContent = 'Aprobar'
+  }
+}
+
+window.rechazarGrupo = async function(btn) {
+  const tr = btn.closest('tr')
+  let ids = []
+  try { ids = JSON.parse(tr?.dataset.ids || '[]') } catch {}
+  if (!ids.length) return
+  btn.disabled = true; btn.textContent = '...'
+  try {
+    const resp = await apiFetch('/api/trd-ai/series-propuestas/estado-lote', {
+      method: 'POST', body: JSON.stringify({ ids, estado: 'rechazada' })
+    })
+    const json = resp && await resp.json()
+    if (!resp || !json?.ok) throw new Error(json?.error || 'Error')
+    mostrarToast(`${json.actualizadas} propuesta(s) rechazadas`, 'warning')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e); mostrarToast('No fue posible rechazar', 'error')
+    btn.disabled = false; btn.textContent = 'Rechazar'
+  }
 }
 
 // =====================================================

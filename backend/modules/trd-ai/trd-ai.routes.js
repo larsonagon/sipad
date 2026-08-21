@@ -46,6 +46,23 @@ export function registerTRDAIRoutes(app, controller) {
   )
 
   // =====================================================
+  // CURACIÓN EN LOTE (aprobar/rechazar/renombrar varias)
+  // Deben ir ANTES de las rutas con :id.
+  // =====================================================
+
+  router.post(
+    '/series-propuestas/estado-lote',
+    requireLevel(60),
+    controller.estadoLote
+  )
+
+  router.post(
+    '/series-propuestas/editar-lote',
+    requireLevel(60),
+    controller.editarLote
+  )
+
+  // =====================================================
   // EDITAR PROPUESTA (serie, subserie, tipologías)
   // =====================================================
 

@@ -341,6 +341,43 @@ export const TRDAIRepository = (db) => {
       return true
     },
 
+    // ── Curación en lote (verifica pertenencia a la entidad) ──
+    async cambiarEstadoLote(ids, nuevoEstado, usuario, entidadId) {
+      if (!Array.isArray(ids) || ids.length === 0) return { actualizadas: 0 }
+      let n = 0
+      for (const id of ids) {
+        const row = entidadId
+          ? await db.get(`SELECT id FROM trd_series_propuestas WHERE id = ? AND entidad_id = ?`, [id, entidadId])
+          : await db.get(`SELECT id FROM trd_series_propuestas WHERE id = ?`, [id])
+        if (!row) continue
+        await db.run(`
+          UPDATE trd_series_propuestas
+          SET estado = ?, aprobado_por = ?, fecha_aprobacion = ?
+          WHERE id = ?
+        `, [nuevoEstado, usuario || null, new Date().toISOString(), id])
+        n++
+      }
+      return { actualizadas: n }
+    },
+
+    async editarLote(ids, data, entidadId) {
+      if (!Array.isArray(ids) || ids.length === 0) return { actualizadas: 0 }
+      let n = 0
+      for (const id of ids) {
+        const row = entidadId
+          ? await db.get(`SELECT id FROM trd_series_propuestas WHERE id = ? AND entidad_id = ?`, [id, entidadId])
+          : await db.get(`SELECT id FROM trd_series_propuestas WHERE id = ?`, [id])
+        if (!row) continue
+        await db.run(`
+          UPDATE trd_series_propuestas
+          SET nombre_serie = ?, nombre_subserie = ?
+          WHERE id = ?
+        `, [data.nombre_serie, data.nombre_subserie || null, id])
+        n++
+      }
+      return { actualizadas: n }
+    },
+
     // =====================================================
     // ✅ NUEVO: getVersionAprobada
     // Obtiene la versión TRD activa. Si no existe, la crea.

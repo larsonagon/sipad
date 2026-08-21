@@ -106,6 +106,37 @@ export const TRDAIController = (service) => ({
   },
 
   // ===================================================
+  // CURACIÓN EN LOTE
+  // ===================================================
+
+  estadoLote: async (req, res) => {
+    try {
+      const { ids, estado } = req.body || {}
+      const usuarioId = req.user?.sub || req.user?.id || null
+      const r = await service.cambiarEstadoLote(ids, estado, usuarioId, req.entidad_id || null)
+      return res.json({ ok: true, ...r })
+    } catch (err) {
+      console.error('TRD-AI estado-lote error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
+    }
+  },
+
+  editarLote: async (req, res) => {
+    try {
+      const { ids, nombre_serie, nombre_subserie } = req.body || {}
+      const r = await service.editarLote(
+        ids,
+        { nombre_serie, nombre_subserie: nombre_subserie || null },
+        req.entidad_id || null
+      )
+      return res.json({ ok: true, ...r })
+    } catch (err) {
+      console.error('TRD-AI editar-lote error:', err)
+      return res.status(400).json({ ok: false, error: err.message })
+    }
+  },
+
+  // ===================================================
   // INCORPORAR A TRD OFICIAL
   // ===================================================
 
