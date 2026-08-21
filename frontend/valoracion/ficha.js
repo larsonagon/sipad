@@ -174,6 +174,7 @@ function renderForm(){
 
   <div class="save-bar">
     <span id="estado" class="muted"></span>
+    <button class="btn-secondary" id="btnInforme">📄 Informe Técnico (Word)</button>
     <button class="btn-primary" id="btnGuardar">Guardar ficha</button>
   </div>`
 
@@ -181,6 +182,27 @@ function renderForm(){
     document.getElementById('muestreoBox').style.display = r.checked && r.value==='S' ? 'grid':(document.querySelector('.f-disp:checked')?.value==='S'?'grid':'none')
   }))
   document.getElementById('btnGuardar').addEventListener('click',guardar)
+  document.getElementById('btnInforme').addEventListener('click',descargarInforme)
+}
+
+async function descargarInforme(){
+  const est=document.getElementById('estado')
+  const btn=document.getElementById('btnInforme')
+  est.textContent='Guardando y generando informe…'; btn.disabled=true
+  try{
+    await guardar()  // asegura que el Word refleje lo último
+    const res=await fetch(`/api/valoracion/fichas/${fichaId}/informe`,{headers:headers()})
+    if(res.status===401){sessionStorage.clear();location.href='/';return}
+    if(!res.ok)throw new Error(`Error ${res.status}`)
+    const blob=await res.blob()
+    const url=URL.createObjectURL(blob)
+    const a=document.createElement('a')
+    a.href=url; a.download=`Informe_valoracion_${(ficha.subserie||'ficha').replace(/\s+/g,'_')}.docx`
+    document.body.appendChild(a); a.click(); a.remove()
+    setTimeout(()=>URL.revokeObjectURL(url),1500)
+    est.textContent='Informe generado ✓'
+  }catch(e){est.textContent='Error';alert('No se pudo generar el informe: '+e.message)}
+  finally{btn.disabled=false}
 }
 
 function recogerValores(tipo){

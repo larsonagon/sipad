@@ -171,4 +171,17 @@ export default class ValoracionController {
       res.status(400).json({ success: false, message: e.message || 'Error generando borrador' })
     }
   }
+
+  // GET /api/valoracion/fichas/:id/informe  → Word
+  generarInforme = async (req, res) => {
+    try {
+      const { buffer, nombre } = await this.service.generarInforme(req.params.id, req.entidad_id)
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      res.setHeader('Content-Disposition', `attachment; filename=Informe_valoracion_${nombre}.docx`)
+      res.send(Buffer.from(buffer))
+    } catch (e) {
+      console.error('Error generar informe valoración:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error generando informe' })
+    }
+  }
 }

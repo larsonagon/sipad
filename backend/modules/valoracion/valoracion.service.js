@@ -1,5 +1,6 @@
 // backend/modules/valoracion/valoracion.service.js
 import { generarBorradorDesdeEvidencia } from './valoracion.reglas.js'
+import { generarInformeValoracion } from './valoracion.informe.js'
 
 export default class ValoracionService {
 
@@ -107,5 +108,19 @@ export default class ValoracionService {
 
     const id = await this.repository.crearFicha(entidadId, borrador)
     return { id, notas }
+  }
+
+  // -------- Informe Técnico de Valoración (Word) --------
+
+  async generarInforme(fichaId, entidadId) {
+    const ficha = await this.repository.obtenerFicha(fichaId, entidadId)
+    if (!ficha) throw new Error('Ficha no encontrada para esta entidad')
+    let dil = null
+    if (ficha.diligenciamiento_id) {
+      dil = await this.repository.obtenerDiligenciamiento(ficha.diligenciamiento_id, entidadId)
+    }
+    const buffer = await generarInformeValoracion(ficha, dil)
+    const nombre = [ficha.serie, ficha.subserie].filter(Boolean).join('_').replace(/\s+/g, '_') || 'valoracion'
+    return { buffer, nombre }
   }
 }

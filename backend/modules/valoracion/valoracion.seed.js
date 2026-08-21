@@ -47,14 +47,20 @@ export async function seedPlantillasEntidad(db, entidadId, { soloArchivos = null
 }
 
 // Ejecución directa como script -------------------------------------------
+// Uso:
+//   node valoracion.seed.js <ENTIDAD_ID>                      -> siembra todas las plantillas
+//   node valoracion.seed.js <ENTIDAD_ID> <archivo.json>       -> solo esa plantilla
+//   (ej. levantamiento.generico.json para entidades que no son de tránsito)
 if (import.meta.url === `file://${process.argv[1]}`) {
   const entidadId = process.argv[2]
+  const archivo   = process.argv[3] || null
   if (!entidadId) {
-    console.error('Uso: node valoracion.seed.js <ENTIDAD_ID>')
+    console.error('Uso: node valoracion.seed.js <ENTIDAD_ID> [archivo.json]')
     process.exit(1)
   }
   const { db } = await import('../../db/database.js')
-  const res = await seedPlantillasEntidad(db, entidadId)
+  const opts = archivo ? { soloArchivos: [archivo] } : {}
+  const res = await seedPlantillasEntidad(db, entidadId, opts)
   console.table(res)
   process.exit(0)
 }

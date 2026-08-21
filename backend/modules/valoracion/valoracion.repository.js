@@ -50,7 +50,7 @@ export default class ValoracionRepository {
       [plantillaId]
     )
     const preguntas = await this.db.all(
-      `SELECT q.id, q.seccion_id, q.orden, q.codigo, q.enunciado, q.ayuda, q.tipo, q.obligatoria, q.opciones
+      `SELECT q.id, q.seccion_id, q.orden, q.codigo, q.enunciado, q.ayuda, q.tipo, q.obligatoria, q.opciones, q.meta
          FROM lvd_preguntas q
          JOIN lvd_secciones s ON s.id = q.seccion_id
         WHERE s.plantilla_id = ?
@@ -62,6 +62,7 @@ export default class ValoracionRepository {
     for (const q of preguntas) {
       q.obligatoria = !!q.obligatoria
       q.opciones = q.opciones ? safeJSON(q.opciones) : null
+      q.meta = q.meta ? safeJSON(q.meta) : null
       ;(porSeccion[q.seccion_id] ||= []).push(q)
     }
 

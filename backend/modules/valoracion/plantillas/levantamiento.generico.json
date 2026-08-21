@@ -1,0 +1,88 @@
+{
+  "tipo": "levantamiento",
+  "estado": "activa",
+  "nombre": "Levantamiento operativo (genérico) — versión corta",
+  "descripcion": "Instrumento de campo corto y genérico, aplicable a cualquier entidad y subserie. Que el funcionario responda pensando en cómo funciona realmente el proceso, no en cómo debería funcionar según la norma. Solo se pregunta lo que únicamente el funcionario sabe; la valoración (valores, tiempos, disposición) la hace el archivista. Consiga tres expedientes reales anonimizados.",
+  "secciones": [
+    {
+      "titulo": "El proceso real",
+      "instrucciones": "Que describan la operación tal como ocurre.",
+      "preguntas": [
+        { "codigo": "1", "tipo": "texto_largo", "obligatoria": true, "meta": {"rol": "proceso"},
+          "enunciado": "Describa el trámite o proceso completo, paso a paso, tal como ocurre en la realidad.",
+          "ayuda": "Desde que inicia hasta que termina." },
+        { "codigo": "2", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "plataforma"},
+          "enunciado": "¿Qué sistema o plataforma usan? ¿Está conectada con sistemas externos? ¿Permite adjuntar soportes?",
+          "ayuda": "Nombre, si es propia o contratada, quién la administra, conexiones externas." },
+        { "codigo": "3", "tipo": "texto_corto", "obligatoria": false, "meta": {"rol": "soporte"},
+          "enunciado": "El documento oficial que conserva la entidad, ¿es físico, electrónico o híbrido? ¿Cuál es el oficial?",
+          "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "Documentos del trámite",
+      "instrucciones": "No sugiera opciones; que ellos hagan el listado.",
+      "preguntas": [
+        { "codigo": "4", "tipo": "lista", "obligatoria": true, "meta": {"rol": "tipologias"},
+          "enunciado": "¿Qué documentos produce o recibe la entidad en este trámite?",
+          "ayuda": "Que ellos hagan el listado." },
+        { "codigo": "5", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "evidencia"},
+          "enunciado": "Los anexos o evidencias (fotos, soportes, adjuntos): ¿dónde se almacenan, quedan asociados al expediente y se pueden recuperar después?",
+          "ayuda": "" },
+        { "codigo": "6", "tipo": "texto_largo", "obligatoria": false,
+          "enunciado": "¿Qué documentos quedan cuando el trámite se resuelve por la vía normal (aceptación/pago/cumplimiento)?",
+          "ayuda": "" },
+        { "codigo": "7", "tipo": "texto_largo", "obligatoria": false,
+          "enunciado": "¿Qué sucede cuando NO se resuelve por la vía normal? ¿Se abre un expediente aparte?",
+          "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "Expediente y cierre",
+      "instrucciones": "Prefiera ver un expediente real, no responder de memoria.",
+      "preguntas": [
+        { "codigo": "8", "tipo": "texto_largo", "obligatoria": true, "meta": {"rol": "expediente"},
+          "enunciado": "Muestre un expediente real completo y liste sus documentos del primero al último, en orden.",
+          "ayuda": "Regístrelo también como Caso (A/B/C)." },
+        { "codigo": "9", "tipo": "texto_corto", "obligatoria": false, "meta": {"rol": "decision"},
+          "enunciado": "¿Cómo se llama exactamente el documento que decide o finaliza el trámite?",
+          "ayuda": "Nombre textual." },
+        { "codigo": "10", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "recursos"},
+          "enunciado": "¿Qué recursos puede interponer el ciudadano y qué documentos generan?",
+          "ayuda": "" },
+        { "codigo": "11", "tipo": "texto_largo", "obligatoria": true, "meta": {"rol": "hecho_cierre"},
+          "enunciado": "¿Cuándo consideran que el expediente está oficialmente terminado y qué documento lo demuestra?",
+          "ayuda": "El hecho de cierre; no el simple paso del tiempo." },
+        { "codigo": "12", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "post_cierre"},
+          "enunciado": "Después de terminado, ¿qué pasa con el expediente? (se archiva, digitaliza, remite a otra dependencia)",
+          "ayuda": "" },
+        { "codigo": "13", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "cobro"},
+          "enunciado": "Si hay cobro o una etapa posterior: ¿quién la maneja, se remite a otra dependencia y con qué documentos?",
+          "ayuda": "" }
+      ]
+    },
+    {
+      "titulo": "Valor y volumen",
+      "instrucciones": "",
+      "preguntas": [
+        { "codigo": "14", "tipo": "texto_largo", "obligatoria": true, "meta": {"rol": "unicidad"},
+          "enunciado": "Si desapareciera su plataforma, ¿qué información perdería que no esté en sistemas externos?",
+          "ayuda": "Pregunta clave de unicidad para la valoración." },
+        { "codigo": "15", "tipo": "texto_corto", "obligatoria": false, "meta": {"rol": "frecuencia"},
+          "enunciado": "¿Con qué frecuencia se consultan estos expedientes, incluso los antiguos?",
+          "ayuda": "" },
+        { "codigo": "16", "tipo": "texto_largo", "obligatoria": false, "meta": {"rol": "consulta"},
+          "enunciado": "¿Quién los consulta y para qué? ¿Se han requerido por vía judicial o de muchos años atrás?",
+          "ayuda": "" },
+        { "codigo": "17", "tipo": "texto_corto", "obligatoria": false, "meta": {"rol": "volumen"},
+          "enunciado": "¿Cuántos trámites al año aproximadamente, y qué porcentaje escala a una etapa posterior?",
+          "ayuda": "Aproximado." }
+      ]
+    }
+  ],
+  "casos_sugeridos": [
+    { "etiqueta": "A", "tipo_caso": "via_normal", "titulo": "Expediente resuelto por la vía normal" },
+    { "etiqueta": "B", "tipo_caso": "via_alterna", "titulo": "Expediente que siguió la vía alterna / con decisión" },
+    { "etiqueta": "C", "tipo_caso": "excepcional", "titulo": "Expediente excepcional o de archivo (si existe)" }
+  ]
+}
