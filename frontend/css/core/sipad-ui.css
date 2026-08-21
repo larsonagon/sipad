@@ -43,7 +43,7 @@
   --font-lg:1.25rem;
   --font-xl:1.6rem;
 
-  --header-height: 90px;
+  --header-height: 118px;
   --footer-height: 40px;
 
 }
@@ -1211,4 +1211,153 @@ select.form-control{
     font-size:12px;
   }
 
+}
+
+/* ======================================================
+   REDISEÑO v1.3 — Header en dos filas + tarjetas del panel
+   (bloque añadido al final: sobrescribe reglas previas)
+====================================================== */
+
+.pig-header{
+  background:linear-gradient(180deg,#1f4e79,#183f63);
+  box-shadow:0 2px 12px rgba(0,0,0,.16);
+}
+
+.pig-header-inner{
+  max-width:1200px;
+  margin:0 auto;
+  display:block;
+  padding:10px 20px 0;
+  gap:0;
+}
+
+/* FILA 1: marca (izq) + usuario (der) */
+.pig-header-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  width:100%;
+}
+
+.pig-header-left{ min-width:0; gap:2px; }
+
+.pig-title{ font-size:16px; font-weight:700; letter-spacing:.2px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+.pig-module{
+  margin-left:0;
+  background:rgba(255,255,255,.16);
+  padding:2px 10px;
+  border-radius:99px;
+  font-weight:500;
+  font-size:12px;
+}
+
+.pig-sub{ font-size:12px; opacity:.75; }
+
+/* Usuario como "píldora" */
+.pig-user{ position:relative; }
+
+.pig-user-info{
+  display:flex; align-items:center; gap:10px;
+  background:rgba(255,255,255,.10);
+  padding:6px 12px; border-radius:99px; cursor:pointer;
+  transition:.15s;
+}
+.pig-user-info:hover{ background:rgba(255,255,255,.18); }
+
+.pig-user-icon{
+  width:30px; height:30px; border-radius:50%;
+  background:rgba(255,255,255,.22);
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+}
+.pig-user-text{ display:flex; flex-direction:column; line-height:1.15; }
+.pig-user-name{ font-size:13px; font-weight:600; color:#fff; }
+.pig-user-meta{ font-size:11px; opacity:.75; color:#fff; }
+
+/* FILA 2: navegación a lo ancho */
+.pig-nav{
+  display:flex; align-items:center; gap:4px;
+  flex-wrap:wrap;
+  margin-top:8px;
+  border-top:1px solid rgba(255,255,255,.12);
+  padding:8px 0 10px;
+  overflow:visible;
+}
+
+.pig-nav-sep{ width:1px; height:20px; background:rgba(255,255,255,.18); margin:0 6px; }
+
+.pig-nav button{
+  background:transparent;
+  border:none;
+  color:rgba(255,255,255,.85);
+  height:32px;
+  padding:0 14px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:500;
+  line-height:1;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.15s;
+}
+.pig-nav button:hover{ background:rgba(255,255,255,.12); color:#fff; }
+.pig-nav button.active{ background:#fff; color:var(--color-primary); font-weight:600; }
+.pig-nav .btn-nav-entidades{ color:rgba(255,255,255,.7); }
+
+/* ------------------------------------------------------
+   Tarjetas del Panel principal
+------------------------------------------------------ */
+.module-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:22px;
+  max-width:1060px;
+  margin:38px auto 0;
+}
+
+.module-card{
+  width:auto;
+  flex:initial;
+  text-align:left;
+  padding:24px 22px;
+  border-radius:14px;
+  box-shadow:0 6px 18px rgba(13,63,119,.07);
+  position:relative;
+  overflow:hidden;
+}
+.module-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 14px 30px rgba(13,63,119,.13);
+  border-color:#cdd8e6;
+}
+.module-card::before{
+  content:"";
+  position:absolute; left:0; top:0; bottom:0; width:4px;
+  background:var(--mc-accent,#1e5fae);
+}
+
+.module-icon{
+  width:52px; height:52px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:26px;
+  margin-bottom:16px;
+  background:var(--mc-soft,#eaf1fb);
+}
+.module-card h3{ font-size:17px; font-weight:700; }
+.module-card p{ font-size:13px; line-height:1.45; }
+
+/* Acentos por módulo */
+.m-icaf{ --mc-accent:#1e5fae; --mc-soft:#eaf1fb; }
+.m-trd{  --mc-accent:#b7791f; --mc-soft:#fef4e3; }
+.m-ai{   --mc-accent:#4f46e5; --mc-soft:#eef0ff; }
+.m-val{  --mc-accent:#0f8a5f; --mc-soft:#e7f7ef; }
+.m-inf{  --mc-accent:#0e7490; --mc-soft:#eef6f9; }
+.m-adm{  --mc-accent:#4b5563; --mc-soft:#f3f4f6; }
+
+@media (max-width:820px){
+  .module-grid{ grid-template-columns:1fr; }
+  .pig-header-top{ flex-direction:row; align-items:center; }
+  .pig-user-text{ display:none; }
 }

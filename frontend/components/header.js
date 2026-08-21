@@ -151,88 +151,26 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   else if (cargo)              cargoDependencia = cargo
   else if (dependencia)        cargoDependencia = dependencia
 
+  const nombreVisibleEntidad = gestionEntidadNombre || nombreEntidad
+  const moduloLabel = modulo === 'home' ? 'Panel Principal' : modulo
+
   const header = document.createElement('header')
   header.className = 'pig-header'
 
   header.innerHTML = `
     <div class="pig-header-inner">
 
+      <!-- FILA 1: marca + usuario -->
       <div class="pig-header-top">
 
         <div class="pig-header-left">
           <div class="pig-title">
-            SIPAD – ${gestionEntidadNombre || nombreEntidad}
-            <span class="pig-module">
-              ${modulo === 'home' ? 'Panel Principal' : modulo}
-            </span>
+            SIPAD <span class="pig-module">${moduloLabel}</span>
           </div>
-          ${seccion ? `<div class="pig-sub">${seccion}</div>` : ''}
+          <div class="pig-sub">${nombreVisibleEntidad}${seccion ? ` · ${seccion}` : ''}</div>
         </div>
 
-        <div class="pig-header-right">
-          <nav class="pig-nav">
-
-            ${gestionEntidadId ? `
-              <button type="button" id="btnVolverEntidades" class="btn-nav-entidades">
-                ← Entidades
-              </button>
-            ` : ''}
-
-            <button type="button" id="btnInicio"
-              ${modulo === 'home' ? 'class="active"' : ''}>
-              Inicio
-            </button>
-
-            ${puedeAdmin ? `
-              <button type="button" id="btnAdmin"
-                ${modulo === 'Administración' ? 'class="active"' : ''}>
-                Administración
-              </button>
-            ` : ''}
-
-            ${puedeICAF ? `
-              <button type="button" id="btnSegtec"
-                ${modulo === 'ICAF' ? 'class="active"' : ''}>
-                ICAF
-              </button>
-            ` : ''}
-
-            ${puedeTRDAI ? `
-              <button type="button" id="btnTRDAI"
-                ${modulo === 'TRD-AI' ? 'class="active"' : ''}>
-                TRD-AI
-              </button>
-            ` : ''}
-
-            ${puedeTRD ? `
-              <button type="button" id="btnTRD"
-                ${modulo === 'TRD' ? 'class="active"' : ''}>
-                TRD
-              </button>
-            ` : ''}
-
-            ${puedeVerInformes ? `
-              <button type="button" id="btnInformes"
-                ${modulo === 'Informes' ? 'class="active"' : ''}>
-                Informes
-              </button>
-            ` : ''}
-
-            ${puedeTRD ? `
-              <button type="button" id="btnValoracion"
-                ${modulo === 'Valoración' ? 'class="active"' : ''}>
-                Valoración
-              </button>
-            ` : ''}
-
-          </nav>
-        </div>
-
-      </div>
-
-      <div class="pig-header-bottom">
         <div class="pig-user">
-
           <div class="pig-user-info" id="btnUserMenu">
             <div class="pig-user-icon">👤</div>
             <div class="pig-user-text">
@@ -240,18 +178,37 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
               <div class="pig-user-meta">${cargoDependencia}</div>
             </div>
           </div>
-
           <div class="pig-user-dropdown" id="userDropdown">
-            <button type="button" id="btnCambiarPassword">
-              🔑 Cambiar contraseña
-            </button>
-            <button type="button" id="btnSalir" class="logout">
-              🚪 Cerrar sesión
-            </button>
+            <button type="button" id="btnCambiarPassword">🔑 Cambiar contraseña</button>
+            <button type="button" id="btnSalir" class="logout">🚪 Cerrar sesión</button>
           </div>
-
         </div>
+
       </div>
+
+      <!-- FILA 2: navegación -->
+      <nav class="pig-nav">
+
+        ${gestionEntidadId ? `
+          <button type="button" id="btnVolverEntidades" class="btn-nav-entidades">← Entidades</button>
+          <span class="pig-nav-sep"></span>
+        ` : ''}
+
+        <button type="button" id="btnInicio" ${modulo === 'home' ? 'class="active"' : ''}>Inicio</button>
+
+        ${puedeAdmin ? `<button type="button" id="btnAdmin" ${modulo === 'Administración' ? 'class="active"' : ''}>Administración</button>` : ''}
+
+        ${puedeICAF ? `<button type="button" id="btnSegtec" ${modulo === 'ICAF' ? 'class="active"' : ''}>ICAF</button>` : ''}
+
+        ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>TRD-AI</button>` : ''}
+
+        ${puedeTRD ? `<button type="button" id="btnTRD" ${modulo === 'TRD' ? 'class="active"' : ''}>TRD</button>` : ''}
+
+        ${puedeVerInformes ? `<button type="button" id="btnInformes" ${modulo === 'Informes' ? 'class="active"' : ''}>Informes</button>` : ''}
+
+        ${puedeTRD ? `<button type="button" id="btnValoracion" ${modulo === 'Valoración' ? 'class="active"' : ''}>Valoración</button>` : ''}
+
+      </nav>
 
     </div>
   `

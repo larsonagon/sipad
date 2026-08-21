@@ -96,17 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // UI
   // =====================================================
 
-  const cardSegtec   = document.getElementById('cardSegtec');
-  const cardTRD      = document.getElementById('cardTRD');
-  const cardTRDAI    = document.getElementById('cardTRDAI');
-  const cardAdmin    = document.getElementById('cardAdmin');
-  const cardInformes = document.getElementById('cardInformes');
+  const cardSegtec     = document.getElementById('cardSegtec');
+  const cardTRD        = document.getElementById('cardTRD');
+  const cardTRDAI      = document.getElementById('cardTRDAI');
+  const cardAdmin      = document.getElementById('cardAdmin');
+  const cardInformes   = document.getElementById('cardInformes');
+  const cardValoracion = document.getElementById('cardValoracion');
 
-  if (cardSegtec)   cardSegtec.style.display   = puedeICAF     ? '' : 'none';
-  if (cardInformes) cardInformes.style.display  = puedeInformes ? '' : 'none';
-  if (cardTRDAI)    cardTRDAI.style.display     = puedeTRDAI    ? '' : 'none';
-  if (cardTRD)      cardTRD.style.display       = puedeTRDAI    ? '' : 'none';
-  if (cardAdmin)    cardAdmin.style.display     = puedeAdmin    ? '' : 'none';
+  if (cardSegtec)     cardSegtec.style.display     = puedeICAF     ? '' : 'none';
+  if (cardInformes)   cardInformes.style.display    = puedeInformes ? '' : 'none';
+  if (cardTRDAI)      cardTRDAI.style.display       = puedeTRDAI    ? '' : 'none';
+  if (cardTRD)        cardTRD.style.display         = puedeTRDAI    ? '' : 'none';
+  if (cardValoracion) cardValoracion.style.display  = puedeTRDAI    ? '' : 'none';
+  if (cardAdmin)      cardAdmin.style.display       = puedeAdmin    ? '' : 'none';
 
   const grid = document.querySelector('.module-grid');
   if (grid) grid.style.visibility = 'visible';
@@ -143,6 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cardInformes) {
     cardInformes.onclick = () => {
       window.location.href = '/informes/index.html';
+    };
+  }
+
+  if (cardValoracion) {
+    cardValoracion.onclick = () => {
+      window.location.href = '/valoracion/index.html';
     };
   }
 
