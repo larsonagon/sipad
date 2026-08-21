@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     nuevaActividadBtn?.classList.add('hidden');
   }
 
+  // Carga masiva por Excel: disponible para quien puede analizar
+  // (Super Admin / Archivista), que es quien estructura la TRD.
+  if (puedeAnalizar) {
+    document.getElementById('importarExcelBtn')?.classList.remove('hidden');
+  }
+
   cerrarModalBtn?.addEventListener('click', cerrarModal);
 
   // =====================================================

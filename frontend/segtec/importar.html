@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carga masiva de actividades – ICAF | SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <style>
+    .imp-step{ border:1px solid var(--color-border); border-radius:14px; background:#fff; padding:22px; margin-top:1.1rem; }
+    .imp-step h3{ margin:0 0 6px; font-size:16px; color:var(--color-primary); }
+    .imp-step p{ margin:0 0 14px; color:var(--color-text-muted); font-size:14px; line-height:1.5; }
+    .imp-num{ display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+      background:var(--color-primary); color:#fff; font-size:13px; font-weight:700; margin-right:8px; }
+    .drop{ display:block; border:2px dashed var(--color-border); border-radius:12px; padding:26px; text-align:center; cursor:pointer;
+      transition:border-color .2s, background .2s; }
+    .drop:hover, .drop.drag{ border-color:var(--color-primary); background:#f5f8fd; }
+    .drop input{ display:none; }
+    .drop .file-name{ margin-top:10px; font-weight:600; color:var(--color-primary); }
+    .resumen{ margin-top:1.1rem; }
+    .stat-row{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+    .stat{ flex:1; min-width:150px; border:1px solid var(--color-border); border-radius:12px; padding:16px; background:#fff; }
+    .stat .n{ font-size:28px; font-weight:800; color:var(--color-primary); line-height:1; }
+    .stat .l{ font-size:13px; color:var(--color-text-muted); margin-top:6px; }
+    .stat.ok .n{ color:#0f8a5f } .stat.warn .n{ color:#b45309 } .stat.err .n{ color:#991b1b }
+    .err-list{ border:1px solid #fecaca; background:#fef2f2; border-radius:10px; padding:12px 14px; }
+    .err-list h4{ margin:0 0 8px; color:#991b1b; font-size:14px; }
+    .err-list ul{ margin:0; padding-left:18px; } .err-list li{ font-size:13px; margin-bottom:3px; }
+    .muted{ color:var(--color-text-muted); font-size:13px; }
+    .hidden{ display:none; }
+  </style>
+</head>
+
+<body>
+  <div id="header"></div>
+
+  <main class="module-page">
+    <div class="contenido-documento">
+
+      <div class="module-header centered">
+        <h1>Carga masiva de actividades</h1>
+        <p class="module-subtext">Registre muchas actividades a la vez desde un archivo de Excel</p>
+      </div>
+
+      <!-- PASO 1 -->
+      <section class="imp-step">
+        <h3><span class="imp-num">1</span>Descargue la plantilla</h3>
+        <p>Un archivo de Excel con las columnas correctas y una fila de ejemplo. Diligencie una fila por actividad.
+           Solo <b>Dependencia</b> y <b>Actividad</b> son obligatorias.</p>
+        <button class="btn-secondary" id="btnPlantilla">⬇ Descargar plantilla (.xlsx)</button>
+      </section>
+
+      <!-- PASO 2 -->
+      <section class="imp-step">
+        <h3><span class="imp-num">2</span>Suba el archivo diligenciado</h3>
+        <p>Si una dependencia no existe en SIPAD, se creará automáticamente.</p>
+
+        <label class="drop" id="drop">
+          <div>📄 Haga clic para elegir un archivo <b>.xlsx</b> o arrástrelo aquí</div>
+          <div class="file-name" id="fileName"></div>
+          <input type="file" id="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        </label>
+
+        <div style="margin-top:14px; display:flex; gap:8px; align-items:center;">
+          <button class="btn-primary" id="btnImportar" disabled>Importar actividades</button>
+          <span class="muted" id="estado"></span>
+        </div>
+      </section>
+
+      <!-- RESULTADO -->
+      <section class="resumen hidden" id="resumen">
+        <div class="stat-row">
+          <div class="stat ok"><div class="n" id="nCreadas">0</div><div class="l">actividades creadas</div></div>
+          <div class="stat"><div class="n" id="nDeps">0</div><div class="l">dependencias nuevas</div></div>
+          <div class="stat err"><div class="n" id="nErrores">0</div><div class="l">filas con error</div></div>
+        </div>
+        <div id="depsNuevas" class="muted" style="margin-bottom:12px;"></div>
+        <div class="err-list hidden" id="errBox">
+          <h4>Filas que no se pudieron importar</h4>
+          <ul id="errUl"></ul>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:8px;">
+          <a class="btn-primary" href="/segtec/segtec.html">Ver actividades →</a>
+          <button class="btn-secondary" id="btnOtra">Importar otro archivo</button>
+        </div>
+      </section>
+
+      <div style="margin-top:18px;">
+        <a class="muted" href="/segtec/segtec.html">← Volver a actividades</a>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="sipad-notifications"></div>
+
+  <script type="module">
+    import { renderHeader } from '/components/header.js';
+    renderHeader('ICAF');
+  </script>
+  <script type="module" src="/segtec/importar.js"></script>
+</body>
+</html>

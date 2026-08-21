@@ -155,6 +155,18 @@ function marcarError(elemento, mensaje) {
 }
 
 
+// Abre la sección "Datos avanzados" si un error quedó dentro de ella
+function abrirAvanzadoSiError() {
+  const det = document.querySelector('.segtec-avanzado')
+  if (det && !det.open) det.open = true
+}
+
+// Convierte cadenas vacías en null (para campos avanzados opcionales)
+function nn(valor) {
+  const s = (valor ?? '').toString().trim()
+  return s === '' ? null : s
+}
+
 // ======================================================
 // VALIDACIÓN
 // ======================================================
@@ -191,63 +203,30 @@ function validarActividad() {
     hayErrores = true
   }
 
-  if (!v(custodiaTipo)) {
-    marcarError(custodiaTipo, 'Campo obligatorio')
-    hayErrores = true
-  }
-
-  if (!v(cargoCustodia)) {
-    marcarError(cargoCustodia, 'Campo obligatorio')
-    hayErrores = true
-  }
-
-  // ── LOCALIZACIÓN MÚLTIPLE ──
-  if (localizacionesSeleccionadas.length === 0) {
-    marcarError(localizacionTipo, 'Seleccione al menos una localización')
-    hayErrores = true
-  }
-
-  if (!v(pasosFormales)) {
-    marcarError(pasosFormales, 'Seleccione una opción')
-    hayErrores = true
-  }
-
-  if (!v(otrasDep)) {
-    marcarError(otrasDep, 'Seleccione una opción')
-    hayErrores = true
-  }
-
-  if (!v(tienePlazo)) {
-    marcarError(tienePlazo, 'Seleccione una opción')
-    hayErrores = true
-  }
-
-  if (!v(generaExpediente)) {
-    marcarError(generaExpediente, 'Seleccione una opción')
+  if (!v(descripcion)) {
+    marcarError(descripcion, 'Campo obligatorio')
     hayErrores = true
   }
 
   // CONDICIONALES
 
-  if (generaDoc.value === 'si') {
+  if (generaDoc?.value === 'si') {
     if (!v(documentosGenerados)) {
       marcarError(documentosGenerados, 'Debe especificar los documentos')
       hayErrores = true
     }
   }
 
-  if (otrasDep.value === 'si') {
-    if (dependenciasSeleccionadas.length === 0) {
-      marcarError(selectDependencia, 'Seleccione al menos una dependencia')
-      hayErrores = true
-    }
-  }
+  // ── Campos avanzados (custodia, localización, plazos, dependencias,
+  // expediente, norma) son OPCIONALES: no bloquean el guardado.
+  // Solo se valida coherencia de lo que el usuario sí desplegó y usó ──
 
-  // Si eligió "otro" en localización, debe especificar
+  // Si eligió "otro" en localización, debe especificar el texto
   const tieneOtroLoc = localizacionesSeleccionadas.some(l => l.value === 'otro')
   if (tieneOtroLoc && !v(localizacionOtro)) {
     marcarError(localizacionOtro, 'Especifique la otra localización')
     hayErrores = true
+    abrirAvanzadoSiError()
   }
 
   if (hayErrores) {
@@ -915,14 +894,14 @@ btnGuardar?.addEventListener('click', async () => {
         genera_documentos: generaDoc.value === "si",
         documentos_generados: documentosGenerados.value,
         formato_produccion: formato.value,
-        recepcion_externa: recepcionExterna.value || null,
+        recepcion_externa: nn(recepcionExterna.value),
 
-        volumen_documental: volumenCategoria.value,
-        volumen_anual_personalizado: volumenAnualPersonalizado.value,
+        volumen_documental: nn(volumenCategoria.value),
+        volumen_anual_personalizado: nn(volumenAnualPersonalizado.value),
 
-        responsable_custodia: custodiaTipo.value,
-        cargo_custodia: cargoCustodia.value,
-        dependencia_custodia: dependenciaCustodia.value,
+        responsable_custodia: nn(custodiaTipo.value),
+        cargo_custodia: nn(cargoCustodia.value),
+        dependencia_custodia: nn(dependenciaCustodia.value),
 
         // ── Guardar localizaciones como JSON string ──
         localizacion_documentos: JSON.stringify(
@@ -931,7 +910,7 @@ btnGuardar?.addEventListener('click', async () => {
             nombre: l.nombre
           }))
         ),
-        localizacion_otro: localizacionOtro.value
+        localizacion_otro: nn(localizacionOtro.value)
 
       })
     })
@@ -945,12 +924,12 @@ btnGuardar?.addEventListener('click', async () => {
 
         tiene_plazo: tienePlazo.value === "si",
 
-        plazo_legal: plazoLegal.value,
-        tiempo_ejecucion: tiempoPromedio.value,
+        plazo_legal: nn(plazoLegal.value),
+        tiempo_ejecucion: nn(tiempoPromedio.value),
 
         genera_expediente_propio: generaExpediente.value === "si",
 
-        norma_aplicable: normaAplicable.value,
+        norma_aplicable: nn(normaAplicable.value),
 
         // ── Guardar objetos {id, nombre} para futuras cargas ──
         dependencias_relacionadas:

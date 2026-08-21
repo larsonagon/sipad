@@ -17,6 +17,8 @@ import { generarPDFActividad } from './segtec.pdf.service.js'
 import { TRDAIRepository } from '../trd-ai/trd-ai.repository.js'
 import { TRDAIService } from '../trd-ai/trd-ai.service.js'
 
+import { registrarImportacion } from './segtec.import.js'
+
 console.log('🔥 SEGTEC ROUTER CARGADO')
 
 const router = express.Router()
@@ -442,5 +444,12 @@ router.put(
   '/actividades/:actividadId/validacion-tecnica',
   validacionController.guardar
 )
+
+// =====================================================
+// CARGA MASIVA DE ACTIVIDADES (Excel)
+//   GET  /api/segtec/importar/plantilla
+//   POST /api/segtec/importar   { archivoBase64 }
+// =====================================================
+registrarImportacion(router, db, req => req.user?.sub || req.user?.id)
 
 export default router
