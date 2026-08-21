@@ -208,6 +208,11 @@ function validarActividad() {
     hayErrores = true
   }
 
+  if (!v(recepcionExterna)) {
+    marcarError(recepcionExterna, 'Campo obligatorio')
+    hayErrores = true
+  }
+
   // CONDICIONALES
 
   if (generaDoc?.value === 'si') {
