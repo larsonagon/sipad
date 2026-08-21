@@ -13,6 +13,12 @@ function soloAdmin(req, res, next) {
   return res.status(403).json({ success: false, message: 'No autorizado para administrar plantillas' })
 }
 
+// La valoración (fichas) es tarea del archivista: Super Admin + Archivista
+function soloValoracion(req, res, next) {
+  if (req.permisos?.puedeVerTRD) return next()
+  return res.status(403).json({ success: false, message: 'No autorizado para valorar (rol archivista)' })
+}
+
 export function buildValoracionRouter(db) {
 
   const router = express.Router()
@@ -36,6 +42,12 @@ export function buildValoracionRouter(db) {
   router.put('/diligenciamientos/:id/respuestas', ...guard, controller.guardarRespuestas)
   router.post('/diligenciamientos/:id/finalizar', ...guard, controller.finalizar)
   router.post('/diligenciamientos/:id/casos', ...guard, controller.agregarCaso)
+
+  // Fichas de valoración (las llena/valida el archivista)
+  router.get('/fichas', ...guard, controller.listarFichas)
+  router.post('/fichas', ...guard, soloValoracion, controller.crearFicha)
+  router.get('/fichas/:id', ...guard, controller.obtenerFicha)
+  router.put('/fichas/:id', ...guard, soloValoracion, controller.actualizarFicha)
 
   router.get('/health', (req, res) => res.json({ modulo: 'valoracion', estado: 'activo' }))
 

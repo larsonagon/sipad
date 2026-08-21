@@ -125,6 +125,56 @@ export async function runValoracionMigration(db) {
 
     CREATE INDEX IF NOT EXISTS idx_lvd_caso_docs_caso
       ON lvd_caso_documentos(caso_id);
+
+    -- ================================================================
+    -- FICHA DE VALORACIÓN (la que valida/llena el archivista)
+    -- Estructurada según el modelo: 11 valores (JSON), tiempos,
+    -- hecho de cierre, reglas de excepción, disposición y su procedimiento.
+    -- ================================================================
+    CREATE TABLE IF NOT EXISTS lvd_fichas (
+      id                       TEXT PRIMARY KEY,
+      entidad_id               TEXT,
+      diligenciamiento_id      TEXT,            -- evidencia de origen (opcional)
+      serie                    TEXT,
+      subserie                 TEXT,
+      unidad_documental        TEXT,
+      productor_dependencia_id INTEGER,
+      funcion                  TEXT,
+      tipologias               TEXT,
+
+      -- Valores (JSON: [{clave, nivel, sustento}])
+      valores_primarios        TEXT,
+      valores_secundarios      TEXT,
+
+      -- Consulta
+      frecuencia_consulta      TEXT,
+      usuarios_consulta        TEXT,            -- JSON
+
+      -- Ciclo vital y cierre
+      hecho_cierre             TEXT,
+      reglas_excepcion         TEXT,            -- JSON o texto
+      tiempo_gestion           INTEGER,
+      tiempo_central           INTEGER,
+
+      -- Disposición final
+      disposicion_final        TEXT,            -- CT | E | S | M
+      disposicion_justificacion TEXT,
+      muestreo_porcentaje      INTEGER,
+      muestreo_metodo          TEXT,
+      criterios_conservacion   TEXT,
+
+      riesgos                  TEXT,
+      fundamento_normativo     TEXT,
+      estado                   TEXT NOT NULL DEFAULT 'borrador', -- borrador | en_revision | lista
+      origen                   TEXT DEFAULT 'manual',            -- manual | motor
+
+      created_at               TEXT NOT NULL,
+      updated_at               TEXT,
+      FOREIGN KEY (diligenciamiento_id) REFERENCES lvd_diligenciamientos(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_lvd_fichas_entidad
+      ON lvd_fichas(entidad_id);
   `)
 
   console.log('✅ LVD (valoración) migration ejecutada')

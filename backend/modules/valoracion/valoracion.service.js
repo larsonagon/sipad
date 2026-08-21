@@ -68,4 +68,26 @@ export default class ValoracionService {
     }
     return { id: casoId }
   }
+
+  // -------- Fichas de valoración --------
+
+  crearFicha(entidadId, data) {
+    return this.repository.crearFicha(entidadId, data || {})
+  }
+
+  listarFichas(entidadId) {
+    return this.repository.listarFichas(entidadId)
+  }
+
+  obtenerFicha(id, entidadId) {
+    return this.repository.obtenerFicha(id, entidadId)
+  }
+
+  async actualizarFicha(id, entidadId, data) {
+    if (!(await this.repository.pertenceFicha(id, entidadId))) {
+      throw new Error('Ficha no encontrada para esta entidad')
+    }
+    await this.repository.actualizarFicha(id, entidadId, data || {})
+    return this.repository.obtenerFicha(id, entidadId)
+  }
 }

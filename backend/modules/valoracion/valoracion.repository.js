@@ -221,6 +221,105 @@ export default class ValoracionRepository {
     )
     return id
   }
+
+  // ============================================================
+  // FICHAS DE VALORACIÓN
+  // ============================================================
+
+  // Campos editables de la ficha (lista blanca)
+  _camposFicha() {
+    return [
+      'serie', 'subserie', 'unidad_documental', 'productor_dependencia_id', 'funcion',
+      'tipologias', 'valores_primarios', 'valores_secundarios', 'frecuencia_consulta',
+      'usuarios_consulta', 'hecho_cierre', 'reglas_excepcion', 'tiempo_gestion',
+      'tiempo_central', 'disposicion_final', 'disposicion_justificacion',
+      'muestreo_porcentaje', 'muestreo_metodo', 'criterios_conservacion',
+      'riesgos', 'fundamento_normativo', 'estado', 'diligenciamiento_id'
+    ]
+  }
+
+  _serializar(data) {
+    // Serializa a texto los campos JSON conocidos
+    const jsonKeys = ['valores_primarios', 'valores_secundarios', 'usuarios_consulta', 'reglas_excepcion']
+    const out = {}
+    for (const k of this._camposFicha()) {
+      if (!(k in data)) continue
+      let v = data[k]
+      if (jsonKeys.includes(k) && v !== null && typeof v !== 'string') v = JSON.stringify(v)
+      out[k] = v ?? null
+    }
+    return out
+  }
+
+  _hidratar(row) {
+    if (!row) return row
+    for (const k of ['valores_primarios', 'valores_secundarios', 'usuarios_consulta', 'reglas_excepcion']) {
+      if (row[k]) row[k] = safeJSON(row[k])
+    }
+    return row
+  }
+
+  async crearFicha(entidadId, data = {}) {
+    const id = uid()
+    const s = this._serializar(data)
+    await this.db.run(
+      `INSERT INTO lvd_fichas
+        (id, entidad_id, diligenciamiento_id, serie, subserie, unidad_documental,
+         productor_dependencia_id, funcion, tipologias, valores_primarios, valores_secundarios,
+         frecuencia_consulta, usuarios_consulta, hecho_cierre, reglas_excepcion,
+         tiempo_gestion, tiempo_central, disposicion_final, disposicion_justificacion,
+         muestreo_porcentaje, muestreo_metodo, criterios_conservacion, riesgos,
+         fundamento_normativo, estado, origen, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, entidadId, s.diligenciamiento_id ?? null, s.serie ?? null, s.subserie ?? null,
+        s.unidad_documental ?? null, s.productor_dependencia_id ?? null, s.funcion ?? null,
+        s.tipologias ?? null, s.valores_primarios ?? null, s.valores_secundarios ?? null,
+        s.frecuencia_consulta ?? null, s.usuarios_consulta ?? null, s.hecho_cierre ?? null,
+        s.reglas_excepcion ?? null, s.tiempo_gestion ?? null, s.tiempo_central ?? null,
+        s.disposicion_final ?? null, s.disposicion_justificacion ?? null,
+        s.muestreo_porcentaje ?? null, s.muestreo_metodo ?? null, s.criterios_conservacion ?? null,
+        s.riesgos ?? null, s.fundamento_normativo ?? null, s.estado ?? 'borrador',
+        data.origen ?? 'manual', now()
+      ]
+    )
+    return id
+  }
+
+  async listarFichas(entidadId) {
+    const rows = await this.db.all(
+      `SELECT id, serie, subserie, disposicion_final, tiempo_gestion, tiempo_central, estado, updated_at, created_at
+         FROM lvd_fichas WHERE entidad_id = ? ORDER BY created_at DESC`,
+      [entidadId]
+    )
+    return rows
+  }
+
+  async obtenerFicha(id, entidadId) {
+    const row = await this.db.get(
+      `SELECT * FROM lvd_fichas WHERE id = ? AND entidad_id = ?`,
+      [id, entidadId]
+    )
+    return this._hidratar(row)
+  }
+
+  async pertenceFicha(id, entidadId) {
+    const row = await this.db.get(`SELECT id FROM lvd_fichas WHERE id = ? AND entidad_id = ?`, [id, entidadId])
+    return !!row
+  }
+
+  async actualizarFicha(id, entidadId, data = {}) {
+    const s = this._serializar(data)
+    const keys = Object.keys(s)
+    if (!keys.length) return
+    const sets = keys.map(k => `${k} = ?`).join(', ')
+    const params = keys.map(k => s[k])
+    params.push(now(), id, entidadId)
+    await this.db.run(
+      `UPDATE lvd_fichas SET ${sets}, updated_at = ? WHERE id = ? AND entidad_id = ?`,
+      params
+    )
+  }
 }
 
 function safeJSON(s) {

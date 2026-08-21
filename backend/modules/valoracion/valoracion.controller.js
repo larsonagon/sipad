@@ -112,4 +112,51 @@ export default class ValoracionController {
       res.status(400).json({ success: false, message: e.message || 'Error agregando caso' })
     }
   }
+
+  // ===== Fichas de valoración =====
+
+  // GET /api/valoracion/fichas
+  listarFichas = async (req, res) => {
+    try {
+      const data = await this.service.listarFichas(req.entidad_id)
+      res.json({ success: true, total: data.length, data })
+    } catch (e) {
+      console.error('Error listar fichas:', e)
+      res.status(500).json({ success: false, message: 'Error listando fichas' })
+    }
+  }
+
+  // POST /api/valoracion/fichas
+  crearFicha = async (req, res) => {
+    try {
+      const id = await this.service.crearFicha(req.entidad_id, req.body || {})
+      res.status(201).json({ success: true, id })
+    } catch (e) {
+      console.error('Error crear ficha:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error creando ficha' })
+    }
+  }
+
+  // GET /api/valoracion/fichas/:id
+  obtenerFicha = async (req, res) => {
+    try {
+      const data = await this.service.obtenerFicha(req.params.id, req.entidad_id)
+      if (!data) return res.status(404).json({ success: false, message: 'Ficha no encontrada' })
+      res.json({ success: true, data })
+    } catch (e) {
+      console.error('Error obtener ficha:', e)
+      res.status(500).json({ success: false, message: 'Error obteniendo ficha' })
+    }
+  }
+
+  // PUT /api/valoracion/fichas/:id
+  actualizarFicha = async (req, res) => {
+    try {
+      const data = await this.service.actualizarFicha(req.params.id, req.entidad_id, req.body || {})
+      res.json({ success: true, data })
+    } catch (e) {
+      console.error('Error actualizar ficha:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error actualizando ficha' })
+    }
+  }
 }
