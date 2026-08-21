@@ -6,7 +6,7 @@ export const TRDAIController = (service) => ({
 
   obtenerDashboardTRDAI: async (req, res) => {
     try {
-      const data = await service.obtenerDashboard()
+      const data = await service.obtenerDashboard(req.entidad_id || null)
       return res.json({ ok: true, data })
     } catch (err) {
       console.error('TRD-AI dashboard error:', err)
@@ -33,7 +33,7 @@ export const TRDAIController = (service) => ({
 
   generarPropuestas: async (req, res) => {
     try {
-      const resultado = await service.ejecutarMotorInteligente()
+      const resultado = await service.ejecutarMotorInteligente(null, req.entidad_id || null)
       return res.json({ ok: true, data: resultado })
     } catch (err) {
       console.error('TRD-AI generar propuestas error:', err)
@@ -47,7 +47,7 @@ export const TRDAIController = (service) => ({
 
   listarPropuestas: async (req, res) => {
     try {
-      const data = await service.listarPropuestas()
+      const data = await service.listarPropuestas(req.entidad_id || null)
       return res.json({ ok: true, data })
     } catch (err) {
       return res.status(500).json({ ok: false, error: err.message })

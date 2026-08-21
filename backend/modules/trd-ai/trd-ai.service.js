@@ -9,11 +9,11 @@ export const TRDAIService = (repository, db) => ({
   // DASHBOARD
   // ===================================================
 
-  async obtenerDashboard() {
+  async obtenerDashboard(entidadId = null) {
 
-    const total            = await repository.countAll()
-    const estados          = await repository.countByEstado()
-    const ultimasAprobadas = await repository.getUltimasAprobadas()
+    const total            = await repository.countAll(entidadId)
+    const estados          = await repository.countByEstado(entidadId)
+    const ultimasAprobadas = await repository.getUltimasAprobadas(entidadId)
 
     let aprobadas    = 0
     let rechazadas   = 0
@@ -54,10 +54,10 @@ export const TRDAIService = (repository, db) => ({
   // MOTOR INTELIGENTE
   // ===================================================
 
-  async ejecutarMotorInteligente(contexto = null) {
+  async ejecutarMotorInteligente(contexto = null, entidadId = null) {
 
     if (!contexto) {
-      const resultado = await repository.ejecutarMotorInteligente()
+      const resultado = await repository.ejecutarMotorInteligente(entidadId)
       if (!resultado) return []
       return resultado.map(r => ({
         serie:     r.serie     || null,
@@ -102,8 +102,8 @@ export const TRDAIService = (repository, db) => ({
   // LISTADO PROPUESTAS
   // ===================================================
 
-  async listarPropuestas() {
-    return await repository.getAllSeriesPropuestas()
+  async listarPropuestas(entidadId = null) {
+    return await repository.getAllSeriesPropuestas(entidadId)
   },
 
   async aprobarPropuesta(id, usuarioId) {

@@ -29,6 +29,7 @@ export async function runTRDAIMigration(db) {
   const columnasPropuestas = [
     { col: 'actividad_id', tipo: 'TEXT' },
     { col: 'disposicion_final', tipo: 'TEXT' },
+    { col: 'entidad_id', tipo: 'TEXT' },
   ]
 
   for (const { col, tipo } of columnasPropuestas) {
@@ -41,6 +42,33 @@ export async function runTRDAIMigration(db) {
       // Ya existe — ignorar
     }
   }
+
+  // =====================================================
+  // BACKFILL: entidad_id de propuestas existentes desde su actividad
+  // (multi-tenant). Solo rellena las que están en NULL.
+  // =====================================================
+
+  try {
+    await db.exec(`
+      UPDATE trd_series_propuestas
+      SET entidad_id = (
+        SELECT sa.entidad_id
+        FROM segtec_actividades sa
+        WHERE sa.id = trd_series_propuestas.actividad_id
+      )
+      WHERE entidad_id IS NULL
+    `)
+    console.log('✅ trd_series_propuestas.entidad_id backfilled')
+  } catch (e) {
+    console.warn('Backfill entidad_id propuestas omitido:', e.message)
+  }
+
+  try {
+    await db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_trd_propuesta_entidad
+      ON trd_series_propuestas(entidad_id)
+    `)
+  } catch { /* ignorar */ }
 
   // =====================================================
   // TABLA: REGLAS DE RETENCIÓN

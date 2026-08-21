@@ -191,8 +191,8 @@ export const TRDAIRepository = (db) => {
     await db.run(`
       INSERT INTO trd_series_propuestas (
         id, actividad_id, nombre_serie, nombre_subserie,
-        tipologia_documental, justificacion, confianza, estado, creado_en
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        tipologia_documental, justificacion, confianza, estado, creado_en, entidad_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       id,
       data.actividad_id,
@@ -202,7 +202,8 @@ export const TRDAIRepository = (db) => {
       data.justificacion        || null,
       data.nivel_confianza      || null,
       'propuesta',
-      new Date().toISOString()
+      new Date().toISOString(),
+      data.entidad_id           || null
     ])
 
     return id
@@ -214,12 +215,27 @@ export const TRDAIRepository = (db) => {
 
   return {
 
-    async countAll() {
+    async countAll(entidadId = null) {
+      if (entidadId) {
+        const r = await db.get(
+          `SELECT COUNT(*) as total FROM trd_series_propuestas WHERE entidad_id = ?`,
+          [entidadId]
+        )
+        return r.total
+      }
       const r = await db.get(`SELECT COUNT(*) as total FROM trd_series_propuestas`)
       return r.total
     },
 
-    async countByEstado() {
+    async countByEstado(entidadId = null) {
+      if (entidadId) {
+        return await db.all(`
+          SELECT estado, COUNT(*) cantidad
+          FROM trd_series_propuestas
+          WHERE entidad_id = ?
+          GROUP BY estado
+        `, [entidadId])
+      }
       return await db.all(`
         SELECT estado, COUNT(*) cantidad
         FROM trd_series_propuestas
@@ -227,7 +243,16 @@ export const TRDAIRepository = (db) => {
       `)
     },
 
-    async getUltimasAprobadas() {
+    async getUltimasAprobadas(entidadId = null) {
+      if (entidadId) {
+        return await db.all(`
+          SELECT id, nombre_serie, fecha_aprobacion
+          FROM trd_series_propuestas
+          WHERE estado = 'aprobada' AND entidad_id = ?
+          ORDER BY fecha_aprobacion DESC
+          LIMIT 5
+        `, [entidadId])
+      }
       return await db.all(`
         SELECT id, nombre_serie, fecha_aprobacion
         FROM trd_series_propuestas
@@ -237,7 +262,16 @@ export const TRDAIRepository = (db) => {
       `)
     },
 
-    async getAllSeriesPropuestas() {
+    async getAllSeriesPropuestas(entidadId = null) {
+      if (entidadId) {
+        return await db.all(`
+          SELECT tsp.*, sa.nombre actividad_nombre
+          FROM trd_series_propuestas tsp
+          LEFT JOIN segtec_actividades sa ON tsp.actividad_id = sa.id
+          WHERE tsp.entidad_id = ?
+          ORDER BY tsp.creado_en DESC
+        `, [entidadId])
+      }
       return await db.all(`
         SELECT tsp.*, sa.nombre actividad_nombre
         FROM trd_series_propuestas tsp
@@ -460,13 +494,20 @@ export const TRDAIRepository = (db) => {
     // MOTOR TRD-AI V2
     // =====================================================
 
-    async ejecutarMotorInteligente() {
+    async ejecutarMotorInteligente(entidadId = null) {
 
-      const actividades = await db.all(`
-        SELECT id, nombre, descripcion_funcional, documentos_generados, recepcion_externa
-        FROM segtec_actividades
-        WHERE estado_general IN ('analizada', 'caracterizada')
-      `)
+      const actividades = entidadId
+        ? await db.all(`
+            SELECT id, nombre, descripcion_funcional, documentos_generados, recepcion_externa, entidad_id
+            FROM segtec_actividades
+            WHERE estado_general IN ('analizada', 'caracterizada')
+              AND entidad_id = ?
+          `, [entidadId])
+        : await db.all(`
+            SELECT id, nombre, descripcion_funcional, documentos_generados, recepcion_externa, entidad_id
+            FROM segtec_actividades
+            WHERE estado_general IN ('analizada', 'caracterizada')
+          `)
 
       if (!actividades.length) return []
 
@@ -556,7 +597,8 @@ export const TRDAIRepository = (db) => {
           nombre_subserie:       subserie,
           tipologia_documental:  tipologiaPrincipal,
           justificacion:         `Propuesta generada automáticamente — origen: ${origen}`,
-          nivel_confianza:       confianza
+          nivel_confianza:       confianza,
+          entidad_id:            entidadId || actividad.entidad_id || null
         })
 
         resultados.push({

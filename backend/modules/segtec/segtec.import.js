@@ -238,7 +238,8 @@ export async function importarDesdeBuffer(db, { usuarioId, entidadId, buffer }) 
           genera,
           documentos || null,
           mapFormato(cellText(row.getCell(7))),
-          'borrador', nowISO(), nowISO(), entidadId
+          // 'caracterizada' → elegible para el generador de propuestas TRD-AI
+          'caracterizada', nowISO(), nowISO(), entidadId
         ]
       )
 
