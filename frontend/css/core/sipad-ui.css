@@ -1458,3 +1458,13 @@ select,select.form-control{
 
 /* Selección de texto */
 ::selection{ background:rgba(13,63,119,.15); }
+
+/* Botones de acción dentro de tablas: compactos (no desbordan la fila) */
+.table td button,
+.table td .btn-primary,.table td .btn-secondary,.table td .btn-danger,.table td .btn-success,
+.acciones button,.tabla-acciones button,.table-actions button{
+  min-height:30px; padding:6px 11px; font-size:12px; border-radius:8px; gap:5px;
+}
+/* Celda de acciones: botones en fila, sin envolver, con separación uniforme */
+.table td .acciones,.table td:last-child{ white-space:nowrap; }
+.table td .acciones{ display:inline-flex; gap:6px; align-items:center; }
