@@ -177,5 +177,10 @@ export async function runValoracionMigration(db) {
       ON lvd_fichas(entidad_id);
   `)
 
+  // Columna opcional: vínculo con la propuesta TRD-AI de origen (aditivo)
+  try {
+    await db.exec(`ALTER TABLE lvd_fichas ADD COLUMN propuesta_id TEXT`)
+  } catch { /* ya existe */ }
+
   console.log('✅ LVD (valoración) migration ejecutada')
 }

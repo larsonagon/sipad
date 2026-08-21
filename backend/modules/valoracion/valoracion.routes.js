@@ -47,9 +47,14 @@ export function buildValoracionRouter(db) {
   router.post('/diligenciamientos/:id/casos', ...guard, controller.agregarCaso)
   router.post('/diligenciamientos/:id/borrador-ficha', ...guard, soloValoracion, controller.generarBorradorFicha)
 
+  // Puente TRD-AI → Valoración: propuestas para valorar
+  router.get('/propuestas', ...guard, soloValoracion, controller.listarPropuestas)
+  router.post('/fichas/desde-propuesta/:propuestaId', ...guard, soloValoracion, controller.crearFichaDesdePropuesta)
+
   // Fichas de valoración (las llena/valida el archivista)
   router.get('/fichas', ...guard, controller.listarFichas)
   router.post('/fichas', ...guard, soloValoracion, controller.crearFicha)
+  router.post('/fichas/:id/a-trd', ...guard, soloValoracion, controller.enviarFichaATRD)
   router.get('/fichas/:id', ...guard, controller.obtenerFicha)
   router.put('/fichas/:id', ...guard, soloValoracion, controller.actualizarFicha)
   router.delete('/fichas/:id', ...guard, soloValoracion, controller.eliminarFicha)

@@ -171,6 +171,39 @@ export default class ValoracionController {
     }
   }
 
+  // GET /api/valoracion/propuestas  (propuestas TRD-AI para valorar)
+  listarPropuestas = async (req, res) => {
+    try {
+      const data = await this.service.listarPropuestas()
+      res.json({ success: true, total: data.length, data })
+    } catch (e) {
+      console.error('Error listar propuestas TRD-AI:', e)
+      res.status(500).json({ success: false, message: 'Error listando propuestas' })
+    }
+  }
+
+  // POST /api/valoracion/fichas/desde-propuesta/:propuestaId
+  crearFichaDesdePropuesta = async (req, res) => {
+    try {
+      const out = await this.service.crearFichaDesdePropuesta(req.entidad_id, req.params.propuestaId)
+      res.status(201).json({ success: true, ...out })
+    } catch (e) {
+      console.error('Error ficha desde propuesta:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error creando ficha desde propuesta' })
+    }
+  }
+
+  // POST /api/valoracion/fichas/:id/a-trd
+  enviarFichaATRD = async (req, res) => {
+    try {
+      const out = await this.service.enviarFichaATRD(req.params.id, req.entidad_id)
+      res.json({ success: true, ...out })
+    } catch (e) {
+      console.error('Error enviar ficha a TRD:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error enviando a TRD' })
+    }
+  }
+
   // DELETE /api/valoracion/fichas/:id
   eliminarFicha = async (req, res) => {
     try {

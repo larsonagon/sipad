@@ -3,6 +3,20 @@ import { generarBorradorDesdeEvidencia } from './valoracion.reglas.js'
 import { generarInformeValoracion } from './valoracion.informe.js'
 import { cargarReferentes } from './valoracion.referentes.js'
 
+// Disposición TRD-AI → códigos de ficha (CT/E/S/M)
+function dispPropuestaAFicha(d) {
+  const x = (d || '').toString().toLowerCase()
+  if (x === 'conservacion_total' || x === 'ct') return 'CT'
+  if (x === 'seleccion' || x === 'st' || x === 's') return 'S'
+  if (x === 'eliminacion' || x === 'el' || x === 'e') return 'E'
+  if (x === 'mt' || x === 'm') return 'M'
+  return null
+}
+// Disposición de ficha (CT/E/S/M) → códigos de la TRD (CT/EL/ST/MT)
+function dispFichaATRD(d) {
+  return ({ CT:'CT', E:'EL', S:'ST', M:'MT' })[d] || null
+}
+
 export default class ValoracionService {
 
   constructor(repository) {
@@ -103,6 +117,68 @@ export default class ValoracionService {
     const n = await this.repository.eliminarFicha(id, entidadId)
     if (!n) throw new Error('Ficha no encontrada para esta entidad')
     return { eliminada: true }
+  }
+
+  // -------- PUENTE 1: propuesta TRD-AI → ficha --------
+
+  listarPropuestas() {
+    return this.repository.listarPropuestasTRDAI()
+  }
+
+  async crearFichaDesdePropuesta(entidadId, propuestaId) {
+    const p = await this.repository.obtenerPropuestaTRDAI(propuestaId)
+    if (!p) throw new Error('Propuesta TRD-AI no encontrada')
+
+    const disp = dispPropuestaAFicha(p.retencion_disposicion || p.disposicion_final)
+    const payload = {
+      propuesta_id: p.id,
+      serie: p.nombre_serie || '',
+      subserie: p.nombre_subserie || '',
+      tipologias: p.tipologia_documental || '',
+      tiempo_gestion: p.retencion_gestion ?? null,
+      tiempo_central: p.retencion_central ?? null,
+      disposicion_final: disp,
+      disposicion_justificacion: p.justificacion
+        ? `Propuesta TRD-AI (${Math.round((p.confianza || 0) * 100)}% conf.): ${p.justificacion}`
+        : '',
+      fundamento_normativo: 'Acuerdo AGN 004 de 2019; Acuerdo AGN 001 de 2024; Ley 594 de 2000',
+      estado: 'borrador',
+      origen: 'propuesta'
+    }
+    const id = await this.repository.crearFicha(entidadId, payload)
+    return { id }
+  }
+
+  // -------- PUENTE 2: ficha → TRD oficial --------
+
+  async enviarFichaATRD(fichaId, entidadId) {
+    const f = await this.repository.obtenerFicha(fichaId, entidadId)
+    if (!f) throw new Error('Ficha no encontrada para esta entidad')
+    if (!f.serie && !f.subserie) throw new Error('La ficha necesita al menos una serie o subserie')
+
+    const version = await this.repository.obtenerOCrearVersionTRD(entidadId)
+    const dispTRD = dispFichaATRD(f.disposicion_final)
+
+    const serieNombre = f.serie || f.subserie
+    const serieId = await this.repository.upsertSerieTRD(version.id, entidadId, {
+      nombre: serieNombre,
+      tiempo_gestion: f.tiempo_gestion ?? null,
+      tiempo_central: f.tiempo_central ?? null,
+      disposicion_final: dispTRD,
+      propuesta_id: f.propuesta_id || null
+    })
+
+    let subserieId = null
+    if (f.subserie && f.serie && f.subserie !== f.serie) {
+      subserieId = await this.repository.upsertSubserieTRD(serieId, {
+        nombre: f.subserie,
+        tiempo_gestion: f.tiempo_gestion ?? null,
+        tiempo_central: f.tiempo_central ?? null,
+        disposicion_final: dispTRD
+      })
+    }
+
+    return { versionId: version.id, versionNombre: version.nombre_version, serieId, subserieId }
   }
 
   // -------- Motor de reglas: borrador de ficha desde la evidencia --------

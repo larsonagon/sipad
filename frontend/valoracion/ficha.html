@@ -40,10 +40,14 @@
 
       <!-- LISTA -->
       <section id="vistaLista">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
           <h3 style="margin:0;">Fichas</h3>
-          <button class="btn-primary" id="btnNueva">+ Nueva ficha</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-secondary" id="btnDesdePropuesta">+ Desde propuesta TRD-AI</button>
+            <button class="btn-primary" id="btnNueva">+ Nueva ficha (manual)</button>
+          </div>
         </div>
+        <p class="muted" style="margin:4px 0 0;">Lo recomendado: parte de una <b>serie/subserie propuesta por TRD-AI</b> y valórala.</p>
         <div id="lista" style="margin-top:1rem;"></div>
       </section>
 

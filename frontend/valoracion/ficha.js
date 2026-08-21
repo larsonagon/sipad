@@ -55,6 +55,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   if(!getToken()){location.href='/';return}
   renderHeader('Valoración')
   document.getElementById('btnNueva').addEventListener('click',()=>nuevaFicha())
+  document.getElementById('btnDesdePropuesta').addEventListener('click',mostrarPropuestas)
   document.getElementById('btnVolver').addEventListener('click',mostrarLista)
   await cargarReferentes()
   await cargarLista()
@@ -124,6 +125,38 @@ async function cargarLista(){
     cont.querySelectorAll('button[data-id]').forEach(b=>b.addEventListener('click',()=>abrir(b.dataset.id)))
     cont.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>eliminarFicha(b.dataset.del)))
   }catch(e){console.error(e);cont.innerHTML='<p class="muted">Error cargando fichas.</p>'}
+}
+
+// ====== PUENTE 1: elegir una propuesta TRD-AI para valorar ======
+async function mostrarPropuestas(){
+  const cont=document.getElementById('lista')
+  cont.innerHTML='<p class="muted">Cargando propuestas de TRD-AI…</p>'
+  try{
+    const j=await api('/api/valoracion/propuestas'); if(!j)return
+    const items=j.data||[]
+    if(!items.length){ cont.innerHTML=`<p class="muted">No hay propuestas de TRD-AI todavía. Genéralas primero en el módulo TRD-AI (desde las actividades de ICAF).</p>`; return }
+    cont.innerHTML = `<p class="muted" style="margin-bottom:10px;">Elige una serie/subserie propuesta y pulsa <b>Valorar</b>. La ficha se abrirá pre-llenada.</p>` +
+      items.map(p=>{
+        const ret = (p.retencion_gestion!=null||p.retencion_central!=null) ? `${p.retencion_gestion??'?'}+${p.retencion_central??'?'} años` : 'sin retención aún'
+        return `<div class="fv-list-item">
+          <div>
+            <div style="font-weight:600;">${esc(p.nombre_serie||'—')}${p.nombre_subserie?` · ${esc(p.nombre_subserie)}`:''}</div>
+            <div class="muted">${ret} · confianza ${Math.round((p.confianza||0)*100)}% · ${estadoLabel(p.estado)||esc(p.estado||'')}</div>
+          </div>
+          <button class="btn-primary" data-valorar="${p.id}">Valorar</button>
+        </div>`
+      }).join('')
+    cont.querySelectorAll('button[data-valorar]').forEach(b=>b.addEventListener('click',()=>valorarPropuesta(b.dataset.valorar)))
+  }catch(e){ cont.innerHTML=`<p class="muted">Error cargando propuestas.</p>`; console.error(e) }
+}
+
+async function valorarPropuesta(propuestaId){
+  try{
+    const j=await api(`/api/valoracion/fichas/desde-propuesta/${propuestaId}`,{method:'POST'})
+    if(!j)return
+    toast('Ficha creada desde la propuesta','exito')
+    await abrir(j.id)
+  }catch(e){ toast('No se pudo crear la ficha: '+e.message,'error') }
 }
 
 async function eliminarFicha(id){
@@ -232,6 +265,7 @@ function renderForm(){
 
   <div class="save-bar">
     <span id="estado" class="muted"></span>
+    <button class="btn-secondary" id="btnATRD">↗ Enviar a TRD</button>
     <button class="btn-secondary" id="btnInforme">📄 Informe Técnico (Word)</button>
     <button class="btn-primary" id="btnGuardar">Guardar ficha</button>
   </div>`
@@ -241,7 +275,22 @@ function renderForm(){
   }))
   document.getElementById('btnGuardar').addEventListener('click',guardar)
   document.getElementById('btnInforme').addEventListener('click',descargarInforme)
+  document.getElementById('btnATRD').addEventListener('click',enviarATRD)
   document.getElementById('selReferente')?.addEventListener('change', e => aplicarReferente(e.target.value))
+}
+
+// ====== PUENTE 2: enviar la ficha valorada a la TRD oficial ======
+async function enviarATRD(){
+  const est=document.getElementById('estado')
+  const ok = await confirmar('Se enviarán la serie/subserie y sus tiempos y disposición a la TRD de trabajo de la entidad. Puedes repetirlo; actualiza sin duplicar.', { titulo:'Enviar a TRD', ok:'Enviar' })
+  if(!ok) return
+  est.textContent='Enviando a TRD…'
+  try{
+    await guardar()  // asegura que la TRD reciba lo último
+    const j=await api(`/api/valoracion/fichas/${fichaId}/a-trd`,{method:'POST'})
+    est.textContent='Enviado a TRD ✓'
+    toast('Serie/subserie enviada a la TRD ('+(j.versionNombre||'versión de trabajo')+')','exito', 4000)
+  }catch(e){ est.textContent='Error'; toast('No se pudo enviar a TRD: '+e.message,'error') }
 }
 
 async function descargarInforme(){

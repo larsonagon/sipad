@@ -235,8 +235,96 @@ export default class ValoracionRepository {
       'usuarios_consulta', 'hecho_cierre', 'reglas_excepcion', 'tiempo_gestion',
       'tiempo_central', 'disposicion_final', 'disposicion_justificacion',
       'muestreo_porcentaje', 'muestreo_metodo', 'criterios_conservacion',
-      'riesgos', 'fundamento_normativo', 'estado', 'diligenciamiento_id'
+      'riesgos', 'fundamento_normativo', 'estado', 'diligenciamiento_id', 'propuesta_id'
     ]
+  }
+
+  // ============================================================
+  // PUENTES CON TRD-AI y TRD
+  // ============================================================
+
+  // Lista las propuestas de TRD-AI (con su retención sugerida, si existe)
+  async listarPropuestasTRDAI() {
+    return await this.db.all(`
+      SELECT p.id, p.nombre_serie, p.nombre_subserie, p.tipologia_documental,
+             p.justificacion, p.confianza, p.estado, p.disposicion_final,
+             r.retencion_gestion, r.retencion_central, r.disposicion_final AS retencion_disposicion
+        FROM trd_series_propuestas p
+        LEFT JOIN trd_reglas_retencion r ON r.propuesta_id = p.id
+       ORDER BY p.creado_en DESC
+    `)
+  }
+
+  async obtenerPropuestaTRDAI(id) {
+    return await this.db.get(`
+      SELECT p.id, p.nombre_serie, p.nombre_subserie, p.tipologia_documental,
+             p.justificacion, p.confianza, p.estado, p.disposicion_final,
+             r.retencion_gestion, r.retencion_central, r.disposicion_final AS retencion_disposicion
+        FROM trd_series_propuestas p
+        LEFT JOIN trd_reglas_retencion r ON r.propuesta_id = p.id
+       WHERE p.id = ?
+       LIMIT 1
+    `, [id])
+  }
+
+  // Obtiene una versión TRD en borrador de la entidad, o la crea
+  async obtenerOCrearVersionTRD(entidadId) {
+    let v = await this.db.get(
+      `SELECT * FROM trd_versiones WHERE entidad_id = ? AND estado = 'borrador' ORDER BY id DESC LIMIT 1`,
+      [entidadId]
+    )
+    if (v) return v
+    const id = uid()
+    await this.db.run(
+      `INSERT INTO trd_versiones (id, nombre_version, modo_creacion, estado, entidad_id)
+       VALUES (?, 'Versión de trabajo — Valoración', 'asistido', 'borrador', ?)`,
+      [id, entidadId]
+    )
+    return { id, nombre_version: 'Versión de trabajo — Valoración', estado: 'borrador' }
+  }
+
+  // Inserta o actualiza una serie por nombre dentro de una versión
+  async upsertSerieTRD(versionId, entidadId, { nombre, tiempo_gestion, tiempo_central, disposicion_final, propuesta_id }) {
+    const existente = await this.db.get(
+      `SELECT id FROM series WHERE trd_version_id = ? AND nombre = ? LIMIT 1`,
+      [versionId, nombre]
+    )
+    if (existente) {
+      await this.db.run(
+        `UPDATE series SET tiempo_gestion = ?, tiempo_central = ?, disposicion_final = ? WHERE id = ?`,
+        [tiempo_gestion, tiempo_central, disposicion_final, existente.id]
+      )
+      return existente.id
+    }
+    const id = uid()
+    await this.db.run(
+      `INSERT INTO series (id, trd_version_id, nombre, tiempo_gestion, tiempo_central, disposicion_final, entidad_id, propuesta_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, versionId, nombre, tiempo_gestion, tiempo_central, disposicion_final, entidadId, propuesta_id || null]
+    )
+    return id
+  }
+
+  // Inserta o actualiza una subserie por nombre dentro de una serie
+  async upsertSubserieTRD(serieId, { nombre, tiempo_gestion, tiempo_central, disposicion_final }) {
+    const existente = await this.db.get(
+      `SELECT id FROM subseries WHERE serie_id = ? AND nombre = ? LIMIT 1`,
+      [serieId, nombre]
+    )
+    if (existente) {
+      await this.db.run(
+        `UPDATE subseries SET tiempo_gestion = ?, tiempo_central = ?, disposicion_final = ? WHERE id = ?`,
+        [tiempo_gestion, tiempo_central, disposicion_final, existente.id]
+      )
+      return existente.id
+    }
+    const id = uid()
+    await this.db.run(
+      `INSERT INTO subseries (id, serie_id, nombre, tiempo_gestion, tiempo_central, disposicion_final)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, serieId, nombre, tiempo_gestion, tiempo_central, disposicion_final]
+    )
+    return id
   }
 
   _serializar(data) {
@@ -270,8 +358,8 @@ export default class ValoracionRepository {
          frecuencia_consulta, usuarios_consulta, hecho_cierre, reglas_excepcion,
          tiempo_gestion, tiempo_central, disposicion_final, disposicion_justificacion,
          muestreo_porcentaje, muestreo_metodo, criterios_conservacion, riesgos,
-         fundamento_normativo, estado, origen, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         fundamento_normativo, estado, origen, propuesta_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id, entidadId, s.diligenciamiento_id ?? null, s.serie ?? null, s.subserie ?? null,
         s.unidad_documental ?? null, s.productor_dependencia_id ?? null, s.funcion ?? null,
@@ -281,7 +369,7 @@ export default class ValoracionRepository {
         s.disposicion_final ?? null, s.disposicion_justificacion ?? null,
         s.muestreo_porcentaje ?? null, s.muestreo_metodo ?? null, s.criterios_conservacion ?? null,
         s.riesgos ?? null, s.fundamento_normativo ?? null, s.estado ?? 'borrador',
-        data.origen ?? 'manual', now()
+        data.origen ?? 'manual', s.propuesta_id ?? null, now()
       ]
     )
     return id
