@@ -443,12 +443,48 @@ export function SEGTECActividadesRepository(db) {
     `, [nowISO(), id], "MARCAR COMPLETA")
   }
 
+  // Borra las propuestas TRD-AI (y sus reglas de retención) de una actividad
+  async function limpiarPropuestasDeActividad(id) {
+    await db.run(
+      `DELETE FROM trd_reglas_retencion
+       WHERE propuesta_id IN (SELECT id FROM trd_series_propuestas WHERE actividad_id=?)`,
+      [id]
+    )
+    await db.run(`DELETE FROM trd_series_propuestas WHERE actividad_id=?`, [id])
+  }
+
   async function eliminarActividad(id) {
+
+    // Cascada: eliminar propuestas TRD-AI derivadas (evita huérfanas)
+    await limpiarPropuestasDeActividad(id)
 
     return ejecutarUpdate(`
       DELETE FROM segtec_actividades
       WHERE id=?
     `, [id], "ELIMINAR")
+  }
+
+  // Borrado en lote (verifica pertenencia a la entidad antes de borrar)
+  async function eliminarActividadesLote(ids = [], entidadId = null) {
+
+    if (!Array.isArray(ids) || ids.length === 0) return { eliminadas: 0 }
+
+    let eliminadas = 0
+
+    for (const id of ids) {
+
+      const row = entidadId
+        ? await db.get(`SELECT id FROM segtec_actividades WHERE id=? AND entidad_id=?`, [id, entidadId])
+        : await db.get(`SELECT id FROM segtec_actividades WHERE id=?`, [id])
+
+      if (!row) continue
+
+      await limpiarPropuestasDeActividad(id)
+      await db.run(`DELETE FROM segtec_actividades WHERE id=?`, [id])
+      eliminadas++
+    }
+
+    return { eliminadas }
   }
 
   return {
@@ -459,6 +495,7 @@ export function SEGTECActividadesRepository(db) {
     crearActividad,
     listarPorUsuario,
     eliminarActividad,
+    eliminarActividadesLote,
     actualizarBloque1,
     actualizarBloque2,
     actualizarBloque3,

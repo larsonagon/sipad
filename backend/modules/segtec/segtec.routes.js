@@ -257,6 +257,21 @@ router.get('/actividades', actividadesController.listar)
 
 router.post('/actividades', actividadesController.crear)
 
+// Borrado en lote (cascada a propuestas TRD-AI). Debe ir ANTES de :id.
+router.post('/actividades/eliminar-lote', async (req, res) => {
+  try {
+    const ids = req.body?.ids
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ ok: false, error: 'Se requiere una lista de ids' })
+    }
+    const result = await actividadesRepository.eliminarActividadesLote(ids, req.entidad_id || null)
+    return res.json({ ok: true, eliminadas: result.eliminadas })
+  } catch (err) {
+    console.error('SEGTEC eliminar-lote error:', err)
+    return res.status(500).json({ ok: false, error: 'Error eliminando actividades' })
+  }
+})
+
 router.delete('/actividades/:id', actividadesController.eliminar)
 
 // =====================================================

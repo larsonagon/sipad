@@ -633,8 +633,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             ? `<td>${a.dependencia || '-'}</td><td>${a.funcionario || '-'}</td>`
             : '';
 
+          const celdaChk = puedeAnalizar
+            ? `<td style="text-align:center;"><input type="checkbox" class="chk-act" data-id="${a.id}"></td>`
+            : '';
+
           return `
             <tr style="vertical-align:middle;">
+              ${celdaChk}
               <td style="word-break:break-word;min-width:180px;"><strong>${a.nombre || '-'}</strong></td>
               ${colDependencia}
               <td style="white-space:nowrap;">${capitalizar(a.frecuencia)}</td>
@@ -651,11 +656,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           `;
         }).join('');
 
+    const thChk = puedeAnalizar
+      ? '<th style="width:34px;text-align:center;"><input type="checkbox" id="chkAll" title="Seleccionar todo"></th>'
+      : '';
+
+    const barraLote = puedeAnalizar
+      ? `<div id="bulkBar" style="display:none;align-items:center;gap:12px;padding:10px 14px;margin-bottom:12px;
+             background:#fef2f2;border:1px solid #fecaca;border-radius:10px;">
+           <span id="bulkCount" style="font-weight:600;color:#991b1b;"></span>
+           <div style="margin-left:auto;display:flex;gap:8px;">
+             <button id="btnEliminarSel" class="btn-danger btn-sm">Eliminar seleccionadas</button>
+             <button id="btnLimpiarSel" class="btn-secondary btn-sm">Cancelar</button>
+           </div>
+         </div>`
+      : '';
+
     tablaContainer.innerHTML = `
+      ${barraLote}
       <div style="width:100%;overflow-x:auto;">
         <table class="table" style="width:100%;border-collapse:collapse;">
           <thead>
             <tr>
+              ${thChk}
               <th style="min-width:180px;">Actividad</th>
               ${thDependencia}
               <th style="white-space:nowrap;width:100px;">Frecuencia</th>
@@ -751,6 +773,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     tablaContainer.querySelectorAll('.analizar-btn').forEach(b =>
       b.addEventListener('click', () => abrirModalAnalisis(b.dataset.id))
     );
+
+    // ── Selección múltiple / borrado en lote (admin y archivista) ──
+    if (puedeAnalizar) {
+      const chkAll  = document.getElementById('chkAll');
+      const getChks = () => Array.from(tablaContainer.querySelectorAll('.chk-act'));
+      const getSel  = () => getChks().filter(c => c.checked).map(c => c.dataset.id);
+
+      const actualizarBarra = () => {
+        const n   = getSel().length;
+        const bar = document.getElementById('bulkBar');
+        const cnt = document.getElementById('bulkCount');
+        if (bar) bar.style.display = n > 0 ? 'flex' : 'none';
+        if (cnt) cnt.textContent = `${n} actividad${n === 1 ? '' : 'es'} seleccionada${n === 1 ? '' : 's'}`;
+        if (chkAll) chkAll.checked = n > 0 && n === getChks().length;
+      };
+
+      getChks().forEach(c => c.addEventListener('change', actualizarBarra));
+
+      chkAll?.addEventListener('change', () => {
+        getChks().forEach(c => (c.checked = chkAll.checked));
+        actualizarBarra();
+      });
+
+      document.getElementById('btnLimpiarSel')?.addEventListener('click', () => {
+        getChks().forEach(c => (c.checked = false));
+        actualizarBarra();
+      });
+
+      document.getElementById('btnEliminarSel')?.addEventListener('click', () => {
+        const ids = getSel();
+        if (!ids.length) return;
+        confirmarBorradoLote(ids, actualizarBarra);
+      });
+    }
+  }
+
+  // =====================================================
+  // BORRADO EN LOTE
+  // =====================================================
+
+  // Confirmación en línea dentro de la barra (sin diálogos nativos)
+  function confirmarBorradoLote(ids, onDone) {
+    const bar = document.getElementById('bulkBar');
+    if (!bar) return;
+    bar.innerHTML = `
+      <span style="font-weight:600;color:#991b1b;">
+        ¿Eliminar ${ids.length} actividad${ids.length === 1 ? '' : 'es'} y sus propuestas asociadas? Esta acción no se puede deshacer.
+      </span>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button id="btnConfirmSel" class="btn-danger btn-sm">Sí, eliminar</button>
+        <button id="btnCancelSel" class="btn-secondary btn-sm">No</button>
+      </div>`;
+    document.getElementById('btnCancelSel')?.addEventListener('click', () => {
+      bar.style.display = 'none';
+      renderTabla(actividadesCache);
+    });
+    document.getElementById('btnConfirmSel')?.addEventListener('click', async () => {
+      const btn = document.getElementById('btnConfirmSel');
+      if (btn) { btn.disabled = true; btn.textContent = 'Eliminando…'; }
+      await ejecutarBorradoLote(ids);
+    });
+  }
+
+  async function ejecutarBorradoLote(ids) {
+    try {
+      const res = await apiFetch('/api/segtec/actividades/eliminar-lote', {
+        method: 'POST',
+        body: JSON.stringify({ ids })
+      });
+      if (!res || !res.ok) throw new Error('Error al eliminar');
+      const json = await res.json().catch(() => ({}));
+      const n = json.eliminadas ?? ids.length;
+      if (mensaje) {
+        mensaje.innerHTML = `<div style="padding:10px 14px;background:#e7f7ef;border:1px solid #a7f3d0;border-radius:10px;color:#0f8a5f;font-weight:600;">Se eliminaron ${n} actividad${n === 1 ? '' : 'es'}.</div>`;
+        setTimeout(() => { if (mensaje) mensaje.innerHTML = ''; }, 4000);
+      }
+      await cargarActividades();
+    } catch (e) {
+      console.error(e);
+      if (mensaje) {
+        mensaje.innerHTML = `<div style="padding:10px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;color:#991b1b;font-weight:600;">No se pudieron eliminar las actividades.</div>`;
+      }
+    }
   }
 
   // =====================================================
