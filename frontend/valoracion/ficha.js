@@ -116,20 +116,35 @@ async function cargarLista(){
         <div style="display:flex;gap:10px;align-items:center;">
           ${f.disposicion_final?`<span class="tag ${d}">${esc(f.disposicion_final)}</span>`:''}
           <button class="btn-secondary" data-id="${f.id}">Abrir</button>
+          <button class="btn-eliminar" data-del="${f.id}" title="Eliminar ficha"
+            style="border:none;background:none;color:#991b1b;cursor:pointer;font-size:13px;">Eliminar</button>
         </div>
       </div>`
     }).join('') : `<p class="muted">Aún no hay fichas. Crea una nueva.</p>`
     cont.querySelectorAll('button[data-id]').forEach(b=>b.addEventListener('click',()=>abrir(b.dataset.id)))
+    cont.querySelectorAll('button[data-del]').forEach(b=>b.addEventListener('click',()=>eliminarFicha(b.dataset.del)))
   }catch(e){console.error(e);cont.innerHTML='<p class="muted">Error cargando fichas.</p>'}
 }
 
-// ================= CREAR / ABRIR =================
-async function nuevaFicha(){
+async function eliminarFicha(id){
+  const ok = await confirmar('¿Eliminar esta ficha? Esta acción no se puede deshacer.', { titulo:'Eliminar ficha', ok:'Eliminar' })
+  if(!ok) return
   try{
-    const j=await api('/api/valoracion/fichas',{method:'POST',body:JSON.stringify({estado:'borrador'})})
-    if(!j)return
-    await abrir(j.id)
-  }catch(e){toast('No se pudo crear: '+e.message,'error')}
+    await api(`/api/valoracion/fichas/${id}`, { method:'DELETE' })
+    toast('Ficha eliminada','exito')
+    cargarLista()
+  }catch(e){ toast('No se pudo eliminar: '+e.message,'error') }
+}
+
+// ================= CREAR / ABRIR =================
+// Abre un formulario EN BLANCO. La ficha se crea solo al Guardar.
+function nuevaFicha(){
+  fichaId = null
+  ficha = { estado:'borrador' }
+  renderForm()
+  document.getElementById('vistaLista').classList.add('hidden')
+  document.getElementById('vistaForm').classList.remove('hidden')
+  window.scrollTo(0,0)
 }
 async function abrir(id){
   try{
@@ -277,8 +292,15 @@ async function guardar(){
   }
   const est=document.getElementById('estado'); est.textContent='Guardando…'
   try{
-    const j=await api(`/api/valoracion/fichas/${fichaId}`,{method:'PUT',body:JSON.stringify(payload)})
-    ficha=j.data||ficha
+    if(!fichaId){
+      // Primera vez: se CREA la ficha (antes no existía nada en el servidor)
+      const j=await api('/api/valoracion/fichas',{method:'POST',body:JSON.stringify(payload)})
+      if(!j) return
+      fichaId=j.id; ficha={...payload}
+    }else{
+      const j=await api(`/api/valoracion/fichas/${fichaId}`,{method:'PUT',body:JSON.stringify(payload)})
+      ficha=j.data||ficha
+    }
     est.textContent='Guardado ✓ '+new Date().toLocaleTimeString('es-CO')
   }catch(e){est.textContent='Error';toast(e.message,'error')}
 }

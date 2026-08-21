@@ -171,6 +171,17 @@ export default class ValoracionController {
     }
   }
 
+  // DELETE /api/valoracion/fichas/:id
+  eliminarFicha = async (req, res) => {
+    try {
+      const out = await this.service.eliminarFicha(req.params.id, req.entidad_id)
+      res.json({ success: true, ...out })
+    } catch (e) {
+      console.error('Error eliminar ficha:', e)
+      res.status(400).json({ success: false, message: e.message || 'Error eliminando ficha' })
+    }
+  }
+
   // POST /api/valoracion/diligenciamientos/:id/borrador-ficha
   // Genera una ficha borrador desde la evidencia (motor de reglas)
   generarBorradorFicha = async (req, res) => {

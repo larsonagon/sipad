@@ -309,6 +309,11 @@ export default class ValoracionRepository {
     return !!row
   }
 
+  async eliminarFicha(id, entidadId) {
+    const r = await this.db.run(`DELETE FROM lvd_fichas WHERE id = ? AND entidad_id = ?`, [id, entidadId])
+    return r?.changes || 0
+  }
+
   async actualizarFicha(id, entidadId, data = {}) {
     const s = this._serializar(data)
     const keys = Object.keys(s)

@@ -99,6 +99,12 @@ export default class ValoracionService {
     return this.repository.obtenerFicha(id, entidadId)
   }
 
+  async eliminarFicha(id, entidadId) {
+    const n = await this.repository.eliminarFicha(id, entidadId)
+    if (!n) throw new Error('Ficha no encontrada para esta entidad')
+    return { eliminada: true }
+  }
+
   // -------- Motor de reglas: borrador de ficha desde la evidencia --------
 
   async generarBorradorFicha(diligenciamientoId, entidadId) {

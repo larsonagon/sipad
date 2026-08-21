@@ -52,6 +52,7 @@ export function buildValoracionRouter(db) {
   router.post('/fichas', ...guard, soloValoracion, controller.crearFicha)
   router.get('/fichas/:id', ...guard, controller.obtenerFicha)
   router.put('/fichas/:id', ...guard, soloValoracion, controller.actualizarFicha)
+  router.delete('/fichas/:id', ...guard, soloValoracion, controller.eliminarFicha)
   router.get('/fichas/:id/informe', ...guard, soloValoracion, controller.generarInforme)
 
   router.get('/health', (req, res) => res.json({ modulo: 'valoracion', estado: 'activo' }))
