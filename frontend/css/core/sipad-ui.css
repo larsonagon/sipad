@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 /* ======================================================
    SIPAD UI – CORE VISUAL OFICIAL v1.2
 ====================================================== */
@@ -1361,3 +1363,98 @@ select.form-control{
   .pig-header-top{ flex-direction:row; align-items:center; }
   .pig-user-text{ display:none; }
 }
+
+/* ======================================================
+   MODERNIZACIÓN v1.4 — refinamiento visual global
+   (bloque final: sobrescribe reglas previas)
+====================================================== */
+
+:root{
+  --color-primary:#0d3f77;
+  --color-primary-dark:#0a3260;
+  --color-accent:#c69a2e;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:18px;
+  --shadow-sm:0 1px 2px rgba(16,42,73,.06), 0 4px 14px rgba(16,42,73,.06);
+  --shadow-md:0 8px 24px rgba(16,42,73,.10);
+  --shadow-lg:0 24px 60px rgba(16,42,73,.20);
+  --ring:0 0 0 3px rgba(13,63,119,.18);
+}
+
+html,body{ -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  color:#1f2a37;
+  background:
+    radial-gradient(1200px 400px at 15% -5%, rgba(13,63,119,.05), transparent 60%),
+    radial-gradient(1000px 380px at 85% -8%, rgba(198,154,46,.06), transparent 55%),
+    #f4f6f9;
+}
+
+/* Encabezado de módulo */
+.module-header h1{ font-size:1.9rem; font-weight:800; letter-spacing:-.02em; color:var(--color-primary); }
+.module-header .module-subtext,.module-header p{ font-size:.95rem; color:#64748b; }
+
+/* ---------- Botones ---------- */
+.btn-primary,.btn-secondary,.btn-danger,.btn-success{
+  height:auto; min-height:40px; padding:9px 18px; border-radius:10px;
+  font-size:13.5px; font-weight:600; letter-spacing:.01em; line-height:1;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  transition:transform .12s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn-primary:active,.btn-secondary:active,.btn-danger:active,.btn-success:active{ transform:translateY(1px); }
+.btn-primary:focus-visible,.btn-secondary:focus-visible{ outline:none; box-shadow:var(--ring); }
+.btn-primary{ background:linear-gradient(180deg,#134a86,#0d3f77); color:#fff; box-shadow:0 2px 6px rgba(13,63,119,.25); }
+.btn-primary:hover{ background:linear-gradient(180deg,#0f4480,#0a3260); box-shadow:0 6px 16px rgba(13,63,119,.3); transform:translateY(-1px); }
+.btn-secondary{ background:#fff; color:#334155; border:1px solid #dbe1ea; box-shadow:0 1px 2px rgba(16,42,73,.05); }
+.btn-secondary:hover{ background:#f6f8fb; border-color:#c6cfda; transform:translateY(-1px); }
+.btn-danger{ background:#dc2626; color:#fff; }
+.btn-danger:hover{ background:#b91c1c; }
+
+/* ---------- Campos ---------- */
+.form-control,
+.form-group input,.form-group textarea,.form-group select,
+input[type=text],input[type=password],input[type=date],input[type=number],input[type=email],
+select,textarea{
+  min-height:42px; padding:10px 13px; border-radius:10px;
+  border:1px solid #d7dde6; background:#fff; font-size:14px; color:#1f2a37;
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+textarea,.form-control textarea,textarea.form-control{ min-height:96px; line-height:1.5; }
+.form-control:focus,.form-group input:focus,.form-group textarea:focus,.form-group select:focus,
+input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--color-primary); box-shadow:var(--ring); }
+.form-control::placeholder,input::placeholder,textarea::placeholder{ color:#9aa6b5; }
+label,.form-group label{ font-weight:600; color:#334155; font-size:13px; }
+
+/* Selects con flecha propia */
+select,select.form-control{
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat; background-position:right 12px center; padding-right:36px;
+}
+
+/* ---------- Tarjetas ---------- */
+.card,.module-card,.lvd-card,.fv-sec,.fv-list-item,.segtec-card{
+  border:1px solid #e6eaf0; border-radius:14px;
+  box-shadow:0 1px 2px rgba(16,42,73,.05), 0 8px 24px rgba(16,42,73,.05);
+}
+.card{ padding:24px; }
+.module-card:hover{ box-shadow:0 16px 36px rgba(13,63,119,.14); }
+
+/* ---------- Tablas ---------- */
+.table{ border-collapse:separate; border-spacing:0; border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); border:1px solid #e6eaf0; }
+.table thead{ background:#f5f7fb; }
+.table th{ text-transform:uppercase; letter-spacing:.05em; font-size:11.5px; font-weight:700; color:#64748b; padding:12px 16px; }
+.table td{ font-size:13.5px; padding:13px 16px; border-bottom:1px solid #eef1f6; }
+.table tbody tr:hover{ background:#f7faff; }
+.table tbody tr:last-child td{ border-bottom:none; }
+
+/* ---------- Badges / tags ---------- */
+.badge{ padding:3px 10px; border-radius:999px; font-weight:600; font-size:11px; letter-spacing:.02em; }
+
+/* Scrollbar sutil */
+*::-webkit-scrollbar{ height:10px; width:10px; }
+*::-webkit-scrollbar-thumb{ background:#cbd5e1; border-radius:999px; border:2px solid transparent; background-clip:content-box; }
+*::-webkit-scrollbar-thumb:hover{ background:#94a3b8; background-clip:content-box; }
+
+/* Selección de texto */
+::selection{ background:rgba(13,63,119,.15); }
