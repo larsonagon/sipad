@@ -1474,3 +1474,17 @@ select,select.form-control{
    páginas que contienen una tabla; los formularios siguen a 1000px. */
 .module-page:has(.table-container){ max-width:1280px; }
 .table-container{ width:100%; }
+
+/* Botones pequeños (btn-sm): la modernización v1.4 les imponía min-height:40px.
+   Se restablecen a compactos. element+clase gana en especificidad. */
+button.btn-sm, a.btn-sm{
+  min-height:0 !important;
+  height:auto !important;
+  padding:6px 12px !important;
+  font-size:12px !important;
+  border-radius:8px !important;
+  line-height:1.2 !important;
+}
+/* Columna de acciones de TRD-AI: botones alineados, compactos */
+.trd-actions{ white-space:nowrap; }
+.trd-actions .btn-sm{ margin:2px 4px 2px 0; display:inline-flex; align-items:center; }
