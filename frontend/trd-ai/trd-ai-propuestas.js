@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnCcdXlsx')?.addEventListener('click', () => exportarCCD('xlsx'))
   document.getElementById('btnCcdDocx')?.addEventListener('click', () => exportarCCD('docx'))
   document.getElementById('btnReaplicar')?.addEventListener('click', reaplicarAprendizaje)
+  document.getElementById('btnBiblioteca')?.addEventListener('click', abrirBiblioteca)
 
   // Filtros
   document.getElementById('filtroBusqueda')?.addEventListener('input', aplicarFiltros)
@@ -261,6 +262,87 @@ function mostrarPanelCumplimiento(data) {
   document.body.appendChild(overlay)
   overlay.querySelector('#cerrarValidacion').addEventListener('click', () => overlay.remove())
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove() })
+}
+
+// =====================================================
+// BIBLIOTECA DE TRD DE REFERENCIA
+// Precarga una estructura base (series + subseries + retención)
+// como propuestas de la entidad actual, para curarlas luego.
+// =====================================================
+
+async function abrirBiblioteca() {
+  let plantilla
+  try {
+    const resp = await apiFetch('/api/trd-ai/biblioteca/alcaldia/preview')
+    if (!resp.ok) throw new Error('preview')
+    plantilla = await resp.json()
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible cargar la biblioteca de referencia', 'error')
+    return
+  }
+
+  const dispLabel = { CT: 'Conservación total', E: 'Eliminación', S: 'Selección', M: 'Medio técnico' }
+  const dispColor = { CT: '#12864e', E: '#b42318', S: '#1e40af', M: '#7c3aed' }
+
+  const filas = (plantilla.series || []).map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eef1f6;">
+      <span style="font-weight:700;color:#0d3f77;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;flex:1;">${s.serie}</span>
+      <span style="color:#64748b;font-size:12px;">${s.subseries.length} subserie${s.subseries.length === 1 ? '' : 's'}</span>
+      <span style="min-width:120px;text-align:right;font-size:11px;font-weight:700;color:${dispColor[s.disposicion] || '#475569'};">${dispLabel[s.disposicion] || s.disposicion}</span>
+    </div>`).join('')
+
+  const overlay = document.createElement('div')
+  overlay.className = 'modal'
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:720px;max-height:84vh;display:flex;flex-direction:column;">
+      <h3 style="margin:0 0 4px;">Biblioteca de referencia — ${plantilla.nombre}</h3>
+      <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">${plantilla.descripcion || ''}</p>
+      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSeries} series</span>
+        <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSubseries} subseries</span>
+        <span style="background:#e7f6ec;color:#12864e;border:1px solid #bfe6cd;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">retención sugerida incluida</span>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:10px;">
+        Se agregarán como <strong>propuestas de esta entidad</strong>, listas para curar (aprobar, ajustar o fusionar).
+        Las series/subseries que ya existan <strong>no se duplican</strong>.
+      </div>
+      <div style="overflow-y:auto;flex:1;padding-right:4px;border-top:1px solid #e6eaf0;">${filas}</div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;">
+        <button id="bibCancelar" class="btn-secondary btn-sm">Cancelar</button>
+        <button id="bibPrecargar" class="btn-primary btn-sm">Precargar en esta entidad</button>
+      </div>
+    </div>`
+  document.body.appendChild(overlay)
+
+  const cerrar = () => overlay.remove()
+  overlay.querySelector('#bibCancelar').addEventListener('click', cerrar)
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar() })
+
+  overlay.querySelector('#bibPrecargar').addEventListener('click', async (ev) => {
+    const btn = ev.currentTarget
+    btn.disabled = true
+    btn.textContent = 'Precargando…'
+    try {
+      const resp = await apiFetch(`/api/trd-ai/biblioteca/${plantilla.tipo}/precargar`, {
+        method: 'POST', body: JSON.stringify({})
+      })
+      const json = await resp.json()
+      if (!resp.ok || !json.ok) throw new Error(json.error || 'precargar')
+      cerrar()
+      if (json.creadas > 0) {
+        mostrarToast(`${json.creadas} subserie(s) precargadas${json.omitidas ? ` · ${json.omitidas} ya existían` : ''}`, 'success')
+      } else {
+        mostrarToast('Todas las series de la plantilla ya estaban en esta entidad', 'info')
+      }
+      await cargarPropuestas()
+    } catch (e) {
+      console.error(e)
+      btn.disabled = false
+      btn.textContent = 'Precargar en esta entidad'
+      mostrarToast('No fue posible precargar la plantilla', 'error')
+    }
+  })
 }
 
 // =====================================================

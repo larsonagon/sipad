@@ -38,7 +38,7 @@ const MAP_DISPOSICION = {
 // ~18 series institucionales reales de alcaldías
 // ===================================================
 
-const MATRIZ_SERIES = [
+export const MATRIZ_SERIES = [
 
   // ── ACCIONES CONSTITUCIONALES ──────────────────
   // Fuente: Floridablanca 101, 104 / Pitalito

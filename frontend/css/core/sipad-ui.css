@@ -988,36 +988,55 @@ select.form-control{
 ====================================================== */
 
 .badge{
-  display:inline-block;
-  padding:2px 8px;
-  border-radius:12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 10px;
+  border-radius:999px;
   font-size:11px;
-  font-weight:600;
+  font-weight:700;
+  border:1px solid transparent;
+  white-space:nowrap;
+  line-height:1.4;
+}
+/* Punto de color a la izquierda (mismo lenguaje que los estados de TRD-AI) */
+.badge::before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:currentColor;
+  flex:0 0 auto;
 }
 
 .badge-success{
-  background:var(--color-success-bg);
-  color:var(--color-success);
+  background:#e7f6ec;
+  color:#12864e;
+  border-color:#bfe6cd;
 }
 
 .badge-danger{
-  background:var(--color-danger-bg);
-  color:var(--color-danger);
+  background:#fdeceb;
+  color:#b42318;
+  border-color:#f2c9c4;
 }
 
 .badge-warning{
   background:var(--color-warning-bg);
   color:var(--color-warning);
+  border-color:#fcd9a8;
 }
 
 .badge-neutral{
-  background:#f3f4f6;
-  color:#6b7280;
+  background:#f1f5f9;
+  color:#475569;
+  border-color:#e2e8f0;
 }
 
 .badge-info{
-  background:#dbeafe;
-  color:#1d4ed8;
+  background:#e8f0fe;
+  color:#1e40af;
+  border-color:#c7dbfb;
 }
 
 /* ======================================================
@@ -1449,7 +1468,7 @@ select,select.form-control{
 .table tbody tr:last-child td{ border-bottom:none; }
 
 /* ---------- Badges / tags ---------- */
-.badge{ padding:3px 10px; border-radius:999px; font-weight:600; font-size:11px; letter-spacing:.02em; }
+.badge{ padding:3px 10px; border-radius:999px; font-weight:700; font-size:11px; letter-spacing:.02em; }
 
 /* Scrollbar sutil */
 *::-webkit-scrollbar{ height:10px; width:10px; }
