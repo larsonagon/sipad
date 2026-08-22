@@ -441,7 +441,7 @@ function renderTabla(lista) {
       <tr data-id="${id}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
         <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
         <td class="serie-nombre"><strong>${p.serie}</strong>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}</td>
-        <td class="subserie">${p.subserie || '—'}</td>
+        <td class="subserie"><span class="clamp2" title="${(p.subserie || '').replace(/"/g, '&quot;')}">${p.subserie || '—'}</span></td>
         <td class="col-cantidad">${p.cantidad}</td>
         <td class="col-tipos">${tipHtml}</td>
         <td class="td-estado">${estadoChip(p.estado)}</td>
