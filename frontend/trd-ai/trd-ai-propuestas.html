@@ -61,8 +61,21 @@
 .subserie .clamp2 { text-transform: none; }
 .col-cantidad { width: 50px;  text-align: center; }
 .col-tipos    { min-width: 260px; }
-.col-estado   { width: 110px; text-align: center; }
+.col-estado   { width: 120px; text-align: center; }
 .col-acciones { width: 230px; min-width: 230px; }
+
+/* La celda de estado del cuerpo debe igualar la cabecera:
+   mismo ancho, centrada y alineada verticalmente al medio.
+   (Antes el <td> usaba la clase td-estado sin definir → descuadre.) */
+.td-estado {
+  width: 120px;
+  text-align: center;
+  vertical-align: middle;
+}
+.col-cantidad { vertical-align: middle; }
+/* Los botones de acción, centrados verticalmente para quedar a la
+   misma altura que el chip de estado en cada fila. */
+.trd-actions { vertical-align: middle; }
 
 /* ── Serie ── */
 .serie-nombre { font-size: 13px; font-weight: 700; color: #2c3e50; }
@@ -127,11 +140,14 @@
 /* ── Estado chips ── */
 .estado-chip {
   display: inline-block;
-  padding: 3px 10px;
+  min-width: 92px;
+  padding: 4px 10px;
   border-radius: 14px;
   font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
+  text-align: center;
+  box-sizing: border-box;
 }
 .estado-propuesta { background: #f1f3f5; color: #555; }
 .estado-aprobada  { background: #d4edda; color: #1e7e34; }
