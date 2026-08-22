@@ -3,6 +3,7 @@ import {
   sugerirRetencionContextual
 } from './trd-ai.engine.js'
 import { valorarPropuestas } from './trd-ai.valoracion.js'
+import { aprenderDesdeEdicion, aprenderDesdeEstado } from './trd-ai.aprendizaje.js'
 
 export const TRDAIService = (repository, db) => ({
 
@@ -132,7 +133,29 @@ export const TRDAIService = (repository, db) => ({
     if (!propuesta) throw new Error('Propuesta no encontrada')
     if (propuesta.estado === 'incorporada')
       throw new Error('No se puede editar una propuesta ya incorporada')
-    return await repository.editarPropuesta(id, data)
+    const res = await repository.editarPropuesta(id, data)
+    // Aprender de la corrección (serie/subserie + tipologías) — no debe fallar la edición
+    if (db) {
+      try {
+        const act = propuesta.actividad_id
+          ? await db.get(`SELECT nombre FROM segtec_actividades WHERE id = ?`, [propuesta.actividad_id])
+          : null
+        let nuevasTipologias = []
+        try {
+          const p = JSON.parse(data.tipologia_documental || '[]')
+          nuevasTipologias = Array.isArray(p) ? p : [p]
+        } catch { nuevasTipologias = [] }
+        await aprenderDesdeEdicion(db, {
+          propuesta,
+          nombreActividad: act?.nombre,
+          nuevaSerie: data.nombre_serie,
+          nuevaSubserie: data.nombre_subserie,
+          nuevasTipologias,
+          entidadId: propuesta.entidad_id || null
+        })
+      } catch (e) { console.error('Aprendizaje al editar:', e.message) }
+    }
+    return res
   },
 
   // ── Curación en lote ──
@@ -147,6 +170,23 @@ export const TRDAIService = (repository, db) => ({
     if (estado === 'aprobada' && db) {
       try { await valorarPropuestas(db, { ids, entidadId }) }
       catch (e) { console.error('Auto-valoración al aprobar:', e.message) }
+    }
+    // Aprender: aprobar refuerza la clasificación; rechazar la marca como negativa
+    if (db) {
+      try {
+        for (const id of ids) {
+          const p = await db.get(`
+            SELECT tsp.nombre_serie, tsp.nombre_subserie, tsp.entidad_id, sa.nombre AS act_nombre
+            FROM trd_series_propuestas tsp
+            LEFT JOIN segtec_actividades sa ON sa.id = tsp.actividad_id
+            WHERE tsp.id = ?`, [id])
+          if (p) await aprenderDesdeEstado(db, {
+            nombreActividad: p.act_nombre,
+            serie: p.nombre_serie, subserie: p.nombre_subserie,
+            estado, entidadId: p.entidad_id || null
+          })
+        }
+      } catch (e) { console.error('Aprendizaje al cambiar estado:', e.message) }
     }
     return res
   },

@@ -134,5 +134,33 @@ export async function runTRDAIMigration(db) {
     `)
   } catch { /* ignorar */ }
 
+  // =====================================================
+  // APRENDIZAJE (motor que aprende de las correcciones)
+  // Diccionario global: serie/subserie por actividad y
+  // tipologías por serie, con señal positiva/negativa y peso.
+  // =====================================================
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS trd_aprendizaje (
+      id TEXT PRIMARY KEY,
+      tipo TEXT NOT NULL,          -- 'serie' | 'tipologia'
+      clave TEXT,                  -- serie: nombre de actividad normalizado
+      serie TEXT,                  -- serie objetivo (normalizada en tipologia)
+      subserie TEXT,
+      tipologia TEXT,              -- tipologia normalizada (tipo='tipologia')
+      senal TEXT NOT NULL,         -- 'positiva' | 'negativa'
+      peso INTEGER DEFAULT 1,
+      entidad_id TEXT,             -- origen (auditoría); se aplica global
+      actualizado_en TEXT
+    )
+  `)
+
+  try {
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_aprendizaje_serie ON trd_aprendizaje(tipo, clave)`)
+  } catch { /* ignorar */ }
+  try {
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_aprendizaje_tip ON trd_aprendizaje(tipo, serie)`)
+  } catch { /* ignorar */ }
+
   console.log('✅ TRD-AI migration ejecutada')
 }

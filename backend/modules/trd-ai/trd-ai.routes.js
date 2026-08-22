@@ -4,6 +4,7 @@ import { requireLevel } from '../../middlewares/role.middleware.js'
 import { registrarExport } from './trd-ai.export.js'
 import { registrarValidador } from './trd-ai.validador.js'
 import { registrarValoracion } from './trd-ai.valoracion.js'
+import { registrarAprendizaje } from './trd-ai.aprendizaje.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -149,6 +150,12 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   POST /api/trd-ai/valorar-lote  { ids? }
   // =====================================================
   if (db) registrarValoracion(router, db, requireLevel(60))
+
+  // =====================================================
+  // APRENDIZAJE (estadísticas del motor que aprende)
+  //   GET /api/trd-ai/aprendizaje
+  // =====================================================
+  if (db) registrarAprendizaje(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS

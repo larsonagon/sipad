@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { sugerirSerieDesdeActividad } from './trd-ai.engine.js'
+import { consultarSerieAprendida, tipologiasNegativas, filtrarTipologias } from './trd-ai.aprendizaje.js'
 
 console.log('🔥 TRD-AI REPOSITORY CARGADO (MOTOR V2 + CATÁLOGO BD)')
 
@@ -577,15 +578,26 @@ export const TRDAIRepository = (db) => {
         let confianza = 0.7
         let origen    = 'desconocido'
 
+        // 0️⃣ APRENDIDO: correcciones previas del archivista (máxima prioridad)
+        const aprendida = await consultarSerieAprendida(db, actividad.nombre)
+        if (aprendida) {
+          serie     = aprendida.serie
+          subserie  = aprendida.subserie
+          confianza = 0.97
+          origen    = 'aprendido'
+        }
+
         // 1️⃣ patrón documental
-        for (const tipologia of tipologias) {
-          const patron = detectarPatronDocumental(tipologia)
-          if (patron) {
-            serie    = patron.serie
-            subserie = patron.subserie
-            confianza = 0.92
-            origen    = 'patron'
-            break
+        if (!serie) {
+          for (const tipologia of tipologias) {
+            const patron = detectarPatronDocumental(tipologia)
+            if (patron) {
+              serie    = patron.serie
+              subserie = patron.subserie
+              confianza = 0.92
+              origen    = 'patron'
+              break
+            }
           }
         }
 
@@ -626,8 +638,12 @@ export const TRDAIRepository = (db) => {
 
         if (!serie) continue
 
-        const tipologiaPrincipal = tipologias.length
-          ? JSON.stringify(tipologias)  // ✅ guarda TODAS como JSON array
+        // APRENDIDO: quitar tipologías que el archivista marcó como ajenas a la serie
+        const neg = await tipologiasNegativas(db, serie)
+        const tipologiasLimpias = filtrarTipologias(tipologias, neg)
+
+        const tipologiaPrincipal = tipologiasLimpias.length
+          ? JSON.stringify(tipologiasLimpias)
           : null
 
         const propuestaID = await createSeriePropuesta({
