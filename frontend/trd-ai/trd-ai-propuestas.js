@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     .getElementById('btnGenerarPropuestas')
     ?.addEventListener('click', generarPropuestas)
 
+  document.getElementById('btnExportXlsx')?.addEventListener('click', () => exportarTRD('xlsx'))
+  document.getElementById('btnExportDocx')?.addEventListener('click', () => exportarTRD('docx'))
+  document.getElementById('btnValidar')?.addEventListener('click', revisarCumplimiento)
+  document.getElementById('btnValorar')?.addEventListener('click', valorarAprobadas)
+
   // Filtros
   document.getElementById('filtroBusqueda')?.addEventListener('input', aplicarFiltros)
   document.getElementById('filtroEstado')?.addEventListener('change', aplicarFiltros)
@@ -95,6 +100,146 @@ async function cargarPropuestas() {
   } catch (err) {
     console.error(err)
     mostrarToast('No fue posible cargar las propuestas', 'error')
+  }
+}
+
+// =====================================================
+// VALORACIÓN (retención + disposición + fundamento)
+// =====================================================
+
+async function valorarAprobadas() {
+  const aprobadas = listaCruda.filter(p => (p.estado || '') === 'aprobada').length
+  if (aprobadas === 0) {
+    mostrarToast('No hay propuestas aprobadas para valorar. Aprueba algunas primero.', 'warning')
+    return
+  }
+  const btn = document.getElementById('btnValorar')
+  const original = btn?.textContent
+  if (btn) { btn.disabled = true; btn.textContent = 'Valorando…' }
+  try {
+    const resp = await apiFetch('/api/trd-ai/valorar-lote', { method: 'POST', body: JSON.stringify({}) })
+    if (!resp || !resp.ok) throw new Error('Error')
+    const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
+    mostrarToast(`${json.valoradas} propuesta(s) valoradas (retención + disposición + fundamento)`, 'success')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible valorar las propuestas', 'error')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original }
+  }
+}
+
+// =====================================================
+// VALIDADOR NORMATIVO (pre-comité)
+// =====================================================
+
+async function revisarCumplimiento() {
+  const btn = document.getElementById('btnValidar')
+  const original = btn?.textContent
+  if (btn) { btn.disabled = true; btn.textContent = 'Revisando…' }
+  try {
+    const resp = await apiFetch('/api/trd-ai/validar')
+    if (!resp || !resp.ok) throw new Error('Error')
+    const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
+    mostrarPanelCumplimiento(json)
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible ejecutar la revisión', 'error')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original }
+  }
+}
+
+function mostrarPanelCumplimiento(data) {
+  const r = data.resumen || {}
+  const hallazgos = data.hallazgos || []
+
+  const colorSev = { error: '#991b1b', advertencia: '#b45309', info: '#1e40af' }
+  const bgSev    = { error: '#fef2f2', advertencia: '#fffbeb', info: '#eff6ff' }
+  const bordeSev = { error: '#fecaca', advertencia: '#fde68a', info: '#bfdbfe' }
+  const etiqueta = { error: 'Error', advertencia: 'Advertencia', info: 'Sugerencia' }
+
+  const veredicto = r.lista_para_comite
+    ? `<div style="background:#e7f7ef;border:1px solid #a7f3d0;color:#0f8a5f;padding:12px 16px;border-radius:10px;font-weight:700;">
+         ✓ Sin errores que bloqueen. La TRD está lista para el comité.
+       </div>`
+    : `<div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:12px 16px;border-radius:10px;font-weight:700;">
+         ${r.errores} error${r.errores === 1 ? '' : 'es'} por corregir antes de llevar la TRD al comité.
+       </div>`
+
+  const chips = `
+    <div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap;">
+      <span style="background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;">${r.errores} errores</span>
+      <span style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;">${r.advertencias} advertencias</span>
+      <span style="background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;">${r.informativos} sugerencias</span>
+      <span style="margin-left:auto;color:#64748b;font-size:13px;align-self:center;">${r.series_evaluadas} series evaluadas</span>
+    </div>`
+
+  const items = hallazgos.length
+    ? hallazgos.map(h => `
+        <div style="border:1px solid ${bordeSev[h.severidad]};background:${bgSev[h.severidad]};border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+          <div style="display:flex;gap:8px;align-items:baseline;">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;color:${colorSev[h.severidad]};">${etiqueta[h.severidad]}</span>
+            <span style="font-weight:700;color:#1f2937;">${h.serie}${h.subserie ? ' / ' + h.subserie : ''}</span>
+          </div>
+          <div style="font-size:13px;color:#374151;margin-top:3px;">${h.mensaje}</div>
+          ${h.sugerencia ? `<div style="font-size:12px;color:#6b7280;margin-top:3px;">→ ${h.sugerencia}</div>` : ''}
+        </div>`).join('')
+    : `<div style="color:#6b7280;padding:8px 0;">No se encontraron observaciones.</div>`
+
+  const overlay = document.createElement('div')
+  overlay.className = 'modal'
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:720px;max-height:82vh;display:flex;flex-direction:column;">
+      <h3 style="margin:0 0 4px;">Revisión de cumplimiento — TRD</h3>
+      <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Reglas del AGN (Ley 594/2000, Acuerdo 004/2019) sobre las propuestas no rechazadas.</p>
+      ${veredicto}
+      ${chips}
+      <div style="overflow-y:auto;flex:1;padding-right:4px;">${items}</div>
+      <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+        <button id="cerrarValidacion" class="btn-primary btn-sm">Entendido</button>
+      </div>
+    </div>`
+  document.body.appendChild(overlay)
+  overlay.querySelector('#cerrarValidacion').addEventListener('click', () => overlay.remove())
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove() })
+}
+
+// =====================================================
+// EXPORT TRD (Excel / Word) — desde propuestas aprobadas
+// =====================================================
+
+async function exportarTRD(formato) {
+  const aprobadas = listaCruda.filter(p => (p.estado || '') === 'aprobada').length
+  if (aprobadas === 0) {
+    mostrarToast('No hay propuestas aprobadas para exportar. Aprueba algunas primero.', 'warning')
+    return
+  }
+  const btnId = formato === 'xlsx' ? 'btnExportXlsx' : 'btnExportDocx'
+  const btn = document.getElementById(btnId)
+  const original = btn?.textContent
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando…' }
+  try {
+    const resp = await apiFetch(`/api/trd-ai/export/${formato}`)
+    if (!resp || !resp.ok) throw new Error('Error generando el archivo')
+    const blob = await resp.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = formato === 'xlsx' ? 'TRD-propuesta.xlsx' : 'TRD-propuesta.docx'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    mostrarToast(`TRD exportada (${formato.toUpperCase()})`, 'success')
+  } catch (e) {
+    console.error(e)
+    mostrarToast('No fue posible exportar la TRD', 'error')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original }
   }
 }
 
@@ -414,9 +559,8 @@ window.aprobarGrupo = async function(btn) {
     })
     const json = resp && await resp.json()
     if (!resp || !json?.ok) throw new Error(json?.error || 'Error')
-    // Retención automática en segundo plano para cada propuesta del grupo
-    ids.forEach(id => apiFetch(`/api/trd-ai/series-propuestas/${id}/retencion-automatica`).catch(() => {}))
-    mostrarToast(`${json.actualizadas} propuesta(s) aprobadas`, 'success')
+    // La aprobación valoriza automáticamente (retención + disposición + fundamento).
+    mostrarToast(`${json.actualizadas} propuesta(s) aprobadas y valoradas`, 'success')
     await cargarPropuestas()
   } catch (e) {
     console.error(e); mostrarToast('No fue posible aprobar', 'error')

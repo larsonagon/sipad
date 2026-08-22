@@ -2,6 +2,7 @@ import {
   sugerirSerieDesdeActividad,
   sugerirRetencionContextual
 } from './trd-ai.engine.js'
+import { valorarPropuestas } from './trd-ai.valoracion.js'
 
 export const TRDAIService = (repository, db) => ({
 
@@ -140,7 +141,19 @@ export const TRDAIService = (repository, db) => ({
       throw new Error('Estado inválido')
     if (!Array.isArray(ids) || ids.length === 0)
       throw new Error('Se requiere una lista de propuestas')
-    return await repository.cambiarEstadoLote(ids, estado, usuarioId, entidadId)
+    const res = await repository.cambiarEstadoLote(ids, estado, usuarioId, entidadId)
+    // Al aprobar, valorar automáticamente (retención + disposición + fundamento).
+    // Nunca debe hacer fallar la aprobación.
+    if (estado === 'aprobada' && db) {
+      try { await valorarPropuestas(db, { ids, entidadId }) }
+      catch (e) { console.error('Auto-valoración al aprobar:', e.message) }
+    }
+    return res
+  },
+
+  async valorarPropuestas(ids, entidadId) {
+    if (!db) throw new Error('DB no disponible')
+    return await valorarPropuestas(db, { ids: Array.isArray(ids) && ids.length ? ids : null, entidadId })
   },
 
   async editarLote(ids, data, entidadId) {
@@ -160,7 +173,8 @@ export const TRDAIService = (repository, db) => ({
     if (!propuesta) throw new Error('Propuesta no encontrada')
     if (propuesta.estado !== 'aprobada')
       throw new Error('Solo propuestas aprobadas pueden incorporarse')
-    const versionActiva = await repository.getVersionAprobada?.()
+    // Versión de la TRD oficial de la ENTIDAD de la propuesta (multi-tenant)
+    const versionActiva = await repository.getVersionAprobada(propuesta.entidad_id || null)
     if (!versionActiva) throw new Error('No existe una TRD aprobada')
     return await repository.incorporarASerieOficial(id, versionActiva.id)
   },

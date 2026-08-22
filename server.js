@@ -213,7 +213,7 @@
       app.use('/api/segtec', segtecRoutes)
 
       // ✅ TRD-AI
-      registerTRDAIRoutes(app, trdAIController)
+      registerTRDAIRoutes(app, trdAIController, db)
 
       // ✅ TRD
       registerTRDRoutes(app, db)

@@ -383,29 +383,30 @@ export const TRDAIRepository = (db) => {
     // Obtiene la versión TRD activa. Si no existe, la crea.
     // =====================================================
 
-    async getVersionAprobada() {
+    async getVersionAprobada(entidadId = null) {
 
-      const version = await db.get(`
-        SELECT *
-        FROM trd_versiones
-        WHERE estado IN ('aprobada', 'borrador')
-        ORDER BY
-          CASE estado
-            WHEN 'aprobada' THEN 0
-            WHEN 'borrador'  THEN 1
-            ELSE 2
-          END,
-          id DESC
-        LIMIT 1
-      `)
+      // Versión TRD POR ENTIDAD (multi-tenant). Cada entidad incorpora en la suya.
+      const orden = `ORDER BY CASE estado WHEN 'aprobada' THEN 0 WHEN 'borrador' THEN 1 ELSE 2 END, id DESC`
+
+      const version = entidadId
+        ? await db.get(`
+            SELECT * FROM trd_versiones
+            WHERE estado IN ('aprobada', 'borrador') AND entidad_id = ?
+            ${orden} LIMIT 1
+          `, [entidadId])
+        : await db.get(`
+            SELECT * FROM trd_versiones
+            WHERE estado IN ('aprobada', 'borrador')
+            ${orden} LIMIT 1
+          `)
 
       if (!version) {
         const id = randomUUID()
         await db.run(`
-          INSERT INTO trd_versiones (id, nombre_version, modo_creacion, estado)
-          VALUES (?, 'Versión 1', 'asistido', 'borrador')
-        `, [id])
-        return { id, nombre_version: 'Versión 1', estado: 'borrador' }
+          INSERT INTO trd_versiones (id, nombre_version, modo_creacion, estado, entidad_id)
+          VALUES (?, 'Versión 1', 'asistido', 'borrador', ?)
+        `, [id, entidadId])
+        return { id, nombre_version: 'Versión 1', estado: 'borrador', entidad_id: entidadId }
       }
 
       return version
@@ -441,14 +442,15 @@ export const TRDAIRepository = (db) => {
       const disposicionRaw = retencion?.disposicion_final ?? propuesta.disposicion_final ?? null
       const disposicion   = mapearDisposicion(disposicionRaw)
       const dependenciaId = propuesta.act_dependencia_id ?? null
-      const entidadId     = propuesta.act_entidad_id     ?? null
+      const entidadId     = propuesta.entidad_id ?? propuesta.act_entidad_id ?? null
 
-      // 3. Serie — reutilizar si ya existe en esta versión
+      // 3. Serie — reutilizar si ya existe en esta versión Y entidad
       let serieId
       const serieExistente = await db.get(`
         SELECT id FROM series
         WHERE trd_version_id = ? AND nombre = ?
-      `, [versionId, propuesta.nombre_serie])
+          AND (entidad_id = ? OR entidad_id IS NULL)
+      `, [versionId, propuesta.nombre_serie, entidadId])
 
       if (serieExistente) {
         serieId = serieExistente.id

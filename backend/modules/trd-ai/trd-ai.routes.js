@@ -1,8 +1,11 @@
 import express from 'express'
 import { verificarJWT } from '../../middlewares/auth.middleware.js'
 import { requireLevel } from '../../middlewares/role.middleware.js'
+import { registrarExport } from './trd-ai.export.js'
+import { registrarValidador } from './trd-ai.validador.js'
+import { registrarValoracion } from './trd-ai.valoracion.js'
 
-export function registerTRDAIRoutes(app, controller) {
+export function registerTRDAIRoutes(app, controller, db) {
 
   const router = express.Router()
 
@@ -127,6 +130,25 @@ export function registerTRDAIRoutes(app, controller) {
     requireLevel(60),
     controller.sugerirRetencionAutomatica
   )
+
+  // =====================================================
+  // EXPORT DE TRD (Formato Único – Excel / Word)
+  //   GET /api/trd-ai/export/xlsx
+  //   GET /api/trd-ai/export/docx
+  // =====================================================
+  if (db) registrarExport(router, db, requireLevel(60))
+
+  // =====================================================
+  // VALIDADOR NORMATIVO (pre-comité)
+  //   GET /api/trd-ai/validar
+  // =====================================================
+  if (db) registrarValidador(router, db, requireLevel(60))
+
+  // =====================================================
+  // VALORACIÓN JUSTIFICADA (retención + disposición + fundamento)
+  //   POST /api/trd-ai/valorar-lote  { ids? }
+  // =====================================================
+  if (db) registrarValoracion(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS
