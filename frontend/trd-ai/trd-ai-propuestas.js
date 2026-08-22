@@ -356,15 +356,12 @@ function renderTabla(lista) {
     const id     = p.id
     const idsJson = JSON.stringify(p.ids)
 
-    const TIP_MAX = 4
     const tips = p.tipologias || []
-    const muchas = tips.length > TIP_MAX
-    const tipHtml = tips.length
+    const n = tips.length
+    const tipHtml = n
       ? `<div class="tip-box">
-           <ul class="tip-lista ${muchas ? 'tip-collapsed' : ''}">
-             ${tips.map(t => `<li>${sentenceCase(t)}</li>`).join('')}
-           </ul>
-           ${muchas ? `<button type="button" class="tip-toggle" data-open="0">+ ${tips.length - TIP_MAX} tipos más</button>` : ''}
+           <button type="button" class="tip-summary" data-open="0">▸ ${n} tipo${n === 1 ? '' : 's'} documental${n === 1 ? '' : 'es'}</button>
+           <ul class="tip-lista tip-hidden">${tips.map(t => `<li>${sentenceCase(t)}</li>`).join('')}</ul>
          </div>`
       : '<span class="tip-vacia">Sin tipologías</span>'
 
@@ -402,15 +399,16 @@ function renderTabla(lista) {
     `
   }).join('')
 
-  // Tipologías: "ver más / ver menos"
-  tbody.querySelectorAll('.tip-toggle').forEach(btn =>
+  // Tipologías: colapsadas por defecto; se despliegan al hacer clic
+  tbody.querySelectorAll('.tip-summary').forEach(btn =>
     btn.addEventListener('click', () => {
       const ul = btn.parentElement.querySelector('.tip-lista')
       const abierto = btn.dataset.open === '1'
-      ul.classList.toggle('tip-collapsed', abierto) // si estaba abierto → colapsar
+      ul.classList.toggle('tip-hidden', abierto) // si estaba abierto → ocultar
       btn.dataset.open = abierto ? '0' : '1'
-      const extra = ul.querySelectorAll('li').length - 4
-      btn.textContent = abierto ? `+ ${extra} tipos más` : '− ver menos'
+      const n = ul.querySelectorAll('li').length
+      const flecha = abierto ? '▸' : '▾'
+      btn.textContent = `${flecha} ${n} tipo${n === 1 ? '' : 's'} documental${n === 1 ? '' : 'es'}`
     })
   )
 
