@@ -353,7 +353,7 @@ function estadoChip(estado) {
   if (e === 'rechazada')
     return `<span class="estado-chip estado-rechazada">Rechazada</span>`
   if (e === 'incorporada')
-    return `<span class="estado-chip" style="background:#dbeafe;color:#1e40af;">Incorporada</span>`
+    return `<span class="estado-chip estado-incorporada">Incorporada</span>`
   return `<span class="estado-chip estado-propuesta">Propuesta</span>`
 }
 
@@ -399,24 +399,53 @@ function renderTabla(lista) {
   const tbody = document.getElementById('tablaPropuestas')
 
   if (!lista || !lista.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:1.5rem;">No hay propuestas que coincidan.</td></tr>`
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:1.5rem;">No hay propuestas que coincidan.</td></tr>`
     actualizarBulkBar()
     return
   }
 
   const agrupadas = agruparSeries(lista)
 
-  tbody.innerHTML = agrupadas.map(p => {
+  // Ordenar por serie (para agruparlas visualmente) y luego por subserie
+  agrupadas.sort((a, b) =>
+    (a.serie || '').localeCompare(b.serie || '', 'es', { sensitivity: 'base' }) ||
+    (a.subserie || '').localeCompare(b.subserie || '', 'es', { sensitivity: 'base' })
+  )
 
-    const estado = (p.estado || '').toLowerCase()
-    const id     = p.id
+  // Nº de subseries por serie (para el encabezado del grupo)
+  const conteo = {}
+  agrupadas.forEach(p => { conteo[p.serie] = (conteo[p.serie] || 0) + 1 })
+
+  let html = ''
+  let serieActual = null
+
+  agrupadas.forEach(p => {
+
+    const serieAttr = String(p.serie).replace(/"/g, '&quot;')
+
+    // ── Encabezado de grupo (una vez por serie) ──
+    if (p.serie !== serieActual) {
+      serieActual = p.serie
+      const nSub = conteo[p.serie]
+      html += `
+        <tr class="grupo" data-serie="${serieAttr}">
+          <td colspan="6"><div class="grupo-inner">
+            <span class="grupo-chk"><input type="checkbox" class="chk-grupo" data-serie="${serieAttr}" title="Seleccionar toda la serie"></span>
+            <span class="grupo-serie">${p.serie}</span>
+            <span class="grupo-meta">· ${nSub} subserie${nSub === 1 ? '' : 's'}</span>
+          </div></td>
+        </tr>`
+    }
+
+    const estado  = (p.estado || '').toLowerCase()
+    const id      = p.id
     const idsJson = JSON.stringify(p.ids)
 
     const tips = p.tipologias || []
-    const n = tips.length
-    const tipHtml = n
+    const nT = tips.length
+    const tipHtml = nT
       ? `<div class="tip-box">
-           <button type="button" class="tip-summary" data-open="0">▸ ${n} tipo${n === 1 ? '' : 's'} documental${n === 1 ? '' : 'es'}</button>
+           <button type="button" class="tip-summary" data-open="0">▸ ${nT} tipo${nT === 1 ? '' : 's'} documental${nT === 1 ? '' : 'es'}</button>
            <ul class="tip-lista tip-hidden">${tips.map(t => `<li>${sentenceCase(t)}</li>`).join('')}</ul>
          </div>`
       : '<span class="tip-vacia">Sin tipologías</span>'
@@ -437,23 +466,18 @@ function renderTabla(lista) {
       ? `<button class="btn-primary btn-sm btn-incorporar" onclick="incorporar('${id}', this)">Incorporar a TRD</button>`
       : ''
 
-    return `
-      <tr data-id="${id}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
+    html += `
+      <tr class="fila" data-id="${id}" data-serie="${serieAttr}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
         <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
-        <td class="serie-nombre"><strong>${p.serie}</strong>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}</td>
-        <td class="subserie"><span class="clamp2" title="${(p.subserie || '').replace(/"/g, '&quot;')}">${p.subserie || '—'}</span></td>
+        <td class="col-subserie"><span class="subserie-txt clamp2" title="${(p.subserie || '').replace(/"/g, '&quot;')}">${p.subserie || '—'}</span>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}</td>
         <td class="col-cantidad">${p.cantidad}</td>
         <td class="col-tipos">${tipHtml}</td>
-        <td class="td-estado">${estadoChip(p.estado)}</td>
-        <td class="trd-actions">
-          ${btnEditar}
-          ${btnAprobar}
-          ${btnRechazar}
-          ${btnIncorporar}
-        </td>
-      </tr>
-    `
-  }).join('')
+        <td class="col-estado">${estadoChip(p.estado)}</td>
+        <td class="col-acciones"><div class="trd-actions">${btnEditar}${btnAprobar}${btnRechazar}${btnIncorporar}</div></td>
+      </tr>`
+  })
+
+  tbody.innerHTML = html
 
   // Tipologías: colapsadas por defecto; se despliegan al hacer clic
   tbody.querySelectorAll('.tip-summary').forEach(btn =>
@@ -468,10 +492,25 @@ function renderTabla(lista) {
     })
   )
 
-  // Casillas → actualizar barra de lote
+  // Casillas de fila → actualizar barra de lote
   tbody.querySelectorAll('.chk-prop').forEach(c =>
     c.addEventListener('change', actualizarBulkBar)
   )
+
+  // Casilla de grupo → marca/desmarca todas las subseries de esa serie
+  tbody.querySelectorAll('.chk-grupo').forEach(g =>
+    g.addEventListener('change', () => {
+      const serie = g.dataset.serie
+      tbody.querySelectorAll('tr.fila').forEach(tr => {
+        if (tr.dataset.serie === serie) {
+          const c = tr.querySelector('.chk-prop')
+          if (c) c.checked = g.checked
+        }
+      })
+      actualizarBulkBar()
+    })
+  )
+
   const chkAll = document.getElementById('chkAllTrd')
   if (chkAll) chkAll.checked = false
   actualizarBulkBar()
@@ -667,7 +706,7 @@ function actualizarFila(id, nuevoEstado) {
   const fila = document.querySelector(`tr[data-id="${id}"]`)
   if (!fila) return
 
-  const tdEstado = fila.querySelector('.td-estado')
+  const tdEstado = fila.querySelector('.col-estado')
   if (tdEstado) tdEstado.innerHTML = estadoChip(nuevoEstado)
 
   const tdAcciones = fila.querySelector('.trd-actions')
