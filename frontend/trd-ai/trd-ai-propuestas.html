@@ -35,14 +35,12 @@
 }
 
 .trd-table td {
-  padding: 12px 14px;
+  padding: 13px 14px;
   border-bottom: 1px solid #eef0f3;
   border-right: none;
   border-left: none;
-  vertical-align: middle;
+  vertical-align: top;
 }
-
-.trd-table td.col-tipos { vertical-align: top; }
 
 /* Cebra sutil + hover para legibilidad */
 .trd-table tbody tr:nth-child(even) td { background: #fbfcfe; }
@@ -99,6 +97,21 @@
   color: #b45309;
   font-size: 12px;
   font-style: italic;
+}
+/* Badge "aprendido" */
+.badge-aprendido {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #0e7490;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  padding: 1px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
 }
 
 /* ── Estado chips ── */
@@ -196,6 +209,18 @@
         <button id="btnValorar" class="btn-secondary" style="height:auto;padding:10px 18px;font-size:13px;"
           title="Recalcula retención, disposición y fundamento de las propuestas aprobadas">
           ⚖ Valorar aprobadas
+        </button>
+        <button id="btnCcdXlsx" class="btn-secondary" style="height:auto;padding:10px 18px;font-size:13px;"
+          title="Cuadro de Clasificación Documental codificado (Excel)">
+          ⛃ CCD Excel
+        </button>
+        <button id="btnCcdDocx" class="btn-secondary" style="height:auto;padding:10px 18px;font-size:13px;"
+          title="Cuadro de Clasificación Documental codificado (Word)">
+          ⛃ CCD Word
+        </button>
+        <button id="btnReaplicar" class="btn-secondary" style="height:auto;padding:10px 18px;font-size:13px;"
+          title="Aplica lo aprendido a las propuestas existentes: limpia tipologías y reasigna series">
+          ↻ Re-aplicar aprendizaje
         </button>
       </div>
 

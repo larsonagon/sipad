@@ -100,13 +100,17 @@ export async function aprenderDesdeEstado(db, { nombreActividad, serie, subserie
 
 // ---------- Lectura / aplicación ----------
 
-// Devuelve la serie/subserie aprendida para una actividad (si el saldo es positivo)
-export async function consultarSerieAprendida(db, nombreActividad) {
-  const clave = norm(nombreActividad)
-  if (!clave) return null
-  const rows = await db.all(
-    `SELECT serie, subserie, senal, peso FROM trd_aprendizaje WHERE tipo='serie' AND clave=?`, [clave]
-  )
+function tokenSet(s) {
+  return new Set(norm(s).split(' ').filter(w => w.length > 3))
+}
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0
+  let inter = 0
+  for (const t of a) if (b.has(t)) inter++
+  return inter / (new Set([...a, ...b]).size)
+}
+// Del conjunto de filas de una clave, devuelve la mejor serie con saldo positivo
+function mejorDeFilas(rows) {
   if (!rows.length) return null
   const agg = new Map()
   for (const r of rows) {
@@ -117,6 +121,87 @@ export async function consultarSerieAprendida(db, nombreActividad) {
   }
   const best = [...agg.values()].sort((a, b) => b.score - a.score)[0]
   return best && best.score > 0 ? { serie: best.serie, subserie: best.subserie } : null
+}
+
+// Devuelve la serie/subserie aprendida para una actividad.
+// 1) coincidencia exacta por nombre; 2) coincidencia por palabras clave (Jaccard ≥ 0.6).
+export async function consultarSerieAprendida(db, nombreActividad) {
+  const clave = norm(nombreActividad)
+  if (!clave) return null
+
+  // 1) Exacta
+  const exactas = await db.all(
+    `SELECT serie, subserie, senal, peso FROM trd_aprendizaje WHERE tipo='serie' AND clave=?`, [clave]
+  )
+  const best1 = mejorDeFilas(exactas)
+  if (best1) return best1
+
+  // 2) Por palabras clave
+  const qtok = tokenSet(nombreActividad)
+  if (qtok.size < 2) return null
+
+  const todas = await db.all(
+    `SELECT clave, serie, subserie, senal, peso FROM trd_aprendizaje WHERE tipo='serie'`
+  )
+  if (!todas.length) return null
+
+  // Agrupar filas por clave y quedarnos con las claves suficientemente parecidas
+  const porClave = new Map()
+  for (const r of todas) {
+    if (!porClave.has(r.clave)) porClave.set(r.clave, [])
+    porClave.get(r.clave).push(r)
+  }
+  let mejor = null, mejorSim = 0
+  for (const [k, rows] of porClave) {
+    const sim = jaccard(qtok, tokenSet(k))
+    if (sim >= 0.6 && sim > mejorSim) {
+      const b = mejorDeFilas(rows)
+      if (b) { mejor = b; mejorSim = sim }
+    }
+  }
+  return mejor
+}
+
+// Re-aplica lo aprendido a las propuestas EXISTENTES (no incorporadas):
+// limpia tipologías negativas y, en estado 'propuesta', reasigna serie aprendida.
+export async function reaplicarAprendizaje(db, entidadId = null) {
+  const rows = await db.all(`
+    SELECT tsp.id, tsp.nombre_serie, tsp.nombre_subserie, tsp.tipologia_documental, tsp.estado,
+           sa.nombre AS act_nombre
+    FROM trd_series_propuestas tsp
+    LEFT JOIN segtec_actividades sa ON sa.id = tsp.actividad_id
+    WHERE tsp.estado <> 'incorporada' ${entidadId ? 'AND tsp.entidad_id = ?' : ''}
+  `, entidadId ? [entidadId] : [])
+
+  let tipologiasLimpiadas = 0
+  let seriesReasignadas = 0
+
+  for (const p of rows) {
+    let serie = p.nombre_serie
+    let subserie = p.nombre_subserie
+    let cambia = false
+
+    if (p.estado === 'propuesta' && p.act_nombre) {
+      const ap = await consultarSerieAprendida(db, p.act_nombre)
+      if (ap && (ap.serie !== serie || (ap.subserie || '') !== (subserie || ''))) {
+        serie = ap.serie; subserie = ap.subserie; seriesReasignadas++; cambia = true
+      }
+    }
+
+    const neg = await tipologiasNegativas(db, serie)
+    const tips = parseTip(p.tipologia_documental)
+    const limp = filtrarTipologias(tips, neg)
+    if (limp.length !== tips.length) { tipologiasLimpiadas++; cambia = true }
+
+    if (cambia) {
+      await db.run(
+        `UPDATE trd_series_propuestas SET nombre_serie=?, nombre_subserie=?, tipologia_documental=? WHERE id=?`,
+        [serie, subserie || null, limp.length ? JSON.stringify(limp) : null, p.id]
+      )
+    }
+  }
+
+  return { tipologiasLimpiadas, seriesReasignadas }
 }
 
 // Conjunto de tipologías con saldo NEGATIVO para una serie (no pertenecen)
@@ -145,6 +230,7 @@ export function filtrarTipologias(tipologias, negSet) {
 
 export function registrarAprendizaje(router, db, guard) {
   const mw = typeof guard === 'function' ? guard : (req, res, next) => next()
+
   router.get('/aprendizaje', mw, async (req, res) => {
     try {
       const total = await db.get(`SELECT COUNT(*)::int n FROM trd_aprendizaje`)
@@ -153,6 +239,17 @@ export function registrarAprendizaje(router, db, guard) {
     } catch (err) {
       console.error('aprendizaje stats error:', err)
       return res.status(500).json({ ok: false, error: 'No se pudo consultar el aprendizaje' })
+    }
+  })
+
+  // Re-aplicar lo aprendido a las propuestas existentes
+  router.post('/aprendizaje/reaplicar', mw, async (req, res) => {
+    try {
+      const r = await reaplicarAprendizaje(db, req.entidad_id || null)
+      return res.json({ ok: true, ...r })
+    } catch (err) {
+      console.error('reaplicar aprendizaje error:', err)
+      return res.status(500).json({ ok: false, error: 'No se pudo re-aplicar el aprendizaje' })
     }
   })
 }

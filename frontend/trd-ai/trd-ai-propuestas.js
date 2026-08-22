@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnExportDocx')?.addEventListener('click', () => exportarTRD('docx'))
   document.getElementById('btnValidar')?.addEventListener('click', revisarCumplimiento)
   document.getElementById('btnValorar')?.addEventListener('click', valorarAprobadas)
+  document.getElementById('btnCcdXlsx')?.addEventListener('click', () => exportarCCD('xlsx'))
+  document.getElementById('btnCcdDocx')?.addEventListener('click', () => exportarCCD('docx'))
+  document.getElementById('btnReaplicar')?.addEventListener('click', reaplicarAprendizaje)
 
   // Filtros
   document.getElementById('filtroBusqueda')?.addEventListener('input', aplicarFiltros)
@@ -100,6 +103,58 @@ async function cargarPropuestas() {
   } catch (err) {
     console.error(err)
     mostrarToast('No fue posible cargar las propuestas', 'error')
+  }
+}
+
+// =====================================================
+// CCD codificado (Excel / Word)
+// =====================================================
+
+async function exportarCCD(formato) {
+  const aprobadas = listaCruda.filter(p => (p.estado || '') === 'aprobada').length
+  if (aprobadas === 0) {
+    mostrarToast('No hay propuestas aprobadas para el CCD. Aprueba algunas primero.', 'warning')
+    return
+  }
+  const btn = document.getElementById(formato === 'xlsx' ? 'btnCcdXlsx' : 'btnCcdDocx')
+  const original = btn?.textContent
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando…' }
+  try {
+    const resp = await apiFetch(`/api/trd-ai/ccd/${formato}`)
+    if (!resp || !resp.ok) throw new Error('Error')
+    const blob = await resp.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = formato === 'xlsx' ? 'CCD-propuesto.xlsx' : 'CCD-propuesto.docx'
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+    mostrarToast(`CCD exportado (${formato.toUpperCase()})`, 'success')
+  } catch (e) {
+    console.error(e); mostrarToast('No fue posible exportar el CCD', 'error')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original }
+  }
+}
+
+// =====================================================
+// RE-APLICAR APRENDIZAJE
+// =====================================================
+
+async function reaplicarAprendizaje() {
+  const btn = document.getElementById('btnReaplicar')
+  const original = btn?.textContent
+  if (btn) { btn.disabled = true; btn.textContent = 'Aplicando…' }
+  try {
+    const resp = await apiFetch('/api/trd-ai/aprendizaje/reaplicar', { method: 'POST', body: JSON.stringify({}) })
+    if (!resp || !resp.ok) throw new Error('Error')
+    const json = await resp.json()
+    if (!json.ok) throw new Error(json.error)
+    mostrarToast(`Aprendizaje aplicado: ${json.seriesReasignadas} serie(s) reasignada(s), ${json.tipologiasLimpiadas} con tipologías limpiadas`, 'success')
+    await cargarPropuestas()
+  } catch (e) {
+    console.error(e); mostrarToast('No fue posible re-aplicar el aprendizaje', 'error')
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = original }
   }
 }
 
@@ -323,6 +378,7 @@ function agruparSeries(lista) {
         cantidad:    0,
         ids:         [],
         id:          p.id,
+        aprendido:   /aprendido/i.test(p.justificacion || ''),
         tipologias:  parseTipologias(p.tipologia_documental)
       }
     }
@@ -384,7 +440,7 @@ function renderTabla(lista) {
     return `
       <tr data-id="${id}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
         <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
-        <td class="serie-nombre"><strong>${p.serie}</strong></td>
+        <td class="serie-nombre"><strong>${p.serie}</strong>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}</td>
         <td class="subserie">${p.subserie || '—'}</td>
         <td class="col-cantidad">${p.cantidad}</td>
         <td class="col-tipos">${tipHtml}</td>

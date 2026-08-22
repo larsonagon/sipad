@@ -5,6 +5,7 @@ import { registrarExport } from './trd-ai.export.js'
 import { registrarValidador } from './trd-ai.validador.js'
 import { registrarValoracion } from './trd-ai.valoracion.js'
 import { registrarAprendizaje } from './trd-ai.aprendizaje.js'
+import { registrarCCD } from './trd-ai.ccd.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -156,6 +157,12 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   GET /api/trd-ai/aprendizaje
   // =====================================================
   if (db) registrarAprendizaje(router, db, requireLevel(60))
+
+  // =====================================================
+  // CCD codificado (Cuadro de Clasificación Documental)
+  //   GET /api/trd-ai/ccd/xlsx  ·  /api/trd-ai/ccd/docx
+  // =====================================================
+  if (db) registrarCCD(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS

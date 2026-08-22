@@ -109,7 +109,25 @@ export async function obtenerDatosExport(db, entidadId) {
     })
   }
 
-  return [...porDep.entries()].map(([dependencia, series]) => ({ dependencia, series }))
+  // Codificación jerárquica DD.SS.UU (misma que el CCD)
+  const pad2 = n => String(n).padStart(2, '0')
+  const salida = []
+  let di = 0
+  for (const [dependencia, series] of porDep.entries()) {
+    di++
+    const depCod = pad2(di)
+    const serieIdx = new Map()
+    const subCount = new Map()
+    for (const s of series) {
+      if (!serieIdx.has(s.serie)) { serieIdx.set(s.serie, serieIdx.size + 1); subCount.set(s.serie, 0) }
+      const si = serieIdx.get(s.serie)
+      const ui = subCount.get(s.serie) + 1
+      subCount.set(s.serie, ui)
+      s.codigo = `${depCod}.${pad2(si)}.${pad2(ui)}`
+    }
+    salida.push({ dependencia, series })
+  }
+  return salida
 }
 
 // ---------- EXCEL ----------
@@ -149,13 +167,11 @@ export async function generarExcelTRD(datos, meta = {}) {
   headerRow.height = 30
   headerRow.eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D3F77' } } })
 
-  let cod = 0
   for (const dep of datos) {
     for (const s of dep.series) {
-      cod++
       const row = ws.addRow({
         dep: dep.dependencia,
-        cod: String(cod).padStart(3, '0'),
+        cod: s.codigo || '',
         serie: s.serie,
         sub: s.subserie || '',
         tip: s.tipologias.join('\n'),
@@ -249,7 +265,6 @@ export async function generarWordTRD(datos, meta = {}) {
     ]
   })
 
-  let cod = 0
   for (const dep of datos) {
     // Fila de dependencia (banda)
     children.push(new Paragraph({
@@ -259,10 +274,9 @@ export async function generarWordTRD(datos, meta = {}) {
 
     const rows = [headerRow]
     for (const s of dep.series) {
-      cod++
       rows.push(new TableRow({
         children: [
-          celda(String(cod).padStart(3, '0'), { center: true }),
+          celda(s.codigo || '', { center: true }),
           celda(s.serie),
           celda(s.subserie || ''),
           celda(s.tipologias.join('; ')),
