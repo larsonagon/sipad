@@ -356,13 +356,17 @@ function renderTabla(lista) {
     const id     = p.id
     const idsJson = JSON.stringify(p.ids)
 
-    const tipHtml = p.tipologias.length
-      ? `<ul class="tip-lista">${
-          p.tipologias.map(t =>
-            `<li>${sentenceCase(t)}</li>`
-          ).join('')
-        }</ul>`
-      : '<span style="color:#9ca3af;font-size:12px;">Sin tipologías</span>'
+    const TIP_MAX = 4
+    const tips = p.tipologias || []
+    const muchas = tips.length > TIP_MAX
+    const tipHtml = tips.length
+      ? `<div class="tip-box">
+           <ul class="tip-lista ${muchas ? 'tip-collapsed' : ''}">
+             ${tips.map(t => `<li>${sentenceCase(t)}</li>`).join('')}
+           </ul>
+           ${muchas ? `<button type="button" class="tip-toggle" data-open="0">+ ${tips.length - TIP_MAX} tipos más</button>` : ''}
+         </div>`
+      : '<span class="tip-vacia">Sin tipologías</span>'
 
     const btnEditar = estado !== 'incorporada'
       ? `<button class="btn-secondary btn-sm" onclick="editarPropuesta('${id}')">Editar</button>`
@@ -385,8 +389,8 @@ function renderTabla(lista) {
         <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
         <td class="serie-nombre"><strong>${p.serie}</strong></td>
         <td class="subserie">${p.subserie || '—'}</td>
-        <td>${p.cantidad}</td>
-        <td style="max-width:280px;line-height:1.6;">${tipHtml}</td>
+        <td class="col-cantidad">${p.cantidad}</td>
+        <td class="col-tipos">${tipHtml}</td>
         <td class="td-estado">${estadoChip(p.estado)}</td>
         <td class="trd-actions">
           ${btnEditar}
@@ -397,6 +401,18 @@ function renderTabla(lista) {
       </tr>
     `
   }).join('')
+
+  // Tipologías: "ver más / ver menos"
+  tbody.querySelectorAll('.tip-toggle').forEach(btn =>
+    btn.addEventListener('click', () => {
+      const ul = btn.parentElement.querySelector('.tip-lista')
+      const abierto = btn.dataset.open === '1'
+      ul.classList.toggle('tip-collapsed', abierto) // si estaba abierto → colapsar
+      btn.dataset.open = abierto ? '0' : '1'
+      const extra = ul.querySelectorAll('li').length - 4
+      btn.textContent = abierto ? `+ ${extra} tipos más` : '− ver menos'
+    })
+  )
 
   // Casillas → actualizar barra de lote
   tbody.querySelectorAll('.chk-prop').forEach(c =>

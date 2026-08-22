@@ -36,13 +36,17 @@
 
 .trd-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #eef0f3;
   border-right: none;
   border-left: none;
-  vertical-align: top;
+  vertical-align: middle;
 }
 
-.trd-table tr:hover td { background: #fafafa; }
+.trd-table td.col-tipos { vertical-align: top; }
+
+/* Cebra sutil + hover para legibilidad */
+.trd-table tbody tr:nth-child(even) td { background: #fbfcfe; }
+.trd-table tr:hover td { background: #f2f6ff; }
 
 /* ── Columnas ── */
 .col-serie    { width: 150px; min-width: 130px; }
@@ -75,6 +79,30 @@
   position: absolute;
   left: 2px;
   color: #9ca3af;
+}
+/* Colapsar tipologías largas */
+.tip-collapsed {
+  max-height: 88px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 62%, transparent);
+  mask-image: linear-gradient(#000 62%, transparent);
+}
+.tip-toggle {
+  margin-top: 6px;
+  background: none;
+  border: none;
+  color: #1d4ed8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.tip-toggle:hover { text-decoration: underline; }
+.tip-vacia {
+  color: #b45309;
+  font-size: 12px;
+  font-style: italic;
 }
 
 /* ── Estado chips ── */
