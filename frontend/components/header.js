@@ -202,6 +202,8 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>TRD-AI</button>` : ''}
 
+        ${puedeTRDAI ? `<button type="button" id="btnConvalidacion" ${modulo === 'Convalidación' ? 'class="active"' : ''}>Convalidación</button>` : ''}
+
         ${puedeTRD ? `<button type="button" id="btnTRD" ${modulo === 'TRD' ? 'class="active"' : ''}>TRD</button>` : ''}
 
         ${puedeVerInformes ? `<button type="button" id="btnInformes" ${modulo === 'Informes' ? 'class="active"' : ''}>Informes</button>` : ''}
@@ -233,6 +235,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnTRDAI')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-dashboard.html' })
+
+  document.getElementById('btnConvalidacion')
+    ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-convalidacion.html' })
 
   document.getElementById('btnTRD')
     ?.addEventListener('click', () => { window.location.href = '/trd/trd.html' })

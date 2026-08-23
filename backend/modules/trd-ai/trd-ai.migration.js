@@ -162,5 +162,56 @@ export async function runTRDAIMigration(db) {
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_aprendizaje_tip ON trd_aprendizaje(tipo, serie)`)
   } catch { /* ignorar */ }
 
+  // =====================================================
+  // CONVALIDACIÓN (flujo post-comité por entidad)
+  //   Estado del proceso + datos del acto administrativo y radicación.
+  //   Una fila por entidad.
+  // =====================================================
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS trd_convalidacion (
+      id TEXT PRIMARY KEY,
+      entidad_id TEXT,
+      estado TEXT DEFAULT 'borrador',   -- borrador|en_comite|con_observaciones|aprobada_comite|convalidada|radicada
+      fecha_comite TEXT,
+      numero_acta TEXT,
+      acto_administrativo TEXT,         -- tipo (Resolución/Decreto)
+      numero_acto TEXT,
+      fecha_acto TEXT,
+      radicado_numero TEXT,
+      radicado_fecha TEXT,
+      nota TEXT,
+      actualizado_en TEXT
+    )
+  `)
+  try {
+    await db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_convalidacion_entidad ON trd_convalidacion(entidad_id)`)
+  } catch { /* ignorar */ }
+
+  // =====================================================
+  // OBSERVACIONES DEL COMITÉ
+  //   Anotaciones (generales o sobre una serie/subserie) con
+  //   ciclo pendiente → resuelta.
+  // =====================================================
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS trd_observaciones (
+      id TEXT PRIMARY KEY,
+      entidad_id TEXT,
+      serie TEXT,
+      subserie TEXT,
+      texto TEXT NOT NULL,
+      origen TEXT DEFAULT 'comite',     -- comite|interno
+      estado TEXT DEFAULT 'pendiente',  -- pendiente|resuelta
+      respuesta TEXT,
+      autor TEXT,
+      creado_en TEXT,
+      resuelto_en TEXT
+    )
+  `)
+  try {
+    await db.exec(`CREATE INDEX IF NOT EXISTS idx_observaciones_entidad ON trd_observaciones(entidad_id, estado)`)
+  } catch { /* ignorar */ }
+
   console.log('✅ TRD-AI migration ejecutada')
 }

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRD-AI – Convalidación</title>
+
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+
+<style>
+.module-page { max-width: 1080px !important; }
+
+.conv-card {
+  background: #fff;
+  border: 1px solid #e6eaf0;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(16,42,73,.06), 0 4px 14px rgba(16,42,73,.05);
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.conv-card h2 {
+  font-size: 15px;
+  color: var(--color-primary, #0d3f77);
+  margin: 0 0 14px;
+}
+.conv-card h2 .sub { font-weight: 400; color: #64748b; font-size: 12.5px; margin-left: 6px; }
+
+/* ── Stepper de estado ── */
+.stepper { display: flex; gap: 6px; flex-wrap: wrap; }
+.step {
+  flex: 1 1 0;
+  min-width: 120px;
+  border: 1px solid #e6eaf0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: #fff;
+  transition: .12s;
+  text-align: left;
+}
+.step:hover { background: #f7faff; border-color: #cdddf2; }
+.step .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #eef2f7; color: #64748b; font-size: 11px; font-weight: 700; margin-bottom: 6px;
+}
+.step .nom { font-size: 12.5px; font-weight: 700; color: #0f172a; display: block; }
+.step .desc { font-size: 11px; color: #64748b; margin-top: 2px; display: block; line-height: 1.35; }
+.step.done  { background: #f2f6fc; border-color: #cfe0f5; }
+.step.done .num { background: #12864e; color: #fff; }
+.step.actual { border-color: var(--color-primary, #0d3f77); box-shadow: 0 0 0 2px rgba(13,63,119,.12); background: #eff4fb; }
+.step.actual .num { background: var(--color-primary, #0d3f77); color: #fff; }
+
+/* ── Formulario de acto ── */
+.form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 14px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #475569; font-weight: 600; }
+.form-grid input, .form-grid select, .form-grid textarea {
+  border: 1px solid #e6eaf0; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; color: #0f172a;
+}
+.form-grid .full { grid-column: 1 / -1; }
+
+/* ── Chips resumen ── */
+.resumen-chips { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.rchip { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; border: 1px solid transparent; }
+.rchip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.rchip.ok   { background: #e7f6ec; color: #12864e; border-color: #bfe6cd; }
+.rchip.pend { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.rchip.info { background: #eff4fb; color: #1e3a8a; border-color: #dbe6f4; }
+
+/* ── Observaciones ── */
+.obs-item { border: 1px solid #eef1f6; border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; background: #fff; }
+.obs-item.resuelta { background: #f8fafc; }
+.obs-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.obs-ubic { font-weight: 700; color: #0d3f77; font-size: 12.5px; }
+.obs-texto { font-size: 13px; color: #374151; }
+.obs-resp { font-size: 12px; color: #12864e; margin-top: 4px; }
+.obs-meta { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.obs-acc { margin-left: auto; display: flex; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid transparent; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+.pill.pend { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.pill.pend::before { background: #d97706; }
+.pill.res  { background: #e7f6ec; color: #12864e; border-color: #bfe6cd; }
+.pill.res::before  { background: #12864e; }
+
+.obs-form { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 8px; margin-top: 10px; align-items: end; }
+.obs-form label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: #64748b; font-weight: 600; }
+.obs-form input { border: 1px solid #e6eaf0; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+
+@media (max-width: 720px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .obs-form { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+
+    <div class="module-header premium-header">
+      <h1>Convalidación de la TRD</h1>
+      <p class="module-subtext">
+        Del comité interno a la radicación ante el Consejo Departamental de Archivos / AGN:
+        estado del proceso, acto administrativo y observaciones del comité.
+      </p>
+    </div>
+
+    <div class="module-content">
+
+      <div class="resumen-chips" id="resumenChips" style="margin-bottom:14px;"></div>
+
+      <div class="conv-card">
+        <h2>Estado del proceso <span class="sub">haz clic en una etapa para avanzar o retroceder</span></h2>
+        <div class="stepper" id="stepper"></div>
+      </div>
+
+      <div class="conv-card">
+        <h2>Acto administrativo y radicación</h2>
+        <div class="form-grid" id="formActo">
+          <label>Fecha del comité
+            <input type="date" id="fecha_comite">
+          </label>
+          <label>N.º de acta del comité
+            <input type="text" id="numero_acta" placeholder="CIA-014">
+          </label>
+          <label>Tipo de acto administrativo
+            <select id="acto_administrativo">
+              <option value="">—</option>
+              <option>Resolución</option>
+              <option>Decreto</option>
+              <option>Acuerdo</option>
+            </select>
+          </label>
+          <label>N.º del acto
+            <input type="text" id="numero_acto" placeholder="0456">
+          </label>
+          <label>Fecha del acto
+            <input type="date" id="fecha_acto">
+          </label>
+          <label>&nbsp;</label>
+          <label>N.º de radicado (Consejo/AGN)
+            <input type="text" id="radicado_numero" placeholder="20260012345">
+          </label>
+          <label>Fecha de radicación
+            <input type="date" id="radicado_fecha">
+          </label>
+          <label>&nbsp;</label>
+          <label class="full">Nota
+            <textarea id="nota" rows="2" placeholder="Observaciones internas del proceso…"></textarea>
+          </label>
+        </div>
+        <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+          <button id="btnGuardarActo" class="btn-primary btn-sm">Guardar datos</button>
+        </div>
+      </div>
+
+      <div class="conv-card">
+        <h2>Observaciones del comité <span class="sub" id="obsContador"></span></h2>
+
+        <div id="listaObs"></div>
+
+        <div class="obs-form">
+          <label>Serie (opcional)
+            <input type="text" id="obsSerie" placeholder="CONTRATOS">
+          </label>
+          <label>Subserie (opcional)
+            <input type="text" id="obsSubserie" placeholder="Contratos de obra">
+          </label>
+          <label>Observación
+            <input type="text" id="obsTexto" placeholder="Describe la observación del comité…">
+          </label>
+          <button id="btnAddObs" class="btn-primary btn-sm" style="height:37px;">Agregar</button>
+        </div>
+      </div>
+
+      <div class="conv-card">
+        <h2>Expediente para radicar <span class="sub">documentos generados con estos datos + la TRD aprobada</span></h2>
+        <p style="font-size:13px;color:#475569;margin:0 0 14px;">
+          Genera los instrumentos en Word para la convalidación ante el Consejo Departamental de Archivos / AGN.
+          Se arman con el acta, el acto administrativo y las observaciones registrados arriba.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="btnActa" class="btn-primary btn-sm" style="height:36px;">⬇ Acta del comité (Word)</button>
+          <button id="btnOficio" class="btn-secondary btn-sm" style="height:36px;">⬇ Oficio de remisión (Word)</button>
+          <button id="btnTRDdocx" class="btn-secondary btn-sm" style="height:36px;" title="Formato Único de TRD (aprobadas)">⬇ TRD – Formato Único (Word)</button>
+          <button id="btnCCDdocx" class="btn-secondary btn-sm" style="height:36px;" title="Cuadro de Clasificación Documental">⬇ CCD (Word)</button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script type="module" src="/trd-ai/trd-ai-convalidacion.js"></script>
+
+</body>
+</html>

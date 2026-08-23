@@ -7,6 +7,8 @@ import { registrarValoracion } from './trd-ai.valoracion.js'
 import { registrarAprendizaje } from './trd-ai.aprendizaje.js'
 import { registrarCCD } from './trd-ai.ccd.js'
 import { registrarBiblioteca } from './trd-ai.biblioteca.js'
+import { registrarConvalidacion } from './trd-ai.convalidacion.js'
+import { registrarExpediente } from './trd-ai.expediente.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -172,6 +174,20 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   POST /api/trd-ai/biblioteca/:tipo/precargar
   // =====================================================
   if (db) registrarBiblioteca(router, db, requireLevel(60))
+
+  // =====================================================
+  // CONVALIDACIÓN (flujo post-comité: estado + observaciones)
+  //   GET/PATCH /api/trd-ai/convalidacion
+  //   .../convalidacion/observaciones (GET/POST) + :id/resolver|reabrir|DELETE
+  // =====================================================
+  if (db) registrarConvalidacion(router, db, requireLevel(60))
+
+  // =====================================================
+  // EXPEDIENTE DE CONVALIDACIÓN (acta del comité + oficio)
+  //   GET /api/trd-ai/convalidacion/acta.docx
+  //   GET /api/trd-ai/convalidacion/oficio.docx
+  // =====================================================
+  if (db) registrarExpediente(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS
