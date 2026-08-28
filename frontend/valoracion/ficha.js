@@ -16,6 +16,23 @@ async function api(url,opts={}){
   return r.status===204?null:r.json()
 }
 const esc=s=>(s??'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+
+// Tipologías: la base las guarda como array JSON (["A","B"]). Para mostrarlas
+// legibles usamos una por línea; al guardar reconstruimos el array JSON.
+function tiposToText(raw){
+  if(raw == null) return ''
+  if(Array.isArray(raw)) return raw.filter(Boolean).join('\n')
+  const s = String(raw).trim()
+  if(!s) return ''
+  try { const p = JSON.parse(s); if(Array.isArray(p)) return p.filter(Boolean).join('\n') } catch {}
+  return s   // ya era texto plano
+}
+function textToTipos(text){
+  if(text == null) return null
+  const arr = String(text).split(/\r?\n|;/).map(t=>t.trim()).filter(Boolean)
+  return arr.length ? JSON.stringify(arr) : null
+}
+
 const ESTADO = { borrador:'Borrador', en_revision:'En revisión', lista:'Lista' }
 const estadoLabel = e => ESTADO[e] || e || '—'
 
@@ -222,7 +239,7 @@ function renderForm(){
     <div class="fv-field"><label>Subserie</label><input id="f_subserie" class="form-control" value="${esc(f.subserie||'')}"></div>
     <div class="fv-field"><label>Unidad documental</label><input id="f_unidad_documental" class="form-control" value="${esc(f.unidad_documental||'')}"></div>
     <div class="fv-field"><label>Función / productor</label><input id="f_funcion" class="form-control" value="${esc(f.funcion||'')}"></div>
-    <div class="fv-field" style="grid-column:1/3;"><label>Tipologías documentales</label><textarea id="f_tipologias" rows="2" class="form-control">${esc(f.tipologias||'')}</textarea></div>
+    <div class="fv-field" style="grid-column:1/3;"><label>Tipologías documentales <span class="muted" style="font-weight:400;">(una por línea)</span></label><textarea id="f_tipologias" rows="3" class="form-control" placeholder="Una tipología por línea">${esc(tiposToText(f.tipologias))}</textarea></div>
   </div></div>
 
   <div class="fv-sec"><h3>Valores primarios</h3><div class="fv-body">
@@ -326,7 +343,7 @@ async function guardar(){
   const num=id=>{const v=document.getElementById(id)?.value;return v===''||v==null?null:Number(v)}
   const payload={
     serie:g('f_serie'), subserie:g('f_subserie'), unidad_documental:g('f_unidad_documental'),
-    funcion:g('f_funcion'), tipologias:g('f_tipologias'),
+    funcion:g('f_funcion'), tipologias:textToTipos(g('f_tipologias')),
     valores_primarios:recogerValores('primarios'),
     valores_secundarios:recogerValores('secundarios'),
     frecuencia_consulta:g('f_frecuencia_consulta'), hecho_cierre:g('f_hecho_cierre'),
