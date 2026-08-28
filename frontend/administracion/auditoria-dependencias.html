@@ -47,15 +47,16 @@
       <div class="resumen-chips" id="resumenChips"></div>
 
       <div class="nota">
-        <b>Sin uso</b> = no la usa ninguna actividad, propuesta ni serie → segura de borrar.
-        <b>En uso</b> = está referenciada; si es de prueba, primero hay que reasignar o quitar lo que la usa.
+        <b>Sin uso</b> = no la usa ninguna actividad, propuesta ni serie → se borra directo.
+        <b>En uso</b> = está referenciada; si la seleccionas para borrar, se purgan también sus datos
+        asociados (actividades, propuestas y series) — <b>úsalo solo para dependencias ficticias/de prueba</b>.
         <b>Duplicada</b> = hay otra con el mismo nombre.
       </div>
 
       <div class="barra-lote" id="barraLote">
         <span id="conteoSel" style="font-weight:600;color:#1e40af;"></span>
         <div style="margin-left:auto;">
-          <button id="btnEliminar" class="btn-danger btn-sm" disabled>Eliminar seleccionadas (solo sin uso)</button>
+          <button id="btnEliminar" class="btn-danger btn-sm" disabled>Eliminar seleccionadas</button>
         </div>
       </div>
 
@@ -63,7 +64,7 @@
         <table class="aud-table">
           <thead>
             <tr>
-              <th class="col-chk"><input type="checkbox" id="chkAll" title="Seleccionar todas las sin uso"></th>
+              <th class="col-chk"><input type="checkbox" id="chkAll" title="Seleccionar todas"></th>
               <th>Dependencia</th>
               <th class="col-num">Actividades</th>
               <th class="col-num">Propuestas</th>

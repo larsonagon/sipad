@@ -60,8 +60,8 @@ function renderTabla() {
       : `<span class="chip uso">En uso (${d.usos})</span>`
     const dup = d.duplicada ? ' <span class="chip dup">Duplicada</span>' : ''
     return `
-      <tr data-id="${d.id}">
-        <td class="col-chk"><input type="checkbox" class="chk-dep" ${d.sin_uso ? '' : 'disabled title="En uso: no se puede borrar"'}></td>
+      <tr data-id="${d.id}" data-nombre="${esc(d.nombre)}" data-usos="${d.usos}" data-act="${d.actividades}" data-pro="${d.propuestas}" data-ser="${d.series}">
+        <td class="col-chk"><input type="checkbox" class="chk-dep"></td>
         <td class="dep-nombre">${esc(d.nombre)}</td>
         <td class="col-num">${d.actividades}</td>
         <td class="col-num">${d.propuestas}</td>
@@ -94,18 +94,48 @@ function toggleTodas(e) {
   actualizarSeleccion()
 }
 
+function filasSel() {
+  return [...document.querySelectorAll('#tabla tr')].filter(tr => tr.querySelector('.chk-dep')?.checked)
+}
+
 async function eliminarSeleccionadas() {
-  const ids = seleccionadas()
-  if (!ids.length) return
-  if (!confirm(`¿Eliminar ${ids.length} dependencia(s) sin uso? Esta acción no se puede deshacer.`)) return
+  const filas = filasSel()
+  if (!filas.length) return
+  const ids = filas.map(tr => tr.dataset.id)
+
+  const enUso = filas.filter(tr => Number(tr.dataset.usos) > 0)
+  let modo = 'sin_uso'
+
+  if (enUso.length) {
+    // Sumar lo que se purgaría en cascada
+    const tot = enUso.reduce((a, tr) => ({
+      act: a.act + Number(tr.dataset.act), pro: a.pro + Number(tr.dataset.pro), ser: a.ser + Number(tr.dataset.ser)
+    }), { act: 0, pro: 0, ser: 0 })
+    const nombres = enUso.map(tr => '• ' + tr.dataset.nombre).join('\n')
+    const aviso =
+      `ATENCIÓN — borrado en cascada.\n\n` +
+      `${enUso.length} de las seleccionadas están EN USO:\n${nombres}\n\n` +
+      `Además de las dependencias, se eliminarán también sus datos asociados:\n` +
+      `  · ${tot.act} actividad(es)\n  · ${tot.pro} propuesta(s)\n  · ${tot.ser} serie(s) de la TRD (con sus subseries y tipologías)\n\n` +
+      `Esto NO se puede deshacer. Úsalo solo para datos de prueba/ficticios.\n\n¿Continuar?`
+    if (!confirm(aviso)) return
+    modo = 'cascada'
+  } else {
+    if (!confirm(`¿Eliminar ${ids.length} dependencia(s) sin uso? Esta acción no se puede deshacer.`)) return
+  }
+
   try {
     const resp = await apiFetch('/api/trd-ai/auditoria-dependencias/eliminar', {
-      method: 'POST', body: JSON.stringify({ ids })
+      method: 'POST', body: JSON.stringify({ ids, modo })
     })
     const json = await resp.json()
     if (!resp.ok || !json.ok) throw new Error(json.error || 'error')
-    let msg = `${json.eliminadas} eliminada(s)`
-    if (json.omitidas?.length) msg += ` · ${json.omitidas.length} omitida(s) por estar en uso`
+    let msg = `${json.eliminadas} dependencia(s) eliminada(s)`
+    const p = json.purgado
+    if (p && (p.actividades || p.propuestas || p.series)) {
+      msg += ` · purgado: ${p.actividades} act, ${p.propuestas} prop, ${p.series} series`
+    }
+    if (json.omitidas?.length) msg += ` · ${json.omitidas.length} omitida(s)`
     mostrarToast(msg, json.eliminadas ? 'success' : 'warning')
     await cargar()
   } catch (e) {

@@ -61,31 +61,84 @@ export async function obtenerAuditoriaDependencias(db, entidadId) {
   }
 }
 
-// Borra SOLO dependencias sin uso y de la entidad (nunca referenciadas)
-export async function eliminarDependenciasSinUso(db, { ids = [], entidadId = null } = {}) {
+// Purga en cascada una dependencia + sus datos asociados (series de la TRD
+// con sus subseries/tipologías, propuestas con sus reglas, y actividades con
+// sus propuestas). Borra hijos antes que padres para no romper llaves foráneas.
+async function purgarDependencia(db, id) {
+  const removed = { series: 0, subseries: 0, tipologias: 0, propuestas: 0, reglas: 0, actividades: 0 }
+
+  // 1) Series oficiales que apuntan a la dependencia → subseries → tipologías
+  const series = await db.all(`SELECT id FROM series WHERE dependencia_id = ?`, [id])
+  for (const s of series) {
+    const subs = await db.all(`SELECT id FROM subseries WHERE serie_id = ?`, [s.id])
+    for (const sub of subs) {
+      const r = await db.run(`DELETE FROM tipologias WHERE subserie_id = ?`, [sub.id]); removed.tipologias += r?.changes || 0
+    }
+    const r2 = await db.run(`DELETE FROM subseries WHERE serie_id = ?`, [s.id]); removed.subseries += r2?.changes || 0
+    const r3 = await db.run(`DELETE FROM series WHERE id = ?`, [s.id]);          removed.series += r3?.changes || 0
+  }
+
+  // 2) Propuestas que apuntan directo a la dependencia → sus reglas
+  const props = await db.all(`SELECT id FROM trd_series_propuestas WHERE dependencia_id = ?`, [id])
+  for (const p of props) {
+    const r = await db.run(`DELETE FROM trd_reglas_retencion WHERE propuesta_id = ?`, [p.id]); removed.reglas += r?.changes || 0
+    const r2 = await db.run(`DELETE FROM trd_series_propuestas WHERE id = ?`, [p.id]);          removed.propuestas += r2?.changes || 0
+  }
+
+  // 3) Actividades de la dependencia → sus propuestas (por actividad_id) → reglas → la actividad
+  const acts = await db.all(`SELECT id FROM segtec_actividades WHERE dependencia_id = ?`, [id])
+  for (const a of acts) {
+    const aprops = await db.all(`SELECT id FROM trd_series_propuestas WHERE actividad_id = ?`, [a.id])
+    for (const p of aprops) {
+      const r = await db.run(`DELETE FROM trd_reglas_retencion WHERE propuesta_id = ?`, [p.id]); removed.reglas += r?.changes || 0
+      const r2 = await db.run(`DELETE FROM trd_series_propuestas WHERE id = ?`, [p.id]);          removed.propuestas += r2?.changes || 0
+    }
+    const r3 = await db.run(`DELETE FROM segtec_actividades WHERE id = ?`, [a.id]); removed.actividades += r3?.changes || 0
+  }
+
+  return removed
+}
+
+// Elimina dependencias de la entidad.
+//   modo 'sin_uso' (por defecto): solo las que NO tienen referencias (100% seguro).
+//   modo 'cascada': purga también sus datos de prueba asociados (para limpiar
+//   dependencias ficticias con actividades/propuestas/series colgando).
+export async function eliminarDependencias(db, { ids = [], entidadId = null, modo = 'sin_uso' } = {}) {
   if (!entidadId) return { ok: false, error: 'Sin entidad en contexto' }
   if (!Array.isArray(ids) || !ids.length) return { ok: false, error: 'Sin dependencias seleccionadas' }
 
   let eliminadas = 0
   const omitidas = []
+  const purgado = { series: 0, subseries: 0, tipologias: 0, propuestas: 0, reglas: 0, actividades: 0 }
 
   for (const id of ids) {
-    // Debe pertenecer a la entidad
     const dep = await db.get(`SELECT id, nombre FROM dependencias WHERE id = ? AND entidad_id = ?`, [id, entidadId])
     if (!dep) { omitidas.push({ id, motivo: 'no pertenece a la entidad' }); continue }
 
-    // No debe tener referencias
     const act = await db.get(`SELECT COUNT(*) AS n FROM segtec_actividades   WHERE dependencia_id = ?`, [id])
     const pro = await db.get(`SELECT COUNT(*) AS n FROM trd_series_propuestas WHERE dependencia_id = ?`, [id])
     const ser = await db.get(`SELECT COUNT(*) AS n FROM series               WHERE dependencia_id = ?`, [id])
     const usos = Number(act?.n || 0) + Number(pro?.n || 0) + Number(ser?.n || 0)
-    if (usos > 0) { omitidas.push({ id, nombre: dep.nombre, motivo: `en uso (${usos} referencia(s))` }); continue }
+
+    if (usos > 0) {
+      if (modo !== 'cascada') {
+        omitidas.push({ id, nombre: dep.nombre, motivo: `en uso (${usos} referencia(s))` })
+        continue
+      }
+      const rem = await purgarDependencia(db, id)
+      for (const k of Object.keys(purgado)) purgado[k] += rem[k]
+    }
 
     await db.run(`DELETE FROM dependencias WHERE id = ? AND entidad_id = ?`, [id, entidadId])
     eliminadas++
   }
 
-  return { ok: true, eliminadas, omitidas }
+  return { ok: true, eliminadas, omitidas, purgado }
+}
+
+// Compatibilidad: mantiene el nombre anterior (solo sin uso)
+export async function eliminarDependenciasSinUso(db, opts) {
+  return eliminarDependencias(db, { ...opts, modo: 'sin_uso' })
 }
 
 // ---------- Rutas ----------
@@ -105,7 +158,8 @@ export function registrarAuditoria(router, db, guard) {
 
   router.post('/auditoria-dependencias/eliminar', mw, async (req, res) => {
     try {
-      const r = await eliminarDependenciasSinUso(db, { ids: req.body?.ids, entidadId: req.entidad_id || null })
+      const modo = req.body?.modo === 'cascada' ? 'cascada' : 'sin_uso'
+      const r = await eliminarDependencias(db, { ids: req.body?.ids, entidadId: req.entidad_id || null, modo })
       if (!r.ok) return res.status(400).json(r)
       return res.json(r)
     } catch (err) {
