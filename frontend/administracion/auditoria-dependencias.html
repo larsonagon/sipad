@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoría de dependencias – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<style>
+.module-page { max-width: 1100px !important; }
+.aud-card { background:#fff; border:1px solid #e6eaf0; border-radius:14px; box-shadow:0 1px 2px rgba(16,42,73,.06),0 4px 14px rgba(16,42,73,.05); overflow:hidden; }
+.aud-table { width:100%; border-collapse:collapse; font-size:13px; }
+.aud-table th { text-align:left; padding:11px 14px; background:#f5f7fb; border-bottom:1px solid #e6eaf0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; white-space:nowrap; }
+.aud-table td { padding:10px 14px; border-bottom:1px solid #eef1f6; vertical-align:middle; }
+.aud-table tbody tr:hover td { background:#f9fbfe; }
+.col-chk { width:38px; text-align:center; }
+.col-num { text-align:center; width:90px; font-variant-numeric:tabular-nums; color:#475569; }
+.dep-nombre { font-weight:600; color:#0f172a; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid transparent; white-space:nowrap; }
+.chip::before { content:""; width:6px; height:6px; border-radius:50%; }
+.chip.uso  { background:#e7f6ec; color:#12864e; border-color:#bfe6cd; } .chip.uso::before{ background:#12864e; }
+.chip.sin  { background:#fffbeb; color:#b45309; border-color:#fde68a; } .chip.sin::before{ background:#d97706; }
+.chip.dup  { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; } .chip.dup::before{ background:#6366f1; }
+.resumen-chips { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.rchip { display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; border:1px solid transparent; }
+.rchip.info{ background:#eff4fb; color:#1e3a8a; border-color:#dbe6f4; }
+.rchip.sin { background:#fffbeb; color:#b45309; border-color:#fde68a; }
+.rchip.dup { background:#eef2ff; color:#4338ca; border-color:#c7d2fe; }
+.barra-lote { display:flex; align-items:center; gap:12px; padding:10px 14px; margin-bottom:12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; }
+.barra-lote button:disabled { opacity:.45; cursor:default; }
+.nota { background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page">
+    <div class="module-header premium-header">
+      <h1>Auditoría de dependencias</h1>
+      <p class="module-subtext">
+        Revisa las dependencias de esta entidad y limpia las de prueba. Muestra cuántas
+        actividades, propuestas y series de la TRD usan cada una. El borrado seguro solo
+        elimina las que <b>no tienen uso</b> (nunca rompe datos).
+      </p>
+    </div>
+
+    <div class="module-content">
+      <div class="resumen-chips" id="resumenChips"></div>
+
+      <div class="nota">
+        <b>Sin uso</b> = no la usa ninguna actividad, propuesta ni serie → segura de borrar.
+        <b>En uso</b> = está referenciada; si es de prueba, primero hay que reasignar o quitar lo que la usa.
+        <b>Duplicada</b> = hay otra con el mismo nombre.
+      </div>
+
+      <div class="barra-lote" id="barraLote">
+        <span id="conteoSel" style="font-weight:600;color:#1e40af;"></span>
+        <div style="margin-left:auto;">
+          <button id="btnEliminar" class="btn-danger btn-sm" disabled>Eliminar seleccionadas (solo sin uso)</button>
+        </div>
+      </div>
+
+      <div class="aud-card">
+        <table class="aud-table">
+          <thead>
+            <tr>
+              <th class="col-chk"><input type="checkbox" id="chkAll" title="Seleccionar todas las sin uso"></th>
+              <th>Dependencia</th>
+              <th class="col-num">Actividades</th>
+              <th class="col-num">Propuestas</th>
+              <th class="col-num">Series TRD</th>
+              <th>Estado</th>
+              <th style="width:120px;">Creada</th>
+            </tr>
+          </thead>
+          <tbody id="tabla"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/administracion/auditoria-dependencias.js"></script>
+</body>
+</html>

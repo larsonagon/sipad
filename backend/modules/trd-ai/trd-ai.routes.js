@@ -11,6 +11,7 @@ import { registrarConvalidacion } from './trd-ai.convalidacion.js'
 import { registrarExpediente } from './trd-ai.expediente.js'
 import { registrarPreparacion } from './trd-ai.preparacion.js'
 import { registrarAsignacion } from './trd-ai.asignacion.js'
+import { registrarAuditoria } from './trd-ai.auditoria.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -203,6 +204,13 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   POST /api/trd-ai/series-propuestas/asignar-dependencia
   // =====================================================
   if (db) registrarAsignacion(router, db, requireLevel(60))
+
+  // =====================================================
+  // AUDITORÍA DE DEPENDENCIAS (higiene de datos de prueba)
+  //   GET  /api/trd-ai/auditoria-dependencias
+  //   POST /api/trd-ai/auditoria-dependencias/eliminar {ids}
+  // =====================================================
+  if (db) registrarAuditoria(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS
