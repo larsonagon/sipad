@@ -8,7 +8,9 @@
     "dev": "nodemon server.js"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.11",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   },
   "dependencies": {
     "@sparticuz/chromium": "^143.0.4",
@@ -21,8 +23,6 @@
     "jsonwebtoken": "^9.0.3",
     "pdfkit": "^0.17.2",
     "pg": "^8.20.0",
-    "puppeteer-core": "^24.39.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7"
+    "puppeteer-core": "^24.39.1"
   }
 }

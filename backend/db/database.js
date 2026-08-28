@@ -1,7 +1,9 @@
 // backend/db/database.js
 
-import sqlite3 from 'sqlite3'
-import { open } from 'sqlite'
+// NOTA: sqlite3 y sqlite se importan de forma DINÁMICA dentro de initSQLite()
+// (solo cuando DB_ENGINE=sqlite). Así, en producción (Postgres) no se cargan
+// y pueden vivir como devDependencies — con Render construyendo con --omit=dev
+// no se instalan, eliminando la cadena tar/node-gyp/sqlite3 del entorno de prod.
 import pkg from 'pg'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -57,6 +59,10 @@ let sqliteReady = Promise.resolve()
 async function initSQLite() {
 
   console.log('📦 Usando SQLite:', DB_PATH)
+
+  // Carga diferida: solo se requiere en desarrollo local.
+  const sqlite3 = (await import('sqlite3')).default
+  const { open } = await import('sqlite')
 
   sqliteDb = await open({
     filename: DB_PATH,
