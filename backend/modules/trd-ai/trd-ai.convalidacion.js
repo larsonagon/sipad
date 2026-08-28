@@ -17,7 +17,7 @@ import crypto from 'crypto'
 // Orden y etiquetas de los estados del proceso
 export const ESTADOS_CONVALIDACION = [
   { clave: 'borrador',          etiqueta: 'Borrador',                descripcion: 'TRD en construcción/curación.' },
-  { clave: 'en_comite',         etiqueta: 'En comité',               descripcion: 'Presentada al Comité Interno de Archivo.' },
+  { clave: 'en_comite',         etiqueta: 'En comité',               descripcion: 'Presentada al Comité institucional de gestión y desempeño.' },
   { clave: 'con_observaciones', etiqueta: 'Con observaciones',       descripcion: 'El comité dejó observaciones por resolver.' },
   { clave: 'aprobada_comite',   etiqueta: 'Aprobada por el comité',  descripcion: 'Avalada internamente; lista para acto administrativo.' },
   { clave: 'convalidada',       etiqueta: 'Convalidada',             descripcion: 'Convalidada por el Consejo Departamental de Archivos.' },

@@ -4,7 +4,7 @@
 // Genera, a partir de los datos de convalidación + la TRD
 // aprobada, los instrumentos para radicar ante el Consejo
 // Departamental de Archivos / AGN:
-//   - Acta del Comité Interno de Archivo (.docx)
+//   - Acta del Comité institucional de gestión y desempeño (.docx)
 //   - Oficio de remisión (.docx)
 //
 // Reutiliza obtenerDatosExport (TRD aprobada codificada) y
@@ -64,7 +64,7 @@ function filasTRD(datos) {
 }
 
 // ======================================================
-// ACTA DEL COMITÉ INTERNO DE ARCHIVO
+// ACTA DEL COMITÉ INSTITUCIONAL DE GESTIÓN Y DESEMPEÑO
 // ======================================================
 
 export async function generarActaComite(db, entidadId, meta = {}) {
@@ -83,7 +83,7 @@ export async function generarActaComite(db, entidadId, meta = {}) {
   children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 },
     children: [new TextRun({ text: entidad.toUpperCase(), bold: true, size: 26 })] }))
   children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 },
-    children: [new TextRun({ text: 'COMITÉ INTERNO DE ARCHIVO', bold: true, size: 24 })] }))
+    children: [new TextRun({ text: 'COMITÉ INSTITUCIONAL DE GESTIÓN Y DESEMPEÑO', bold: true, size: 24 })] }))
   children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 },
     children: [new TextRun({ text: 'ACTA DE APROBACIÓN DE LA TABLA DE RETENCIÓN DOCUMENTAL (TRD)', bold: true, size: 22 })] }))
 
@@ -97,7 +97,7 @@ export async function generarActaComite(db, entidadId, meta = {}) {
   children.push(P('1. Marco normativo', { bold: true, size: 24 }))
   children.push(P(
     'En cumplimiento de la Ley 594 de 2000 (Ley General de Archivos), el Decreto 1080 de 2015 y el ' +
-    'Acuerdo AGN 004 de 2019, el Comité Interno de Archivo se reúne para revisar y aprobar la Tabla de ' +
+    'Acuerdo AGN 004 de 2019, el Comité institucional de gestión y desempeño se reúne para revisar y aprobar la Tabla de ' +
     'Retención Documental de la entidad, así como su valoración documental (tiempos de retención, ' +
     'disposición final y fundamento).'))
 
@@ -152,7 +152,7 @@ export async function generarActaComite(db, entidadId, meta = {}) {
     ? `${conv.acto_administrativo} N.º ${conv.numero_acto || '____'} del ${conv.fecha_acto || '____'}`
     : 'pendiente de expedición'
   children.push(P(
-    `El Comité Interno de Archivo aprueba la Tabla de Retención Documental aquí consignada y recomienda ` +
+    `El Comité institucional de gestión y desempeño aprueba la Tabla de Retención Documental aquí consignada y recomienda ` +
     `su adopción mediante acto administrativo (${actoTxt}), para su posterior remisión y convalidación ante ` +
     `el Consejo Departamental de Archivos.`))
   if (conv.radicado_numero) {
@@ -205,12 +205,12 @@ export async function generarOficioRemision(db, entidadId, meta = {}) {
     : 'acto administrativo (en trámite)'
   const actaTxt = conv.numero_acta
     ? `Acta N.º ${conv.numero_acta}${conv.fecha_comite ? ' del ' + conv.fecha_comite : ''}`
-    : 'acta del Comité Interno de Archivo'
+    : 'acta del Comité institucional de gestión y desempeño'
 
   children.push(P(
     `En cumplimiento de la Ley 594 de 2000, el Decreto 1080 de 2015 y el Acuerdo AGN 004 de 2019, ` +
     `${entidad} remite para su evaluación y convalidación la Tabla de Retención Documental (TRD) de la entidad, ` +
-    `aprobada por el Comité Interno de Archivo según ${actaTxt} y adoptada mediante ${actoTxt}.`))
+    `aprobada por el Comité institucional de gestión y desempeño según ${actaTxt} y adoptada mediante ${actoTxt}.`))
 
   children.push(P(
     `La TRD que se remite está conformada por ${filas.length} subseries documentales, con su respectiva ` +
@@ -219,7 +219,7 @@ export async function generarOficioRemision(db, entidadId, meta = {}) {
   children.push(P('Se anexan los siguientes documentos:', { bold: true, before: 120 }))
   children.push(P('•  Tabla de Retención Documental (Formato Único – Acuerdo AGN 004 de 2019).'))
   children.push(P('•  Cuadro de Clasificación Documental (CCD) codificado.'))
-  children.push(P(`•  ${actaTxt} del Comité Interno de Archivo.`))
+  children.push(P(`•  ${actaTxt} del Comité institucional de gestión y desempeño.`))
   children.push(P(`•  Copia del ${actoTxt}.`))
 
   children.push(P('Agradecemos su gestión y quedamos atentos a las observaciones a que haya lugar.', { before: 160 }))
