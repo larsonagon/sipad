@@ -448,7 +448,9 @@ export const TRDAIRepository = (db) => {
       const tiempoCentral = retencion?.retencion_central ?? null
       const disposicionRaw = retencion?.disposicion_final ?? propuesta.disposicion_final ?? null
       const disposicion   = mapearDisposicion(disposicionRaw)
-      const dependenciaId = propuesta.act_dependencia_id ?? null
+      // Prioriza la dependencia ASIGNADA a la propuesta (curación); si no,
+      // cae a la de la actividad de origen. Evita perder la asignación manual.
+      const dependenciaId = propuesta.dependencia_id ?? propuesta.act_dependencia_id ?? null
       const entidadId     = propuesta.entidad_id ?? propuesta.act_entidad_id ?? null
 
       // 3. Serie — reutilizar si ya existe en esta versión Y entidad
