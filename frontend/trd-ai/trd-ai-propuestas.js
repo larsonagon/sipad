@@ -33,13 +33,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btnRechazarSel')?.addEventListener('click', () => accionLoteSeleccion('rechazada'))
   document.getElementById('btnFusionarSel')?.addEventListener('click', fusionarSeleccion)
   document.getElementById('btnCancelarSel')?.addEventListener('click', limpiarSeleccion)
+  document.getElementById('btnAsignarDepSel')?.addEventListener('click', asignarDependenciaSeleccion)
   document.getElementById('chkAllTrd')?.addEventListener('change', (e) => {
     document.querySelectorAll('.chk-prop').forEach(c => (c.checked = e.target.checked))
     actualizarBulkBar()
   })
 
+  await cargarDependencias()
   await cargarPropuestas()
 })
+
+// Dependencias de la entidad (para asignar a las propuestas)
+let dependenciasCache = []
+async function cargarDependencias() {
+  try {
+    const resp = await apiFetch('/api/trd-ai/dependencias')
+    if (resp?.ok) {
+      const json = await resp.json()
+      dependenciasCache = json.dependencias || []
+    }
+  } catch (e) { console.error(e) }
+}
 
 // =====================================================
 // API FETCH
@@ -461,8 +475,16 @@ function agruparSeries(lista) {
         ids:         [],
         id:          p.id,
         aprendido:   /aprendido/i.test(p.justificacion || ''),
-        tipologias:  parseTipologias(p.tipologia_documental)
+        tipologias:  parseTipologias(p.tipologia_documental),
+        dependencia: p.dependencia_nombre || null,
+        dependencia_id: p.dependencia_id || null
       }
+    }
+
+    // Primera dependencia no vacía del grupo
+    if (!mapa[key].dependencia && p.dependencia_nombre) {
+      mapa[key].dependencia = p.dependencia_nombre
+      mapa[key].dependencia_id = p.dependencia_id || null
     }
 
     mapa[key].cantidad++
@@ -551,7 +573,7 @@ function renderTabla(lista) {
     html += `
       <tr class="fila" data-id="${id}" data-serie="${serieAttr}" data-ids='${idsJson.replace(/'/g, "&#39;")}'>
         <td class="col-chk"><input type="checkbox" class="chk-prop"></td>
-        <td class="col-subserie"><span class="subserie-txt clamp2" title="${(p.subserie || '').replace(/"/g, '&quot;')}">${p.subserie || '—'}</span>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}</td>
+        <td class="col-subserie"><span class="subserie-txt clamp2" title="${(p.subserie || '').replace(/"/g, '&quot;')}">${p.subserie || '—'}</span>${p.aprendido ? '<span class="badge-aprendido" title="Clasificada a partir de tus correcciones">aprendido</span>' : ''}<span class="dep-linea">${p.dependencia ? '<span class="dep-chip" title="Dependencia productora">' + p.dependencia + '</span>' : '<span class="dep-sin" title="Asígnale una dependencia para ubicarla en el CCD y la TRD">Sin dependencia</span>'}</span></td>
         <td class="col-cantidad">${p.cantidad}</td>
         <td class="col-tipos">${tipHtml}</td>
         <td class="col-estado">${estadoChip(p.estado)}</td>
@@ -624,7 +646,7 @@ function actualizarBulkBar() {
   // La barra queda SIEMPRE visible; los botones se activan al seleccionar.
   if (bar) bar.style.display = 'flex'
 
-  const botones = ['btnAprobarSel', 'btnRechazarSel', 'btnFusionarSel', 'btnCancelarSel']
+  const botones = ['btnAprobarSel', 'btnRechazarSel', 'btnAsignarDepSel', 'btnFusionarSel', 'btnCancelarSel']
     .map(id => document.getElementById(id))
 
   if (grupos > 0) {
@@ -651,6 +673,65 @@ function limpiarSeleccion() {
   const chkAll = document.getElementById('chkAllTrd')
   if (chkAll) chkAll.checked = false
   actualizarBulkBar()
+}
+
+// =====================================================
+// ASIGNAR DEPENDENCIA A LA SELECCIÓN
+// =====================================================
+
+async function asignarDependenciaSeleccion() {
+  const ids = idsDeSeleccion()
+  if (!ids.length) return
+  if (!dependenciasCache.length) {
+    mostrarToast('No hay dependencias registradas en esta entidad. Créalas en Administración.', 'warning')
+    return
+  }
+
+  const opciones = dependenciasCache
+    .map(d => `<option value="${d.id}">${(d.nombre || '').replace(/</g, '&lt;')}</option>`)
+    .join('')
+
+  const overlay = document.createElement('div')
+  overlay.className = 'modal'
+  overlay.innerHTML = `
+    <div class="modal-content" style="max-width:460px;">
+      <h3 style="margin:0 0 6px;">Asignar dependencia</h3>
+      <p style="margin:0 0 14px;font-size:13px;color:#6b7280;">
+        Ubica ${ids.length} propuesta(s) en la dependencia productora. Esto agrupa las series en el CCD y la TRD.
+      </p>
+      <select id="selDepAsignar" class="form-control" style="width:100%;">
+        <option value="">— Sin dependencia —</option>
+        ${opciones}
+      </select>
+      <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px;">
+        <button id="depCancelar" class="btn-secondary btn-sm">Cancelar</button>
+        <button id="depAplicar" class="btn-primary btn-sm">Asignar</button>
+      </div>
+    </div>`
+  document.body.appendChild(overlay)
+  const cerrar = () => overlay.remove()
+  overlay.querySelector('#depCancelar').addEventListener('click', cerrar)
+  overlay.addEventListener('click', e => { if (e.target === overlay) cerrar() })
+
+  overlay.querySelector('#depAplicar').addEventListener('click', async () => {
+    const dependenciaId = overlay.querySelector('#selDepAsignar').value || null
+    try {
+      const resp = await apiFetch('/api/trd-ai/series-propuestas/asignar-dependencia', {
+        method: 'POST', body: JSON.stringify({ ids, dependenciaId })
+      })
+      const json = await resp.json()
+      if (!resp.ok || !json.ok) throw new Error(json.error || 'asignar')
+      cerrar()
+      const nombre = dependenciaId
+        ? (dependenciasCache.find(d => String(d.id) === String(dependenciaId))?.nombre || 'dependencia')
+        : 'sin dependencia'
+      mostrarToast(`${json.cambiadas} propuesta(s) → ${nombre}`, 'success')
+      await cargarPropuestas()
+    } catch (e) {
+      console.error(e)
+      mostrarToast('No fue posible asignar la dependencia', 'error')
+    }
+  })
 }
 
 async function accionLoteSeleccion(estado) {

@@ -59,7 +59,7 @@ export async function obtenerDatosExport(db, entidadId) {
     FROM trd_series_propuestas tsp
     LEFT JOIN trd_reglas_retencion r ON r.propuesta_id = tsp.id
     LEFT JOIN segtec_actividades sa  ON sa.id = tsp.actividad_id
-    LEFT JOIN dependencias d         ON d.id = sa.dependencia_id
+    LEFT JOIN dependencias d         ON d.id = COALESCE(tsp.dependencia_id, sa.dependencia_id)
     WHERE tsp.estado = 'aprobada'
       ${entidadId ? 'AND tsp.entidad_id = ?' : ''}
     ORDER BY d.nombre NULLS LAST, tsp.nombre_serie, tsp.nombre_subserie

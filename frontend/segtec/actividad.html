@@ -160,6 +160,9 @@
         </div>
       </section>
 
+      <!-- Medidor de calidad del diligenciamiento (se llena por JS) -->
+      <div id="calidadICAF"></div>
+
 
       <!-- ====================================================== -->
       <!-- AVANZADO – opcional (para valoración / FUID) -->
@@ -333,6 +336,7 @@
 
   <script type="module" src="/components/notifications.js"></script>
   <script type="module" src="/segtec/actividad.js"></script>
+  <script src="/segtec/actividad-calidad.js"></script>
 
   <script>
     window.addEventListener("load", () => {

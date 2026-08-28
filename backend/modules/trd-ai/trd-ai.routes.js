@@ -9,6 +9,8 @@ import { registrarCCD } from './trd-ai.ccd.js'
 import { registrarBiblioteca } from './trd-ai.biblioteca.js'
 import { registrarConvalidacion } from './trd-ai.convalidacion.js'
 import { registrarExpediente } from './trd-ai.expediente.js'
+import { registrarPreparacion } from './trd-ai.preparacion.js'
+import { registrarAsignacion } from './trd-ai.asignacion.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -188,6 +190,19 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   GET /api/trd-ai/convalidacion/oficio.docx
   // =====================================================
   if (db) registrarExpediente(router, db, requireLevel(60))
+
+  // =====================================================
+  // PREPARACIÓN PARA EL COMITÉ (readiness consolidado)
+  //   GET /api/trd-ai/preparacion
+  // =====================================================
+  if (db) registrarPreparacion(router, db, requireLevel(60))
+
+  // =====================================================
+  // ASIGNACIÓN DE DEPENDENCIA A PROPUESTAS
+  //   GET  /api/trd-ai/dependencias
+  //   POST /api/trd-ai/series-propuestas/asignar-dependencia
+  // =====================================================
+  if (db) registrarAsignacion(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS

@@ -30,6 +30,10 @@ export async function runTRDAIMigration(db) {
     { col: 'actividad_id', tipo: 'TEXT' },
     { col: 'disposicion_final', tipo: 'TEXT' },
     { col: 'entidad_id', tipo: 'TEXT' },
+    // Dependencia productora asignada a la propuesta (independiente de la
+    // actividad de origen). Permite ubicar en la estructura las series que
+    // no vienen de una actividad — p. ej. las precargadas de la biblioteca.
+    { col: 'dependencia_id', tipo: 'INTEGER' },
   ]
 
   for (const { col, tipo } of columnasPropuestas) {

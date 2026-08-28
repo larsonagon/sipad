@@ -266,17 +266,23 @@ export const TRDAIRepository = (db) => {
     async getAllSeriesPropuestas(entidadId = null) {
       if (entidadId) {
         return await db.all(`
-          SELECT tsp.*, sa.nombre actividad_nombre
+          SELECT tsp.*, sa.nombre actividad_nombre,
+                 COALESCE(tsp.dependencia_id, sa.dependencia_id) AS dependencia_id,
+                 d.nombre AS dependencia_nombre
           FROM trd_series_propuestas tsp
           LEFT JOIN segtec_actividades sa ON tsp.actividad_id = sa.id
+          LEFT JOIN dependencias d ON d.id = COALESCE(tsp.dependencia_id, sa.dependencia_id)
           WHERE tsp.entidad_id = ?
           ORDER BY tsp.creado_en DESC
         `, [entidadId])
       }
       return await db.all(`
-        SELECT tsp.*, sa.nombre actividad_nombre
+        SELECT tsp.*, sa.nombre actividad_nombre,
+               COALESCE(tsp.dependencia_id, sa.dependencia_id) AS dependencia_id,
+               d.nombre AS dependencia_nombre
         FROM trd_series_propuestas tsp
         LEFT JOIN segtec_actividades sa ON tsp.actividad_id = sa.id
+        LEFT JOIN dependencias d ON d.id = COALESCE(tsp.dependencia_id, sa.dependencia_id)
         ORDER BY tsp.creado_en DESC
       `)
     },
