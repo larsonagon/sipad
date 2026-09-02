@@ -20,7 +20,7 @@
 import crypto from 'crypto'
 import { MATRIZ_SERIES } from './trd-ai.engine.js'
 import { valorarSerie, valorarPropuestas } from './trd-ai.valoracion.js'
-import { MATRICES_REFERENCIA } from './trd-ai.biblioteca-matrices.js'
+import { MATRICES_REFERENCIA, BANTER_SERIES } from './trd-ai.biblioteca-matrices.js'
 
 // Normaliza para comparar (sin tildes, minúsculas, sin espacios extremos)
 function norm(s) {
@@ -49,7 +49,18 @@ const PLANTILLAS = {
   // Plantillas por tipo de entidad con su propia matriz de referencia.
   ...Object.fromEntries(Object.values(MATRICES_REFERENCIA).map(m => [
     m.tipo, { tipo: m.tipo, nombre: m.nombre, descripcion: m.descripcion }
-  ]))
+  ])),
+  // BANTER: núcleo transversal común (nombres del banco del AGN). La valoración
+  // la calcula el motor de SIPAD al precargar; no son cifras predefinidas a mano.
+  banter: {
+    tipo: 'banter',
+    nombre: 'BANTER — Series comunes (transversales)',
+    descripcion:
+      'Series y subseries COMUNES a la administración pública, con las denominaciones ' +
+      'normalizadas del Banco Terminológico del AGN (BANTER). Pensadas para replicarse en las ' +
+      'dependencias que las producen. La retención y disposición las sugiere el motor de SIPAD y ' +
+      'las aprueba el Comité; concílielas con la versión vigente del BANTER del Observatorio AGN.'
+  }
 }
 
 // =====================================================
@@ -60,6 +71,27 @@ export function construirPlantilla(tipo = 'alcaldia') {
 
   const meta = PLANTILLAS[tipo]
   if (!meta) return null
+
+  // BANTER: nombres normalizados del banco del AGN; la valoración la CALCULA el
+  // motor de SIPAD (valorarSerie), no cifras predefinidas a mano.
+  if (tipo === 'banter') {
+    const series = BANTER_SERIES.map(s => {
+      const subs = (s.subseries && s.subseries.length) ? s.subseries : [null]
+      const subseries = subs.map(nombre => {
+        const v = valorarSerie(s.serie, nombre)
+        return {
+          subserie:    nombre,
+          ag:          v.retencion_gestion,
+          ac:          v.retencion_central,
+          disposicion: v.disposicion_final,
+          fundamento:  v.fundamento_normativo
+        }
+      })
+      return { serie: s.serie, disposicion: subseries[0]?.disposicion || 'S', subseries }
+    })
+    const totalSubseries = series.reduce((n, s) => n + s.subseries.length, 0)
+    return { tipo: meta.tipo, nombre: meta.nombre, descripcion: meta.descripcion, totalSeries: series.length, totalSubseries, series }
+  }
 
   // Plantillas con matriz propia (ESE/hospital, tránsito, …): la valoración
   // viene definida en la matriz de referencia (no se deriva de la KB de alcaldía).

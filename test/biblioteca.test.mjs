@@ -73,7 +73,7 @@ test('BANTER está disponible con sus series comunes', () => {
   assert.ok(full, 'plantilla banter existe')
   const ac = full.series.find(s => s.serie === 'ACCIONES CONSTITUCIONALES')
   assert.ok(ac && ac.subseries.length === 4)
-  assert.ok(full.series.some(s => s.serie === 'PQRSD'))
+  assert.ok(full.series.some(s => s.serie.startsWith('PETICIONES')))
   assert.ok(full.series.some(s => s.serie === 'DERECHOS DE PETICIÓN'))
 })
 
