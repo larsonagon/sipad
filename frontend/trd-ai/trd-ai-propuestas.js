@@ -1004,19 +1004,13 @@ async function generarPropuestas() {
 
 window.editarPropuesta = async function(id) {
 
-  // Obtener datos actuales de la fila
-  const fila = document.querySelector(`tr[data-id="${id}"]`)
-  if (!fila) return
+  // Obtener datos actuales desde el modelo (no del DOM, que puede cambiar)
+  const p = (listaCruda || []).find(x => String(x.id) === String(id))
+  if (!p) return
 
-  const serieActual    = fila.querySelector('.serie-nombre strong')?.textContent || ''
-  const subserieActual = fila.querySelector('.subserie')?.textContent?.trim() || ''
-
-  // Extraer tipologías actuales del DOM — ahora son <li> en .tip-lista
-  const tipItems = fila.querySelectorAll('td:nth-child(4) .tip-lista li')
-  const tipActuales = Array.from(tipItems)
-    .map(li => li.textContent.trim())
-    .filter(t => t)
-    .join('\n')
+  const serieActual    = p.nombre_serie || ''
+  const subserieActual = p.nombre_subserie || ''
+  const tipActuales    = parseTipologias(p.tipologia_documental).join('\n')
 
   const overlay = document.createElement('div')
   overlay.className = 'modal'
@@ -1030,17 +1024,17 @@ window.editarPropuesta = async function(id) {
 
       <div class="form-group">
         <label>Serie documental</label>
-        <input type="text" id="editSerie" class="form-control" value="${serieActual}">
+        <input type="text" id="editSerie" class="form-control">
       </div>
 
       <div class="form-group">
         <label>Subserie documental</label>
-        <input type="text" id="editSubserie" class="form-control" value="${subserieActual !== '—' ? subserieActual : ''}">
+        <input type="text" id="editSubserie" class="form-control">
       </div>
 
       <div class="form-group">
         <label>Tipos documentales <span style="font-weight:400;color:var(--color-text-muted);">(uno por línea)</span></label>
-        <textarea id="editTipologias" class="form-control" style="height:120px;resize:vertical;">${tipActuales}</textarea>
+        <textarea id="editTipologias" class="form-control" style="height:120px;resize:vertical;"></textarea>
       </div>
 
       <div class="modal-actions">
@@ -1051,6 +1045,11 @@ window.editarPropuesta = async function(id) {
   `
 
   document.body.appendChild(overlay)
+
+  // Rellenar valores por JS (evita romper el HTML si un nombre trae comillas)
+  overlay.querySelector('#editSerie').value = serieActual
+  overlay.querySelector('#editSubserie').value = (subserieActual !== '—' ? subserieActual : '')
+  overlay.querySelector('#editTipologias').value = tipActuales
 
   overlay.querySelector('#btnCancelarEditar').addEventListener('click', () => overlay.remove())
 
