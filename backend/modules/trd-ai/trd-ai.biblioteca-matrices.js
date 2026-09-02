@@ -126,6 +126,112 @@ const MATRICES_REFERENCIA = {
       ]},
       ...ADMIN_COMUNES
     ]
+  },
+
+  // ---------- BANTER: series y subseries COMUNES (transversales) ----------
+  // Núcleo común a casi toda entidad pública, basado en el Banco Terminológico
+  // de series y subseries documentales comunes del AGN (BANTER). Referencial:
+  // los tiempos y disposición son PROPUESTA (ajústelos y apruébelos en comité;
+  // concílielos con la versión vigente del BANTER del Observatorio AGN).
+  banter: {
+    tipo: 'banter',
+    nombre: 'BANTER — Series comunes (transversales)',
+    descripcion:
+      'Series y subseries documentales COMUNES a la administración pública colombiana, basadas en el ' +
+      'Banco Terminológico del AGN (BANTER). Pensadas para precargarse en las dependencias que las producen ' +
+      '(muchas oficinas manejan las mismas). Valoración de referencia según Ley 594/2000, Decreto 1080/2015 y ' +
+      'Acuerdo AGN 004/2019; ajústela a la entidad y a la versión vigente del BANTER antes del comité.',
+    series: [
+      { serie: 'ACCIONES CONSTITUCIONALES', subseries: [
+        { subserie: 'Acciones de tutela', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Valor jurídico y probatorio; cumplida la retención se selecciona una muestra representativa por su valor secundario y el resto se elimina (Acuerdo AGN 004 de 2019).' },
+        { subserie: 'Acciones de cumplimiento', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Selección de muestra con valor secundario tras la retención; el resto se elimina.' },
+        { subserie: 'Acciones populares', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Selección de muestra representativa; el remanente se elimina.' },
+        { subserie: 'Acciones de grupo', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Selección de muestra representativa; el remanente se elimina.' }
+      ]},
+      { serie: 'PQRSD', subseries: [
+        { subserie: 'Peticiones', ag: 2, ac: 5, disposicion: 'S', fundamento: 'Soporte del derecho de petición (Ley 1755 de 2015); selección de muestra por su valor informativo, el resto se elimina.' },
+        { subserie: 'Quejas', ag: 2, ac: 5, disposicion: 'S', fundamento: 'Selección de muestra con valor de seguimiento; el resto se elimina.' },
+        { subserie: 'Reclamos', ag: 2, ac: 5, disposicion: 'S', fundamento: 'Selección de muestra; el resto se elimina.' },
+        { subserie: 'Sugerencias', ag: 2, ac: 5, disposicion: 'E', fundamento: 'Cumplida la retención se elimina previo inventario publicado 60 días (Acuerdo AGN 004 de 2019).' },
+        { subserie: 'Denuncias', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Selección de muestra por su valor de control; el resto se elimina.' }
+      ]},
+      { serie: 'DERECHOS DE PETICIÓN', subseries: [
+        { subserie: null, ag: 2, ac: 5, disposicion: 'S', fundamento: 'Derecho fundamental de petición (Ley 1755 de 2015); selección de muestra con valor secundario tras la retención.' }
+      ]},
+      { serie: 'ACTAS', subseries: [
+        { subserie: 'Actas del comité institucional de gestión y desempeño', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Reflejan decisiones institucionales; conservación total por su valor evidencial e histórico.' },
+        { subserie: 'Actas del comité interno de archivo / gestión documental', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Valor evidencial de la política archivística; conservación total.' },
+        { subserie: 'Actas del comité de conciliación', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Valor jurídico permanente; conservación total.' },
+        { subserie: 'Actas de junta o consejo directivo', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Máximo órgano de decisión; conservación total.' }
+      ]},
+      { serie: 'RESOLUCIONES', subseries: [
+        { subserie: null, ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Actos administrativos con valor normativo y probatorio permanente; conservación total.' }
+      ]},
+      { serie: 'CIRCULARES', subseries: [
+        { subserie: null, ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Directrices internas con valor evidencial; conservación total.' }
+      ]},
+      { serie: 'CONTRATOS', subseries: [
+        { subserie: 'Contratos de prestación de servicios', ag: 2, ac: 18, disposicion: 'S', fundamento: 'Vencidas garantías y término legal, se selecciona muestra; el resto se elimina (Acuerdo AGN 004 de 2019).' },
+        { subserie: 'Contratos de obra', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor técnico e histórico de la infraestructura; conservación total.' },
+        { subserie: 'Contratos de suministro', ag: 2, ac: 18, disposicion: 'S', fundamento: 'Selección de muestra tras vencer garantías; el resto se elimina.' },
+        { subserie: 'Contratos interadministrativos', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor evidencial de la cooperación institucional; conservación total.' }
+      ]},
+      { serie: 'CONVENIOS', subseries: [
+        { subserie: 'Convenios interadministrativos', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Evidencia de cooperación entre entidades; conservación total.' },
+        { subserie: 'Convenios de asociación', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor evidencial permanente; conservación total.' }
+      ]},
+      { serie: 'CONCEPTOS', subseries: [
+        { subserie: 'Conceptos jurídicos', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Doctrina institucional con valor secundario; conservación total.' },
+        { subserie: 'Conceptos técnicos', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Selección de muestra con valor de referencia; el resto se elimina.' }
+      ]},
+      { serie: 'HISTORIAS LABORALES', subseries: [
+        { subserie: null, ag: 5, ac: 80, disposicion: 'CT', fundamento: 'Soportan derechos pensionales y prestacionales del servidor; conservación total por su valor probatorio.' }
+      ]},
+      { serie: 'NÓMINA', subseries: [
+        { subserie: null, ag: 2, ac: 18, disposicion: 'S', fundamento: 'Se selecciona una muestra por su valor para reconstrucción de derechos; el resto se elimina.' }
+      ]},
+      { serie: 'COMPROBANTES CONTABLES', subseries: [
+        { subserie: 'Comprobantes de egreso', ag: 2, ac: 8, disposicion: 'E', fundamento: 'Cumplida la prescripción contable y fiscal, se eliminan previo inventario publicado 60 días (Acuerdo AGN 004 de 2019).' },
+        { subserie: 'Comprobantes de ingreso', ag: 2, ac: 8, disposicion: 'E', fundamento: 'Se eliminan cumplida la prescripción contable y fiscal.' }
+      ]},
+      { serie: 'VIÁTICOS Y GASTOS DE VIAJE', subseries: [
+        { subserie: 'Legalización de viáticos y comisiones', ag: 2, ac: 8, disposicion: 'E', fundamento: 'Soporte de la comisión; se elimina cumplida la retención contable.' }
+      ]},
+      { serie: 'INFORMES', subseries: [
+        { subserie: 'Informes de gestión', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Reflejan la gestión institucional; conservación total por su valor secundario.' },
+        { subserie: 'Informes a entes de control', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Valor evidencial ante organismos de control; conservación total.' },
+        { subserie: 'Informes de auditoría', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Valor de control y mejora; conservación total.' }
+      ]},
+      { serie: 'PLANES', subseries: [
+        { subserie: 'Plan de acción', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Instrumento de planeación con valor evidencial; conservación total.' },
+        { subserie: 'Plan anticorrupción y de atención al ciudadano', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Valor institucional y de transparencia; conservación total.' },
+        { subserie: 'Plan institucional de archivos (PINAR)', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Instrumento archivístico; conservación total.' },
+        { subserie: 'Programa de gestión documental (PGD)', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Instrumento archivístico obligatorio; conservación total.' }
+      ]},
+      { serie: 'PROYECTOS', subseries: [
+        { subserie: 'Proyectos de inversión', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Evidencia de la inversión pública; conservación total por su valor histórico y de control.' }
+      ]},
+      { serie: 'PROCESOS DISCIPLINARIOS', subseries: [
+        { subserie: null, ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor jurídico y probatorio del proceso; conservación total.' }
+      ]},
+      { serie: 'PROCESOS JUDICIALES', subseries: [
+        { subserie: null, ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor jurídico y probatorio; conservación total del expediente del proceso.' }
+      ]},
+      { serie: 'PROCESOS DE COBRO COACTIVO', subseries: [
+        { subserie: null, ag: 2, ac: 10, disposicion: 'S', fundamento: 'Cumplida la obligación y la prescripción, se selecciona muestra; el resto se elimina.' }
+      ]},
+      { serie: 'COMUNICACIONES OFICIALES', subseries: [
+        { subserie: 'Comunicaciones oficiales enviadas', ag: 2, ac: 3, disposicion: 'S', fundamento: 'Selección de comunicaciones con valor informativo; el resto se elimina.' },
+        { subserie: 'Comunicaciones oficiales recibidas', ag: 2, ac: 3, disposicion: 'S', fundamento: 'Selección de comunicaciones con valor informativo; el resto se elimina.' }
+      ]},
+      { serie: 'DECLARACIONES DE BIENES Y RENTAS', subseries: [
+        { subserie: null, ag: 2, ac: 8, disposicion: 'E', fundamento: 'Soporte del deber de declaración; se elimina cumplida la retención previo inventario 60 días.' }
+      ]},
+      { serie: 'INSTRUMENTOS ARCHIVÍSTICOS', subseries: [
+        { subserie: 'Tablas de Retención Documental', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Instrumento archivístico rector; conservación total.' },
+        { subserie: 'Inventarios documentales (FUID)', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Control del patrimonio documental; conservación total.' }
+      ]}
+    ]
   }
 }
 

@@ -319,6 +319,15 @@ async function abrirBiblioteca() {
         Se agregarán como <strong>propuestas de esta entidad</strong>, listas para curar (aprobar, ajustar o fusionar).
         Las series/subseries que ya existan <strong>no se duplican</strong>.
       </div>
+      <div style="margin-bottom:10px;">
+        <div style="font-size:12px;font-weight:600;color:#334155;margin-bottom:6px;">Aplicar a</div>
+        <label style="font-size:12.5px;margin-right:16px;cursor:pointer;"><input type="radio" name="bibTarget" value="entidad" checked> Toda la entidad (una sola vez)</label>
+        <label style="font-size:12.5px;cursor:pointer;"><input type="radio" name="bibTarget" value="deps"> Replicar en dependencias seleccionadas</label>
+        <div id="bibDeps" hidden style="margin-top:8px;max-height:150px;overflow-y:auto;border:1px solid #e6eaf0;border-radius:8px;padding:8px 10px;">
+          <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;cursor:pointer;"><input type="checkbox" id="bibDepAll"> Seleccionar todas</label>
+          <div id="bibDepsList" style="display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12.5px;">Cargando…</div>
+        </div>
+      </div>
       <div id="bibLista" style="overflow-y:auto;flex:1;padding-right:4px;border-top:1px solid #e6eaf0;">Cargando…</div>
       <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;">
         <button id="bibCancelar" class="btn-secondary btn-sm">Cancelar</button>
@@ -334,6 +343,35 @@ async function abrirBiblioteca() {
   const sel = overlay.querySelector('#bibTipo')
   const btnPre = overlay.querySelector('#bibPrecargar')
   let tipoActual = plantillas[0].tipo
+
+  // Modo "Aplicar a": toda la entidad vs replicar en dependencias seleccionadas
+  const bibDeps = overlay.querySelector('#bibDeps')
+  const escDep = s => (s || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  overlay.querySelectorAll('input[name="bibTarget"]').forEach(r =>
+    r.addEventListener('change', () => {
+      bibDeps.hidden = overlay.querySelector('input[name="bibTarget"]:checked').value !== 'deps'
+    }))
+  ;(async () => {
+    try {
+      const resp = await apiFetch('/api/trd-ai/dependencias')
+      const json = await resp.json()
+      const deps = (json && json.dependencias) || []
+      const cont = overlay.querySelector('#bibDepsList')
+      if (!deps.length) { cont.innerHTML = '<span style="color:#94a3b8;">Sin dependencias en esta entidad.</span>'; return }
+      cont.innerHTML = deps.map(d => `<label style="display:block;cursor:pointer;"><input type="checkbox" class="bib-dep" value="${d.id}"> ${escDep(d.nombre)}</label>`).join('')
+      overlay.querySelector('#bibDepAll').addEventListener('change', e =>
+        cont.querySelectorAll('.bib-dep').forEach(c => { c.checked = e.target.checked }))
+    } catch (e) {
+      console.error(e)
+      overlay.querySelector('#bibDepsList').innerHTML = '<span style="color:#b42318;">No se pudieron cargar las dependencias.</span>'
+    }
+  })()
+
+  function dependenciasSeleccionadas() {
+    const modo = overlay.querySelector('input[name="bibTarget"]:checked')?.value
+    if (modo !== 'deps') return []
+    return [...overlay.querySelectorAll('.bib-dep:checked')].map(c => Number(c.value))
+  }
 
   async function renderPreview(tipo) {
     tipoActual = tipo
@@ -368,19 +406,26 @@ async function abrirBiblioteca() {
 
   btnPre.addEventListener('click', async (ev) => {
     const btn = ev.currentTarget
+    const dependencias = dependenciasSeleccionadas()
+    const modoDeps = overlay.querySelector('input[name="bibTarget"]:checked')?.value === 'deps'
+    if (modoDeps && !dependencias.length) {
+      mostrarToast('Selecciona al menos una dependencia, o elige "Toda la entidad".', 'warning')
+      return
+    }
     btn.disabled = true
     btn.textContent = 'Precargando…'
     try {
       const resp = await apiFetch(`/api/trd-ai/biblioteca/${tipoActual}/precargar`, {
-        method: 'POST', body: JSON.stringify({})
+        method: 'POST', body: JSON.stringify({ dependencias })
       })
       const json = await resp.json()
       if (!resp.ok || !json.ok) throw new Error(json.error || 'precargar')
       cerrar()
       if (json.creadas > 0) {
-        mostrarToast(`${json.creadas} subserie(s) precargadas${json.omitidas ? ` · ${json.omitidas} ya existían` : ''}`, 'success')
+        const dest = json.dependencias ? ` en ${json.dependencias} dependencia(s)` : ''
+        mostrarToast(`${json.creadas} subserie(s) precargadas${dest}${json.omitidas ? ` · ${json.omitidas} ya existían` : ''}`, 'success')
       } else {
-        mostrarToast('Todas las series de la plantilla ya estaban en esta entidad', 'info')
+        mostrarToast('Todas las series de la plantilla ya estaban en el destino elegido', 'info')
       }
       await cargarPropuestas()
     } catch (e) {

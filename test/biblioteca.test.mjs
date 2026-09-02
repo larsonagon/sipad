@@ -66,3 +66,40 @@ test('aislamiento por entidad', async () => {
   const otra = await obtenerDatosExport(db, 'ENT_SIN_DATOS')
   assert.equal(otra.length, 0)
 })
+
+// --- BANTER (series comunes) + replicado en dependencias ---
+test('BANTER está disponible con sus series comunes', () => {
+  const full = construirPlantilla('banter')
+  assert.ok(full, 'plantilla banter existe')
+  const ac = full.series.find(s => s.serie === 'ACCIONES CONSTITUCIONALES')
+  assert.ok(ac && ac.subseries.length === 4)
+  assert.ok(full.series.some(s => s.serie === 'PQRSD'))
+  assert.ok(full.series.some(s => s.serie === 'DERECHOS DE PETICIÓN'))
+})
+
+test('BANTER: replicar en varias dependencias crea una copia por dependencia', async () => {
+  const N = construirPlantilla('banter').totalSubseries
+  const r = await precargarPlantilla(db, { tipo: 'banter', entidadId: 'ENT_BANTER', dependencias: [1, 2] })
+  assert.equal(r.dependencias, 2)
+  assert.equal(r.creadas, 2 * N)
+  const porDep = await db.all(
+    `SELECT dependencia_id, COUNT(*) n FROM trd_series_propuestas WHERE entidad_id='ENT_BANTER' GROUP BY dependencia_id`)
+  assert.equal(porDep.length, 2)
+  assert.ok(porDep.every(x => Number(x.n) === N))
+})
+
+test('BANTER: replicado es idempotente e incremental por dependencia', async () => {
+  const N = construirPlantilla('banter').totalSubseries
+  const r2 = await precargarPlantilla(db, { tipo: 'banter', entidadId: 'ENT_BANTER', dependencias: [1, 2] })
+  assert.equal(r2.creadas, 0)
+  assert.equal(r2.omitidas, 2 * N)
+  const r3 = await precargarPlantilla(db, { tipo: 'banter', entidadId: 'ENT_BANTER', dependencias: [1, 2, 3] })
+  assert.equal(r3.creadas, N, 'solo la dependencia nueva recibe copias')
+})
+
+test('BANTER: sin dependencias se precarga a nivel de entidad (una vez)', async () => {
+  const N = construirPlantilla('banter').totalSubseries
+  const r = await precargarPlantilla(db, { tipo: 'banter', entidadId: 'ENT_BANTER_ENT' })
+  assert.equal(r.dependencias, 0)
+  assert.equal(r.creadas, N)
+})

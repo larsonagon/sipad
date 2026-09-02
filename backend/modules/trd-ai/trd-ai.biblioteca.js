@@ -139,19 +139,26 @@ export function listarPlantillas() {
 // PRECARGAR como propuestas de la entidad
 // =====================================================
 
-export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = null, usuarioId = null } = {}) {
+export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = null, usuarioId = null, dependencias = [] } = {}) {
 
   const plantilla = construirPlantilla(tipo)
   if (!plantilla) return { ok: false, error: 'Plantilla no encontrada' }
 
-  // Propuestas ya existentes en la entidad → para no duplicar
+  // Destinos: si se pasan dependencias, se REPLICA la plantilla en cada una
+  // (misma serie/subserie en varias oficinas). Si no, se crea a nivel de
+  // entidad (dependencia_id null) para asignarla luego.
+  const deps = Array.isArray(dependencias)
+    ? [...new Set(dependencias.map(d => (d == null ? null : Number(d))).filter(d => d === null || !Number.isNaN(d)))]
+    : []
+  const targets = deps.length ? deps : [null]
+
+  // Propuestas ya existentes → no duplicar. Dedup por (dependencia_id, serie, subserie).
   const existentesRows = await db.all(
-    `SELECT nombre_serie, nombre_subserie FROM trd_series_propuestas ${entidadId ? 'WHERE entidad_id = ?' : ''}`,
+    `SELECT nombre_serie, nombre_subserie, dependencia_id FROM trd_series_propuestas ${entidadId ? 'WHERE entidad_id = ?' : ''}`,
     entidadId ? [entidadId] : []
   )
-  const existentes = new Set(
-    existentesRows.map(r => `${norm(r.nombre_serie)}__${norm(r.nombre_subserie)}`)
-  )
+  const claveDe = (dep, serie, sub) => `${dep == null ? 'ent' : dep}__${norm(serie)}__${norm(sub)}`
+  const existentes = new Set(existentesRows.map(r => claveDe(r.dependencia_id, r.nombre_serie, r.nombre_subserie)))
 
   const nuevosIds = []
   const pendientesRegla = []   // { id, ag, ac, disposicion, fundamento } (plantillas con matriz propia)
@@ -159,25 +166,27 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
   const justificacion = `Precargada desde biblioteca de referencia (${plantilla.nombre})`
   const now = () => new Date().toISOString()
 
-  for (const s of plantilla.series) {
-    for (const sub of s.subseries) {
-      const clave = `${norm(s.serie)}__${norm(sub.subserie)}`
-      if (existentes.has(clave)) { omitidas++; continue }
-      existentes.add(clave)
+  for (const dep of targets) {
+    for (const s of plantilla.series) {
+      for (const sub of s.subseries) {
+        const clave = claveDe(dep, s.serie, sub.subserie)
+        if (existentes.has(clave)) { omitidas++; continue }
+        existentes.add(clave)
 
-      const id = crypto.randomUUID()
-      await db.run(`
-        INSERT INTO trd_series_propuestas (
-          id, actividad_id, nombre_serie, nombre_subserie,
-          tipologia_documental, justificacion, confianza, estado, creado_en, entidad_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `, [
-        id, null, s.serie, sub.subserie,
-        null, justificacion, 0.9, 'propuesta', now(), entidadId
-      ])
-      nuevosIds.push(id)
-      if (sub.disposicion != null || sub.ag != null || sub.ac != null) {
-        pendientesRegla.push({ id, ag: sub.ag, ac: sub.ac, disposicion: sub.disposicion, fundamento: sub.fundamento })
+        const id = crypto.randomUUID()
+        await db.run(`
+          INSERT INTO trd_series_propuestas (
+            id, actividad_id, nombre_serie, nombre_subserie,
+            tipologia_documental, justificacion, confianza, estado, creado_en, entidad_id, dependencia_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          id, null, s.serie, sub.subserie,
+          null, justificacion, 0.9, 'propuesta', now(), entidadId, dep
+        ])
+        nuevosIds.push(id)
+        if (sub.disposicion != null || sub.ag != null || sub.ac != null) {
+          pendientesRegla.push({ id, ag: sub.ag, ac: sub.ac, disposicion: sub.disposicion, fundamento: sub.fundamento })
+        }
       }
     }
   }
@@ -217,6 +226,7 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
     creadas: nuevosIds.length,
     omitidas,
     valoradas,
+    dependencias: deps.length,
     totalPlantilla: plantilla.totalSubseries
   }
 }
@@ -254,9 +264,10 @@ export function registrarBiblioteca(router, db, guard) {
   router.post('/biblioteca/:tipo/precargar', mw, async (req, res) => {
     try {
       const r = await precargarPlantilla(db, {
-        tipo:      req.params.tipo,
-        entidadId: req.entidad_id || null,
-        usuarioId: req.user?.sub || req.user?.id || null
+        tipo:         req.params.tipo,
+        entidadId:    req.entidad_id || null,
+        usuarioId:    req.user?.sub || req.user?.id || null,
+        dependencias: Array.isArray(req.body?.dependencias) ? req.body.dependencias : []
       })
       if (!r.ok) return res.status(404).json(r)
       return res.json(r)
