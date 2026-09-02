@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderHeader('Instrumentos', sessionStorage.getItem('gestion_entidad_nombre') || null)
   document.querySelectorAll('button[data-doc]').forEach(b =>
     b.addEventListener('click', () => descargarDoc(b.dataset.doc, b.dataset.file, b)))
+  document.querySelectorAll('button[data-goto]').forEach(b =>
+    b.addEventListener('click', () => { window.location.href = b.dataset.goto }))
   await cargarResumen()
 })
 

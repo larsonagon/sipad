@@ -200,19 +200,14 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeICAF ? `<button type="button" id="btnSegtec" ${modulo === 'ICAF' ? 'class="active"' : ''}>ICAF</button>` : ''}
 
-        ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>TRD-AI</button>` : ''}
+        ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>Diseño de la TRD</button>` : ''}
 
-        ${puedeTRDAI ? `<button type="button" id="btnConvalidacion" ${modulo === 'Convalidación' ? 'class="active"' : ''}>Convalidación</button>` : ''}
+        ${puedeTRDAI ? `<button type="button" id="btnConvalidacion" ${modulo === 'Convalidación' ? 'class="active"' : ''}>Comité</button>` : ''}
 
         ${puedeTRDAI ? `<button type="button" id="btnInstrumentos" ${modulo === 'Instrumentos' ? 'class="active"' : ''}>Instrumentos</button>` : ''}
 
-        ${puedeTRDAI ? `<button type="button" id="btnVersiones" ${modulo === 'Versiones' ? 'class="active"' : ''}>Versiones</button>` : ''}
 
         ${puedeTRDAI ? `<button type="button" id="btnAsistente" ${modulo === 'Asistente' ? 'class="active"' : ''}>Asistente</button>` : ''}
-
-        ${puedeTRD ? `<button type="button" id="btnTRD" ${modulo === 'TRD' ? 'class="active"' : ''}>TRD</button>` : ''}
-
-        ${puedeVerInformes ? `<button type="button" id="btnInformes" ${modulo === 'Informes' ? 'class="active"' : ''}>Informes</button>` : ''}
 
         ${puedeTRD ? `<button type="button" id="btnValoracion" ${modulo === 'Valoración' ? 'class="active"' : ''}>Valoración</button>` : ''}
 
