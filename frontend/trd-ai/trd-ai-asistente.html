@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asistente de valoración – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<style>
+.module-page { max-width: 900px !important; }
+.asis-wrap { display:flex; flex-direction:column; height:calc(100vh - 210px); min-height:420px; }
+.asis-card { background:#fff; border:1px solid #e6eaf0; border-radius:14px; box-shadow:0 1px 2px rgba(16,42,73,.06),0 4px 14px rgba(16,42,73,.05); display:flex; flex-direction:column; flex:1; overflow:hidden; }
+.asis-chat { flex:1; overflow-y:auto; padding:18px; display:flex; flex-direction:column; gap:12px; }
+.msg { max-width:82%; padding:11px 14px; border-radius:14px; font-size:13.5px; line-height:1.55; white-space:pre-wrap; }
+.msg.user { align-self:flex-end; background:#0d3f77; color:#fff; border-bottom-right-radius:4px; }
+.msg.bot  { align-self:flex-start; background:#f4f7fb; color:#0f172a; border:1px solid #e6eaf0; border-bottom-left-radius:4px; }
+.msg.bot .aviso { display:block; margin-top:8px; padding:8px 10px; background:#fffbeb; border:1px solid #fde68a; color:#92400e; border-radius:8px; font-size:12px; }
+.msg.bot .fuentes { display:block; margin-top:6px; font-size:11px; color:#64748b; }
+.asis-input { border-top:1px solid #e6eaf0; padding:12px; display:flex; gap:8px; align-items:flex-end; background:#fbfcfe; }
+.asis-input textarea { flex:1; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font-size:13.5px; font-family:inherit; resize:none; max-height:120px; }
+.ctx-row { display:flex; gap:8px; padding:0 12px 10px; }
+.ctx-row input { flex:1; border:1px solid #e6eaf0; border-radius:8px; padding:7px 10px; font-size:12.5px; font-family:inherit; }
+.fuentes-chips { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:12px; }
+.fchip { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; font-size:11.5px; font-weight:600; background:#eef4fb; color:#1e3a8a; border:1px solid #dbe6f4; }
+.aviso-clave { background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:12px; }
+.sugerencias { display:flex; gap:8px; flex-wrap:wrap; padding:0 18px 12px; }
+.sug { border:1px solid #dbe6f4; background:#f7fafd; color:#1e3a8a; border-radius:999px; padding:6px 12px; font-size:12px; cursor:pointer; }
+.sug:hover { background:#eef4fb; }
+</style>
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page">
+    <div class="module-header premium-header">
+      <h1>Asistente de valoración</h1>
+      <p class="module-subtext">
+        Resuelve dudas de valoración documental y TRD. Está <strong>aterrizado</strong> en el motor de
+        valoración de SIPAD y en una base normativa verificada; si menciona una norma fuera de esa base,
+        te lo advierte. No reemplaza la decisión del Comité ni la convalidación del Consejo/AGN.
+      </p>
+    </div>
+
+    <div class="module-content">
+      <div class="fuentes-chips" id="fuentesChips"></div>
+      <div class="aviso-clave" id="avisoClave" hidden>
+        El asistente conversacional aún no está activo en el servidor (falta configurar la clave de IA).
+        Mientras tanto responde con la sugerencia del motor de valoración cuando indicas una serie.
+      </div>
+
+      <div class="asis-wrap">
+        <div class="asis-card">
+          <div class="asis-chat" id="chat"></div>
+          <div class="sugerencias" id="sugerencias">
+            <span class="sug" data-q="¿Cuándo se debe conservar totalmente una serie en lugar de eliminarla?">¿Cuándo conservación total vs. eliminación?</span>
+            <span class="sug" data-q="¿Qué pasos exige la eliminación de documentos según el Acuerdo AGN 004 de 2019?">Pasos para eliminar documentos</span>
+            <span class="sug" data-q="¿Qué diferencia hay entre valor primario y valor secundario?">Valor primario vs. secundario</span>
+          </div>
+          <div class="ctx-row">
+            <input type="text" id="ctxSerie" placeholder="Serie (opcional, para aterrizar la respuesta)">
+            <input type="text" id="ctxSub" placeholder="Subserie (opcional)">
+          </div>
+          <div class="asis-input">
+            <textarea id="entrada" rows="1" placeholder="Escribe tu pregunta de valoración…"></textarea>
+            <button id="btnEnviar" class="btn-primary btn-sm">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/trd-ai/trd-ai-asistente.js"></script>
+</body>
+</html>

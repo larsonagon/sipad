@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Versiones de la TRD – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<style>
+.module-page { max-width: 1100px !important; }
+.resumen-chips { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.rchip { display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; border:1px solid transparent; }
+.rchip.info{ background:#eff4fb; color:#1e3a8a; border-color:#dbe6f4; }
+.rchip.ok  { background:#e7f6ec; color:#12864e; border-color:#bfe6cd; }
+.rchip.mut { background:#f1f5f9; color:#475569; border-color:#e2e8f0; }
+.crear-card { background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:14px 16px; margin-bottom:18px; }
+.crear-grid { display:grid; grid-template-columns:2fr 1fr auto; gap:10px; align-items:end; }
+.crear-grid label { display:flex; flex-direction:column; gap:4px; font-size:12px; color:#334155; font-weight:600; }
+.crear-grid input, .crear-grid select { border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; }
+.aud-card { background:#fff; border:1px solid #e6eaf0; border-radius:14px; box-shadow:0 1px 2px rgba(16,42,73,.06),0 4px 14px rgba(16,42,73,.05); overflow:hidden; }
+.v-table { width:100%; border-collapse:collapse; font-size:13px; }
+.v-table th { text-align:left; padding:11px 14px; background:#f5f7fb; border-bottom:1px solid #e6eaf0; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#64748b; white-space:nowrap; }
+.v-table td { padding:10px 14px; border-bottom:1px solid #eef1f6; vertical-align:middle; }
+.v-nombre { font-weight:600; color:#0f172a; }
+.chip { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid transparent; white-space:nowrap; }
+.chip::before { content:""; width:6px; height:6px; border-radius:50%; }
+.chip.vig { background:#e7f6ec; color:#12864e; border-color:#bfe6cd; } .chip.vig::before{ background:#12864e; }
+.chip.bor { background:#eff6ff; color:#1d4ed8; border-color:#bfdbfe; } .chip.bor::before{ background:#3b82f6; }
+.chip.der { background:#f1f5f9; color:#64748b; border-color:#e2e8f0; } .chip.der::before{ background:#94a3b8; }
+.chip.rev { background:#fffbeb; color:#b45309; border-color:#fde68a; } .chip.rev::before{ background:#d97706; }
+.v-acc { display:flex; gap:6px; flex-wrap:wrap; }
+.nota { background:#f8fafc; border:1px solid #e6eaf0; color:#475569; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page">
+    <div class="module-header premium-header">
+      <h1>Versiones y vigencia de la TRD</h1>
+      <p class="module-subtext">
+        Lleva el control de las versiones de la Tabla de Retención Documental de la entidad: cuál está
+        vigente, con qué acto administrativo se adoptó y desde cuándo. Al congelar una versión se guarda
+        una copia inmutable de la TRD aprobada como respaldo histórico.
+      </p>
+    </div>
+
+    <div class="module-content">
+      <div class="resumen-chips" id="resumenChips"></div>
+
+      <div class="nota">
+        <b>Flujo:</b> crea una versión (borrador) → <b>congela</b> para guardar el estado actual de la TRD aprobada →
+        <b>pon vigente</b> registrando el acto administrativo. Al poner una versión vigente, la anterior queda derogada
+        automáticamente. Las versiones aprobadas o derogadas se conservan siempre como historial.
+      </div>
+
+      <div class="crear-card">
+        <div class="crear-grid">
+          <label>Nombre de la versión
+            <input type="text" id="nombreVersion" placeholder="TRD v1 - 2026">
+          </label>
+          <label>Modo de creación
+            <select id="modoVersion">
+              <option value="asistido">Asistido (SIPAD)</option>
+              <option value="manual">Manual</option>
+              <option value="mixto">Mixto</option>
+            </select>
+          </label>
+          <button id="btnCrear" class="btn-primary btn-sm">Crear versión</button>
+        </div>
+      </div>
+
+      <div class="aud-card">
+        <table class="v-table">
+          <thead>
+            <tr>
+              <th>Versión</th>
+              <th>Estado</th>
+              <th>Vigencia</th>
+              <th>Acto administrativo</th>
+              <th>Respaldo</th>
+              <th style="width:1%;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/trd-ai/trd-ai-versiones.js"></script>
+</body>
+</html>

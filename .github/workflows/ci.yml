@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sipad
+          POSTGRES_PASSWORD: sipad
+          POSTGRES_DB: sipadtest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sipad"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://sipad:sipad@localhost:5432/sipadtest
+      DB_ENGINE: postgres
+      JWT_SECRET: ci_dummy_secret_no_produccion
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Solo dependencias de producción (los tests usan el runner nativo de Node
+      # y pg/exceljs/docx, que son dependencias de prod). Evita compilar sqlite3.
+      - name: Instalar dependencias
+        run: npm ci --omit=dev || npm install --omit=dev
+
+      - name: Ejecutar pruebas
+        run: npm test

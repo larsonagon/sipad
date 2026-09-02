@@ -192,6 +192,19 @@ export async function runTRDAIMigration(db) {
     await db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_convalidacion_entidad ON trd_convalidacion(entidad_id)`)
   } catch { /* ignorar */ }
 
+  // Quórum / asistentes del comité (aditivo)
+  const columnasConvalidacion = [
+    { col: 'asistentes',        tipo: 'TEXT' },   // JSON: [{nombre, cargo, rol}]
+    { col: 'presidente_comite', tipo: 'TEXT' },
+    { col: 'secretario_comite', tipo: 'TEXT' },
+  ]
+  for (const { col, tipo } of columnasConvalidacion) {
+    try {
+      await db.exec(`ALTER TABLE trd_convalidacion ADD COLUMN ${col} ${tipo}`)
+      console.log(`✅ trd_convalidacion.${col} agregado`)
+    } catch { /* ya existe */ }
+  }
+
   // =====================================================
   // OBSERVACIONES DEL COMITÉ
   //   Anotaciones (generales o sobre una serie/subserie) con
@@ -216,6 +229,19 @@ export async function runTRDAIMigration(db) {
   try {
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_observaciones_entidad ON trd_observaciones(entidad_id, estado)`)
   } catch { /* ignorar */ }
+
+  // =====================================================
+  // VERSIONADO/VIGENCIA: columnas aditivas sobre trd_versiones
+  //   (la tabla la crea la migración del módulo trd, que corre antes).
+  //   snapshot: copia inmutable JSON de la TRD aprobada al congelar.
+  //   creado_en: sello de creación de la versión.
+  // =====================================================
+  for (const { col, tipo } of [{ col: 'snapshot', tipo: 'TEXT' }, { col: 'creado_en', tipo: 'TEXT' }]) {
+    try {
+      await db.exec(`ALTER TABLE trd_versiones ADD COLUMN ${col} ${tipo}`)
+      console.log(`✅ trd_versiones.${col} agregado`)
+    } catch { /* ya existe o la tabla aún no se creó (se cubre en registrarVersiones) */ }
+  }
 
   console.log('✅ TRD-AI migration ejecutada')
 }

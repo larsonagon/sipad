@@ -12,6 +12,10 @@ import { registrarExpediente } from './trd-ai.expediente.js'
 import { registrarPreparacion } from './trd-ai.preparacion.js'
 import { registrarAsignacion } from './trd-ai.asignacion.js'
 import { registrarAuditoria } from './trd-ai.auditoria.js'
+import { registrarFUID } from './trd-ai.fuid.js'
+import { registrarEliminacion } from './trd-ai.eliminacion.js'
+import { registrarVersiones } from './trd-ai.versiones.js'
+import { registrarAsistente } from './trd-ai.asistente.js'
 
 export function registerTRDAIRoutes(app, controller, db) {
 
@@ -211,6 +215,32 @@ export function registerTRDAIRoutes(app, controller, db) {
   //   POST /api/trd-ai/auditoria-dependencias/eliminar {ids}
   // =====================================================
   if (db) registrarAuditoria(router, db, requireLevel(60))
+
+  // =====================================================
+  // FUID — Formato Único de Inventario Documental
+  //   GET /api/trd-ai/fuid/xlsx · /fuid/docx
+  // =====================================================
+  if (db) registrarFUID(router, db, requireLevel(60))
+
+  // =====================================================
+  // ELIMINACIÓN DOCUMENTAL (Acuerdo AGN 004/2019)
+  //   GET /api/trd-ai/eliminacion (resumen)
+  //   GET /api/trd-ai/eliminacion/inventario.xlsx · /eliminacion/acta.docx
+  // =====================================================
+  if (db) registrarEliminacion(router, db, requireLevel(60))
+
+  // =====================================================
+  // VERSIONADO Y VIGENCIA DE LA TRD
+  //   GET/POST /api/trd-ai/versiones (+ :id/congelar|vigente|derogar|snapshot)
+  // =====================================================
+  if (db) registrarVersiones(router, db, requireLevel(60))
+
+  // =====================================================
+  // ASISTENTE DE VALORACIÓN (GPT aterrizado en la base normativa)
+  //   GET  /api/trd-ai/asistente/base
+  //   POST /api/trd-ai/asistente { pregunta, serie?, subserie?, historial? }
+  // =====================================================
+  if (db) registrarAsistente(router, db, requireLevel(60))
 
   // =====================================================
   // REGISTRO DE RUTAS

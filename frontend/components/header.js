@@ -204,6 +204,12 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeTRDAI ? `<button type="button" id="btnConvalidacion" ${modulo === 'Convalidación' ? 'class="active"' : ''}>Convalidación</button>` : ''}
 
+        ${puedeTRDAI ? `<button type="button" id="btnInstrumentos" ${modulo === 'Instrumentos' ? 'class="active"' : ''}>Instrumentos</button>` : ''}
+
+        ${puedeTRDAI ? `<button type="button" id="btnVersiones" ${modulo === 'Versiones' ? 'class="active"' : ''}>Versiones</button>` : ''}
+
+        ${puedeTRDAI ? `<button type="button" id="btnAsistente" ${modulo === 'Asistente' ? 'class="active"' : ''}>Asistente</button>` : ''}
+
         ${puedeTRD ? `<button type="button" id="btnTRD" ${modulo === 'TRD' ? 'class="active"' : ''}>TRD</button>` : ''}
 
         ${puedeVerInformes ? `<button type="button" id="btnInformes" ${modulo === 'Informes' ? 'class="active"' : ''}>Informes</button>` : ''}
@@ -238,6 +244,15 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnConvalidacion')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-convalidacion.html' })
+
+  document.getElementById('btnInstrumentos')
+    ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-instrumentos.html' })
+
+  document.getElementById('btnVersiones')
+    ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-versiones.html' })
+
+  document.getElementById('btnAsistente')
+    ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-asistente.html' })
 
   document.getElementById('btnTRD')
     ?.addEventListener('click', () => { window.location.href = '/trd/trd.html' })

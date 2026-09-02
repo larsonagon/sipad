@@ -134,6 +134,25 @@ function llenarForm() {
   set('radicado_numero', estado.radicado_numero)
   set('radicado_fecha', estado.radicado_fecha)
   set('nota', estado.nota)
+  set('presidente_comite', estado.presidente_comite)
+  set('secretario_comite', estado.secretario_comite)
+  set('asistentes', asistentesToText(estado.asistentes))
+}
+
+// Asistentes: JSON [{nombre,cargo,rol}] <-> texto (una persona por línea: Nombre — Cargo — Rol)
+function asistentesToText(raw) {
+  if (!raw) return ''
+  let arr = raw
+  if (typeof raw === 'string') { try { arr = JSON.parse(raw) } catch { return raw } }
+  if (!Array.isArray(arr)) return ''
+  return arr.map(a => [a.nombre, a.cargo, a.rol].filter(Boolean).join(' — ')).join('\n')
+}
+function textToAsistentes(text) {
+  if (!text || !text.trim()) return []
+  return text.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const partes = l.split(/\s[—–-]\s/).map(x => x.trim())
+    return { nombre: partes[0] || '', cargo: partes[1] || '', rol: partes[2] || '' }
+  })
 }
 
 async function guardarActo() {
@@ -146,7 +165,10 @@ async function guardarActo() {
     fecha_acto: val('fecha_acto'),
     radicado_numero: val('radicado_numero'),
     radicado_fecha: val('radicado_fecha'),
-    nota: val('nota')
+    nota: val('nota'),
+    presidente_comite: val('presidente_comite'),
+    secretario_comite: val('secretario_comite'),
+    asistentes: textToAsistentes(val('asistentes'))
   }
   try {
     const resp = await apiFetch('/api/trd-ai/convalidacion', { method: 'PATCH', body: JSON.stringify(body) })

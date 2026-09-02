@@ -58,6 +58,19 @@ git pull origin main  # traer los últimos cambios del remoto
 git log --oneline -5  # ver los últimos commits
 ```
 
+## ⚠️ Importante: no pruebes contra producción
+
+Si tu `.env` local tiene `DB_ENGINE=postgres` con el `DATABASE_URL` de Render, **todo lo que hagas en local (importar Excel, crear/borrar, experimentar) escribe en la base de datos REAL de la Alcaldía**. Eso fue lo que creó dependencias ficticias por error.
+
+Para probar sin riesgo, usa el entorno local con SQLite:
+
+```bash
+cp .env.local.example .env   # cambia a SQLite local (archivo en tu máquina)
+npm run dev
+```
+
+Cuando necesites volver a apuntar a producción, restaura tu `.env` con `DB_ENGINE=postgres` y el `DATABASE_URL` de Render.
+
 ## Notas
 
 - Si `npm run dev` falla por dependencias, corre `npm install` de nuevo.

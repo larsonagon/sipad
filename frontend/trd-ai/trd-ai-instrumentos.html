@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instrumentos archivísticos – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<style>
+.module-page { max-width: 1050px !important; }
+.inst-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; }
+.inst-card { background:#fff; border:1px solid #e6eaf0; border-radius:14px; padding:18px 18px 16px; box-shadow:0 1px 2px rgba(16,42,73,.06),0 4px 14px rgba(16,42,73,.05); display:flex; flex-direction:column; }
+.inst-card h3 { margin:0 0 4px; font-size:15px; color:#0f172a; }
+.inst-card p { margin:0 0 14px; font-size:12.5px; color:#64748b; line-height:1.5; flex:1; }
+.inst-norm { font-size:11px; color:#94a3b8; margin-bottom:12px; }
+.inst-btns { display:flex; gap:8px; flex-wrap:wrap; }
+.inst-btns button { flex:1; min-width:120px; }
+.resumen-chips { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px; }
+.rchip { display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:999px; font-size:12.5px; font-weight:700; border:1px solid transparent; }
+.rchip.info{ background:#eff4fb; color:#1e3a8a; border-color:#dbe6f4; }
+.rchip.warn{ background:#fffbeb; color:#b45309; border-color:#fde68a; }
+.rchip.ok  { background:#e7f6ec; color:#12864e; border-color:#bfe6cd; }
+.elim-nota { background:#fffbeb; border:1px solid #fde68a; color:#92400e; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:14px; }
+</style>
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page">
+    <div class="module-header premium-header">
+      <h1>Instrumentos archivísticos</h1>
+      <p class="module-subtext">
+        Genera desde la TRD aprobada los instrumentos oficiales: Tabla de Retención (Formato Único),
+        Cuadro de Clasificación (CCD), Formato Único de Inventario Documental (FUID) y el proceso de
+        eliminación (inventario + acta), conforme al Acuerdo AGN 004 de 2019.
+      </p>
+    </div>
+
+    <div class="module-content">
+      <div class="resumen-chips" id="resumenChips"></div>
+
+      <div class="inst-grid">
+
+        <div class="inst-card">
+          <h3>Tabla de Retención Documental</h3>
+          <p>La TRD completa por dependencia con series, subseries, tipologías, retención y disposición.</p>
+          <div class="inst-norm">Formato Único · Acuerdo AGN 004/2019</div>
+          <div class="inst-btns">
+            <button class="btn-primary btn-sm" data-doc="/api/trd-ai/export/xlsx" data-file="TRD-Formato-Unico.xlsx">Excel</button>
+            <button class="btn-secondary btn-sm" data-doc="/api/trd-ai/export/docx" data-file="TRD-Formato-Unico.docx">Word</button>
+          </div>
+        </div>
+
+        <div class="inst-card">
+          <h3>Cuadro de Clasificación (CCD)</h3>
+          <p>La estructura dependencia → serie → subserie con codificación jerárquica DD.SS.UU.</p>
+          <div class="inst-norm">Cuadro de Clasificación Documental</div>
+          <div class="inst-btns">
+            <button class="btn-primary btn-sm" data-doc="/api/trd-ai/ccd/xlsx" data-file="CCD.xlsx">Excel</button>
+            <button class="btn-secondary btn-sm" data-doc="/api/trd-ai/ccd/docx" data-file="CCD.docx">Word</button>
+          </div>
+        </div>
+
+        <div class="inst-card">
+          <h3>FUID — Inventario Documental</h3>
+          <p>Formato Único de Inventario Documental pre-poblado con las series/subseries por oficina productora, listo para diligenciar en la transferencia.</p>
+          <div class="inst-norm">Acuerdo AGN 042/2002</div>
+          <div class="inst-btns">
+            <button class="btn-primary btn-sm" data-doc="/api/trd-ai/fuid/xlsx" data-file="FUID.xlsx">Excel</button>
+            <button class="btn-secondary btn-sm" data-doc="/api/trd-ai/fuid/docx" data-file="FUID.docx">Word</button>
+          </div>
+        </div>
+
+        <div class="inst-card">
+          <h3>Eliminación documental</h3>
+          <p id="elimResumen">Inventario de las series con disposición Eliminación (E) o Selección (S) y acta del Comité que autoriza la eliminación.</p>
+          <div class="inst-norm">Acuerdo AGN 004/2019 · publicación 60 días hábiles</div>
+          <div class="inst-btns">
+            <button class="btn-primary btn-sm" data-doc="/api/trd-ai/eliminacion/inventario.xlsx" data-file="Inventario-eliminacion.xlsx">Inventario</button>
+            <button class="btn-secondary btn-sm" data-doc="/api/trd-ai/eliminacion/acta.docx" data-file="Acta-eliminacion.docx">Acta</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="elim-nota" style="margin-top:18px;">
+        <b>Recordatorio:</b> antes de eliminar, el inventario debe publicarse en la página web de la entidad durante
+        sesenta (60) días hábiles. El acta la firma el Comité Institucional de Gestión y Desempeño.
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="/trd-ai/trd-ai-instrumentos.js"></script>
+</body>
+</html>

@@ -44,6 +44,17 @@ function etiquetaEstado(clave) {
   return (ESTADOS_CONVALIDACION.find(e => e.clave === clave) || {}).etiqueta || clave || '—'
 }
 
+// Asistentes: acepta JSON [{nombre,cargo,rol}] o texto (una persona por línea)
+function parseAsistentes(raw) {
+  if (!raw) return []
+  if (Array.isArray(raw)) return raw
+  try {
+    const p = JSON.parse(raw)
+    if (Array.isArray(p)) return p.filter(a => a && (a.nombre || a.cargo))
+  } catch { /* no es JSON */ }
+  return raw.toString().split('\n').map(s => s.trim()).filter(Boolean).map(s => ({ nombre: s }))
+}
+
 // Aplana datos (dep→series) a filas de TRD
 function filasTRD(datos) {
   const filas = []
@@ -91,6 +102,22 @@ export async function generarActaComite(db, entidadId, meta = {}) {
   children.push(P(`Acta N.º: ${conv.numero_acta || '________'}`, { bold: true }))
   children.push(P(`Fecha de la sesión: ${conv.fecha_comite || '________'}`))
   children.push(P(`Estado del proceso: ${etiquetaEstado(conv.estado)}`))
+  children.push(P(''))
+
+  // Asistentes y quórum
+  const asistentes = parseAsistentes(conv.asistentes)
+  children.push(P('Asistentes y verificación del quórum', { bold: true, size: 24 }))
+  if (asistentes.length) {
+    asistentes.forEach(a => {
+      const linea = [a.nombre, a.cargo, a.rol].filter(Boolean).join(' — ')
+      children.push(P(`•  ${linea}`, { size: 20, after: 40 }))
+    })
+    children.push(P(`Total asistentes: ${asistentes.length}. Verificado el quórum, se declara instalada la sesión.`,
+      { italics: true, size: 20, before: 40 }))
+  } else {
+    children.push(P('Asistentes: ______________________________________________________________', { size: 20 }))
+    children.push(P('Verificado el quórum reglamentario, se declara instalada la sesión.', { italics: true, size: 20 }))
+  }
   children.push(P(''))
 
   // Marco normativo
@@ -166,7 +193,9 @@ export async function generarActaComite(db, entidadId, meta = {}) {
   children.push(P(''))
   children.push(P(''))
   children.push(P('_______________________________            _______________________________'))
-  children.push(P('Presidente del Comité                                   Secretario Técnico'))
+  const presid = conv.presidente_comite ? `Presidente del Comité — ${conv.presidente_comite}` : 'Presidente del Comité'
+  const secre = conv.secretario_comite ? `Secretario Técnico — ${conv.secretario_comite}` : 'Secretario Técnico'
+  children.push(P(`${presid}                    ${secre}`))
 
   children.push(P(`${meta.ciudad || '____________'}, ${fechaHoy}.`, { before: 200, italics: true, size: 18 }))
 

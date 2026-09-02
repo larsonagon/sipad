@@ -81,7 +81,8 @@ export async function actualizarConvalidacion(db, entidadId, campos = {}) {
   const permitidos = [
     'estado', 'fecha_comite', 'numero_acta',
     'acto_administrativo', 'numero_acto', 'fecha_acto',
-    'radicado_numero', 'radicado_fecha', 'nota'
+    'radicado_numero', 'radicado_fecha', 'nota',
+    'asistentes', 'presidente_comite', 'secretario_comite'
   ]
 
   const sets = []
@@ -91,8 +92,11 @@ export async function actualizarConvalidacion(db, entidadId, campos = {}) {
     if (k === 'estado' && !CLAVES.includes(campos[k])) {
       return { ok: false, error: `Estado inválido: ${campos[k]}` }
     }
+    let v = campos[k]
+    // asistentes puede llegar como arreglo → se guarda como JSON
+    if (k === 'asistentes' && Array.isArray(v)) v = JSON.stringify(v)
     sets.push(`${k} = ?`)
-    vals.push(campos[k] === '' ? null : campos[k])
+    vals.push(v === '' ? null : v)
   }
 
   if (!sets.length) return { ok: true, sinCambios: true }

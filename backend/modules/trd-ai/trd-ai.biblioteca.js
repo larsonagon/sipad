@@ -20,6 +20,7 @@
 import crypto from 'crypto'
 import { MATRIZ_SERIES } from './trd-ai.engine.js'
 import { valorarSerie, valorarPropuestas } from './trd-ai.valoracion.js'
+import { MATRICES_REFERENCIA } from './trd-ai.biblioteca-matrices.js'
 
 // Normaliza para comparar (sin tildes, minúsculas, sin espacios extremos)
 function norm(s) {
@@ -44,7 +45,11 @@ const PLANTILLAS = {
       'Estructura base de series y subseries documentales típicas de una alcaldía ' +
       'municipal colombiana, con retención y disposición sugeridas según valoración ' +
       '(Acuerdo AGN 004 de 2019). Punto de partida para ajustar a la entidad.'
-  }
+  },
+  // Plantillas por tipo de entidad con su propia matriz de referencia.
+  ...Object.fromEntries(Object.values(MATRICES_REFERENCIA).map(m => [
+    m.tipo, { tipo: m.tipo, nombre: m.nombre, descripcion: m.descripcion }
+  ]))
 }
 
 // =====================================================
@@ -56,7 +61,26 @@ export function construirPlantilla(tipo = 'alcaldia') {
   const meta = PLANTILLAS[tipo]
   if (!meta) return null
 
-  // Hoy toda plantilla se deriva de la matriz de alcaldía.
+  // Plantillas con matriz propia (ESE/hospital, tránsito, …): la valoración
+  // viene definida en la matriz de referencia (no se deriva de la KB de alcaldía).
+  if (tipo !== 'alcaldia') {
+    const matriz = MATRICES_REFERENCIA[tipo]
+    if (!matriz) return null
+    const series = matriz.series.map(s => {
+      const subseries = s.subseries.map(sub => ({
+        subserie:    sub.subserie,
+        ag:          sub.ag,
+        ac:          sub.ac,
+        disposicion: sub.disposicion,
+        fundamento:  sub.fundamento
+      }))
+      return { serie: s.serie, disposicion: subseries[0]?.disposicion || 'S', subseries }
+    })
+    const totalSubseries = series.reduce((n, s) => n + s.subseries.length, 0)
+    return { tipo: meta.tipo, nombre: meta.nombre, descripcion: meta.descripcion, totalSeries: series.length, totalSubseries, series }
+  }
+
+  // Alcaldía: se deriva de la matriz del motor + la KB de valoración.
   const series = MATRIZ_SERIES.map(s => {
 
     // Subseries distintas conservando el orden de aparición
@@ -130,6 +154,7 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
   )
 
   const nuevosIds = []
+  const pendientesRegla = []   // { id, ag, ac, disposicion, fundamento } (plantillas con matriz propia)
   let omitidas = 0
   const justificacion = `Precargada desde biblioteca de referencia (${plantilla.nombre})`
   const now = () => new Date().toISOString()
@@ -151,17 +176,38 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
         null, justificacion, 0.9, 'propuesta', now(), entidadId
       ])
       nuevosIds.push(id)
+      if (sub.disposicion != null || sub.ag != null || sub.ac != null) {
+        pendientesRegla.push({ id, ag: sub.ag, ac: sub.ac, disposicion: sub.disposicion, fundamento: sub.fundamento })
+      }
     }
   }
 
-  // Adjunta retención + disposición + fundamento a las recién creadas
+  // Adjunta retención + disposición + fundamento a las recién creadas.
+  //   • Alcaldía: usa el motor de valoración (KB).
+  //   • Plantillas con matriz propia: escribe la regla definida en la matriz.
   let valoradas = 0
   if (nuevosIds.length) {
-    try {
-      const r = await valorarPropuestas(db, { ids: nuevosIds, entidadId })
-      valoradas = r?.valoradas || 0
-    } catch (e) {
-      console.warn('Precarga: valoración omitida:', e.message)
+    if (tipo === 'alcaldia') {
+      try {
+        const r = await valorarPropuestas(db, { ids: nuevosIds, entidadId })
+        valoradas = r?.valoradas || 0
+      } catch (e) {
+        console.warn('Precarga: valoración omitida:', e.message)
+      }
+    } else {
+      for (const p of pendientesRegla) {
+        try {
+          await db.run(`
+            INSERT INTO trd_reglas_retencion
+              (id, propuesta_id, retencion_gestion, retencion_central, disposicion_final, fundamento_normativo, tipo_regla, creado_en)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `, [crypto.randomUUID(), p.id, p.ag ?? null, p.ac ?? null, p.disposicion ?? null, p.fundamento ?? null, 'biblioteca', now()])
+          await db.run(`UPDATE trd_series_propuestas SET disposicion_final = ? WHERE id = ?`, [p.disposicion ?? null, p.id])
+          valoradas++
+        } catch (e) {
+          console.warn('Precarga: regla de retención omitida:', e.message)
+        }
+      }
     }
   }
 

@@ -285,46 +285,44 @@ function mostrarPanelCumplimiento(data) {
 // =====================================================
 
 async function abrirBiblioteca() {
-  let plantilla
+  // Lista de plantillas disponibles (alcaldía, ESE/hospital, tránsito, …)
+  let plantillas = []
   try {
-    const resp = await apiFetch('/api/trd-ai/biblioteca/alcaldia/preview')
-    if (!resp.ok) throw new Error('preview')
-    plantilla = await resp.json()
+    const resp = await apiFetch('/api/trd-ai/biblioteca')
+    const json = await resp.json()
+    if (!resp.ok || !json.ok) throw new Error('lista')
+    plantillas = json.plantillas || []
   } catch (e) {
     console.error(e)
     mostrarToast('No fue posible cargar la biblioteca de referencia', 'error')
     return
   }
+  if (!plantillas.length) { mostrarToast('No hay plantillas de referencia disponibles', 'warning'); return }
 
   const dispLabel = { CT: 'Conservación total', E: 'Eliminación', S: 'Selección', M: 'Medio técnico' }
   const dispColor = { CT: '#12864e', E: '#b42318', S: '#1e40af', M: '#7c3aed' }
 
-  const filas = (plantilla.series || []).map(s => `
-    <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eef1f6;">
-      <span style="font-weight:700;color:#0d3f77;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;flex:1;">${s.serie}</span>
-      <span style="color:#64748b;font-size:12px;">${s.subseries.length} subserie${s.subseries.length === 1 ? '' : 's'}</span>
-      <span style="min-width:120px;text-align:right;font-size:11px;font-weight:700;color:${dispColor[s.disposicion] || '#475569'};">${dispLabel[s.disposicion] || s.disposicion}</span>
-    </div>`).join('')
+  const opciones = plantillas.map(p => `<option value="${p.tipo}">${p.nombre}</option>`).join('')
 
   const overlay = document.createElement('div')
   overlay.className = 'modal'
   overlay.innerHTML = `
     <div class="modal-content" style="max-width:720px;max-height:84vh;display:flex;flex-direction:column;">
-      <h3 style="margin:0 0 4px;">Biblioteca de referencia — ${plantilla.nombre}</h3>
-      <p style="margin:0 0 10px;font-size:13px;color:#6b7280;">${plantilla.descripcion || ''}</p>
-      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
-        <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSeries} series</span>
-        <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSubseries} subseries</span>
-        <span style="background:#e7f6ec;color:#12864e;border:1px solid #bfe6cd;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">retención sugerida incluida</span>
-      </div>
+      <h3 style="margin:0 0 8px;">Biblioteca de referencia</h3>
+      <label style="display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:#334155;margin-bottom:8px;">
+        Tipo de entidad
+        <select id="bibTipo" style="border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;">${opciones}</select>
+      </label>
+      <p id="bibDesc" style="margin:0 0 10px;font-size:13px;color:#6b7280;"></p>
+      <div id="bibChips" style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;"></div>
       <div style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:10px;">
         Se agregarán como <strong>propuestas de esta entidad</strong>, listas para curar (aprobar, ajustar o fusionar).
         Las series/subseries que ya existan <strong>no se duplican</strong>.
       </div>
-      <div style="overflow-y:auto;flex:1;padding-right:4px;border-top:1px solid #e6eaf0;">${filas}</div>
+      <div id="bibLista" style="overflow-y:auto;flex:1;padding-right:4px;border-top:1px solid #e6eaf0;">Cargando…</div>
       <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;">
         <button id="bibCancelar" class="btn-secondary btn-sm">Cancelar</button>
-        <button id="bibPrecargar" class="btn-primary btn-sm">Precargar en esta entidad</button>
+        <button id="bibPrecargar" class="btn-primary btn-sm" disabled>Precargar en esta entidad</button>
       </div>
     </div>`
   document.body.appendChild(overlay)
@@ -333,12 +331,47 @@ async function abrirBiblioteca() {
   overlay.querySelector('#bibCancelar').addEventListener('click', cerrar)
   overlay.addEventListener('click', (e) => { if (e.target === overlay) cerrar() })
 
-  overlay.querySelector('#bibPrecargar').addEventListener('click', async (ev) => {
+  const sel = overlay.querySelector('#bibTipo')
+  const btnPre = overlay.querySelector('#bibPrecargar')
+  let tipoActual = plantillas[0].tipo
+
+  async function renderPreview(tipo) {
+    tipoActual = tipo
+    btnPre.disabled = true
+    overlay.querySelector('#bibLista').innerHTML = 'Cargando…'
+    let plantilla
+    try {
+      const resp = await apiFetch(`/api/trd-ai/biblioteca/${tipo}/preview`)
+      if (!resp.ok) throw new Error('preview')
+      plantilla = await resp.json()
+    } catch (e) {
+      console.error(e)
+      overlay.querySelector('#bibLista').innerHTML = '<div style="color:#b42318;padding:12px 0;">No se pudo cargar la vista previa.</div>'
+      return
+    }
+    overlay.querySelector('#bibDesc').textContent = plantilla.descripcion || ''
+    overlay.querySelector('#bibChips').innerHTML = `
+      <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSeries} series</span>
+      <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSubseries} subseries</span>
+      <span style="background:#e7f6ec;color:#12864e;border:1px solid #bfe6cd;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">retención sugerida incluida</span>`
+    overlay.querySelector('#bibLista').innerHTML = (plantilla.series || []).map(s => `
+      <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eef1f6;">
+        <span style="font-weight:700;color:#0d3f77;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;flex:1;">${s.serie}</span>
+        <span style="color:#64748b;font-size:12px;">${s.subseries.length} subserie${s.subseries.length === 1 ? '' : 's'}</span>
+        <span style="min-width:120px;text-align:right;font-size:11px;font-weight:700;color:${dispColor[s.disposicion] || '#475569'};">${dispLabel[s.disposicion] || s.disposicion}</span>
+      </div>`).join('')
+    btnPre.disabled = false
+  }
+
+  sel.addEventListener('change', () => renderPreview(sel.value))
+  await renderPreview(tipoActual)
+
+  btnPre.addEventListener('click', async (ev) => {
     const btn = ev.currentTarget
     btn.disabled = true
     btn.textContent = 'Precargando…'
     try {
-      const resp = await apiFetch(`/api/trd-ai/biblioteca/${plantilla.tipo}/precargar`, {
+      const resp = await apiFetch(`/api/trd-ai/biblioteca/${tipoActual}/precargar`, {
         method: 'POST', body: JSON.stringify({})
       })
       const json = await resp.json()
