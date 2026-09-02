@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardValoracion = document.getElementById('cardValoracion');
 
   if (cardSegtec)     cardSegtec.style.display     = puedeICAF     ? '' : 'none';
-  if (cardInformes)   cardInformes.style.display    = puedeInformes ? '' : 'none';
+  if (cardInformes)   cardInformes.style.display    = puedeTRDAI    ? '' : 'none';
   if (cardTRDAI)      cardTRDAI.style.display       = puedeTRDAI    ? '' : 'none';
   if (cardTRD)        cardTRD.style.display         = puedeTRDAI    ? '' : 'none';
   if (cardValoracion) cardValoracion.style.display  = puedeTRDAI    ? '' : 'none';
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (cardTRD) {
     cardTRD.onclick = () => {
-      window.location.href = '/trd/trd.html';
+      window.location.href = '/trd-ai/trd-ai-convalidacion.html';
       //alert('TRD en construcción');
     };
   }
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (cardInformes) {
     cardInformes.onclick = () => {
-      window.location.href = '/informes/index.html';
+      window.location.href = '/trd-ai/trd-ai-instrumentos.html';
     };
   }
 
