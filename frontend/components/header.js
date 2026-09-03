@@ -227,7 +227,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
     fab.id = 'fabAsistente'
     fab.title = 'Asistente de valoración'
     fab.textContent = '💬 Asistente'
-    fab.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:1000;background:#0d3f77;color:#fff;border:none;border-radius:999px;padding:11px 18px;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(13,63,119,.35);cursor:pointer;'
+    fab.style.cssText = 'position:fixed;right:22px;bottom:74px;z-index:2000;background:#0d3f77;color:#fff;border:none;border-radius:999px;padding:11px 18px;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(13,63,119,.4);cursor:pointer;'
     fab.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-asistente.html' })
     document.body.appendChild(fab)
   }
