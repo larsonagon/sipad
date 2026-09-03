@@ -125,15 +125,15 @@ function renderUltimas(series) {
   const tbody = document.getElementById('tablaRecientes')
 
   if (!series || !series.length) {
-    tbody.innerHTML = '<tr><td colspan="2">No hay registros</td></tr>'
+    tbody.innerHTML = '<div style="padding:14px 16px;color:#94a3b8;font-size:13px;">Aún no hay series aprobadas.</div>'
     return
   }
 
   tbody.innerHTML = series.map(s => `
-    <tr>
-      <td>${s.nombre_serie || '-'}</td>
-      <td>${formatearFecha(s.fecha_aprobacion)}</td>
-    </tr>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #f1f5f9;font-size:13px;">
+      <span style="font-weight:600;color:#0f172a;">${s.nombre_serie || '-'}</span>
+      <span style="color:#64748b;white-space:nowrap;">${formatearFecha(s.fecha_aprobacion)}</span>
+    </div>
   `).join('')
 
 }
