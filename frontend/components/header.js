@@ -152,7 +152,10 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   else if (dependencia)        cargoDependencia = dependencia
 
   const nombreVisibleEntidad = gestionEntidadNombre || nombreEntidad
-  const moduloLabel = modulo === 'home' ? 'Panel Principal' : modulo
+  const LABELS = { 'home':'Panel Principal', 'TRD-AI':'Diseño de la TRD', 'Convalidación':'Comité' }
+  const moduloLabel = LABELS[modulo] || modulo
+  const PASOS = { 'ICAF':'Paso 1', 'TRD-AI':'Pasos 2–3', 'Valoración':'Paso 3', 'Convalidación':'Pasos 5–7', 'Instrumentos':'Pasos 4 y 8', 'Administración':'Paso 0' }
+  const pasoLabel = PASOS[modulo] || ''
 
   const header = document.createElement('header')
   header.className = 'pig-header'
@@ -165,7 +168,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         <div class="pig-header-left">
           <div class="pig-title">
-            SIPAD <span class="pig-module">${moduloLabel}</span>
+            SIPAD <span class="pig-module">${moduloLabel}</span>${pasoLabel ? `<span style="display:inline-block;font-size:10px;font-weight:700;color:#fff;background:rgba(255,255,255,.18);border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:middle;">${pasoLabel} de 8</span>` : ''}
           </div>
           <div class="pig-sub">${nombreVisibleEntidad}${seccion ? ` · ${seccion}` : ''}</div>
         </div>
@@ -202,14 +205,14 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>Diseño de la TRD</button>` : ''}
 
+        ${puedeTRD ? `<button type="button" id="btnValoracion" ${modulo === 'Valoración' ? 'class="active"' : ''}>Valoración</button>` : ''}
+
         ${puedeTRDAI ? `<button type="button" id="btnConvalidacion" ${modulo === 'Convalidación' ? 'class="active"' : ''}>Comité</button>` : ''}
 
         ${puedeTRDAI ? `<button type="button" id="btnInstrumentos" ${modulo === 'Instrumentos' ? 'class="active"' : ''}>Instrumentos</button>` : ''}
 
 
-        ${puedeTRDAI ? `<button type="button" id="btnAsistente" ${modulo === 'Asistente' ? 'class="active"' : ''}>Asistente</button>` : ''}
 
-        ${puedeTRD ? `<button type="button" id="btnValoracion" ${modulo === 'Valoración' ? 'class="active"' : ''}>Valoración</button>` : ''}
 
       </nav>
 
@@ -217,6 +220,17 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   `
 
   document.body.prepend(header)
+
+  // Botón flotante de ayuda: Asistente de valoración (siempre a la mano)
+  if (puedeTRDAI && !document.getElementById('fabAsistente')) {
+    const fab = document.createElement('button')
+    fab.id = 'fabAsistente'
+    fab.title = 'Asistente de valoración'
+    fab.textContent = '💬 Asistente'
+    fab.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:1000;background:#0d3f77;color:#fff;border:none;border-radius:999px;padding:11px 18px;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(13,63,119,.35);cursor:pointer;'
+    fab.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-asistente.html' })
+    document.body.appendChild(fab)
+  }
 
   document.getElementById('btnVolverEntidades')
     ?.addEventListener('click', () => {
