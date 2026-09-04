@@ -142,6 +142,10 @@ test('alcaldía trae series tributarias propias, marcadas misional de Hacienda',
   assert.ok(ica.misional && ica.dependencia_productora === 'Secretaría de Hacienda')
   // BASES DE DATOS queda transversal (mezcla predial/ICA con SISBEN)
   assert.equal(full.series.find(s => s.serie === 'BASES DE DATOS').misional, false)
+  // Valoración aterrizada en el marco fiscal (no el respaldo genérico)
+  const subPredial = predial.subseries[0]
+  assert.equal(subPredial.disposicion, 'S')
+  assert.match(subPredial.fundamento, /817|Ley 44 de 1990/)
 })
 
 test('anotarMisional respeta tildes y devuelve null en transversales', () => {

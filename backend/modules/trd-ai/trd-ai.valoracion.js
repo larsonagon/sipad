@@ -44,6 +44,8 @@ const KB = {
   'CONCEPTOS TÉCNICOS':        { ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'técnico', 'legal'], vs: ['histórico'], cierre: 'emisión del concepto' },
   'CONTRATOS':                 { ag: 2, ac: 18, disp: 'CT', vp: ['administrativo', 'legal', 'fiscal', 'contable'], vs: ['histórico'], cierre: 'liquidación del contrato' },
   'HISTORIAS':                 { ag: 2, ac: 80, disp: 'CT', vp: ['administrativo', 'legal', 'jurídico'], vs: ['histórico'], cierre: 'desvinculación o cierre del expediente' },
+  'IMPUESTO PREDIAL UNIFICADO':{ ag: 2, ac: 8,  disp: 'S',  vp: ['fiscal', 'contable', 'legal'], vs: ['estadístico', 'histórico'], cierre: 'pago total o prescripción de la obligación tributaria', norma: 'Ley 44 de 1990 y Estatuto Tributario art. 817 (prescripción 5 años); se conserva muestra por su valor estadístico sobre el desarrollo del municipio' },
+  'INDUSTRIA Y COMERCIO':      { ag: 2, ac: 8,  disp: 'S',  vp: ['fiscal', 'contable', 'legal'], vs: ['estadístico', 'histórico'], cierre: 'firmeza de la declaración o prescripción de la obligación', norma: 'Ley 14 de 1983 y Estatuto Tributario art. 817 (prescripción 5 años); se conserva muestra por su valor estadístico de la actividad económica' },
   'INFORMES':                  { ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'legal'], vs: ['histórico'], cierre: 'presentación del informe' },
   'INSTRUMENTOS ARCHIVÍSTICOS':{ ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'técnico'], vs: ['histórico'], cierre: 'convalidación o actualización del instrumento' },
   'LICENCIAS Y PERMISOS':      { ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'legal'], vs: ['histórico', 'patrimonial'], cierre: 'expedición y vencimiento de la licencia' },
@@ -55,7 +57,7 @@ const KB = {
   'PQRS':                      { ag: 2, ac: 8,  disp: 'S',  vp: ['administrativo', 'legal'], vs: ['informativo'], cierre: 'respuesta y cierre de la petición' }
 }
 
-function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen }) {
+function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen, norma }) {
   const vpTxt = vp && vp.length ? vp.join(', ') : 'administrativo'
   const vsTxt = vs && vs.length ? vs.join(', ') : 'sin valor secundario relevante'
   const dispTxt = DISP_TEXTO[disp] || 'por definir'
@@ -63,6 +65,9 @@ function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen }) {
   const base = origen === 'kb'
     ? `Valoración de la serie ${serie}.`
     : `Valoración contextual (la serie no está en la base de referencia; ajustar si aplica).`
+  const normaTxt = norma
+    ? `Fundamento normativo: Ley 594 de 2000, Decreto 1080 de 2015, Acuerdo AGN 004 de 2019 y ${norma}.`
+    : `Fundamento normativo: Ley 594 de 2000, Decreto 1080 de 2015 y Acuerdo AGN 004 de 2019.`
   return [
     base,
     `Valores primarios: ${vpTxt}.`,
@@ -70,7 +75,7 @@ function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen }) {
     `Hecho de cierre: ${cierre || 'cierre del trámite'}.`,
     `Retención: ${ag} año(s) en Archivo de Gestión y ${ac} en Archivo Central.`,
     `Disposición final: ${dispTxt}. ${proc}`,
-    `Fundamento normativo: Ley 594 de 2000, Decreto 1080 de 2015 y Acuerdo AGN 004 de 2019.`
+    normaTxt
   ].join(' ')
 }
 
