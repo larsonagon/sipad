@@ -3,7 +3,8 @@ import { test, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { prepararBD } from './helpers/db.mjs'
-import { listarPlantillas, construirPlantilla, precargarPlantilla } from '../backend/modules/trd-ai/trd-ai.biblioteca.js'
+import { listarPlantillas, construirPlantilla, precargarPlantilla, construirBancoMisional } from '../backend/modules/trd-ai/trd-ai.biblioteca.js'
+import { anotarMisional } from '../backend/modules/trd-ai/trd-ai.biblioteca-matrices.js'
 import { obtenerDatosExport } from '../backend/modules/trd-ai/trd-ai.export.js'
 
 let pool, db
@@ -102,4 +103,38 @@ test('BANTER: sin dependencias se precarga a nivel de entidad (una vez)', async 
   const r = await precargarPlantilla(db, { tipo: 'banter', entidadId: 'ENT_BANTER_ENT' })
   assert.equal(r.dependencias, 0)
   assert.equal(r.creadas, N)
+})
+
+// --- Capa misional (procesos misionales por tipo de entidad) ---
+test('cada serie de la plantilla trae su etiqueta misional', () => {
+  const full = construirPlantilla('alcaldia')
+  assert.ok(full.series.every(s => typeof s.misional === 'boolean'), 'toda serie declara si es misional')
+  const planes = full.series.find(s => s.serie === 'PLANES')
+  assert.ok(planes.misional && planes.proceso_misional === 'Planeación y ordenamiento territorial')
+  assert.equal(planes.dependencia_productora, 'Secretaría de Planeación')
+})
+
+test('las series transversales NO se marcan como misionales', () => {
+  const full = construirPlantilla('alcaldia')
+  const actas = full.series.find(s => s.serie === 'ACTAS')
+  assert.ok(actas && actas.misional === false && actas.proceso_misional === null)
+})
+
+test('banco misional de alcaldía separa misional de común y cita fundamento', () => {
+  const b = construirBancoMisional('alcaldia')
+  assert.ok(b.procesos.length >= 2)
+  assert.ok(b.totalMisional > 0 && b.totalComunes > 0)
+  assert.ok(b.procesos.every(p => p.fundamento && p.dependencia_productora && p.series.length))
+})
+
+test('BANTER no aporta series misionales (todo es transversal)', () => {
+  const b = construirBancoMisional('banter')
+  assert.equal(b.totalMisional, 0)
+  assert.ok(b.totalComunes > 0)
+})
+
+test('anotarMisional respeta tildes y devuelve null en transversales', () => {
+  assert.ok(anotarMisional('alcaldia', 'CONCEPTOS TÉCNICOS'))
+  assert.ok(anotarMisional('ese_hospital', 'HISTORIAS CLÍNICAS'))
+  assert.equal(anotarMisional('alcaldia', 'INFORMES'), null)
 })

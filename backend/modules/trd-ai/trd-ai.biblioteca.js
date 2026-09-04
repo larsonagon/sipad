@@ -20,7 +20,7 @@
 import crypto from 'crypto'
 import { MATRIZ_SERIES } from './trd-ai.engine.js'
 import { valorarSerie, valorarPropuestas } from './trd-ai.valoracion.js'
-import { MATRICES_REFERENCIA, BANTER_SERIES } from './trd-ai.biblioteca-matrices.js'
+import { MATRICES_REFERENCIA, BANTER_SERIES, procesosMisionales, anotarMisional } from './trd-ai.biblioteca-matrices.js'
 
 // Normaliza para comparar (sin tildes, minúsculas, sin espacios extremos)
 function norm(s) {
@@ -31,6 +31,20 @@ function norm(s) {
     .trim()
     .toLowerCase()
     .replace(/\s+/g, ' ')
+}
+
+// Anexa a una serie su etiqueta de proceso misional (capa misional).
+// Las series transversales (BANTER) quedan con misional=false.
+function anexarMisional(tipo, serie, disposicion, subseries) {
+  const m = anotarMisional(tipo, serie)
+  return {
+    serie,
+    disposicion,
+    misional:               !!m,
+    proceso_misional:       m?.proceso_misional || null,
+    dependencia_productora: m?.dependencia_productora || null,
+    subseries
+  }
 }
 
 // =====================================================
@@ -87,7 +101,7 @@ export function construirPlantilla(tipo = 'alcaldia') {
           fundamento:  v.fundamento_normativo
         }
       })
-      return { serie: s.serie, disposicion: subseries[0]?.disposicion || 'S', subseries }
+      return anexarMisional(tipo, s.serie, subseries[0]?.disposicion || 'S', subseries)
     })
     const totalSubseries = series.reduce((n, s) => n + s.subseries.length, 0)
     return { tipo: meta.tipo, nombre: meta.nombre, descripcion: meta.descripcion, totalSeries: series.length, totalSubseries, series }
@@ -106,7 +120,7 @@ export function construirPlantilla(tipo = 'alcaldia') {
         disposicion: sub.disposicion,
         fundamento:  sub.fundamento
       }))
-      return { serie: s.serie, disposicion: subseries[0]?.disposicion || 'S', subseries }
+      return anexarMisional(tipo, s.serie, subseries[0]?.disposicion || 'S', subseries)
     })
     const totalSubseries = series.reduce((n, s) => n + s.subseries.length, 0)
     return { tipo: meta.tipo, nombre: meta.nombre, descripcion: meta.descripcion, totalSeries: series.length, totalSubseries, series }
@@ -135,7 +149,7 @@ export function construirPlantilla(tipo = 'alcaldia') {
     // Disposición representativa de la serie (la de su primera subserie)
     const disp = subseries[0]?.disposicion || 'S'
 
-    return { serie: s.serie, disposicion: disp, subseries }
+    return anexarMisional(tipo, s.serie, disp, subseries)
   })
 
   const totalSubseries = series.reduce((n, s) => n + s.subseries.length, 0)
@@ -147,6 +161,42 @@ export function construirPlantilla(tipo = 'alcaldia') {
     totalSeries:   series.length,
     totalSubseries,
     series
+  }
+}
+
+// =====================================================
+// BANCO MISIONAL — vista de la plantilla agrupada por proceso
+// -----------------------------------------------------
+// Separa las series misionales (por su proceso y dependencia
+// productora) de las transversales (comunes / BANTER). Es la lectura
+// que sustituye el mapa de procesos cuando la entidad no lo tiene.
+// =====================================================
+export function construirBancoMisional(tipo = 'alcaldia') {
+  const plantilla = construirPlantilla(tipo)
+  if (!plantilla) return null
+
+  const procs = procesosMisionales(tipo)
+  const porNombre = new Map(procs.map(p => [p.proceso, {
+    proceso:                p.proceso,
+    dependencia_productora: p.dependencia_productora,
+    fundamento:             p.fundamento,
+    series:                 []
+  }]))
+
+  const comunes = []
+  for (const s of plantilla.series) {
+    if (s.misional && porNombre.has(s.proceso_misional)) porNombre.get(s.proceso_misional).series.push(s)
+    else comunes.push(s)
+  }
+
+  const procesos = [...porNombre.values()].filter(p => p.series.length)
+  return {
+    tipo:          plantilla.tipo,
+    nombre:        plantilla.nombre,
+    procesos,
+    comunes,
+    totalMisional: procesos.reduce((n, p) => n + p.series.length, 0),
+    totalComunes:  comunes.length
   }
 }
 
@@ -290,6 +340,17 @@ export function registrarBiblioteca(router, db, guard) {
     } catch (err) {
       console.error('Biblioteca preview error:', err)
       return res.status(500).json({ ok: false, error: 'No se pudo generar la vista previa' })
+    }
+  })
+
+  router.get('/biblioteca/:tipo/misional', mw, (req, res) => {
+    try {
+      const banco = construirBancoMisional(req.params.tipo)
+      if (!banco) return res.status(404).json({ ok: false, error: 'Plantilla no encontrada' })
+      return res.json({ ok: true, ...banco })
+    } catch (err) {
+      console.error('Biblioteca misional error:', err)
+      return res.status(500).json({ ok: false, error: 'No se pudo generar el banco misional' })
     }
   })
 

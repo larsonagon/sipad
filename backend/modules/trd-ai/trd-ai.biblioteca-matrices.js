@@ -207,4 +207,107 @@ const BANTER_SERIES = [
   ]}
 ]
 
-export { MATRICES_REFERENCIA, BANTER_SERIES }
+// =====================================================
+// CAPA MISIONAL — procesos misionales por tipo de entidad
+// -----------------------------------------------------
+// Agrupa las series MISIONALES (las que distinguen a la entidad por
+// su competencia legal) por el proceso misional que las produce y la
+// dependencia productora típica. Sustituye la lectura de "mapa de
+// procesos" cuando la entidad no lo tiene formalizado: el proceso
+// misional se DEDUCE de la competencia legal (fundamento), no de un
+// documento interno que pueda faltar.
+//
+// Las series NO listadas aquí se consideran transversales/comunes
+// (viven en BANTER) y no llevan proceso misional. Esto evita duplicar:
+// lo común está una sola vez, lo misional distingue por tipo.
+//
+// Estructura por tipo: [ { proceso, dependencia_productora, fundamento, series:[nombres de serie] } ]
+// Cada proceso cita la norma que crea la competencia (candado anti-invención).
+// =====================================================
+const PROCESOS_MISIONALES = {
+
+  alcaldia: [
+    {
+      proceso: 'Planeación y ordenamiento territorial',
+      dependencia_productora: 'Secretaría de Planeación',
+      fundamento: 'Competencia municipal de ordenar el desarrollo de su territorio y planear el desarrollo económico y social (Constitución art. 311 y 313.7; Ley 136 de 1994 art. 3; Ley 152 de 1994; Ley 388 de 1997).',
+      series: ['PLANES', 'LICENCIAS Y PERMISOS', 'CERTIFICADOS', 'CONCEPTOS TÉCNICOS', 'PROYECTOS']
+    },
+    {
+      proceso: 'Hacienda pública y gestión de rentas',
+      dependencia_productora: 'Secretaría de Hacienda',
+      fundamento: 'Competencia municipal de administrar sus recursos y establecer los tributos necesarios para el cumplimiento de sus funciones (Constitución art. 287 y 313.4; Ley 136 de 1994; Decreto Ley 1333 de 1986).',
+      series: ['COBROS COACTIVOS', 'BASES DE DATOS']
+    }
+  ],
+
+  ese_hospital: [
+    {
+      proceso: 'Atención en salud',
+      dependencia_productora: 'Área asistencial / Gestión de la información clínica',
+      fundamento: 'Prestación del servicio público de salud y manejo de la historia clínica del usuario (Ley 100 de 1993; Ley 23 de 1981; Resolución 1995 de 1999 y Resolución 839 de 2017 de Minsalud).',
+      series: ['HISTORIAS CLÍNICAS', 'CONSENTIMIENTOS INFORMADOS', 'REGISTROS INDIVIDUALES DE PRESTACIÓN DE SERVICIOS DE SALUD']
+    },
+    {
+      proceso: 'Garantía de la calidad y seguridad del paciente',
+      dependencia_productora: 'Oficina de Calidad',
+      fundamento: 'Sistema Obligatorio de Garantía de Calidad de la Atención en Salud (Decreto 1011 de 2006; Resolución 3100 de 2019 de Minsalud).',
+      series: ['PROGRAMAS', 'ACTAS']
+    },
+    {
+      proceso: 'Facturación y cartera de servicios de salud',
+      dependencia_productora: 'Facturación',
+      fundamento: 'Venta y recobro de servicios de salud a las EPS y a la ADRES (Ley 100 de 1993; Resolución 3047 de 2008 de Minsalud).',
+      series: ['FACTURACIÓN DE SERVICIOS DE SALUD', 'BASES DE DATOS DE USUARIOS']
+    }
+  ],
+
+  transito: [
+    {
+      proceso: 'Registro y control automotor y de conductores',
+      dependencia_productora: 'Área de Registro',
+      fundamento: 'Función de matrícula y registro de vehículos y conductores y su reporte al RUNT (Ley 769 de 2002, Código Nacional de Tránsito; Ley 1005 de 2006).',
+      series: ['LICENCIAS DE TRÁNSITO', 'REGISTRO AUTOMOTOR', 'LICENCIAS DE CONDUCCIÓN', 'ESPECIES VENALES']
+    },
+    {
+      proceso: 'Control operativo y régimen contravencional',
+      dependencia_productora: 'Área Operativa / Contravenciones',
+      fundamento: 'Vigilancia del tránsito e imposición y cobro de sanciones por infracciones (Ley 769 de 2002; Ley 1383 de 2010).',
+      series: ['COMPARENDOS', 'ACCIDENTES DE TRÁNSITO', 'ACUERDOS DE PAGO', 'CURSOS PEDAGÓGICOS']
+    }
+  ]
+}
+
+// Normaliza un nombre de serie para comparar (sin tildes, minúsculas).
+function normSerieMis(s) {
+  return (s || '').toString().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+// Índice tipo → normSerie → { proceso_misional, dependencia_productora, fundamento_proceso }
+function indiceMisional(tipo) {
+  const procs = PROCESOS_MISIONALES[tipo] || []
+  const idx = {}
+  for (const p of procs) {
+    for (const serie of p.series) {
+      idx[normSerieMis(serie)] = {
+        proceso_misional:       p.proceso,
+        dependencia_productora: p.dependencia_productora,
+        fundamento_proceso:     p.fundamento
+      }
+    }
+  }
+  return idx
+}
+
+// Lista de procesos misionales de un tipo (para la vista "por proceso").
+function procesosMisionales(tipo) {
+  return PROCESOS_MISIONALES[tipo] || []
+}
+
+// Anota una serie con su proceso misional si aplica; null si es transversal.
+function anotarMisional(tipo, serie) {
+  return indiceMisional(tipo)[normSerieMis(serie)] || null
+}
+
+export { MATRICES_REFERENCIA, BANTER_SERIES, PROCESOS_MISIONALES, procesosMisionales, anotarMisional }
