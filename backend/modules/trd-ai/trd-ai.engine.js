@@ -266,6 +266,34 @@ export const MATRIZ_SERIES = [
     ]
   },
 
+  // ── IMPUESTO PREDIAL UNIFICADO ─────────────────
+  // Misional (Hacienda): potestad tributaria municipal. Ley 44 de 1990.
+  {
+    serie: 'IMPUESTO PREDIAL UNIFICADO',
+    reglas: [
+      { palabras: ['exencion', 'predial'],             subserie: 'Exenciones y tratamientos preferenciales del impuesto predial' },
+      { palabras: ['paz', 'salvo', 'predial'],         subserie: 'Paz y salvos del impuesto predial' },
+      { palabras: ['liquidacion', 'predial'],          subserie: 'Liquidaciones y facturación del impuesto predial' },
+      { palabras: ['factura', 'predial'],              subserie: 'Liquidaciones y facturación del impuesto predial' },
+      { palabras: ['facturacion', 'predial'],          subserie: 'Liquidaciones y facturación del impuesto predial' },
+      { palabras: ['impuesto', 'predial'],             subserie: 'Liquidaciones y facturación del impuesto predial' },
+      { palabras: ['predial'],                         subserie: 'Liquidaciones y facturación del impuesto predial' }
+    ]
+  },
+
+  // ── INDUSTRIA Y COMERCIO ───────────────────────
+  // Misional (Hacienda): impuesto de industria y comercio (ICA). Ley 14 de 1983.
+  {
+    serie: 'INDUSTRIA Y COMERCIO',
+    reglas: [
+      { palabras: ['registro', 'industria', 'comercio'], subserie: 'Registro de contribuyentes de industria y comercio' },
+      { palabras: ['aforo', 'industria', 'comercio'],    subserie: 'Liquidaciones de aforo de industria y comercio' },
+      { palabras: ['declaracion', 'industria', 'comercio'], subserie: 'Declaraciones del impuesto de industria y comercio' },
+      { palabras: ['reteica'],                           subserie: 'Declaraciones del impuesto de industria y comercio' },
+      { palabras: ['industria', 'comercio'],             subserie: 'Declaraciones del impuesto de industria y comercio' }
+    ]
+  },
+
   // ── INFORMES ───────────────────────────────────
   // Fuente: Floridablanca 101, 104, 105, 107 / Pitalito
   // AG: 1-2 años | AC: 4-9 años | CT

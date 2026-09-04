@@ -237,7 +237,7 @@ const PROCESOS_MISIONALES = {
       proceso: 'Gestión tributaria y de rentas',
       dependencia_productora: 'Secretaría de Hacienda',
       fundamento: 'Potestad tributaria propia del municipio: administrar y recaudar sus tributos —impuesto predial unificado e industria y comercio— (Constitución art. 287 y 313.4; Ley 14 de 1983; Ley 44 de 1990; Decreto Ley 1333 de 1986). El cobro coactivo NO es misional: es un proceso (jurisdicción coactiva, Ley 1066 de 2006) transversal, va en la serie PROCESOS.',
-      series: ['BASES DE DATOS']
+      series: ['IMPUESTO PREDIAL UNIFICADO', 'INDUSTRIA Y COMERCIO']
     }
   ],
 

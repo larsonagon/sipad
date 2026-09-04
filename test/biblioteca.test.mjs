@@ -133,6 +133,17 @@ test('BANTER no aporta series misionales (todo es transversal)', () => {
   assert.ok(b.totalComunes > 0)
 })
 
+test('alcaldía trae series tributarias propias, marcadas misional de Hacienda', () => {
+  const full = construirPlantilla('alcaldia')
+  const predial = full.series.find(s => s.serie === 'IMPUESTO PREDIAL UNIFICADO')
+  const ica = full.series.find(s => s.serie === 'INDUSTRIA Y COMERCIO')
+  assert.ok(predial && ica, 'existen las dos series tributarias')
+  assert.ok(predial.misional && predial.proceso_misional === 'Gestión tributaria y de rentas')
+  assert.ok(ica.misional && ica.dependencia_productora === 'Secretaría de Hacienda')
+  // BASES DE DATOS queda transversal (mezcla predial/ICA con SISBEN)
+  assert.equal(full.series.find(s => s.serie === 'BASES DE DATOS').misional, false)
+})
+
 test('anotarMisional respeta tildes y devuelve null en transversales', () => {
   assert.ok(anotarMisional('alcaldia', 'CONCEPTOS TÉCNICOS'))
   assert.ok(anotarMisional('ese_hospital', 'HISTORIAS CLÍNICAS'))
