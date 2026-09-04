@@ -373,31 +373,58 @@ async function abrirBiblioteca() {
     return [...overlay.querySelectorAll('.bib-dep:checked')].map(c => Number(c.value))
   }
 
+  // Fila de una serie (misional o común)
+  function filaSerie(s) {
+    return `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #eef1f6;">
+        <span style="font-weight:700;color:#0d3f77;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;flex:1;">${escDep(s.serie)}</span>
+        <span style="color:#64748b;font-size:12px;">${s.subseries.length} subserie${s.subseries.length === 1 ? '' : 's'}</span>
+        <span style="min-width:120px;text-align:right;font-size:11px;font-weight:700;color:${dispColor[s.disposicion] || '#475569'};">${dispLabel[s.disposicion] || s.disposicion}</span>
+      </div>`
+  }
+
   async function renderPreview(tipo) {
     tipoActual = tipo
     btnPre.disabled = true
     overlay.querySelector('#bibLista').innerHTML = 'Cargando…'
-    let plantilla
+    let banco
     try {
-      const resp = await apiFetch(`/api/trd-ai/biblioteca/${tipo}/preview`)
-      if (!resp.ok) throw new Error('preview')
-      plantilla = await resp.json()
+      const resp = await apiFetch(`/api/trd-ai/biblioteca/${tipo}/misional`)
+      if (!resp.ok) throw new Error('misional')
+      banco = await resp.json()
     } catch (e) {
       console.error(e)
       overlay.querySelector('#bibLista').innerHTML = '<div style="color:#b42318;padding:12px 0;">No se pudo cargar la vista previa.</div>'
       return
     }
-    overlay.querySelector('#bibDesc').textContent = plantilla.descripcion || ''
+    overlay.querySelector('#bibDesc').textContent = banco.descripcion || ''
     overlay.querySelector('#bibChips').innerHTML = `
-      <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSeries} series</span>
-      <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${plantilla.totalSubseries} subseries</span>
-      <span style="background:#e7f6ec;color:#12864e;border:1px solid #bfe6cd;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">retención sugerida incluida</span>`
-    overlay.querySelector('#bibLista').innerHTML = (plantilla.series || []).map(s => `
-      <div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid #eef1f6;">
-        <span style="font-weight:700;color:#0d3f77;font-size:12.5px;text-transform:uppercase;letter-spacing:.02em;flex:1;">${s.serie}</span>
-        <span style="color:#64748b;font-size:12px;">${s.subseries.length} subserie${s.subseries.length === 1 ? '' : 's'}</span>
-        <span style="min-width:120px;text-align:right;font-size:11px;font-weight:700;color:${dispColor[s.disposicion] || '#475569'};">${dispLabel[s.disposicion] || s.disposicion}</span>
+      <span style="background:#eff4fb;color:#1e3a8a;border:1px solid #dbe6f4;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${banco.totalSeries} series · ${banco.totalSubseries} subseries</span>
+      ${banco.totalMisional ? `<span style="background:#fdf2e9;color:#b45309;border:1px solid #f6d8b8;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${banco.totalMisional} misionales</span>` : ''}
+      <span style="background:#eef2f7;color:#475569;border:1px solid #dbe1ea;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:700;">${banco.totalComunes} comunes</span>`
+
+    // Bloques: primero los procesos misionales (distinguen a la entidad), luego lo común (BANTER).
+    const bloquesMis = (banco.procesos || []).map(p => `
+      <div style="margin:6px 0 2px;">
+        <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:8px 4px 4px;border-bottom:2px solid #f6d8b8;">
+          <span style="font-weight:800;color:#b45309;font-size:12.5px;">◆ ${escDep(p.proceso)}</span>
+          <span style="font-size:11.5px;color:#64748b;">${escDep(p.dependencia_productora)}</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;padding:4px 4px 2px;line-height:1.45;">${escDep(p.fundamento)}</div>
+        ${p.series.map(filaSerie).join('')}
       </div>`).join('')
+
+    const bloqueComun = (banco.comunes && banco.comunes.length) ? `
+      <div style="margin-top:10px;">
+        <div style="padding:8px 4px 4px;border-bottom:2px solid #dbe1ea;">
+          <span style="font-weight:800;color:#475569;font-size:12.5px;">● Series comunes (transversales)</span>
+          <span style="font-size:11.5px;color:#94a3b8;margin-left:8px;">iguales para toda entidad — banco común (BANTER)</span>
+        </div>
+        ${banco.comunes.map(filaSerie).join('')}
+      </div>` : ''
+
+    overlay.querySelector('#bibLista').innerHTML = (bloquesMis + bloqueComun) ||
+      '<div style="color:#64748b;padding:12px 0;">Sin series en esta plantilla.</div>'
     btnPre.disabled = false
   }
 

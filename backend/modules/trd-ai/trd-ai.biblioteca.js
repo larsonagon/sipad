@@ -191,12 +191,15 @@ export function construirBancoMisional(tipo = 'alcaldia') {
 
   const procesos = [...porNombre.values()].filter(p => p.series.length)
   return {
-    tipo:          plantilla.tipo,
-    nombre:        plantilla.nombre,
+    tipo:           plantilla.tipo,
+    nombre:         plantilla.nombre,
+    descripcion:    plantilla.descripcion,
+    totalSeries:    plantilla.totalSeries,
+    totalSubseries: plantilla.totalSubseries,
     procesos,
     comunes,
-    totalMisional: procesos.reduce((n, p) => n + p.series.length, 0),
-    totalComunes:  comunes.length
+    totalMisional:  procesos.reduce((n, p) => n + p.series.length, 0),
+    totalComunes:   comunes.length
   }
 }
 
