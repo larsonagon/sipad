@@ -237,6 +237,27 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
     : []
   const targets = deps.length ? deps : [null]
 
+  // Emparejamiento de productora sugerida (solo en modo "toda la entidad"):
+  // si una serie misional sugiere una dependencia productora y esa dependencia
+  // YA existe en la entidad con el MISMO nombre (normalizado), se asigna sola.
+  // Coincidencia exacta únicamente: si no calza, se deja sin asignar (dep null)
+  // para no crear datos erróneos. En modo "replicar en dependencias" no aplica
+  // (el usuario ya eligió las oficinas destino).
+  const mapaProductoras = {}
+  if (!deps.length && entidadId) {
+    try {
+      const rows = await db.all(`SELECT id, nombre FROM dependencias WHERE entidad_id = ?`, [entidadId])
+      for (const r of rows) { const k = norm(r.nombre); if (k && !(k in mapaProductoras)) mapaProductoras[k] = r.id }
+    } catch (e) { console.warn('Precarga: no se pudieron cargar dependencias para emparejar productoras:', e.message) }
+  }
+  const resolverDep = (dep, serie) => {
+    if (dep != null) return dep
+    const prod = serie?.dependencia_productora
+    if (!prod) return null
+    const id = mapaProductoras[norm(prod)]
+    return id != null ? id : null
+  }
+
   // Propuestas ya existentes → no duplicar. Dedup por (dependencia_id, serie, subserie).
   const existentesRows = await db.all(
     `SELECT nombre_serie, nombre_subserie, dependencia_id FROM trd_series_propuestas ${entidadId ? 'WHERE entidad_id = ?' : ''}`,
@@ -251,10 +272,13 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
   const justificacion = `Precargada desde biblioteca de referencia (${plantilla.nombre})`
   const now = () => new Date().toISOString()
 
+  const autoAsignadas = new Set()
   for (const dep of targets) {
     for (const s of plantilla.series) {
+      const depEfectiva = resolverDep(dep, s)
+      if (dep == null && depEfectiva != null) autoAsignadas.add(norm(s.serie))
       for (const sub of s.subseries) {
-        const clave = claveDe(dep, s.serie, sub.subserie)
+        const clave = claveDe(depEfectiva, s.serie, sub.subserie)
         if (existentes.has(clave)) { omitidas++; continue }
         existentes.add(clave)
 
@@ -266,7 +290,7 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           id, null, s.serie, sub.subserie,
-          null, justificacion, 0.9, 'propuesta', now(), entidadId, dep
+          null, justificacion, 0.9, 'propuesta', now(), entidadId, depEfectiva
         ])
         nuevosIds.push(id)
         if (sub.disposicion != null || sub.ag != null || sub.ac != null) {
@@ -312,6 +336,7 @@ export async function precargarPlantilla(db, { tipo = 'alcaldia', entidadId = nu
     omitidas,
     valoradas,
     dependencias: deps.length,
+    seriesAutoasignadas: autoAsignadas.size,
     totalPlantilla: plantilla.totalSubseries
   }
 }

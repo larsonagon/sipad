@@ -148,6 +148,28 @@ test('alcaldía trae series tributarias propias, marcadas misional de Hacienda',
   assert.match(subPredial.fundamento, /817|Ley 44 de 1990/)
 })
 
+test('precarga: empareja la productora sugerida con la dependencia de igual nombre', async () => {
+  const ENT = 'ENT_MIS'
+  await db.run(`INSERT INTO entidades (id, nombre) VALUES (?, ?)`, [ENT, 'Alcaldía Misional'])
+  await db.run(`INSERT INTO dependencias (nombre, activa, entidad_id) VALUES (?, true, ?)`, ['Secretaría de Hacienda', ENT])
+  const dep = await db.get(`SELECT id FROM dependencias WHERE entidad_id = ? AND nombre = ?`, [ENT, 'Secretaría de Hacienda'])
+
+  const r = await precargarPlantilla(db, { tipo: 'alcaldia', entidadId: ENT })
+  assert.ok(r.ok && r.creadas > 0)
+  assert.ok(r.seriesAutoasignadas >= 2, 'predial e industria y comercio se auto-asignan a Hacienda')
+
+  // Las series tributarias quedan en la dependencia Hacienda (coincidencia exacta)
+  const predial = await db.all(
+    `SELECT DISTINCT dependencia_id AS d FROM trd_series_propuestas WHERE entidad_id=? AND nombre_serie='IMPUESTO PREDIAL UNIFICADO'`, [ENT])
+  assert.equal(predial.length, 1)
+  assert.equal(Number(predial[0].d), Number(dep.id))
+
+  // Planeación no coincide con ninguna dependencia existente → se deja sin asignar
+  const planes = await db.all(
+    `SELECT dependencia_id AS d FROM trd_series_propuestas WHERE entidad_id=? AND nombre_serie='PLANES'`, [ENT])
+  assert.ok(planes.length && planes.every(x => x.d == null))
+})
+
 test('anotarMisional respeta tildes y devuelve null en transversales', () => {
   assert.ok(anotarMisional('alcaldia', 'CONCEPTOS TÉCNICOS'))
   assert.ok(anotarMisional('ese_hospital', 'HISTORIAS CLÍNICAS'))
