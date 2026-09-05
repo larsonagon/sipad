@@ -181,34 +181,10 @@ export const MATRIZ_SERIES = [
     ]
   },
 
-  // ── COMISARÍA DE FAMILIA ───────────────────────
-  // Misional (Gobierno): protección de NNA y familia. Ley 1098/2006, Ley 2126/2021, Ley 1257/2008.
-  {
-    serie: 'COMISARÍA DE FAMILIA',
-    reglas: [
-      { palabras: ['restablecimiento', 'derecho'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
-      { palabras: ['proceso', 'restablecimiento'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
-      { palabras: ['medida', 'proteccion'],            subserie: 'Medidas de protección por violencia intrafamiliar' },
-      { palabras: ['violencia', 'intrafamiliar'],      subserie: 'Medidas de protección por violencia intrafamiliar' },
-      { palabras: ['historia', 'sociofamiliar'],       subserie: 'Historias sociofamiliares' },
-      { palabras: ['comisaria', 'familia'],            subserie: 'Historias sociofamiliares' },
-      { palabras: ['comisaria'],                       subserie: 'Historias sociofamiliares' }
-    ]
-  },
-
-  // ── INSPECCIÓN DE POLICÍA ──────────────────────
-  // Misional (Gobierno): convivencia y seguridad. Ley 1801/2016 (Código Nacional de Seguridad y Convivencia).
-  {
-    serie: 'INSPECCIÓN DE POLICÍA',
-    reglas: [
-      { palabras: ['comportamiento', 'convivencia'],   subserie: 'Procesos por comportamientos contrarios a la convivencia' },
-      { palabras: ['amparo', 'policivo'],              subserie: 'Amparos policivos' },
-      { palabras: ['perturbacion', 'posesion'],        subserie: 'Amparos policivos' },
-      { palabras: ['querella', 'policia'],             subserie: 'Querellas de policía' },
-      { palabras: ['querella'],                        subserie: 'Querellas de policía' },
-      { palabras: ['inspeccion', 'policia'],           subserie: 'Querellas de policía' }
-    ]
-  },
+  // NOTA (05/09/2026): lo misional de Comisaría de Familia e Inspección de
+  // Policía (que antes eran series-oficina inventadas) se re-alojó como
+  // SUBSERIES de la serie común PROCESOS (ver bloque PROCESOS más abajo). La
+  // oficina es la dependencia PRODUCTORA, no la serie.
 
   // ── COMUNICACIONES OFICIALES ───────────────────
   // Fuente: Pitalito
@@ -272,51 +248,11 @@ export const MATRIZ_SERIES = [
     ]
   },
 
-  // ── GESTIÓN DEL RIESGO DE DESASTRES ────────────
-  // Misional (Gestión del Riesgo): Ley 1523 de 2012. Documentos operativos
-  // propios (no los planes, que van en PLANES): estrategia de respuesta,
-  // declaratorias de calamidad y censos de afectados.
-  {
-    serie: 'GESTIÓN DEL RIESGO DE DESASTRES',
-    reglas: [
-      { palabras: ['estrategia', 'respuesta', 'emergencia'], subserie: 'Estrategia municipal de respuesta a emergencias' },
-      { palabras: ['respuesta', 'emergencia'],         subserie: 'Estrategia municipal de respuesta a emergencias' },
-      { palabras: ['declaratoria', 'calamidad'],       subserie: 'Declaratorias de calamidad pública' },
-      { palabras: ['calamidad', 'publica'],            subserie: 'Declaratorias de calamidad pública' },
-      { palabras: ['censo', 'damnificado'],            subserie: 'Censos de familias afectadas por emergencias' },
-      { palabras: ['censo', 'afectado'],               subserie: 'Censos de familias afectadas por emergencias' },
-      { palabras: ['censo', 'familia'],                subserie: 'Censos de familias afectadas por emergencias' }
-    ]
-  },
-
-  // ── ATENCIÓN A VÍCTIMAS DEL CONFLICTO ──────────
-  // Misional (Desarrollo social): Ley 1448 de 2011, Ley 387 de 1997.
-  {
-    serie: 'ATENCIÓN A VÍCTIMAS DEL CONFLICTO',
-    reglas: [
-      { palabras: ['declaracion', 'victima'],          subserie: 'Declaraciones y registro de víctimas' },
-      { palabras: ['registro', 'victima'],             subserie: 'Declaraciones y registro de víctimas' },
-      { palabras: ['victima', 'conflicto'],            subserie: 'Declaraciones y registro de víctimas' },
-      { palabras: ['reparacion', 'victima'],           subserie: 'Declaraciones y registro de víctimas' },
-      { palabras: ['ayuda', 'humanitaria'],            subserie: 'Ayudas humanitarias inmediatas' },
-      { palabras: ['plan', 'victima'],                 subserie: 'Planes de acción territorial para víctimas' },
-      { palabras: ['victima'],                         subserie: 'Declaraciones y registro de víctimas' }
-    ]
-  },
-
-  // ── ATENCIÓN A POBLACIÓN VULNERABLE ────────────
-  // Misional (Desarrollo social): adulto mayor (Ley 1251/2008), discapacidad
-  // (Ley 1618/2013), primera infancia (Ley 1098/2006).
-  {
-    serie: 'ATENCIÓN A POBLACIÓN VULNERABLE',
-    reglas: [
-      { palabras: ['adulto', 'mayor'],                 subserie: 'Atención al adulto mayor' },
-      { palabras: ['atencion', 'discapacidad'],        subserie: 'Atención a población con discapacidad' },
-      { palabras: ['persona', 'discapacidad'],         subserie: 'Atención a población con discapacidad' },
-      { palabras: ['primera', 'infancia'],             subserie: 'Atención a primera infancia' },
-      { palabras: ['poblacion', 'vulnerable'],         subserie: 'Atención a población vulnerable' }
-    ]
-  },
+  // NOTA: se eliminaron las series inventadas GESTIÓN DEL RIESGO DE DESASTRES,
+  // ATENCIÓN A VÍCTIMAS DEL CONFLICTO y ATENCIÓN A POBLACIÓN VULNERABLE
+  // (05/09/2026). No provenían de TRD reales validadas. Si se requieren esos
+  // procesos misionales (Gobierno / Desarrollo social), se investigarán con
+  // fuentes convalidadas antes de re-incorporarlos, como se hizo con las demás.
 
   // ── HISTORIAS ──────────────────────────────────
   // CORRECCIÓN: "Historias laborales" es SUBSERIE, no serie
@@ -337,35 +273,27 @@ export const MATRIZ_SERIES = [
       { palabras: ['hoja', 'vida'],                    subserie: 'Hojas de vida' },
       { palabras: ['expediente', 'personal'],          subserie: 'Historias laborales' },
       { palabras: ['vinculacion'],                     subserie: 'Historias laborales' },
-      { palabras: ['nombramiento'],                    subserie: 'Historias laborales' }
+      { palabras: ['nombramiento'],                    subserie: 'Historias laborales' },
+      { palabras: ['historia', 'sociofamiliar'],       subserie: 'Historias socio familiares' },
+      { palabras: ['historia', 'socio', 'familiar'],   subserie: 'Historias socio familiares' }
     ]
   },
 
-  // ── IMPUESTO PREDIAL UNIFICADO ─────────────────
-  // Misional (Hacienda): potestad tributaria municipal. Ley 44 de 1990.
+  // ── DECLARACIONES ──────────────────────────────
+  // Lo tributario municipal se modela como SUBSERIE de DECLARACIONES, NO como
+  // series "IMPUESTO PREDIAL" / "INDUSTRIA Y COMERCIO" (que eran invención).
+  // Fuente: Vista Hermosa (Meta) — "Declaraciones de industria y comercio".
+  // "Impuesto predial" NO aparece textual en fuentes reales → subserie por validar.
   {
-    serie: 'IMPUESTO PREDIAL UNIFICADO',
+    serie: 'DECLARACIONES',
     reglas: [
-      { palabras: ['exencion', 'predial'],             subserie: 'Exenciones y tratamientos preferenciales del impuesto predial' },
-      { palabras: ['paz', 'salvo', 'predial'],         subserie: 'Paz y salvos del impuesto predial' },
-      { palabras: ['liquidacion', 'predial'],          subserie: 'Liquidaciones y facturación del impuesto predial' },
-      { palabras: ['factura', 'predial'],              subserie: 'Liquidaciones y facturación del impuesto predial' },
-      { palabras: ['facturacion', 'predial'],          subserie: 'Liquidaciones y facturación del impuesto predial' },
-      { palabras: ['impuesto', 'predial'],             subserie: 'Liquidaciones y facturación del impuesto predial' },
-      { palabras: ['predial'],                         subserie: 'Liquidaciones y facturación del impuesto predial' }
-    ]
-  },
-
-  // ── INDUSTRIA Y COMERCIO ───────────────────────
-  // Misional (Hacienda): impuesto de industria y comercio (ICA). Ley 14 de 1983.
-  {
-    serie: 'INDUSTRIA Y COMERCIO',
-    reglas: [
-      { palabras: ['registro', 'industria', 'comercio'], subserie: 'Registro de contribuyentes de industria y comercio' },
-      { palabras: ['aforo', 'industria', 'comercio'],    subserie: 'Liquidaciones de aforo de industria y comercio' },
-      { palabras: ['declaracion', 'industria', 'comercio'], subserie: 'Declaraciones del impuesto de industria y comercio' },
-      { palabras: ['reteica'],                           subserie: 'Declaraciones del impuesto de industria y comercio' },
-      { palabras: ['industria', 'comercio'],             subserie: 'Declaraciones del impuesto de industria y comercio' }
+      { palabras: ['declaracion', 'industria', 'comercio'], subserie: 'Declaraciones de industria y comercio' },
+      { palabras: ['reteica'],                              subserie: 'Declaraciones de industria y comercio' },
+      { palabras: ['industria', 'comercio'],                subserie: 'Declaraciones de industria y comercio' },
+      { palabras: ['declaracion', 'predial'],               subserie: 'Declaraciones tributarias (predial · por validar)' },
+      { palabras: ['impuesto', 'predial'],                  subserie: 'Declaraciones tributarias (predial · por validar)' },
+      { palabras: ['predial'],                              subserie: 'Declaraciones tributarias (predial · por validar)' },
+      { palabras: ['declaracion', 'tributaria'],            subserie: 'Declaraciones tributarias' }
     ]
   },
 
@@ -477,7 +405,23 @@ export const MATRIZ_SERIES = [
       { palabras: ['proceso', 'administrativo'],       subserie: 'Procesos administrativos' },
       { palabras: ['proceso', 'bono', 'pensional'],    subserie: 'Procesos bono pensional' },
       { palabras: ['proceso', 'traslado'],             subserie: 'Procesos orden de traslado' },
-      { palabras: ['investigacion', 'disciplinaria'],  subserie: 'Procesos disciplinarios' }
+      { palabras: ['investigacion', 'disciplinaria'],  subserie: 'Procesos disciplinarios' },
+      // Misional Comisaría de Familia (productora) — Ley 1098/2006, 2126/2021, 1257/2008.
+      // Fuentes: Teorama, Villanueva, Copacabana, Silvania.
+      { palabras: ['restablecimiento', 'derecho'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
+      { palabras: ['proceso', 'restablecimiento'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
+      { palabras: ['violencia', 'intrafamiliar'],      subserie: 'Procesos de violencia intrafamiliar' },
+      { palabras: ['medida', 'proteccion'],            subserie: 'Procesos de violencia intrafamiliar' },
+      { palabras: ['cuota', 'alimento'],               subserie: 'Procesos de fijación de cuota de alimentos' },
+      { palabras: ['custodia'],                        subserie: 'Procesos de custodia y cuidado personal' },
+      // Misional Inspección de Policía (productora) — Ley 1801/2016.
+      // Fuentes: Silvania, Ataco, Copacabana, Paipa.
+      { palabras: ['comportamiento', 'convivencia'],   subserie: 'Procesos policivos por comportamientos contrarios a la convivencia' },
+      { palabras: ['querella'],                        subserie: 'Procesos policivos (querellas)' },
+      { palabras: ['amparo', 'policivo'],              subserie: 'Procesos policivos (amparos)' },
+      { palabras: ['perturbacion', 'posesion'],        subserie: 'Procesos policivos (amparos)' },
+      { palabras: ['lanzamiento', 'ocupacion'],        subserie: 'Procesos policivos (lanzamiento por ocupación de hecho)' },
+      { palabras: ['proceso', 'policivo'],             subserie: 'Procesos policivos' }
     ]
   },
 
@@ -633,7 +577,7 @@ async function llamarOpenAI(actividad, configuracionDependencia) {
   const prompt = `Eres un experto archivista colombiano con dominio del Acuerdo 004 de 2019 del AGN y la Ley 594 de 2000.
 
 SERIES VÁLIDAS para alcaldías colombianas (úsalas siempre que aplique):
-ACCIONES CONSTITUCIONALES, ACTAS, ACTOS ADMINISTRATIVOS, AUDITORÍAS, BASES DE DATOS, BOLETINES, CERTIFICADOS, COBROS COACTIVOS, COMUNICACIONES OFICIALES, COMPROBANTES CONTABLES, CONCEPTOS TÉCNICOS, CONTRATOS, HISTORIAS, INFORMES, INSTRUMENTOS ARCHIVÍSTICOS, LICENCIAS Y PERMISOS, MANUALES, PLANES, PROCESOS, PROGRAMAS, PROYECTOS, PQRS
+ACCIONES CONSTITUCIONALES, ACTAS, ACTOS ADMINISTRATIVOS, AUDITORÍAS, BASES DE DATOS, BOLETINES, CERTIFICADOS, COBROS COACTIVOS, COMUNICACIONES OFICIALES, COMPROBANTES CONTABLES, CONCEPTOS TÉCNICOS, CONTRATOS, DECLARACIONES, HISTORIAS, INFORMES, INSTRUMENTOS ARCHIVÍSTICOS, LICENCIAS Y PERMISOS, MANUALES, PLANES, PROCESOS, PROGRAMAS, PROYECTOS, PQRS
 
 REGLAS CRÍTICAS:
 - Las series se nombran por FUNCIÓN, nunca por nombre de dependencia

@@ -118,9 +118,8 @@ const MATRICES_REFERENCIA = {
       { serie: 'ACCIDENTES DE TRÁNSITO', subseries: [
         { subserie: 'Informes de accidentes de tránsito', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Valor probatorio y estadístico permanente para movilidad y seguridad vial; conservación total.' }
       ]},
-      { serie: 'ESPECIES VENALES', subseries: [
-        { subserie: 'Control de especies venales', ag: 2, ac: 8, disposicion: 'E', fundamento: 'Soporte de control de inventario de especies; se elimina cumplida la retención contable.' }
-      ]},
+      // ESPECIES VENALES eliminada (05/09/2026): no aparece en ninguna TRD de
+      // tránsito real consultada (Copacabana, Bello). No se afirma sin fuente.
       { serie: 'CURSOS PEDAGÓGICOS', subseries: [
         { subserie: 'Cursos de sensibilización a infractores', ag: 2, ac: 5, disposicion: 'E', fundamento: 'Soporte del descuento de la sanción; se elimina cumplida la retención.' }
       ]},
@@ -128,34 +127,11 @@ const MATRICES_REFERENCIA = {
     ]
   },
 
-  // ---------- Personería Municipal (Ministerio Público local) ----------
-  personeria: {
-    tipo: 'personeria',
-    nombre: 'Personería Municipal',
-    descripcion:
-      'Estructura base para una Personería Municipal (Ministerio Público local, defensora de los ' +
-      'derechos humanos y veedora de la gestión; Constitución art. 118, Ley 136 de 1994 arts. 168–180). ' +
-      'Incluye series misionales (intervención del Ministerio Público, vigilancia de la conducta oficial, ' +
-      'derechos humanos y atención al ciudadano) y administrativas comunes. Ajuste a su personería antes del comité.',
-    series: [
-      { serie: 'INTERVENCIONES DEL MINISTERIO PÚBLICO', subseries: [
-        { subserie: 'Intervenciones en procesos judiciales', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'El personero interviene como agente del Ministerio Público en defensa del orden jurídico y de los derechos fundamentales (Constitución art. 118; Ley 136 de 1994 art. 178). Valor probatorio permanente; conservación total.' },
-        { subserie: 'Intervenciones en actuaciones administrativas y policivas', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Intervención del Ministerio Público en actuaciones administrativas y policivas (Ley 136 de 1994 art. 178). Conservación total por su valor evidencial.' }
-      ]},
-      { serie: 'VIGILANCIA DE LA CONDUCTA OFICIAL', subseries: [
-        { subserie: 'Quejas contra servidores públicos', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Vigilancia de la conducta oficial de los servidores públicos municipales (Ley 136 de 1994 art. 178). Documenta las irregularidades; conservación total.' },
-        { subserie: 'Veeduría y vigilancia administrativa', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Veeduría a la gestión y vigilancia administrativa de la Administración (Ley 136 de 1994 art. 178). Conservación total por su valor de control.' }
-      ]},
-      { serie: 'PROTECCIÓN DE DERECHOS HUMANOS', subseries: [
-        { subserie: 'Quejas por violación de derechos humanos', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Guarda, promoción y defensa de los derechos humanos (Constitución art. 118; Ley 136 de 1994 art. 178). Valor probatorio y de memoria permanente; conservación total.' },
-        { subserie: 'Recepción de declaraciones y acompañamiento a víctimas', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'La personería recibe declaraciones de víctimas y acompaña su atención y protección (Ley 1448 de 2011). Conservación total por el valor de los derechos de las víctimas.' }
-      ]},
-      { serie: 'ATENCIÓN Y ORIENTACIÓN AL CIUDADANO', subseries: [
-        { subserie: 'Orientación y asesoría jurídica al ciudadano', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Orientación y asesoría al ciudadano en el ejercicio de sus derechos (Constitución art. 23; Ley 1755 de 2015). Se selecciona una muestra representativa; el remanente se elimina cumplida la retención.' }
-      ]},
-      ...ADMIN_COMUNES
-    ]
-  },
+  // Matriz 'personeria' eliminada (05/09/2026): sus series misionales
+  // (Intervenciones del Ministerio Público, Vigilancia de la Conducta Oficial,
+  // etc.) no coincidían con las TRD reales de personerías (donde lo misional es
+  // Acciones Constitucionales, Procesos Jurídicos, Veedurías, Derechos de
+  // Petición). Si se requiere el tipo Personería, se reconstruirá con fuentes.
 }
 
 // =====================================================
@@ -265,27 +241,19 @@ const PROCESOS_MISIONALES = {
     {
       proceso: 'Gestión tributaria y de rentas',
       dependencia_productora: 'Secretaría de Hacienda',
-      fundamento: 'Potestad tributaria propia del municipio: administrar y recaudar sus tributos —impuesto predial unificado e industria y comercio— (Constitución art. 287 y 313.4; Ley 14 de 1983; Ley 44 de 1990; Decreto Ley 1333 de 1986). El cobro coactivo NO es misional: es un proceso (jurisdicción coactiva, Ley 1066 de 2006) transversal, va en la serie PROCESOS.',
-      series: ['IMPUESTO PREDIAL UNIFICADO', 'INDUSTRIA Y COMERCIO']
-    },
-    {
-      proceso: 'Gobierno, seguridad y convivencia',
-      dependencia_productora: 'Secretaría de Gobierno',
-      fundamento: 'Competencia municipal de preservar el orden público, la convivencia y la protección de la familia y de la niñez (Constitución art. 315; Ley 136 de 1994 art. 91; Ley 1801 de 2016; Ley 1098 de 2006).',
-      series: ['COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']
-    },
-    {
-      proceso: 'Gestión del riesgo de desastres',
-      dependencia_productora: 'Coordinación Municipal de Gestión del Riesgo',
-      fundamento: 'Obligación del municipio de conocer, reducir y manejar el riesgo de desastres a través del sistema municipal de gestión del riesgo (Ley 1523 de 2012).',
-      series: ['GESTIÓN DEL RIESGO DE DESASTRES']
-    },
-    {
-      proceso: 'Desarrollo social y atención a población vulnerable',
-      dependencia_productora: 'Secretaría de Desarrollo Social',
-      fundamento: 'Deber del Estado municipal de promover el bienestar general y atender a los grupos vulnerables —víctimas del conflicto, adulto mayor, personas con discapacidad y primera infancia— (Constitución art. 366; Ley 715 de 2001; Ley 1448 de 2011; Ley 1251 de 2008; Ley 1618 de 2013; Ley 1098 de 2006).',
-      series: ['ATENCIÓN A VÍCTIMAS DEL CONFLICTO', 'ATENCIÓN A POBLACIÓN VULNERABLE']
+      fundamento: 'Potestad tributaria propia del municipio (Constitución art. 287 y 313.4; Ley 14 de 1983; Ley 44 de 1990; Decreto Ley 1333 de 1986). Lo tributario se documenta como subserie de DECLARACIONES (fuente real: Vista Hermosa); NO como series "impuesto predial" o "industria y comercio". El cobro coactivo es un proceso (jurisdicción coactiva, Ley 1066 de 2006), va en PROCESOS.',
+      series: ['DECLARACIONES']
     }
+    // "Gobierno, seguridad y convivencia" NO se modela como proceso misional a
+    // nivel de serie: la Comisaría de Familia y la Inspección de Policía son
+    // dependencias PRODUCTORAS, y lo misional son SUBSERIES de la serie común
+    // PROCESOS (PARD, violencia intrafamiliar, procesos policivos, querellas).
+    // Marcar toda la serie PROCESOS como misional etiquetaría también los
+    // procesos disciplinarios/judiciales, que son transversales. (05/09/2026)
+    //
+    // Procesos "Gestión del riesgo" y "Desarrollo social / población vulnerable"
+    // retirados: sus series no provenían de TRD reales validadas. Se
+    // re-incorporarán con fuentes convalidadas si se requieren.
   ],
 
   ese_hospital: [
@@ -309,33 +277,15 @@ const PROCESOS_MISIONALES = {
     }
   ],
 
-  personeria: [
-    {
-      proceso: 'Ministerio Público: intervención y vigilancia',
-      dependencia_productora: 'Despacho del Personero',
-      fundamento: 'El personero es agente del Ministerio Público: interviene en defensa del orden jurídico y vigila la conducta oficial de los servidores públicos (Constitución art. 118; Ley 136 de 1994 art. 178).',
-      series: ['INTERVENCIONES DEL MINISTERIO PÚBLICO', 'VIGILANCIA DE LA CONDUCTA OFICIAL']
-    },
-    {
-      proceso: 'Promoción y protección de los derechos humanos',
-      dependencia_productora: 'Despacho del Personero',
-      fundamento: 'Guarda, promoción y defensa de los derechos humanos y acompañamiento a las víctimas (Ley 136 de 1994 art. 178; Ley 1448 de 2011).',
-      series: ['PROTECCIÓN DE DERECHOS HUMANOS']
-    },
-    {
-      proceso: 'Atención y orientación al ciudadano',
-      dependencia_productora: 'Despacho del Personero',
-      fundamento: 'Recepción de quejas y orientación al ciudadano en el ejercicio y la protección de sus derechos (Constitución art. 23; Ley 1755 de 2015).',
-      series: ['ATENCIÓN Y ORIENTACIÓN AL CIUDADANO']
-    }
-  ],
+  // 'personeria' retirada (05/09/2026): sus procesos misionales no coincidían
+  // con TRD reales de personerías. Se reconstruirá con fuentes si se requiere.
 
   transito: [
     {
       proceso: 'Registro y control automotor y de conductores',
       dependencia_productora: 'Área de Registro',
       fundamento: 'Función de matrícula y registro de vehículos y conductores y su reporte al RUNT (Ley 769 de 2002, Código Nacional de Tránsito; Ley 1005 de 2006).',
-      series: ['LICENCIAS DE TRÁNSITO', 'REGISTRO AUTOMOTOR', 'LICENCIAS DE CONDUCCIÓN', 'ESPECIES VENALES']
+      series: ['LICENCIAS DE TRÁNSITO', 'REGISTRO AUTOMOTOR', 'LICENCIAS DE CONDUCCIÓN']
     },
     {
       proceso: 'Control operativo y régimen contravencional',

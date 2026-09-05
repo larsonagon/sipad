@@ -56,18 +56,10 @@ test('precarga es idempotente', async () => {
   assert.ok(r2.omitidas > 0)
 })
 
-test('Personería: plantilla con núcleo misional del Ministerio Público', async () => {
-  const full = construirPlantilla('personeria')
-  assert.ok(full, 'existe la plantilla personeria')
-  assert.ok(full.series.some(s => s.serie === 'INTERVENCIONES DEL MINISTERIO PÚBLICO'))
-  const b = construirBancoMisional('personeria')
-  assert.ok(b.procesos.length === 3, 'tres procesos misionales')
-  assert.ok(b.totalMisional === 4 && b.totalComunes > 0)
-  const ddhh = b.procesos.find(p => p.proceso.includes('derechos humanos'))
-  assert.ok(ddhh && ddhh.series[0].disposicion === 'CT')
-  // se puede precargar con su regla de retención propia
-  const r = await precargarPlantilla(db, { tipo: 'personeria', entidadId: 'ENT_PERS' })
-  assert.ok(r.ok && r.creadas > 0 && r.valoradas === r.creadas)
+test('Personería ya NO es una plantilla (matriz retirada por no validada)', () => {
+  const tipos = listarPlantillas().map(p => p.tipo)
+  assert.ok(!tipos.includes('personeria'), 'personeria no aparece en el selector')
+  assert.equal(construirPlantilla('personeria'), null)
 })
 
 test('tránsito incluye series misionales', async () => {
@@ -148,19 +140,22 @@ test('BANTER no aporta series misionales (todo es transversal)', () => {
   assert.ok(b.totalComunes > 0)
 })
 
-test('alcaldía trae series tributarias propias, marcadas misional de Hacienda', () => {
+test('alcaldía modela lo tributario como serie DECLARACIONES (Hacienda), no como impuestos', () => {
   const full = construirPlantilla('alcaldia')
-  const predial = full.series.find(s => s.serie === 'IMPUESTO PREDIAL UNIFICADO')
-  const ica = full.series.find(s => s.serie === 'INDUSTRIA Y COMERCIO')
-  assert.ok(predial && ica, 'existen las dos series tributarias')
-  assert.ok(predial.misional && predial.proceso_misional === 'Gestión tributaria y de rentas')
-  assert.ok(ica.misional && ica.dependencia_productora === 'Secretaría de Hacienda')
-  // BASES DE DATOS queda transversal (mezcla predial/ICA con SISBEN)
-  assert.equal(full.series.find(s => s.serie === 'BASES DE DATOS').misional, false)
-  // Valoración aterrizada en el marco fiscal (no el respaldo genérico)
-  const subPredial = predial.subseries[0]
-  assert.equal(subPredial.disposicion, 'S')
-  assert.match(subPredial.fundamento, /817|Ley 44 de 1990/)
+  // Ya NO existen las series inventadas
+  assert.equal(full.series.find(s => s.serie === 'IMPUESTO PREDIAL UNIFICADO'), undefined)
+  assert.equal(full.series.find(s => s.serie === 'INDUSTRIA Y COMERCIO'), undefined)
+  // La serie correcta es DECLARACIONES, misional de Hacienda
+  const decl = full.series.find(s => s.serie === 'DECLARACIONES')
+  assert.ok(decl, 'existe la serie DECLARACIONES')
+  assert.ok(decl.misional && decl.proceso_misional === 'Gestión tributaria y de rentas')
+  assert.equal(decl.dependencia_productora, 'Secretaría de Hacienda')
+  // Industria y comercio, con fuente; predial marcado "por validar"
+  assert.ok(decl.subseries.some(s => /industria y comercio/i.test(s.subserie)))
+  assert.ok(decl.subseries.some(s => /por validar/i.test(s.subserie)))
+  // Valoración aterrizada en el marco fiscal
+  assert.equal(decl.subseries[0].disposicion, 'S')
+  assert.match(decl.subseries.map(s => s.fundamento).join(' '), /817/)
 })
 
 test('precarga: empareja la productora sugerida con la dependencia de igual nombre', async () => {
@@ -171,13 +166,13 @@ test('precarga: empareja la productora sugerida con la dependencia de igual nomb
 
   const r = await precargarPlantilla(db, { tipo: 'alcaldia', entidadId: ENT })
   assert.ok(r.ok && r.creadas > 0)
-  assert.ok(r.seriesAutoasignadas >= 2, 'predial e industria y comercio se auto-asignan a Hacienda')
+  assert.ok(r.seriesAutoasignadas >= 1, 'DECLARACIONES se auto-asigna a Hacienda')
 
-  // Las series tributarias quedan en la dependencia Hacienda (coincidencia exacta)
-  const predial = await db.all(
-    `SELECT DISTINCT dependencia_id AS d FROM trd_series_propuestas WHERE entidad_id=? AND nombre_serie='IMPUESTO PREDIAL UNIFICADO'`, [ENT])
-  assert.equal(predial.length, 1)
-  assert.equal(Number(predial[0].d), Number(dep.id))
+  // La serie tributaria (DECLARACIONES) queda en la dependencia Hacienda (coincidencia exacta)
+  const decl = await db.all(
+    `SELECT DISTINCT dependencia_id AS d FROM trd_series_propuestas WHERE entidad_id=? AND nombre_serie='DECLARACIONES'`, [ENT])
+  assert.equal(decl.length, 1)
+  assert.equal(Number(decl[0].d), Number(dep.id))
 
   // Planeación no coincide con ninguna dependencia existente → se deja sin asignar
   const planes = await db.all(
@@ -185,38 +180,31 @@ test('precarga: empareja la productora sugerida con la dependencia de igual nomb
   assert.ok(planes.length && planes.every(x => x.d == null))
 })
 
-test('alcaldía incluye el proceso misional de Gobierno con sus series', () => {
-  const b = construirBancoMisional('alcaldia')
-  const gob = b.procesos.find(p => p.proceso === 'Gobierno, seguridad y convivencia')
-  assert.ok(gob, 'existe el proceso de Gobierno')
-  const cf = gob.series.find(s => s.serie === 'COMISARÍA DE FAMILIA')
-  const ip = gob.series.find(s => s.serie === 'INSPECCIÓN DE POLICÍA')
-  assert.ok(cf && cf.disposicion === 'CT', 'comisaría de familia se conserva (protección de NNA)')
-  assert.ok(ip && ip.disposicion === 'S', 'inspección de policía se selecciona')
+test('Comisaría/Inspección: lo misional son subseries de PROCESOS, no series propias', () => {
+  const full = construirPlantilla('alcaldia')
+  // Ya NO existen como series
+  assert.equal(full.series.find(s => s.serie === 'COMISARÍA DE FAMILIA'), undefined)
+  assert.equal(full.series.find(s => s.serie === 'INSPECCIÓN DE POLICÍA'), undefined)
+  // Su contenido vive como subseries de PROCESOS
+  const procesos = full.series.find(s => s.serie === 'PROCESOS')
+  assert.ok(procesos, 'existe la serie PROCESOS')
+  const nombres = procesos.subseries.map(s => s.subserie).join(' | ')
+  assert.match(nombres, /restablecimiento de derechos \(PARD\)/i)
+  assert.match(nombres, /violencia intrafamiliar/i)
+  assert.match(nombres, /policivos/i)
+  // PROCESOS es serie transversal: NO se marca misional (así no se etiquetan disciplinarios/judiciales)
+  assert.equal(procesos.misional, false)
 })
 
-test('alcaldía incluye el proceso misional de Gestión del riesgo', () => {
-  const b = construirBancoMisional('alcaldia')
-  const gr = b.procesos.find(p => p.proceso === 'Gestión del riesgo de desastres')
-  assert.ok(gr, 'existe el proceso de gestión del riesgo')
-  const s = gr.series.find(x => x.serie === 'GESTIÓN DEL RIESGO DE DESASTRES')
-  assert.ok(s && s.disposicion === 'CT')
-  assert.match(s.subseries.map(x => x.fundamento).join(' '), /1523/)
-})
-
-test('alcaldía incluye Desarrollo social con víctimas y población vulnerable', () => {
-  const b = construirBancoMisional('alcaldia')
-  const ds = b.procesos.find(p => p.proceso === 'Desarrollo social y atención a población vulnerable')
-  assert.ok(ds, 'existe el proceso de desarrollo social')
-  const vic = ds.series.find(s => s.serie === 'ATENCIÓN A VÍCTIMAS DEL CONFLICTO')
-  const vul = ds.series.find(s => s.serie === 'ATENCIÓN A POBLACIÓN VULNERABLE')
-  assert.ok(vic && vic.disposicion === 'CT', 'víctimas del conflicto se conserva')
-  assert.ok(vul && vul.disposicion === 'S', 'población vulnerable se selecciona')
-  assert.match(vic.subseries.map(x => x.fundamento).join(' '), /1448/)
+test('series misionales inventadas sin fuente fueron eliminadas', () => {
+  const full = construirPlantilla('alcaldia')
+  for (const s of ['GESTIÓN DEL RIESGO DE DESASTRES', 'ATENCIÓN A VÍCTIMAS DEL CONFLICTO', 'ATENCIÓN A POBLACIÓN VULNERABLE']) {
+    assert.equal(full.series.find(x => x.serie === s), undefined, `${s} ya no debe existir`)
+  }
 })
 
 test('regresión: series con tilde resuelven en el KB (no caen al respaldo)', () => {
-  for (const s of ['AUDITORÍAS', 'CONCEPTOS TÉCNICOS', 'COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']) {
+  for (const s of ['AUDITORÍAS', 'CONCEPTOS TÉCNICOS', 'DECLARACIONES', 'PROCESOS']) {
     const v = valorarSerie(s, null)
     assert.equal(v.origen, 'kb', `${s} debe valorarse desde el KB, no por contexto`)
   }
