@@ -190,6 +190,17 @@ test('alcaldía incluye el proceso misional de Gestión del riesgo', () => {
   assert.match(s.subseries.map(x => x.fundamento).join(' '), /1523/)
 })
 
+test('alcaldía incluye Desarrollo social con víctimas y población vulnerable', () => {
+  const b = construirBancoMisional('alcaldia')
+  const ds = b.procesos.find(p => p.proceso === 'Desarrollo social y atención a población vulnerable')
+  assert.ok(ds, 'existe el proceso de desarrollo social')
+  const vic = ds.series.find(s => s.serie === 'ATENCIÓN A VÍCTIMAS DEL CONFLICTO')
+  const vul = ds.series.find(s => s.serie === 'ATENCIÓN A POBLACIÓN VULNERABLE')
+  assert.ok(vic && vic.disposicion === 'CT', 'víctimas del conflicto se conserva')
+  assert.ok(vul && vul.disposicion === 'S', 'población vulnerable se selecciona')
+  assert.match(vic.subseries.map(x => x.fundamento).join(' '), /1448/)
+})
+
 test('regresión: series con tilde resuelven en el KB (no caen al respaldo)', () => {
   for (const s of ['AUDITORÍAS', 'CONCEPTOS TÉCNICOS', 'COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']) {
     const v = valorarSerie(s, null)

@@ -250,6 +250,12 @@ const PROCESOS_MISIONALES = {
       dependencia_productora: 'Coordinación Municipal de Gestión del Riesgo',
       fundamento: 'Obligación del municipio de conocer, reducir y manejar el riesgo de desastres a través del sistema municipal de gestión del riesgo (Ley 1523 de 2012).',
       series: ['GESTIÓN DEL RIESGO DE DESASTRES']
+    },
+    {
+      proceso: 'Desarrollo social y atención a población vulnerable',
+      dependencia_productora: 'Secretaría de Desarrollo Social',
+      fundamento: 'Deber del Estado municipal de promover el bienestar general y atender a los grupos vulnerables —víctimas del conflicto, adulto mayor, personas con discapacidad y primera infancia— (Constitución art. 366; Ley 715 de 2001; Ley 1448 de 2011; Ley 1251 de 2008; Ley 1618 de 2013; Ley 1098 de 2006).',
+      series: ['ATENCIÓN A VÍCTIMAS DEL CONFLICTO', 'ATENCIÓN A POBLACIÓN VULNERABLE']
     }
   ],
 

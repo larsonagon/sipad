@@ -289,6 +289,35 @@ export const MATRIZ_SERIES = [
     ]
   },
 
+  // ── ATENCIÓN A VÍCTIMAS DEL CONFLICTO ──────────
+  // Misional (Desarrollo social): Ley 1448 de 2011, Ley 387 de 1997.
+  {
+    serie: 'ATENCIÓN A VÍCTIMAS DEL CONFLICTO',
+    reglas: [
+      { palabras: ['declaracion', 'victima'],          subserie: 'Declaraciones y registro de víctimas' },
+      { palabras: ['registro', 'victima'],             subserie: 'Declaraciones y registro de víctimas' },
+      { palabras: ['victima', 'conflicto'],            subserie: 'Declaraciones y registro de víctimas' },
+      { palabras: ['reparacion', 'victima'],           subserie: 'Declaraciones y registro de víctimas' },
+      { palabras: ['ayuda', 'humanitaria'],            subserie: 'Ayudas humanitarias inmediatas' },
+      { palabras: ['plan', 'victima'],                 subserie: 'Planes de acción territorial para víctimas' },
+      { palabras: ['victima'],                         subserie: 'Declaraciones y registro de víctimas' }
+    ]
+  },
+
+  // ── ATENCIÓN A POBLACIÓN VULNERABLE ────────────
+  // Misional (Desarrollo social): adulto mayor (Ley 1251/2008), discapacidad
+  // (Ley 1618/2013), primera infancia (Ley 1098/2006).
+  {
+    serie: 'ATENCIÓN A POBLACIÓN VULNERABLE',
+    reglas: [
+      { palabras: ['adulto', 'mayor'],                 subserie: 'Atención al adulto mayor' },
+      { palabras: ['atencion', 'discapacidad'],        subserie: 'Atención a población con discapacidad' },
+      { palabras: ['persona', 'discapacidad'],         subserie: 'Atención a población con discapacidad' },
+      { palabras: ['primera', 'infancia'],             subserie: 'Atención a primera infancia' },
+      { palabras: ['poblacion', 'vulnerable'],         subserie: 'Atención a población vulnerable' }
+    ]
+  },
+
   // ── HISTORIAS ──────────────────────────────────
   // CORRECCIÓN: "Historias laborales" es SUBSERIE, no serie
   // Serie correcta: HISTORIAS
