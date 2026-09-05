@@ -244,6 +244,12 @@ const PROCESOS_MISIONALES = {
       dependencia_productora: 'Secretaría de Gobierno',
       fundamento: 'Competencia municipal de preservar el orden público, la convivencia y la protección de la familia y de la niñez (Constitución art. 315; Ley 136 de 1994 art. 91; Ley 1801 de 2016; Ley 1098 de 2006).',
       series: ['COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']
+    },
+    {
+      proceso: 'Gestión del riesgo de desastres',
+      dependencia_productora: 'Coordinación Municipal de Gestión del Riesgo',
+      fundamento: 'Obligación del municipio de conocer, reducir y manejar el riesgo de desastres a través del sistema municipal de gestión del riesgo (Ley 1523 de 2012).',
+      series: ['GESTIÓN DEL RIESGO DE DESASTRES']
     }
   ],
 

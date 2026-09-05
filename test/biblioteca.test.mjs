@@ -181,6 +181,15 @@ test('alcaldía incluye el proceso misional de Gobierno con sus series', () => {
   assert.ok(ip && ip.disposicion === 'S', 'inspección de policía se selecciona')
 })
 
+test('alcaldía incluye el proceso misional de Gestión del riesgo', () => {
+  const b = construirBancoMisional('alcaldia')
+  const gr = b.procesos.find(p => p.proceso === 'Gestión del riesgo de desastres')
+  assert.ok(gr, 'existe el proceso de gestión del riesgo')
+  const s = gr.series.find(x => x.serie === 'GESTIÓN DEL RIESGO DE DESASTRES')
+  assert.ok(s && s.disposicion === 'CT')
+  assert.match(s.subseries.map(x => x.fundamento).join(' '), /1523/)
+})
+
 test('regresión: series con tilde resuelven en el KB (no caen al respaldo)', () => {
   for (const s of ['AUDITORÍAS', 'CONCEPTOS TÉCNICOS', 'COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']) {
     const v = valorarSerie(s, null)

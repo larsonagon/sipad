@@ -272,6 +272,23 @@ export const MATRIZ_SERIES = [
     ]
   },
 
+  // ── GESTIÓN DEL RIESGO DE DESASTRES ────────────
+  // Misional (Gestión del Riesgo): Ley 1523 de 2012. Documentos operativos
+  // propios (no los planes, que van en PLANES): estrategia de respuesta,
+  // declaratorias de calamidad y censos de afectados.
+  {
+    serie: 'GESTIÓN DEL RIESGO DE DESASTRES',
+    reglas: [
+      { palabras: ['estrategia', 'respuesta', 'emergencia'], subserie: 'Estrategia municipal de respuesta a emergencias' },
+      { palabras: ['respuesta', 'emergencia'],         subserie: 'Estrategia municipal de respuesta a emergencias' },
+      { palabras: ['declaratoria', 'calamidad'],       subserie: 'Declaratorias de calamidad pública' },
+      { palabras: ['calamidad', 'publica'],            subserie: 'Declaratorias de calamidad pública' },
+      { palabras: ['censo', 'damnificado'],            subserie: 'Censos de familias afectadas por emergencias' },
+      { palabras: ['censo', 'afectado'],               subserie: 'Censos de familias afectadas por emergencias' },
+      { palabras: ['censo', 'familia'],                subserie: 'Censos de familias afectadas por emergencias' }
+    ]
+  },
+
   // ── HISTORIAS ──────────────────────────────────
   // CORRECCIÓN: "Historias laborales" es SUBSERIE, no serie
   // Serie correcta: HISTORIAS
