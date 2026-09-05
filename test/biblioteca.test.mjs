@@ -56,6 +56,20 @@ test('precarga es idempotente', async () => {
   assert.ok(r2.omitidas > 0)
 })
 
+test('Personería: plantilla con núcleo misional del Ministerio Público', async () => {
+  const full = construirPlantilla('personeria')
+  assert.ok(full, 'existe la plantilla personeria')
+  assert.ok(full.series.some(s => s.serie === 'INTERVENCIONES DEL MINISTERIO PÚBLICO'))
+  const b = construirBancoMisional('personeria')
+  assert.ok(b.procesos.length === 3, 'tres procesos misionales')
+  assert.ok(b.totalMisional === 4 && b.totalComunes > 0)
+  const ddhh = b.procesos.find(p => p.proceso.includes('derechos humanos'))
+  assert.ok(ddhh && ddhh.series[0].disposicion === 'CT')
+  // se puede precargar con su regla de retención propia
+  const r = await precargarPlantilla(db, { tipo: 'personeria', entidadId: 'ENT_PERS' })
+  assert.ok(r.ok && r.creadas > 0 && r.valoradas === r.creadas)
+})
+
 test('tránsito incluye series misionales', async () => {
   const rt = await precargarPlantilla(db, { tipo: 'transito', entidadId: 'ENT_TRANS' })
   assert.ok(rt.ok && rt.creadas > 0)

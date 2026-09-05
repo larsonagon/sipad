@@ -127,6 +127,35 @@ const MATRICES_REFERENCIA = {
       ...ADMIN_COMUNES
     ]
   },
+
+  // ---------- Personería Municipal (Ministerio Público local) ----------
+  personeria: {
+    tipo: 'personeria',
+    nombre: 'Personería Municipal',
+    descripcion:
+      'Estructura base para una Personería Municipal (Ministerio Público local, defensora de los ' +
+      'derechos humanos y veedora de la gestión; Constitución art. 118, Ley 136 de 1994 arts. 168–180). ' +
+      'Incluye series misionales (intervención del Ministerio Público, vigilancia de la conducta oficial, ' +
+      'derechos humanos y atención al ciudadano) y administrativas comunes. Ajuste a su personería antes del comité.',
+    series: [
+      { serie: 'INTERVENCIONES DEL MINISTERIO PÚBLICO', subseries: [
+        { subserie: 'Intervenciones en procesos judiciales', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'El personero interviene como agente del Ministerio Público en defensa del orden jurídico y de los derechos fundamentales (Constitución art. 118; Ley 136 de 1994 art. 178). Valor probatorio permanente; conservación total.' },
+        { subserie: 'Intervenciones en actuaciones administrativas y policivas', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Intervención del Ministerio Público en actuaciones administrativas y policivas (Ley 136 de 1994 art. 178). Conservación total por su valor evidencial.' }
+      ]},
+      { serie: 'VIGILANCIA DE LA CONDUCTA OFICIAL', subseries: [
+        { subserie: 'Quejas contra servidores públicos', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Vigilancia de la conducta oficial de los servidores públicos municipales (Ley 136 de 1994 art. 178). Documenta las irregularidades; conservación total.' },
+        { subserie: 'Veeduría y vigilancia administrativa', ag: 2, ac: 8, disposicion: 'CT', fundamento: 'Veeduría a la gestión y vigilancia administrativa de la Administración (Ley 136 de 1994 art. 178). Conservación total por su valor de control.' }
+      ]},
+      { serie: 'PROTECCIÓN DE DERECHOS HUMANOS', subseries: [
+        { subserie: 'Quejas por violación de derechos humanos', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'Guarda, promoción y defensa de los derechos humanos (Constitución art. 118; Ley 136 de 1994 art. 178). Valor probatorio y de memoria permanente; conservación total.' },
+        { subserie: 'Recepción de declaraciones y acompañamiento a víctimas', ag: 2, ac: 18, disposicion: 'CT', fundamento: 'La personería recibe declaraciones de víctimas y acompaña su atención y protección (Ley 1448 de 2011). Conservación total por el valor de los derechos de las víctimas.' }
+      ]},
+      { serie: 'ATENCIÓN Y ORIENTACIÓN AL CIUDADANO', subseries: [
+        { subserie: 'Orientación y asesoría jurídica al ciudadano', ag: 2, ac: 8, disposicion: 'S', fundamento: 'Orientación y asesoría al ciudadano en el ejercicio de sus derechos (Constitución art. 23; Ley 1755 de 2015). Se selecciona una muestra representativa; el remanente se elimina cumplida la retención.' }
+      ]},
+      ...ADMIN_COMUNES
+    ]
+  },
 }
 
 // =====================================================
@@ -277,6 +306,27 @@ const PROCESOS_MISIONALES = {
       dependencia_productora: 'Facturación',
       fundamento: 'Venta y recobro de servicios de salud a las EPS y a la ADRES (Ley 100 de 1993; Resolución 3047 de 2008 de Minsalud).',
       series: ['FACTURACIÓN DE SERVICIOS DE SALUD', 'BASES DE DATOS DE USUARIOS']
+    }
+  ],
+
+  personeria: [
+    {
+      proceso: 'Ministerio Público: intervención y vigilancia',
+      dependencia_productora: 'Despacho del Personero',
+      fundamento: 'El personero es agente del Ministerio Público: interviene en defensa del orden jurídico y vigila la conducta oficial de los servidores públicos (Constitución art. 118; Ley 136 de 1994 art. 178).',
+      series: ['INTERVENCIONES DEL MINISTERIO PÚBLICO', 'VIGILANCIA DE LA CONDUCTA OFICIAL']
+    },
+    {
+      proceso: 'Promoción y protección de los derechos humanos',
+      dependencia_productora: 'Despacho del Personero',
+      fundamento: 'Guarda, promoción y defensa de los derechos humanos y acompañamiento a las víctimas (Ley 136 de 1994 art. 178; Ley 1448 de 2011).',
+      series: ['PROTECCIÓN DE DERECHOS HUMANOS']
+    },
+    {
+      proceso: 'Atención y orientación al ciudadano',
+      dependencia_productora: 'Despacho del Personero',
+      fundamento: 'Recepción de quejas y orientación al ciudadano en el ejercicio y la protección de sus derechos (Constitución art. 23; Ley 1755 de 2015).',
+      series: ['ATENCIÓN Y ORIENTACIÓN AL CIUDADANO']
     }
   ],
 
