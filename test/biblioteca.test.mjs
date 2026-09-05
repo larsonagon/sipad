@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 import { prepararBD } from './helpers/db.mjs'
 import { listarPlantillas, construirPlantilla, precargarPlantilla, construirBancoMisional } from '../backend/modules/trd-ai/trd-ai.biblioteca.js'
 import { anotarMisional } from '../backend/modules/trd-ai/trd-ai.biblioteca-matrices.js'
+import { valorarSerie } from '../backend/modules/trd-ai/trd-ai.valoracion.js'
 import { obtenerDatosExport } from '../backend/modules/trd-ai/trd-ai.export.js'
 
 let pool, db
@@ -168,6 +169,23 @@ test('precarga: empareja la productora sugerida con la dependencia de igual nomb
   const planes = await db.all(
     `SELECT dependencia_id AS d FROM trd_series_propuestas WHERE entidad_id=? AND nombre_serie='PLANES'`, [ENT])
   assert.ok(planes.length && planes.every(x => x.d == null))
+})
+
+test('alcaldía incluye el proceso misional de Gobierno con sus series', () => {
+  const b = construirBancoMisional('alcaldia')
+  const gob = b.procesos.find(p => p.proceso === 'Gobierno, seguridad y convivencia')
+  assert.ok(gob, 'existe el proceso de Gobierno')
+  const cf = gob.series.find(s => s.serie === 'COMISARÍA DE FAMILIA')
+  const ip = gob.series.find(s => s.serie === 'INSPECCIÓN DE POLICÍA')
+  assert.ok(cf && cf.disposicion === 'CT', 'comisaría de familia se conserva (protección de NNA)')
+  assert.ok(ip && ip.disposicion === 'S', 'inspección de policía se selecciona')
+})
+
+test('regresión: series con tilde resuelven en el KB (no caen al respaldo)', () => {
+  for (const s of ['AUDITORÍAS', 'CONCEPTOS TÉCNICOS', 'COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']) {
+    const v = valorarSerie(s, null)
+    assert.equal(v.origen, 'kb', `${s} debe valorarse desde el KB, no por contexto`)
+  }
 })
 
 test('anotarMisional respeta tildes y devuelve null en transversales', () => {

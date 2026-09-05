@@ -238,6 +238,12 @@ const PROCESOS_MISIONALES = {
       dependencia_productora: 'Secretaría de Hacienda',
       fundamento: 'Potestad tributaria propia del municipio: administrar y recaudar sus tributos —impuesto predial unificado e industria y comercio— (Constitución art. 287 y 313.4; Ley 14 de 1983; Ley 44 de 1990; Decreto Ley 1333 de 1986). El cobro coactivo NO es misional: es un proceso (jurisdicción coactiva, Ley 1066 de 2006) transversal, va en la serie PROCESOS.',
       series: ['IMPUESTO PREDIAL UNIFICADO', 'INDUSTRIA Y COMERCIO']
+    },
+    {
+      proceso: 'Gobierno, seguridad y convivencia',
+      dependencia_productora: 'Secretaría de Gobierno',
+      fundamento: 'Competencia municipal de preservar el orden público, la convivencia y la protección de la familia y de la niñez (Constitución art. 315; Ley 136 de 1994 art. 91; Ley 1801 de 2016; Ley 1098 de 2006).',
+      series: ['COMISARÍA DE FAMILIA', 'INSPECCIÓN DE POLICÍA']
     }
   ],
 

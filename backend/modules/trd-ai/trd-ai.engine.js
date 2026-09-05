@@ -181,6 +181,35 @@ export const MATRIZ_SERIES = [
     ]
   },
 
+  // ── COMISARÍA DE FAMILIA ───────────────────────
+  // Misional (Gobierno): protección de NNA y familia. Ley 1098/2006, Ley 2126/2021, Ley 1257/2008.
+  {
+    serie: 'COMISARÍA DE FAMILIA',
+    reglas: [
+      { palabras: ['restablecimiento', 'derecho'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
+      { palabras: ['proceso', 'restablecimiento'],     subserie: 'Procesos de restablecimiento de derechos (PARD)' },
+      { palabras: ['medida', 'proteccion'],            subserie: 'Medidas de protección por violencia intrafamiliar' },
+      { palabras: ['violencia', 'intrafamiliar'],      subserie: 'Medidas de protección por violencia intrafamiliar' },
+      { palabras: ['historia', 'sociofamiliar'],       subserie: 'Historias sociofamiliares' },
+      { palabras: ['comisaria', 'familia'],            subserie: 'Historias sociofamiliares' },
+      { palabras: ['comisaria'],                       subserie: 'Historias sociofamiliares' }
+    ]
+  },
+
+  // ── INSPECCIÓN DE POLICÍA ──────────────────────
+  // Misional (Gobierno): convivencia y seguridad. Ley 1801/2016 (Código Nacional de Seguridad y Convivencia).
+  {
+    serie: 'INSPECCIÓN DE POLICÍA',
+    reglas: [
+      { palabras: ['comportamiento', 'convivencia'],   subserie: 'Procesos por comportamientos contrarios a la convivencia' },
+      { palabras: ['amparo', 'policivo'],              subserie: 'Amparos policivos' },
+      { palabras: ['perturbacion', 'posesion'],        subserie: 'Amparos policivos' },
+      { palabras: ['querella', 'policia'],             subserie: 'Querellas de policía' },
+      { palabras: ['querella'],                        subserie: 'Querellas de policía' },
+      { palabras: ['inspeccion', 'policia'],           subserie: 'Querellas de policía' }
+    ]
+  },
+
   // ── COMUNICACIONES OFICIALES ───────────────────
   // Fuente: Pitalito
   {

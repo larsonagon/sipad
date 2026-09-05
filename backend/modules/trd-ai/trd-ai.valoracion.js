@@ -40,6 +40,8 @@ const KB = {
   'CERTIFICADOS':              { ag: 2, ac: 8,  disp: 'S',  vp: ['administrativo', 'legal'], vs: ['informativo'], cierre: 'expedición del certificado' },
   'COBROS COACTIVOS':          { ag: 3, ac: 7,  disp: 'S',  vp: ['legal', 'fiscal', 'contable'], vs: [], cierre: 'pago total, prescripción o archivo del proceso' },
   'COMUNICACIONES OFICIALES':  { ag: 2, ac: 8,  disp: 'S',  vp: ['administrativo'], vs: ['informativo'], cierre: 'cierre del período del consecutivo' },
+  'COMISARÍA DE FAMILIA':      { ag: 2, ac: 18, disp: 'CT', vp: ['legal', 'jurídico'], vs: ['histórico', 'testimonial'], cierre: 'ejecutoria de la medida o cierre del proceso de protección', norma: 'protección de niños, niñas y adolescentes y de las víctimas de violencia intrafamiliar; conservación total por su valor probatorio permanente (Ley 1098 de 2006, Ley 2126 de 2021, Ley 1257 de 2008)' },
+  'INSPECCIÓN DE POLICÍA':     { ag: 2, ac: 8,  disp: 'S',  vp: ['legal', 'administrativo'], vs: ['histórico'], cierre: 'ejecutoria de la decisión o prescripción de la acción', norma: 'Ley 1801 de 2016 (Código Nacional de Seguridad y Convivencia Ciudadana); se selecciona muestra por su valor sobre la convivencia del municipio' },
   'COMPROBANTES CONTABLES':    { ag: 2, ac: 8,  disp: 'S',  vp: ['contable', 'fiscal', 'legal'], vs: [], cierre: 'cierre de la vigencia fiscal' },
   'CONCEPTOS TÉCNICOS':        { ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'técnico', 'legal'], vs: ['histórico'], cierre: 'emisión del concepto' },
   'CONTRATOS':                 { ag: 2, ac: 18, disp: 'CT', vp: ['administrativo', 'legal', 'fiscal', 'contable'], vs: ['histórico'], cierre: 'liquidación del contrato' },
@@ -56,6 +58,12 @@ const KB = {
   'PROYECTOS':                 { ag: 2, ac: 8,  disp: 'CT', vp: ['administrativo', 'fiscal'], vs: ['histórico'], cierre: 'cierre o liquidación del proyecto' },
   'PQRS':                      { ag: 2, ac: 8,  disp: 'S',  vp: ['administrativo', 'legal'], vs: ['informativo'], cierre: 'respuesta y cierre de la petición' }
 }
+
+// Índice del KB con la MISMA normalización que la búsqueda (sin tildes, mayúsculas).
+// Antes, las claves con tilde (AUDITORÍAS, CONCEPTOS TÉCNICOS, COMISARÍA…) no
+// casaban con la clave normalizada y caían al respaldo contextual por error.
+const KB_NORM = {}
+for (const [k, v] of Object.entries(KB)) KB_NORM[norm(k)] = v
 
 function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen, norma }) {
   const vpTxt = vp && vp.length ? vp.join(', ') : 'administrativo'
@@ -82,7 +90,7 @@ function construirFundamento({ serie, vp, vs, cierre, ag, ac, disp, origen, norm
 // Valoriza una propuesta con base en su serie y (opcional) contexto de la actividad
 export function valorarSerie(serie, subserie, ctx = {}) {
   const key = norm(serie)
-  const base = KB[key]
+  const base = KB_NORM[key]
 
   if (base) {
     return {
