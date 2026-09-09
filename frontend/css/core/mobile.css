@@ -45,3 +45,19 @@ code, kbd, samp, pre, .mono, .codigo, .num, [data-mono]{
     body{ padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
   }
 }
+
+/* --- Footer responsive: en móvil deja de ser fijo de 40px y fluye con su alto real --- */
+@media (max-width: 820px){
+  .sipad-footer{
+    position: static;
+    height: auto;
+    min-height: 0;
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  .sipad-footer-inner{ gap: 2px 8px; }
+  /* ya no hace falta reservar el alto del footer fijo */
+  body{ padding-bottom: 0 !important; }
+}
