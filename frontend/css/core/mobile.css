@@ -123,3 +123,9 @@ code, kbd, samp, pre, .mono, .codigo, .num, [data-mono]{
   #fabAsistente{ bottom:16px !important; right:14px !important; padding:9px 15px !important; font-size:12px !important; }
   .module-page{ padding-bottom:84px; }
 }
+
+/* --- Header: en móvil NO fijo, fluye con el contenido (el título ya no queda tapado) --- */
+@media (max-width: 820px){
+  .pig-header{ position: static !important; }
+  body{ padding-top: 0 !important; }
+}
