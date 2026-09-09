@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E4A57">
+<title>SIPAD — Sin conexión</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap">
+<style>
+  :root{ --ink:#0E4A57; --accent:#D9973F; --ground:#EEE9DF; --text:#1B2426; --muted:#5E6B6E; --line:#E1D9CC; --surface:#fff; }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--ground);color:var(--text);
+    font-family:"Sora",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;
+    display:flex;align-items:center;justify-content:center;padding:28px;line-height:1.5}
+  .card{max-width:420px;width:100%;background:var(--surface);border:1px solid var(--line);
+    border-radius:20px;padding:30px 26px;text-align:center;box-shadow:0 10px 30px rgba(14,74,87,.10)}
+  .ic{width:64px;height:64px;margin:0 auto 18px;border-radius:17px;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-weight:700;font-size:34px;position:relative;overflow:hidden}
+  .ic::after{content:"";position:absolute;left:14px;right:14px;bottom:13px;height:16px;border-radius:5px;background:var(--accent);opacity:.92}
+  .ic span{position:relative;z-index:2;margin-bottom:3px}
+  h1{font-size:20px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
+  p{margin:0 0 18px;color:var(--muted);font-size:14.5px}
+  button{background:var(--ink);color:#fff;border:0;border-radius:12px;padding:12px 20px;
+    font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+  button:active{transform:translateY(1px)}
+  .hint{margin-top:16px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="ic"><span>S</span></div>
+    <h1>Sin conexión</h1>
+    <p>No hay internet en este momento. SIPAD necesita conexión para consultar el banco documental y guardar registros.</p>
+    <button onclick="location.reload()">Reintentar</button>
+    <div class="hint">Alcaldía de Aguachica · SIPAD</div>
+  </div>
+  <script>
+    window.addEventListener('online', function(){ location.reload(); });
+  </script>
+</body>
+</html>
