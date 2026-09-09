@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const VERSION = 'sipad-v1';
+const VERSION = 'sipad-v2';
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
