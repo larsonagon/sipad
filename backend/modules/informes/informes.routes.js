@@ -35,6 +35,13 @@ export function buildInformesRouter(db) {
   router.get('/dependencias-excel', ...guard, controller.generarResumenDependenciasExcel)
 
   // ======================================
+  // INFORME 4 — FUNCIONARIOS SIN ACTIVIDAD (ICAF)
+  // ======================================
+
+  router.get('/funcionarios-sin-actividad', ...guard, controller.obtenerFuncionariosSinActividad)
+  router.get('/funcionarios-sin-actividad-excel', ...guard, controller.generarFuncionariosSinActividadExcel)
+
+  // ======================================
   // INFORME 3 — PRODUCCIÓN DOCUMENTAL
   // ======================================
 

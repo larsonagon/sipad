@@ -197,4 +197,52 @@ export default class InformesRepository {
       }
     })
   }
+
+  // ======================================
+  // INFORME 4
+  // FUNCIONARIOS SIN ACTIVIDAD EN EL ICAF
+  // (usuarios que no han registrado ninguna
+  //  actividad; consultables por oficina/área)
+  // ======================================
+
+  async obtenerFuncionariosSinActividad(entidadId, filtros = {}) {
+
+    if (!entidadId) {
+      throw new Error('entidadId requerido')
+    }
+
+    let sql = `
+      SELECT
+        u.id,
+        u.nombre_completo AS funcionario,
+        u.documento,
+        u.email,
+        u.id_dependencia,
+        d.nombre AS dependencia,
+        c.nombre AS cargo,
+        u.estado
+      FROM usuarios u
+      LEFT JOIN dependencias d ON d.id = u.id_dependencia
+      LEFT JOIN cargos c       ON c.id = u.id_cargo
+      WHERE u.entidad_id = ?
+        AND NOT EXISTS (
+          SELECT 1
+          FROM segtec_actividades a
+          WHERE a.usuario_id = u.id
+            AND a.entidad_id = u.entidad_id
+        )
+    `
+
+    const params = [entidadId]
+
+    if (filtros.dependencia && !isNaN(filtros.dependencia)) {
+      sql += ` AND u.id_dependencia = ?`
+      params.push(Number(filtros.dependencia))
+    }
+
+    sql += ` ORDER BY d.nombre NULLS LAST, u.nombre_completo ASC`
+
+    return await this.db.all(sql, params)
+  }
+
 }

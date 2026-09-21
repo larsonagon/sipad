@@ -75,3 +75,37 @@ export async function generarResumenDependenciasExcel(data = []) {
 
   return await workbook.xlsx.writeBuffer()
 }
+
+// ======================================================
+// INFORME 4 — Funcionarios sin actividad en el ICAF
+// ======================================================
+export async function generarFuncionariosSinActividadExcel(data = []) {
+
+  const workbook = new ExcelJS.Workbook()
+
+  const sheet = workbook.addWorksheet("Funcionarios sin actividad")
+
+  sheet.columns = [
+    { header: "Funcionario", key: "funcionario", width: 34 },
+    { header: "Documento", key: "documento", width: 18 },
+    { header: "Cargo", key: "cargo", width: 28 },
+    { header: "Dependencia (oficina/área)", key: "dependencia", width: 34 },
+    { header: "Correo", key: "email", width: 30 },
+    { header: "Estado", key: "estado", width: 12 }
+  ]
+
+  data.forEach(f => {
+    sheet.addRow({
+      funcionario: f.funcionario || "Sin nombre",
+      documento: f.documento || "",
+      cargo: f.cargo || "",
+      dependencia: f.dependencia || "Sin dependencia",
+      email: f.email || "",
+      estado: Number(f.estado) === 0 ? "Inactivo" : "Activo"
+    })
+  })
+
+  sheet.getRow(1).font = { bold: true }
+
+  return await workbook.xlsx.writeBuffer()
+}

@@ -44,6 +44,11 @@ function configurarCards() {
       window.location.href = '/informes/produccion.html'
     })
 
+  document.getElementById('cardSinActividad')
+    ?.addEventListener('click', () => {
+      window.location.href = '/informes/funcionarios-sin-actividad.html'
+    })
+
   document.querySelectorAll('.module-card').forEach(card => {
     card.addEventListener('keypress', e => {
       if (e.key === 'Enter') card.click()

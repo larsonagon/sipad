@@ -151,4 +151,40 @@ export default class InformesController {
     }
   }
 
+
+  // =====================================
+  // INFORME 4 — FUNCIONARIOS SIN ACTIVIDAD (ICAF)
+  // =====================================
+
+  obtenerFuncionariosSinActividad = async (req, res) => {
+    try {
+      const filtros = this.obtenerFiltros(req)
+      const datos = await this.service.obtenerFuncionariosSinActividad(req.entidad_id, filtros)
+      res.json({ success: true, total: datos.length, data: datos })
+    } catch (error) {
+      console.error("Error informe funcionarios sin actividad:", error)
+      res.status(500).json({ success: false, message: "Error generando informe" })
+    }
+  }
+
+  generarFuncionariosSinActividadExcel = async (req, res) => {
+    try {
+      const filtros = this.obtenerFiltros(req)
+      const buffer = await this.service.generarFuncionariosSinActividadExcel(req.entidad_id, filtros)
+
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      )
+      res.setHeader(
+        "Content-Disposition",
+        "attachment; filename=funcionarios_sin_actividad.xlsx"
+      )
+      res.send(Buffer.from(buffer))
+    } catch (error) {
+      console.error("Error generando Excel funcionarios sin actividad:", error)
+      res.status(500).json({ success: false, message: "Error generando informe Excel" })
+    }
+  }
+
 }

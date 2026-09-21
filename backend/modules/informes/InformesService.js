@@ -1,7 +1,8 @@
 import { generarInformeWord } from "./InformesDocumentGenerator.js"
 import {
   generarInformeExcel,
-  generarResumenDependenciasExcel
+  generarResumenDependenciasExcel,
+  generarFuncionariosSinActividadExcel
 } from "./InformesExcelGenerator.js"
 
 export default class InformesService {
@@ -67,6 +68,21 @@ export default class InformesService {
 
   async obtenerProduccionDocumental(entidadId, filtros = {}) {
     return await this.repository.obtenerProduccionDocumental(entidadId, filtros)
+  }
+
+
+  // ======================================
+  // INFORME 4
+  // FUNCIONARIOS SIN ACTIVIDAD EN EL ICAF
+  // ======================================
+
+  async obtenerFuncionariosSinActividad(entidadId, filtros = {}) {
+    return await this.repository.obtenerFuncionariosSinActividad(entidadId, filtros)
+  }
+
+  async generarFuncionariosSinActividadExcel(entidadId, filtros = {}) {
+    const datos = await this.repository.obtenerFuncionariosSinActividad(entidadId, filtros)
+    return await generarFuncionariosSinActividadExcel(datos)
   }
 
 }

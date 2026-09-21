@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Funcionarios sin actividad – SIPAD</title>
+  <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <!-- SIPAD-PWA -->
+  <meta name="theme-color" content="#0E4A57">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SIPAD">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="/css/core/mobile.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+      });
+    }
+  </script>
+  <!-- /SIPAD-PWA -->
+</head>
+<body>
+
+  <div id="header"></div>
+
+  <main class="module-page">
+    <div class="contenido-documento">
+
+      <div class="module-header centered">
+        <h1>Funcionarios sin actividad en el ICAF</h1>
+        <p class="module-subtext">Usuarios que aún no han registrado ninguna actividad. Consultables por oficina o área.</p>
+      </div>
+
+      <!-- FILTROS -->
+      <section class="card">
+        <h3 style="margin:0 0 1rem;font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);">Filtros</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Dependencia (oficina/área)</label>
+            <select id="dependencia" class="form-control"><option value="">Todas</option></select>
+          </div>
+        </div>
+        <div class="module-actions" style="margin-top:1rem;">
+          <button class="btn-primary" id="btnConsultar">Generar informe</button>
+          <button class="btn-secondary" id="btnExcel">Exportar Excel</button>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <div id="kpisContainer" style="display:none;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:1rem;">
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Funcionarios sin actividad</p>
+          <p id="kpiSinActividad" style="margin:0;font-size:24px;font-weight:600;color:#b91c1c;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Dependencias afectadas</p>
+          <p id="kpiDependencias" style="margin:0;font-size:24px;font-weight:600;color:#2563eb;">0</p>
+        </div>
+        <div style="background:var(--bg-secondary,#f9fafb);border-radius:8px;padding:14px;">
+          <p style="margin:0 0 4px;font-size:11px;color:var(--text-secondary);">Ámbito</p>
+          <p id="kpiAmbito" style="margin:0;font-size:16px;font-weight:600;">Toda la entidad</p>
+        </div>
+      </div>
+
+      <!-- RESULTADOS -->
+      <section class="card" id="tablaCard" style="margin-top:1rem;display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <h3 id="resultadosHead" style="margin:0;font-size:14px;font-weight:500;">Resultados</h3>
+          <button id="btnExcelBottom" class="btn-secondary" style="font-size:12px;padding:6px 12px;">Excel</button>
+        </div>
+        <div class="table-container">
+          <table class="table" id="tablaResultados">
+            <thead>
+              <tr>
+                <th>Funcionario</th>
+                <th>Documento</th>
+                <th>Cargo</th>
+                <th>Dependencia</th>
+                <th>Correo</th>
+                <th style="text-align:center;">Estado</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- EMPTY -->
+      <section class="card" id="emptyState" style="display:none;text-align:center;padding:3rem 1rem;">
+        <p style="margin:0 0 6px;font-weight:500;">Sin resultados</p>
+        <p style="margin:0;color:var(--text-secondary);font-size:.875rem;">
+          Todos los funcionarios del ámbito seleccionado ya registraron al menos una actividad.
+        </p>
+      </section>
+
+      <div id="errorMsg"></div>
+
+    </div>
+  </main>
+
+  <script type="module" src="/informes/funcionarios-sin-actividad.js"></script>
+  <script src="/components/password-modal.js"></script>
+
+</body>
+</html>
