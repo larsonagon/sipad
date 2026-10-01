@@ -109,6 +109,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (cardTRD)        cardTRD.style.display         = puedeTRDAI    ? '' : 'none';
   if (cardValoracion) cardValoracion.style.display  = puedeTRDAI    ? '' : 'none';
   if (cardAdmin)      cardAdmin.style.display       = puedeAdmin    ? '' : 'none';
+  const cardSIC = document.getElementById('cardSIC');
+  if (cardSIC) {
+    cardSIC.style.display = puedeICAF ? '' : 'none';
+    cardSIC.onclick = () => { window.location.href = '/sic/index.html'; };
+  }
 
   const grid = document.querySelector('.module-grid');
   if (grid) grid.style.visibility = 'visible';

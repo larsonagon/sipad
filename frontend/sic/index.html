@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnóstico SIC – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<link rel="stylesheet" href="/sic/sic.css">
+  <!-- SIPAD-PWA -->
+  <meta name="theme-color" content="#0E4A57">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SIPAD">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="/css/core/mobile.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+      });
+    }
+  </script>
+  <!-- /SIPAD-PWA -->
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page sic-page">
+    <div class="module-header premium-header">
+      <h1>Diagnóstico Integral de Archivos</h1>
+      <p class="module-subtext">
+        Base del Sistema Integrado de Conservación (SIC). Lo diligencian el responsable de archivo
+        (espacios, cuestionario e inspección) y la Oficina de Sistemas (sistemas y repositorios).
+        Las respuestas se guardan solas. Si no sabe una respuesta, marque <b>No sabe</b>: queda como tarea de verificación.
+      </p>
+      <div class="sic-avance" id="avanceGeneral" aria-live="polite"></div>
+    </div>
+
+    <nav class="sic-tabs" role="tablist" id="tabs">
+      <button role="tab" data-tab="espacios" class="active"><span>0</span> Espacios</button>
+      <button role="tab" data-tab="institucional"><span>1</span> Institucional</button>
+      <button role="tab" data-tab="inspeccion"><span>2</span> Inspección</button>
+      <button role="tab" data-tab="sistemas"><span>3</span> Sistemas</button>
+      <button role="tab" data-tab="resultados" id="tabResultados" hidden>Resultados</button>
+    </nav>
+
+    <div class="sic-estado-guardado" id="estadoGuardado"></div>
+
+    <section class="sic-panel" id="panel-espacios"></section>
+    <section class="sic-panel" id="panel-institucional" hidden></section>
+    <section class="sic-panel" id="panel-inspeccion" hidden></section>
+    <section class="sic-panel" id="panel-sistemas" hidden></section>
+    <section class="sic-panel" id="panel-resultados" hidden></section>
+  </main>
+
+  <script type="module" src="/sic/sic.js"></script>
+</body>
+</html>

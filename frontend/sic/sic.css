@@ -1,0 +1,127 @@
+/* SIPAD · Diagnóstico SIC */
+.sic-page { max-width: 1050px !important; padding-bottom: 120px; }
+
+.sic-avance { margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: #475569; }
+.sic-barra { flex: 1; min-width: 160px; height: 8px; background: #e6eaf0; border-radius: 999px; overflow: hidden; }
+.sic-barra > i { display: block; height: 100%; background: #0d3f77; border-radius: 999px; transition: width .3s; }
+
+.sic-tabs { display: flex; gap: 6px; overflow-x: auto; margin: 16px 0 6px; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.sic-tabs button { flex: 0 0 auto; border: 1px solid #dbe3ee; background: #fff; color: #334155; border-radius: 999px; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.sic-tabs button span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #eef2f8; color: #0d3f77; font-size: 11px; margin-right: 4px; }
+.sic-tabs button.active { background: #0d3f77; color: #fff; border-color: #0d3f77; }
+.sic-tabs button.active span { background: rgba(255,255,255,.2); color: #fff; }
+
+.sic-estado-guardado { min-height: 18px; font-size: 12px; color: #64748b; text-align: right; margin-bottom: 6px; }
+.sic-estado-guardado.ok { color: #12864e; }
+.sic-estado-guardado.err { color: #b91c1c; }
+
+.sic-bloque { background: #fff; border: 1px solid #e6eaf0; border-radius: 14px; margin-bottom: 14px; box-shadow: 0 1px 2px rgba(16,42,73,.05); }
+.sic-bloque > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 700; color: #0f172a; font-size: 14.5px; }
+.sic-bloque > summary::-webkit-details-marker { display: none; }
+.sic-bloque > summary .cuenta { font-size: 12px; font-weight: 600; color: #64748b; background: #f1f5f9; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.sic-bloque > summary .cuenta.lleno { background: #e7f6ec; color: #12864e; }
+.sic-bloque .cuerpo { padding: 2px 16px 10px; }
+.sic-ayuda { font-size: 12.5px; color: #475569; background: #f8fafc; border-left: 3px solid #93c5fd; padding: 8px 12px; border-radius: 6px; margin: 0 0 10px; }
+
+.sic-preg { padding: 12px 0; border-top: 1px solid #f1f3f5; }
+.sic-preg:first-child { border-top: none; }
+.sic-preg .enunciado { font-size: 13.5px; color: #1f2937; margin-bottom: 8px; line-height: 1.45; }
+.sic-preg .enunciado code { font-size: 11px; color: #94a3b8; margin-right: 6px; }
+.sic-preg.error .enunciado { color: #b91c1c; }
+
+.sic-seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.sic-seg button { border: 1px solid #d5dde8; background: #fff; color: #334155; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; min-height: 38px; }
+.sic-seg button.on { background: #0d3f77; border-color: #0d3f77; color: #fff; font-weight: 600; }
+.sic-seg button.ns.on { background: #b45309; border-color: #b45309; }
+.sic-seg button.mal.on { background: #b91c1c; border-color: #b91c1c; }
+.sic-seg button.med.on { background: #d97706; border-color: #d97706; }
+.sic-seg button.bien.on { background: #12864e; border-color: #12864e; }
+
+.sic-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sic-chips label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #d5dde8; border-radius: 999px; padding: 6px 12px; font-size: 13px; cursor: pointer; background: #fff; }
+.sic-chips input { accent-color: #0d3f77; }
+.sic-chips label:has(input:checked) { background: #eff4fb; border-color: #0d3f77; color: #0d3f77; font-weight: 600; }
+
+.sic-input { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sic-input input, .sic-input select, .sic-input textarea { border: 1px solid #d5dde8; border-radius: 8px; padding: 8px 10px; font-size: 14px; min-width: 0; background: #fff; }
+.sic-input input[type=number] { width: 130px; }
+.sic-input input[type=text], .sic-input textarea, .sic-input select { width: 100%; max-width: 560px; }
+.sic-input .unidad { font-size: 12.5px; color: #64748b; }
+.sic-extra { margin-top: 8px; }
+.sic-extra label, .sic-soporte label { font-size: 12px; color: #64748b; display: block; margin-bottom: 4px; }
+.sic-soporte { margin-top: 8px; }
+.sic-pct3 { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+.sic-pct3 label { font-size: 12px; color: #64748b; display: flex; flex-direction: column; gap: 4px; }
+.sic-pct3 input { width: 90px; border: 1px solid #d5dde8; border-radius: 8px; padding: 8px; font-size: 14px; }
+.sic-pct3 .suma { font-size: 12.5px; font-weight: 700; }
+.sic-pct3 .suma.mal { color: #b91c1c; }
+.sic-pct3 .suma.bien { color: #12864e; }
+
+.sic-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.sic-card { background: #fff; border: 1px solid #e6eaf0; border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; box-shadow: 0 1px 2px rgba(16,42,73,.05); }
+.sic-card h3 { margin: 0; font-size: 15px; color: #0f172a; }
+.sic-card .meta { font-size: 12.5px; color: #64748b; }
+.sic-card .acciones-card { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.sic-card .acciones-card button { flex: 1; min-width: 110px; }
+.sic-mini { height: 6px; background: #e6eaf0; border-radius: 999px; overflow: hidden; }
+.sic-mini > i { display: block; height: 100%; background: #12864e; }
+
+.sic-declarar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: #fff; border: 1px solid #e6eaf0; border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+.sic-declarar b { font-size: 14px; color: #0f172a; }
+.sic-declarar input { width: 100px; border: 1px solid #d5dde8; border-radius: 8px; padding: 8px; font-size: 15px; }
+.sic-declarar .nota { font-size: 12.5px; color: #64748b; flex-basis: 100%; }
+
+.sic-form { background: #fff; border: 1px solid #c7d6ea; border-radius: 14px; padding: 14px 16px; margin-bottom: 14px; }
+.sic-form h3 { margin: 0 0 6px; font-size: 15px; }
+.sic-form .pie { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+
+.sic-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.sic-selector select { border: 1px solid #d5dde8; border-radius: 8px; padding: 9px 10px; font-size: 14px; min-width: 240px; max-width: 100%; }
+
+.sic-fotos { display: flex; gap: 10px; flex-wrap: wrap; }
+.sic-foto { position: relative; width: 120px; height: 90px; border-radius: 8px; overflow: hidden; background: #f1f5f9; border: 1px solid #e2e8f0; }
+.sic-foto img { width: 100%; height: 100%; object-fit: cover; }
+.sic-foto button { position: absolute; top: 4px; right: 4px; border: none; border-radius: 50%; width: 24px; height: 24px; background: rgba(15,23,42,.7); color: #fff; cursor: pointer; font-size: 13px; line-height: 1; min-height: 0; padding: 0; }
+.sic-subir { display: inline-flex; align-items: center; justify-content: center; width: 120px; height: 90px; border: 2px dashed #b6c4d8; border-radius: 8px; color: #0d3f77; font-size: 12.5px; text-align: center; cursor: pointer; padding: 6px; }
+.sic-subir input { display: none; }
+
+.sic-vacio { text-align: center; color: #64748b; font-size: 13.5px; padding: 28px 12px; background: #fff; border: 1px dashed #d5dde8; border-radius: 14px; }
+
+/* ---- Resultados ---- */
+.sic-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.sic-kpi { background: #fff; border: 1px solid #e6eaf0; border-radius: 12px; padding: 12px 14px; }
+.sic-kpi .n { font-size: 24px; font-weight: 700; color: #0d3f77; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.sic-kpi .l { font-size: 12px; color: #64748b; }
+.sic-kpi.rojo .n { color: #b91c1c; }
+.sic-h2 { font-size: 16px; color: #0f172a; margin: 22px 0 8px; }
+.sic-tabla-wrap { overflow-x: auto; background: #fff; border: 1px solid #e6eaf0; border-radius: 12px; }
+.sic-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sic-tabla th { text-align: left; background: #f8fafc; color: #475569; font-weight: 600; padding: 9px 10px; border-bottom: 1px solid #e6eaf0; white-space: nowrap; }
+.sic-tabla td { padding: 9px 10px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
+.sic-tabla td.num { text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.nivel { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; text-transform: uppercase; white-space: nowrap; }
+.nivel.crítica { background: #fde2e2; color: #991b1b; }
+.nivel.alta { background: #feecd6; color: #9a3412; }
+.nivel.media { background: #fef6c7; color: #854d0e; }
+.nivel.baja { background: #e7f6ec; color: #166534; }
+.sic-ind { display: grid; grid-template-columns: minmax(150px, 280px) 1fr 44px; gap: 10px; align-items: center; font-size: 13px; padding: 6px 0; }
+.sic-ind .b { height: 10px; background: #eef2f6; border-radius: 999px; overflow: hidden; }
+.sic-ind .b i { display: block; height: 100%; border-radius: 999px; }
+.sic-ind .v { text-align: right; font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600; }
+.sic-hallazgo { background: #fff; border: 1px solid #e6eaf0; border-left: 4px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; }
+.sic-hallazgo.crítica { border-left-color: #b91c1c; }
+.sic-hallazgo.alta { border-left-color: #ea580c; }
+.sic-hallazgo.media { border-left-color: #ca8a04; }
+.sic-hallazgo.baja { border-left-color: #16a34a; }
+.sic-hallazgo .t { font-size: 13.5px; color: #0f172a; margin: 4px 0; }
+.sic-hallazgo .a { font-size: 13px; color: #334155; }
+.sic-hallazgo .m { font-size: 11.5px; color: #64748b; margin-top: 4px; }
+.sic-resumen textarea { width: 100%; min-height: 220px; border: 1px solid #d5dde8; border-radius: 10px; padding: 12px; font-size: 14px; line-height: 1.55; }
+.sic-aviso { font-size: 12.5px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+.sic-acciones-top { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+
+@media (max-width: 640px) {
+  .sic-ind { grid-template-columns: 1fr 44px; }
+  .sic-ind .b { grid-column: 1 / -1; grid-row: 2; }
+  .sic-card .acciones-card button { min-width: 0; }
+}

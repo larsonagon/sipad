@@ -101,6 +101,10 @@
   import { runValoracionMigration } from './backend/modules/valoracion/valoracion.migration.js'
   import { buildValoracionRouter } from './backend/modules/valoracion/valoracion.routes.js'
 
+  // ✅ SIC (Diagnóstico Integral para el Sistema Integrado de Conservación)
+  import { runSICMigration } from './backend/modules/sic/sic.repository.js'
+  import { buildSICRouter } from './backend/modules/sic/sic.routes.js'
+
   // ==========================================================
   // INIT
   // ==========================================================
@@ -160,6 +164,13 @@
         await runValoracionMigration(db)
       } catch (errVal) {
         console.error('⚠️ Migración VALORACIÓN falló (el servidor continúa):', errVal.message)
+      }
+
+      // ✅ SIC — defensivo: si falla, NO debe tumbar el arranque
+      try {
+        await runSICMigration(db)
+      } catch (errSic) {
+        console.error('⚠️ Migración SIC falló (el servidor continúa):', errSic.message)
       }
 
       // ==================================================
@@ -223,6 +234,9 @@
 
       // ✅ VALORACIÓN
       app.use('/api/valoracion', buildValoracionRouter(db))
+
+      // ✅ SIC — Diagnóstico Integral de Archivos
+      app.use('/api/sic', buildSICRouter(db))
 
       // ==================================================
       // 404 API

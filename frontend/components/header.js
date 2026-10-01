@@ -152,7 +152,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   else if (dependencia)        cargoDependencia = dependencia
 
   const nombreVisibleEntidad = gestionEntidadNombre || nombreEntidad
-  const LABELS = { 'home':'Panel Principal', 'TRD-AI':'Diseño de la TRD', 'Convalidación':'Comité' }
+  const LABELS = { 'home':'Panel Principal', 'TRD-AI':'Diseño de la TRD', 'Convalidación':'Comité', 'SIC':'Diagnóstico SIC' }
   const moduloLabel = LABELS[modulo] || modulo
   const PASOS = { 'ICAF':'Paso 1', 'TRD-AI':'Pasos 2–3', 'Valoración':'Paso 3', 'Convalidación':'Pasos 5–7', 'Instrumentos':'Pasos 4 y 8', 'Administración':'Paso 0' }
   const pasoLabel = PASOS[modulo] || ''
@@ -211,6 +211,8 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeTRDAI ? `<button type="button" id="btnInstrumentos" ${modulo === 'Instrumentos' ? 'class="active"' : ''}>Instrumentos</button>` : ''}
 
+        ${puedeICAF ? `<button type="button" id="btnSIC" ${modulo === 'SIC' ? 'class="active"' : ''}>SIC</button>` : ''}
+
 
 
 
@@ -256,6 +258,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnInstrumentos')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-instrumentos.html' })
+
+  document.getElementById('btnSIC')
+    ?.addEventListener('click', () => { window.location.href = '/sic/index.html' })
 
   document.getElementById('btnVersiones')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-versiones.html' })
