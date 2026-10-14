@@ -105,6 +105,11 @@
   import { runSICMigration } from './backend/modules/sic/sic.repository.js'
   import { buildSICRouter } from './backend/modules/sic/sic.routes.js'
 
+  // ✅ VERIFICACIÓN por dependencia (lista Sí/No por enlace público, alternativa al ICAF)
+  import { runVerificacionMigration } from './backend/modules/verificacion/verificacion.repository.js'
+  import { buildVerificacionRouter, buildVerificacionPublicaRouter } from './backend/modules/verificacion/verificacion.routes.js'
+  import { requireLevel } from './backend/middlewares/role.middleware.js'
+
   // ==========================================================
   // INIT
   // ==========================================================
@@ -173,6 +178,13 @@
         console.error('⚠️ Migración SIC falló (el servidor continúa):', errSic.message)
       }
 
+      // ✅ VERIFICACIÓN — defensivo: si falla, NO debe tumbar el arranque
+      try {
+        await runVerificacionMigration(db)
+      } catch (errVer) {
+        console.error('⚠️ Migración VERIFICACIÓN falló (el servidor continúa):', errVer.message)
+      }
+
       // ==================================================
       // INSTANCIAR TRD-AI
       // ==================================================
@@ -197,6 +209,16 @@
       // ==================================================
 
       app.use('/api/auth', authRoutes)
+
+      // ✅ VERIFICACIÓN — formulario público por enlace (sin sesión, antes de verificarJWT)
+      const verificacionLimiter = rateLimit({
+        windowMs: 10 * 60 * 1000,
+        max: 20,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: { ok: false, error: 'Demasiados envíos. Intente de nuevo en unos minutos.' }
+      })
+      app.use('/api/publico/verificacion', buildVerificacionPublicaRouter(db, { limitador: verificacionLimiter }))
 
       // ==================================================
       // AUTH + TENANT
@@ -237,6 +259,9 @@
 
       // ✅ SIC — Diagnóstico Integral de Archivos
       app.use('/api/sic', buildSICRouter(db))
+
+      // ✅ VERIFICACIÓN por dependencia (gestión del asesor, nivel ≥ 60)
+      app.use('/api/verificacion', buildVerificacionRouter(db, { guard: requireLevel(60) }))
 
       // ==================================================
       // 404 API

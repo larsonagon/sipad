@@ -152,9 +152,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
   else if (dependencia)        cargoDependencia = dependencia
 
   const nombreVisibleEntidad = gestionEntidadNombre || nombreEntidad
-  const LABELS = { 'home':'Panel Principal', 'TRD-AI':'Diseño de la TRD', 'Convalidación':'Comité', 'SIC':'Diagnóstico SIC' }
+  const LABELS = { 'home':'Panel Principal', 'TRD-AI':'Diseño de la TRD', 'Convalidación':'Comité', 'SIC':'Diagnóstico SIC', 'Verificación':'Verificación por dependencia' }
   const moduloLabel = LABELS[modulo] || modulo
-  const PASOS = { 'ICAF':'Paso 1', 'TRD-AI':'Pasos 2–3', 'Valoración':'Paso 3', 'Convalidación':'Pasos 5–7', 'Instrumentos':'Pasos 4 y 8', 'Administración':'Paso 0' }
+  const PASOS = { 'ICAF':'Paso 1', 'Verificación':'Paso 1', 'TRD-AI':'Pasos 2–3', 'Valoración':'Paso 3', 'Convalidación':'Pasos 5–7', 'Instrumentos':'Pasos 4 y 8', 'Administración':'Paso 0' }
   const pasoLabel = PASOS[modulo] || ''
 
   const header = document.createElement('header')
@@ -202,6 +202,8 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
         ${puedeAdmin ? `<button type="button" id="btnAdmin" ${modulo === 'Administración' ? 'class="active"' : ''}>Administración</button>` : ''}
 
         ${puedeICAF ? `<button type="button" id="btnSegtec" ${modulo === 'ICAF' ? 'class="active"' : ''}>ICAF</button>` : ''}
+
+        ${puedeTRDAI ? `<button type="button" id="btnVerificacion" ${modulo === 'Verificación' ? 'class="active"' : ''}>Verificación</button>` : ''}
 
         ${puedeTRDAI ? `<button type="button" id="btnTRDAI" ${modulo === 'TRD-AI' ? 'class="active"' : ''}>Diseño de la TRD</button>` : ''}
 
@@ -258,6 +260,9 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
   document.getElementById('btnInstrumentos')
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-instrumentos.html' })
+
+  document.getElementById('btnVerificacion')
+    ?.addEventListener('click', () => { window.location.href = '/verificacion/index.html' })
 
   document.getElementById('btnSIC')
     ?.addEventListener('click', () => { window.location.href = '/sic/index.html' })

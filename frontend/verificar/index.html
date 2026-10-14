@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0E4A57">
+<title>Verificación de documentos – SIPAD</title>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&display=swap">
+<link rel="stylesheet" href="/verificar/verificar.css">
+</head>
+<body>
+  <header class="vf-top">
+    <div class="vf-marca">SIPAD</div>
+    <div class="vf-entidad" id="entidad"></div>
+  </header>
+
+  <main class="vf-main" id="app">
+    <div class="vf-cargando" id="cargando">Cargando…</div>
+  </main>
+
+  <div class="vf-barra" id="barra" hidden>
+    <div class="vf-progreso"><i id="progresoBarra"></i></div>
+    <div class="vf-barra-fila">
+      <span id="progresoTexto"></span>
+      <button type="button" class="vf-enviar" id="btnEnviar">Enviar respuestas</button>
+    </div>
+  </div>
+
+  <script type="module" src="/verificar/verificar.js"></script>
+</body>
+</html>

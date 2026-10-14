@@ -1,0 +1,83 @@
+/* SIPAD · Verificación por dependencia (gestión del asesor) */
+.vr-page { max-width: 1100px !important; padding-bottom: 120px; }
+
+.vr-barra { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin: 16px 0 12px; }
+.vr-barra h2 { margin: 0; font-size: 16px; color: #0f172a; }
+.vr-volver { background: none; border: none; color: #0d3f77; font-weight: 600; cursor: pointer; padding: 6px 0; font-size: 14px; }
+
+.vr-card { background: #fff; border: 1px solid #e6eaf0; border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(16,42,73,.05); }
+.vr-card h3 { margin: 0 0 4px; font-size: 15px; color: #0f172a; }
+.vr-muted { color: #64748b; font-size: 13px; }
+
+.vr-listas { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+.vr-lista { cursor: pointer; transition: border-color .15s, box-shadow .15s; display: grid; gap: 8px; }
+.vr-lista:hover, .vr-lista:focus-visible { border-color: #93c5fd; box-shadow: 0 4px 14px rgba(13,63,119,.08); outline: none; }
+.vr-cifras { display: flex; gap: 16px; font-size: 13px; color: #334155; }
+.vr-cifras b { font-size: 18px; color: #0d3f77; display: block; }
+
+.vr-estado { display: inline-block; font-size: 11.5px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+.vr-estado.borrador { background: #f1f5f9; color: #475569; }
+.vr-estado.abierta { background: #e7f6ec; color: #12864e; }
+.vr-estado.cerrada { background: #fef3c7; color: #92400e; }
+
+.vr-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.vr-form .full { grid-column: 1 / -1; }
+.vr-form label { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: #334155; }
+.vr-form input[type=text], .vr-form input[type=date], .vr-form select, .vr-form textarea,
+.vr-item input, .vr-add textarea, .vr-add input { font: inherit; font-size: 14px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #1f2937; width: 100%; }
+.vr-form textarea, .vr-add textarea { min-height: 70px; resize: vertical; }
+.vr-check { display: flex !important; align-items: center; gap: 8px; font-weight: 500 !important; }
+.vr-check input { width: 18px; height: 18px; }
+@media (max-width: 720px) { .vr-form { grid-template-columns: 1fr; } }
+
+.vr-cab { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; justify-content: space-between; }
+.vr-cab h2 { margin: 0 0 4px; font-size: 18px; color: #0f172a; }
+.vr-seg { display: inline-flex; border: 1px solid #cbd5e1; border-radius: 10px; overflow: hidden; }
+.vr-seg button { border: none; background: #fff; color: #334155; padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer; border-right: 1px solid #e2e8f0; }
+.vr-seg button:last-child { border-right: none; }
+.vr-seg button.on { background: #0d3f77; color: #fff; }
+
+.vr-enlace { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px 12px; }
+.vr-enlace code { flex: 1 1 280px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; color: #0f172a; word-break: break-all; }
+.vr-enlace.inactivo code { color: #94a3b8; }
+
+.vr-tabs { display: flex; gap: 6px; margin: 16px 0 10px; }
+.vr-tabs button { border: 1px solid #dbe3ee; background: #fff; color: #334155; border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.vr-tabs button.on { background: #0d3f77; color: #fff; border-color: #0d3f77; }
+
+.vr-item { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: start; padding: 12px 0; border-top: 1px solid #f1f3f5; }
+.vr-item:first-child { border-top: none; }
+.vr-item .n { font-size: 12px; font-weight: 700; color: #0d3f77; background: #eef2f8; border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; margin-top: 6px; }
+.vr-item .campos { display: grid; gap: 6px; }
+.vr-item .fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.vr-item input.sec { font-size: 12.5px; padding: 6px 9px; color: #475569; }
+.vr-origen { font-size: 11px; color: #64748b; }
+.vr-icono { background: none; border: 1px solid #e2e8f0; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; color: #b91c1c; margin-top: 4px; }
+.vr-add { display: grid; gap: 8px; margin-top: 12px; }
+
+.vr-resumen { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.vr-chip { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 4px 12px; background: #f1f5f9; color: #334155; }
+.vr-chip.incluir { background: #e7f6ec; color: #12864e; }
+.vr-chip.descartar { background: #fee2e2; color: #991b1b; }
+.vr-chip.fondo_acumulado { background: #ede9fe; color: #5b21b6; }
+.vr-chip.pendiente { background: #fff7ed; color: #b45309; }
+
+.vr-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vr-tabla th { text-align: left; font-size: 12px; color: #64748b; font-weight: 600; padding: 8px 6px; border-bottom: 1px solid #e2e8f0; }
+.vr-tabla td { padding: 10px 6px; border-bottom: 1px solid #f1f3f5; vertical-align: top; }
+.vr-tabla td.num { text-align: center; font-variant-numeric: tabular-nums; }
+.vr-tabla select { min-width: 200px; font: inherit; font-size: 13px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 8px; }
+.vr-barras { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: #eef2f7; min-width: 110px; margin-top: 4px; }
+.vr-barras i { display: block; height: 100%; }
+.vr-barras .si { background: #12864e; } .vr-barras .no { background: #b91c1c; } .vr-barras .antes { background: #6d28d9; } .vr-barras .ns { background: #d97706; }
+.vr-sugerida { font-size: 11.5px; color: #64748b; margin-top: 4px; }
+.vr-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.vr-resp { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #f1f3f5; font-size: 13px; }
+.vr-resp:first-child { border-top: none; }
+.vr-vacio { text-align: center; padding: 30px 10px; color: #64748b; }
+@media (max-width: 720px) {
+  .vr-tabla .ocultable { display: none; }
+  .vr-item .fila2 { grid-template-columns: 1fr; }
+}
+
+.vr-enlace a { text-decoration: none; display: inline-flex; align-items: center; }
