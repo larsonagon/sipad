@@ -9,7 +9,7 @@
  */
 'use strict';
 
-const VERSION = 'sipad-v5';
+const VERSION = 'sipad-v6'; // v6: tipografía Century Gothic / Jost
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 

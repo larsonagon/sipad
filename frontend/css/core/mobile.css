@@ -1,15 +1,15 @@
 /* SIPAD — tipografía + comodidades móviles
- * Interfaz (cuerpo, tablas, botones, campos) en Inter — limpia para UI densa.
- * Títulos y marca en Sora — combina con el ícono, sin recargar el texto.
+ * Interfaz y títulos en Century Gothic (si está instalada) o Jost, su equivalente
+ * geométrico en Google Fonts.
  * Números/códigos en monoespaciada. Se carga después de las hojas existentes.
  */
 
 :root{
-  --sipad-ui:      "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --sipad-display: "Sora",  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sipad-ui:      "Century Gothic", CenturyGothic, "Jost", "Questrial", "Segoe UI", system-ui, sans-serif;
+  --sipad-display: "Century Gothic", CenturyGothic, "Jost", "Questrial", "Segoe UI", system-ui, sans-serif;
 }
 
-/* --- Interfaz: Inter --- */
+/* --- Interfaz: Century Gothic / Jost --- */
 html, body,
 p, a, span, li, td, th, label, small, strong, em, b,
 button, input, select, textarea,
@@ -17,7 +17,7 @@ button, input, select, textarea,
   font-family: var(--sipad-ui);
 }
 
-/* --- Títulos y marca: Sora (después, para ganar por orden de cascada) --- */
+/* --- Títulos y marca (después, para ganar por orden de cascada) --- */
 h1, h2, h3, h4, h5, h6,
 .login-brand h1, .brand, .brand-title, .brand-name, .logo, .titulo, .module-header h1 {
   font-family: var(--sipad-display);
