@@ -44,6 +44,15 @@ before(async () => {
   await ent.runEntrevistaMigration(db)
   await ent.runEntrevistaMigration(db) // idempotente
   await db.run(`INSERT INTO entidades (id, nombre) VALUES ('OTRA2', 'Otra entidad') ON CONFLICT DO NOTHING`)
+  // Columnas del ICAF que crean otras migraciones en producción
+  for (const c of ['usuario_id INTEGER', 'nombre TEXT', 'frecuencia TEXT', 'cargo_ejecutor TEXT', 'descripcion_funcional TEXT', 'genera_documentos INTEGER',
+    'documentos_generados TEXT', 'formato_produccion TEXT', 'responsable_custodia TEXT', 'cargo_custodia TEXT', 'genera_expediente_propio INTEGER',
+    'estado_general TEXT', 'created_at TEXT', 'updated_at TEXT']) await db.exec(`ALTER TABLE segtec_actividades ADD COLUMN IF NOT EXISTS ${c}`)
+  await db.exec(`DROP TABLE IF EXISTS usuarios`); await db.exec(`DROP TABLE IF EXISTS cargos`)
+  await db.exec(`CREATE TABLE cargos (id SERIAL PRIMARY KEY, nombre TEXT, entidad_id TEXT)`)
+  await db.exec(`CREATE TABLE usuarios (id SERIAL PRIMARY KEY, nombre_completo TEXT, entidad_id TEXT, id_cargo INTEGER, id_dependencia INTEGER)`)
+  await db.run(`INSERT INTO cargos (id, nombre, entidad_id) VALUES (1, 'Comisario de Familia', ?)`, [ENT])
+  await db.run(`INSERT INTO usuarios (id, nombre_completo, entidad_id, id_cargo, id_dependencia) VALUES (50, 'Ana Pérez', ?, 1, 1), (51, 'Ajeno', 'OTRA2', NULL, 9)`, [ENT])
   // Propuesta existente en la dependencia 1 que la entrevista debe completar (no duplicar)
   await db.run(`INSERT INTO trd_series_propuestas (id, nombre_serie, nombre_subserie, tipologia_documental, estado, entidad_id, dependencia_id, creado_en)
                 VALUES ('PE1', 'ACTAS', 'Actas de Audiencia', '["Acta","Citación"]', 'propuesta', ?, 1, ?)`, [ENT, new Date().toISOString()])
@@ -142,6 +151,9 @@ describe('flujo de entrevista por la API', () => {
     await put(actas.id, { respuesta: 'si' })
     await put(actas.tipologias[0].id, { respuesta: 'si' })
     await put(tutela.id, { respuesta: 'no' })
+    await put(alim.id, { formato: 'fisico', frecuencia: 'semanal' })
+    assert.equal((await put(alim.id, { formato: 'papiro' })).status, 400)
+    assert.equal((await put(alim.id, { responsable: 'as_noexiste' })).status, 400)
     // Subserie nueva sin serie → queda por validar
     const sub = await http('POST', `/api/verificacion/entrevistas/${eid}/items`, { texto: 'Registro de visitas domiciliarias' })
     assert.equal(sub.status, 201)
@@ -156,13 +168,17 @@ describe('flujo de entrevista por la API', () => {
 
     const sinAsist = await http('PUT', `/api/verificacion/entrevistas/${eid}`, { estado: 'cerrada' })
     assert.equal(sinAsist.status, 400)
+    // Vincular a otra entidad: rechazado
+    const ajeno = await http('PUT', `/api/verificacion/entrevistas/${eid}`, { asistentes: [{ nombre: 'X', usuario_id: 51 }] })
+    assert.equal(ajeno.status, 400)
     const ok = await http('PUT', `/api/verificacion/entrevistas/${eid}`, {
-      asistentes: [{ nombre: 'Ana Pérez', cargo: 'Comisaria de Familia', jefe: true }, { nombre: '' }], estado: 'cerrada'
+      asistentes: [{ nombre: 'Ana Pérez', cargo: 'Comisaria de Familia', jefe: true, usuario_id: 50 }, { nombre: 'Luis Gómez', cargo: 'Secretario' }, { nombre: '' }], estado: 'cerrada'
     })
     assert.equal(ok.status, 200)
     d = (await http('GET', `/api/verificacion/entrevistas/${eid}`)).body
     assert.equal(d.entrevista.estado, 'cerrada')
-    assert.equal(d.entrevista.asistentes.length, 1)
+    assert.equal(d.entrevista.asistentes.length, 2)
+    assert.ok(d.entrevista.asistentes.every(a => a.id))
     // Cerrada: no admite cambios
     assert.equal((await put(alim.id, { respuesta: 'no' })).status, 409)
   })
@@ -193,6 +209,45 @@ describe('flujo de entrevista por la API', () => {
     assert.equal(Number(n.n), 1)
     const tut2 = await db.get(`SELECT observaciones_revision FROM trd_series_propuestas WHERE id = 'PE2'`)
     assert.equal(tut2.observaciones_revision.match(/no produce/g).length, 1)
+  })
+
+  test('ICAF: un formulario por funcionario y actividades en el ICAF de SIPAD', async () => {
+    const r = await http('GET', `/api/verificacion/entrevistas/${eid}/icaf`)
+    assert.equal(r.status, 200)
+    // Sin cargo coincidente, todo va al jefe (Ana); Luis no tiene actividades
+    assert.equal(r.body.funcionarios.length, 1)
+    const ana = r.body.funcionarios[0]
+    assert.equal(ana.asistente.nombre, 'Ana Pérez')
+    const alim = ana.actividades.find(a => a.subserie === 'Procesos de alimentos')
+    assert.equal(alim.nombre, 'Alimentos')
+    assert.deepEqual(alim.documentos, ['Solicitud', 'Auto de archivo', 'Constancia de no comparecencia'])
+    assert.equal(alim.formato, 'fisico')
+    assert.equal(alim.tipo_funcion, 'misional')
+
+    const acts = await db.all(`SELECT * FROM segtec_actividades WHERE usuario_id = 50 ORDER BY nombre`)
+    assert.equal(acts.length, 4) // alimentos, despachos, actas, visitas
+    const a = acts.find(x => x.nombre === 'Alimentos')
+    assert.equal(a.documentos_generados, 'Solicitud\nAuto de archivo\nConstancia de no comparecencia')
+    assert.equal(a.frecuencia, 'semanal')
+    assert.equal(a.estado_general, 'caracterizada')
+    assert.match(a.descripcion_funcional, /Diligenciado mediante entrevista/)
+    const p = await db.get(`SELECT actividad_id FROM trd_series_propuestas WHERE nombre_subserie = 'Procesos de alimentos'`)
+    assert.equal(p.actividad_id, a.id) // el motor de la TRD no la vuelve a proponer
+    // Reaplicar actualiza, no duplica
+    const r2 = await http('POST', `/api/verificacion/entrevistas/${eid}/aplicar`)
+    assert.equal(r2.body.icaf.registradas, 0)
+    assert.equal(r2.body.icaf.actualizadas, 4)
+    assert.equal(Number((await db.get(`SELECT COUNT(*) AS n FROM segtec_actividades WHERE usuario_id = 50`)).n), 4)
+  })
+
+  test('sugerirResponsable empareja por cargo del manual', () => {
+    const asis = [{ id: 'j', nombre: 'Jefe', cargo: 'Secretario de Gobierno', jefe: true }, { id: 'i', nombre: 'Inés', cargo: 'Inspectora de Policía' }]
+    assert.equal(ent.sugerirResponsable({ funcion: 'Inspector de Policía · F1: Querellas' }, asis), 'i') // coincide «policía»
+    assert.equal(ent.sugerirResponsable({ funcion: 'Comisario de Familia · F1: x' }, asis), 'j') // sin coincidencia: el jefe
+    assert.equal(ent.sugerirResponsable({ funcion: 'Inspector de Policía Urbano · F1: Querellas' }, [{ id: 'k', cargo: 'Inspector de Policía Urbano' }, ...asis]), 'k')
+    assert.equal(ent.sugerirResponsable({ comun: true, funcion: 'x' }, asis), 'j')
+    assert.equal(ent.sugerirResponsable({ funcion: 'Trabajo Social y Psicología · F3-F4: Informes' }, [...asis, { id: 'p', cargo: 'Psicólogo' }]), 'p')
+    assert.equal(ent.tipoFuncion('Talento Humano', false), 'apoyo')
   })
 
   test('reabrir permite corregir; eliminar borra todo', async () => {

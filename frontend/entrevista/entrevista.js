@@ -54,6 +54,10 @@ const hoy = () => new Date().toLocaleDateString('en-CA')
 function debounce(fn, ms = 700) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms) } }
 const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 const RESP = { si: 'Sí', no: 'No', ns: 'No sabe' }
+const FORMATOS = { fisico: 'Físico', digital: 'Digital', ambos: 'Ambos' }
+const FRECUENCIAS = { diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', bimensual: 'Bimensual', trimestral: 'Trimestral', semestral: 'Semestral', anual: 'Anual', eventual: 'Eventual (cuando se requiere)' }
+const idAsistente = () => 'as_' + Array.from(crypto.getRandomValues(new Uint8Array(6)), b => b.toString(16).padStart(2, '0')).join('')
+let USUARIOS = []
 
 // ---------------- Ruteo ----------------
 async function rutear() {
@@ -196,6 +200,7 @@ async function cargar(id) { D = await api(`/api/verificacion/entrevistas/${encod
 
 async function vistaEntrevista(id) {
   await cargar(id)
+  if (!USUARIOS.length) USUARIOS = (await api('/api/verificacion/usuarios').catch(() => ({ usuarios: [] }))).usuarios || []
   pintar()
 }
 
@@ -215,11 +220,13 @@ function pintar() {
     v.append(el('div', { class: 'vr-card en-cerrada' },
       el('b', { text: e.aplicado_en ? `Resultados llevados a la TRD el ${fechaTxt(e.aplicado_en)}.` : 'Entrevista cerrada. El acta está lista para firma.' }),
       el('div', { class: 'vr-acciones' },
-        el('a', { class: 'btn-primary btn-md', href: `/entrevista/acta.html?id=${encodeURIComponent(e.id)}`, target: '_blank', rel: 'noopener', text: 'Ver acta' }),
-        el('button', { class: 'btn-primary btn-md', type: 'button', text: e.aplicado_en ? 'Volver a llevar a la TRD' : 'Llevar a la TRD', onclick: aplicar }),
+        el('a', { class: 'btn-primary btn-md', href: `/entrevista/acta.html?id=${encodeURIComponent(e.id)}`, target: '_blank', rel: 'noopener', text: 'Acta' }),
+        el('a', { class: 'btn-primary btn-md', href: `/entrevista/icaf.html?id=${encodeURIComponent(e.id)}`, target: '_blank', rel: 'noopener', text: 'ICAF para firma' }),
+        el('button', { class: 'btn-secondary btn-md', type: 'button', text: e.aplicado_en ? 'Actualizar TRD e ICAF' : 'Llevar a la TRD y al ICAF', onclick: aplicar }),
         el('button', { class: 'btn-secondary btn-md', type: 'button', text: 'Reabrir para corregir', onclick: () => estado('en_curso') }))))
   }
 
+  v.append(participantes())
   const lista = el('div', { class: 'en-lista' })
   v.append(lista)
   const filas = D.items.filter(s => filtro === 'todas' || (filtro === 'pendientes' ? !s.respuesta : s.respuesta === filtro))
@@ -308,6 +315,7 @@ function tarjeta(s) {
       serie.addEventListener('input', guardar); sub.addEventListener('input', guardar)
       card.append(el('div', { class: 'en-fila2 en-serie' }, serie, sub))
     }
+    card.append(bloqueIcaf(s, () => { card.replaceWith(tarjeta(s)) }))
     const tips = el('div', { class: 'en-tips' })
     if (s.tipologias.length) {
       const sinMarcar = s.tipologias.filter(t => !t.respuesta).length
@@ -356,37 +364,81 @@ function tarjeta(s) {
   return card
 }
 
+// Quién la produce, formato y frecuencia (lo que pide el ICAF)
+function bloqueIcaf(s, repintar) {
+  const dis = cerrada()
+  const asist = D.entrevista.asistentes
+  const efectivo = s.responsable || s.responsable_sugerido || ''
+  const quien = el('select', { disabled: dis, 'aria-label': 'Quién la produce' },
+    el('option', { value: '', text: asist.length ? '¿Quién la produce?' : 'Registre los participantes' }),
+    asist.map(a => el('option', { value: a.id, text: `${a.nombre}${a.cargo ? ` · ${a.cargo}` : ''}${!s.responsable && a.id === s.responsable_sugerido ? ' (sugerido)' : ''}` })))
+  quien.value = efectivo
+  quien.addEventListener('change', async () => { if (await guardarItem(s.id, { responsable: quien.value || null })) { s.responsable = quien.value || null; repintar() } })
+  const formato = el('div', { class: 'en-resp compacto', role: 'group', 'aria-label': 'Formato' },
+    Object.entries(FORMATOS).map(([k, t]) => el('button', { type: 'button', class: s.formato === k ? 'on sel' : '', disabled: dis, 'aria-pressed': s.formato === k ? 'true' : 'false', text: t,
+      onclick: async () => { const v = s.formato === k ? null : k; if (await guardarItem(s.id, { formato: v })) { s.formato = v; repintar() } } })))
+  const frec = el('select', { disabled: dis, 'aria-label': 'Frecuencia' }, el('option', { value: '', text: 'Frecuencia…' }), Object.entries(FRECUENCIAS).map(([k, t]) => el('option', { value: k, text: t })))
+  frec.value = s.frecuencia || ''
+  frec.addEventListener('change', async () => { if (await guardarItem(s.id, { frecuencia: frec.value || null })) s.frecuencia = frec.value || null })
+  return el('div', { class: 'en-icaf' }, el('span', { class: 'en-icaf-tit', text: 'ICAF' }), quien, formato, frec)
+}
+
 function resumirLocal() {
   const c = (r) => D.items.filter(s => (s.respuesta || null) === r).length
   return { ...D.resumen, subseries: D.items.length, si: c('si'), no: c('no'), ns: c('ns'), pendientes: c(null) }
+}
+
+// ---------------- Participantes (firman el acta y su ICAF) ----------------
+function participantes() {
+  const e = D.entrevista
+  const dis = cerrada()
+  const asist = (e.asistentes.length ? e.asistentes : [{ nombre: '', cargo: '', jefe: true }]).map(a => ({ ...a, id: a.id || idAsistente() }))
+  const filas = el('div', { class: 'en-asist' })
+  const guardar = async () => {
+    try { await api(`/api/verificacion/entrevistas/${e.id}`, { method: 'PUT', body: { asistentes: asist } }); e.asistentes = asist.filter(a => a.nombre?.trim()) }
+    catch (err) { toast(err.message, 'error') }
+  }
+  const guardarDiferido = debounce(guardar)
+  const confirmar = async () => { await guardar(); await recargar() } // recalcula quién produce cada subserie
+  const pintarAsist = () => {
+    filas.replaceChildren()
+    asist.forEach((a, i) => {
+      const n = el('input', { type: 'text', maxlength: '120', placeholder: 'Nombre', value: a.nombre || '', disabled: dis })
+      const c = el('input', { type: 'text', maxlength: '120', placeholder: 'Cargo (como en el manual)', value: a.cargo || '', disabled: dis })
+      const j = el('input', { type: 'checkbox', checked: !!a.jefe, disabled: dis })
+      const u = el('select', { disabled: dis, title: 'Usuario de SIPAD: sus actividades quedan en el ICAF de su cuenta' },
+        el('option', { value: '', text: 'Sin usuario en SIPAD' }), USUARIOS.map(x => el('option', { value: x.id, text: x.cargo ? `${x.nombre} · ${x.cargo}` : x.nombre })))
+      u.value = a.usuario_id ? String(a.usuario_id) : ''
+      n.addEventListener('input', () => { a.nombre = n.value; guardarDiferido() })
+      c.addEventListener('input', () => { a.cargo = c.value; guardarDiferido() })
+      n.addEventListener('change', confirmar); c.addEventListener('change', confirmar)
+      j.addEventListener('change', () => { a.jefe = j.checked; confirmar() })
+      u.addEventListener('change', () => {
+        a.usuario_id = u.value ? Number(u.value) : null
+        const x = USUARIOS.find(z => String(z.id) === u.value)
+        if (x && !a.nombre) a.nombre = x.nombre
+        if (x?.cargo && !a.cargo) a.cargo = x.cargo
+        confirmar()
+      })
+      filas.append(el('div', { class: 'en-asist-fila' }, n, c, u, el('label', { class: 'vr-check' }, j, 'Jefe'),
+        !dis && asist.length > 1 ? el('button', { type: 'button', class: 'vr-icono', 'aria-label': 'Quitar participante', text: '✕', onclick: () => { asist.splice(i, 1); pintarAsist(); confirmar() } }) : null))
+    })
+  }
+  pintarAsist()
+  const box = el('details', { class: 'vr-card en-part', open: !e.asistentes.length || !dis },
+    el('summary', {}, el('h3', { text: `Participantes (${e.asistentes.length})` }),
+      el('span', { class: 'vr-muted', text: 'Firman el acta y cada uno su ICAF' })),
+    el('p', { class: 'vr-muted', text: 'Registre primero a quienes responden: cada subserie se asigna al funcionario que la produce. Marque al jefe (Acuerdo AGN 001 de 2024, num. 5.1.1.5 y 5.1.1.6). Si tiene usuario en SIPAD, vincúlelo para que sus actividades queden en su ICAF.' }),
+    filas)
+  if (!dis) box.append(el('button', { type: 'button', class: 'vr-volver', text: '+ Otro participante', onclick: () => { asist.push({ id: idAsistente(), nombre: '', cargo: '', jefe: false }); pintarAsist() } }))
+  return box
 }
 
 // ---------------- Datos del acta ----------------
 function datosActa() {
   const e = D.entrevista
   const dis = cerrada()
-  const box = el('div', { class: 'vr-card en-acta' }, el('h3', { text: 'Datos del acta de levantamiento' }),
-    el('p', { class: 'vr-muted', text: 'Quienes asistieron firman el acta. Marque al jefe de la oficina (Acuerdo AGN 001 de 2024, num. 5.1.1.5 y 5.1.1.6).' }))
-  const asist = (e.asistentes.length ? e.asistentes : [{ nombre: '', cargo: '', jefe: true }]).map(a => ({ ...a }))
-  const filas = el('div', { class: 'en-asist' })
-  const guardar = debounce(() => api(`/api/verificacion/entrevistas/${e.id}`, { method: 'PUT', body: { asistentes: asist } }).then(() => { e.asistentes = asist.filter(a => a.nombre?.trim()) }).catch(err => toast(err.message, 'error')))
-  const pintarAsist = () => {
-    filas.replaceChildren()
-    asist.forEach((a, i) => {
-      const n = el('input', { type: 'text', maxlength: '120', placeholder: 'Nombre', value: a.nombre || '', disabled: dis })
-      const c = el('input', { type: 'text', maxlength: '120', placeholder: 'Cargo', value: a.cargo || '', disabled: dis })
-      const j = el('input', { type: 'checkbox', checked: !!a.jefe, disabled: dis })
-      n.addEventListener('input', () => { a.nombre = n.value; guardar() })
-      c.addEventListener('input', () => { a.cargo = c.value; guardar() })
-      j.addEventListener('change', () => { a.jefe = j.checked; guardar() })
-      filas.append(el('div', { class: 'en-asist-fila' }, n, c, el('label', { class: 'vr-check' }, j, 'Jefe'),
-        !dis && asist.length > 1 ? el('button', { type: 'button', class: 'vr-icono', 'aria-label': 'Quitar asistente', text: '✕', onclick: () => { asist.splice(i, 1); pintarAsist(); guardar() } }) : null))
-    })
-  }
-  pintarAsist()
-  box.append(filas)
-  if (!dis) box.append(el('button', { type: 'button', class: 'vr-volver', text: '+ Otro asistente', onclick: () => { asist.push({ nombre: '', cargo: '', jefe: false }); pintarAsist() } }))
-
+  const box = el('div', { class: 'vr-card en-acta' }, el('h3', { text: 'Datos del acta de levantamiento' }))
   const campo = (label, input, full) => el('label', { class: full ? 'full' : '' }, label, input)
   const fecha = el('input', { type: 'date', value: e.fecha || '', disabled: dis })
   const lugar = el('input', { type: 'text', maxlength: '200', value: e.lugar || '', disabled: dis })
@@ -400,22 +452,28 @@ function datosActa() {
 
   if (!dis) {
     box.append(el('div', { class: 'vr-acciones' },
-      el('button', { class: 'btn-primary btn-md', type: 'button', text: 'Cerrar entrevista y generar acta', onclick: () => estado('cerrada', asist) }),
+      el('button', { class: 'btn-primary btn-md', type: 'button', text: 'Cerrar entrevista y generar acta e ICAF', onclick: () => estado('cerrada') }),
       el('button', { class: 'btn-danger btn-md', type: 'button', text: 'Eliminar entrevista', onclick: eliminar })))
   }
   return box
 }
 
-async function estado(nuevo, asist) {
+async function estado(nuevo) {
   if (nuevo === 'cerrada') {
     const sinMarcar = D.items.filter(s => s.respuesta === 'si').reduce((n, s) => n + s.tipologias.filter(t => !t.respuesta).length, 0)
     if (sinMarcar && !confirm(`Hay ${sinMarcar} tipología(s) sin marcar en subseries con Sí. No quedarán en el acta ni en la TRD. ¿Cerrar de todas formas?`)) {
       filtro = 'si'; pintar(); window.scrollTo(0, 0); return
     }
+    const si = D.items.filter(s => s.respuesta === 'si')
+    const sinQuien = si.filter(s => !(s.responsable || s.responsable_sugerido)).length
+    const incompletas = si.filter(s => !s.formato || !s.frecuencia).length
+    const avisos = []
+    if (sinQuien) avisos.push(`${sinQuien} subserie(s) sin funcionario asignado (no saldrán en ningún ICAF)`)
+    if (incompletas) avisos.push(`${incompletas} sin formato o frecuencia (quedarán en blanco en el ICAF)`)
+    if (avisos.length && !confirm(`${avisos.join(' y ')}. ¿Cerrar de todas formas?`)) { filtro = 'si'; pintar(); window.scrollTo(0, 0); return }
   }
   try {
     const body = { estado: nuevo }
-    if (asist) body.asistentes = asist
     await api(`/api/verificacion/entrevistas/${D.entrevista.id}`, { method: 'PUT', body })
     toast(nuevo === 'cerrada' ? 'Entrevista cerrada. El acta está lista.' : 'Entrevista reabierta', 'success')
     filtro = 'todas'
@@ -428,13 +486,16 @@ async function estado(nuevo, asist) {
 }
 
 async function aplicar() {
-  if (!confirm('Las subseries confirmadas crearán o completarán propuestas de series de la dependencia en el Diseño de la TRD. ¿Continuar?')) return
+  if (!confirm('Las subseries confirmadas crearán o completarán propuestas de series en el Diseño de la TRD, y las actividades quedarán en el ICAF de cada funcionario vinculado a un usuario de SIPAD. ¿Continuar?')) return
   try {
     const r = await api(`/api/verificacion/entrevistas/${D.entrevista.id}/aplicar`, { method: 'POST' })
     const partes = [`${r.creadas} propuesta(s) nuevas`, `${r.completadas} completadas`]
     if (r.anotadas_no) partes.push(`${r.anotadas_no} con constancia de "no la produce"`)
     toast(`Listo: ${partes.join(', ')}.`, 'success')
     if (r.omitidas.length) toast(`${r.omitidas.length} sin serie definida: reabra la entrevista y escriba la serie.`, 'error')
+    const ic = r.icaf || {}
+    if (ic.registradas || ic.actualizadas) toast(`ICAF: ${ic.registradas} actividad(es) nuevas y ${ic.actualizadas} actualizadas en las cuentas de los funcionarios.`, 'success')
+    if (ic.sin_usuario?.length) toast(`Sin usuario en SIPAD: ${ic.sin_usuario.join(', ')}. Su ICAF sale solo impreso.`, 'info')
     await recargar()
   } catch (e) { toast(e.message, 'error') }
 }

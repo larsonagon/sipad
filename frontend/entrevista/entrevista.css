@@ -76,7 +76,15 @@
 .en-agregar b { font-size: 14px; color: #0f172a; }
 .en-acta { margin-top: 18px; }
 .en-asist { display: grid; gap: 8px; margin: 8px 0; }
-.en-asist-fila { display: grid; grid-template-columns: 1.3fr 1fr auto auto; gap: 8px; align-items: center; }
+.en-asist-fila { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto auto; gap: 8px; align-items: center; }
+.en-asist select, .en-icaf select { font: inherit; font-size: 13.5px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #1f2937; min-width: 0; }
+.en-part summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; list-style: none; flex-wrap: wrap; }
+.en-part summary::-webkit-details-marker { display: none; }
+.en-part summary h3 { margin: 0; }
+.en-icaf { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 12px; padding: 10px; background: #f8fafc; border: 1px solid #eef1f5; border-radius: 10px; }
+.en-icaf-tit { font-size: 11px; font-weight: 800; letter-spacing: .06em; color: #0d3f77; background: #e6eef8; border-radius: 6px; padding: 3px 7px; }
+.en-icaf select:first-of-type { flex: 1 1 220px; }
+.en-icaf .en-resp button.on { background: #0d3f77; color: #fff; }
 .en-acta-campos { margin-top: 12px; }
 
 @media (max-width: 720px) {
@@ -85,5 +93,7 @@
   .en-sub > .en-sub-top > .en-resp button { flex: 1; }
   .en-fila2, .en-serie.en-fila2 { grid-template-columns: 1fr; }
   .en-asist-fila { grid-template-columns: 1fr 1fr; }
+  .en-icaf > * { flex: 1 1 100%; }
+  .en-icaf .en-resp button { flex: 1; }
   .en-tip { flex-wrap: wrap; }
 }

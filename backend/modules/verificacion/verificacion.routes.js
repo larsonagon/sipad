@@ -27,7 +27,9 @@
 //   POST   /entrevistas/:id/items     { texto, padre_id?, serie?, subserie? }
 //   PUT    /entrevista-items/:id      { respuesta?, nota?, serie?, subserie?, texto? }
 //   DELETE /entrevista-items/:id      (solo agregados)
-//   POST   /entrevistas/:id/aplicar   lleva lo confirmado a las propuestas de la TRD
+//   POST   /entrevistas/:id/aplicar   lleva lo confirmado a las propuestas de la TRD y al ICAF
+//   GET    /entrevistas/:id/icaf      formularios ICAF por funcionario (para imprimir y firmar)
+//   GET    /usuarios                  usuarios de la entidad (vincular participantes)
 // Públicas (/api/publico/verificacion, SIN sesión, por token):
 //   GET    /:token                    formulario (solo si la lista está abierta)
 //   POST   /:token                    { nombre, cargo?, respuestas: { itemId: { r, desde?, hasta?, soporte?, volumen? } }, adicionales?, observaciones? }
@@ -134,6 +136,10 @@ export function buildVerificacionRouter(db, { guard = nivelMinimo(60) } = {}) {
     responder(res, await ent.responderItem(db, eid(req), req.params.id, req.body || {})), 'No se pudo guardar la respuesta'))
   r.delete('/entrevista-items/:id', envolver(async (req, res) =>
     responder(res, await ent.eliminarItemEntrevista(db, eid(req), req.params.id)), 'No se pudo quitar el documento'))
+  r.get('/usuarios', envolver(async (req, res) =>
+    res.json({ ok: true, usuarios: await ent.usuariosEntidad(db, eid(req)) }), 'No se pudieron cargar los usuarios'))
+  r.get('/entrevistas/:id/icaf', envolver(async (req, res) =>
+    responder(res, await ent.icafEntrevista(db, eid(req), req.params.id)), 'No se pudo armar el ICAF'))
   r.post('/entrevistas/:id/aplicar', envolver(async (req, res) =>
     responder(res, await ent.aplicarEntrevista(db, eid(req), req.params.id)), 'No se pudieron aplicar los resultados'))
 
