@@ -13,6 +13,20 @@
   <style>
     /* ✅ Ocultar todo el contenido hasta que JS evalúe permisos */
     .module-grid { visibility: hidden; }
+
+    /* Panel principal compacto: todas las tarjetas en una pantalla (4 por fila) */
+    #homePage .module-header { margin-bottom: 6px; }
+    #homePage .module-header h1 { margin-bottom: 4px; }
+    #homePage .module-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; max-width: 1180px; margin-top: 18px; }
+    #homePage .module-card { padding: 14px 16px; border-radius: 12px; }
+    #homePage .module-icon { width: 36px; height: 36px; font-size: 19px; border-radius: 10px; margin-bottom: 8px; }
+    #homePage .module-card span { margin-bottom: 4px !important; }
+    #homePage .module-card h3 { font-size: 15px; margin: 2px 0 4px; line-height: 1.25; }
+    #homePage .module-card p { font-size: 12.5px; line-height: 1.4; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    @media (max-width: 1100px) { #homePage .module-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 820px)  { #homePage .module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px)  { #homePage .module-grid { grid-template-columns: 1fr; } }
   </style>
 
   <!-- SIPAD-PWA -->
@@ -63,7 +77,7 @@
           <div class="module-icon">✅</div>
           <span style="display:inline-block;font-size:11px;font-weight:700;color:#1e40af;background:#eff4fb;border:1px solid #dbe6f4;border-radius:999px;padding:2px 9px;margin-bottom:8px;">Paso 1 · Alternativa</span>
           <h3>Verificación por dependencia</h3>
-          <p>Entrevista por oficina con lista prellenada desde el manual de funciones: usted pregunta, marca Sí / No y genera el acta.</p>
+          <p>Entrevista por oficina con la lista del manual de funciones: genera el acta y el ICAF para firma.</p>
         </div>
 
         <div class="module-card m-ai" id="cardTRDAI" role="button" tabindex="0" style="display:none">
