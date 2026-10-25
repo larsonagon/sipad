@@ -3,6 +3,34 @@
 // ======================================================
 
 const TIEMPO_INACTIVIDAD = 60 * 60 * 1000
+
+// ======================================================
+// MENÚS ⋮ DE LAS TABLAS (usuarios, dependencias, cargos, niveles…)
+// El contenedor de la tabla tiene scroll y cortaba el menú. Se muestra
+// "flotando" (position: fixed) junto al botón; si no cabe abajo, se abre
+// hacia arriba, y nunca se sale de la pantalla.
+// ======================================================
+function posicionarMenusAcciones() {
+  document.querySelectorAll('.menu-dropdown.show').forEach(menu => {
+    const btn = menu.parentElement?.querySelector('.btn-menu')
+    if (!btn) return
+    const r = btn.getBoundingClientRect()
+    Object.assign(menu.style, { position: 'fixed', right: 'auto', bottom: 'auto', marginTop: '0', zIndex: '10000' })
+    const w = menu.offsetWidth, h = menu.offsetHeight
+    const margenInferior = 56 // pie de página fijo
+    const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8))
+    let top = r.bottom + 4
+    if (top + h > window.innerHeight - margenInferior) top = Math.max(8, r.top - h - 4)
+    menu.style.left = `${left}px`
+    menu.style.top = `${top}px`
+  })
+}
+if (!window.__sipadMenus) {
+  window.__sipadMenus = true
+  document.addEventListener('click', () => requestAnimationFrame(posicionarMenusAcciones))
+  window.addEventListener('scroll', posicionarMenusAcciones, true) // también el scroll interno de la tabla
+  window.addEventListener('resize', () => document.querySelectorAll('.menu-dropdown.show').forEach(m => m.classList.remove('show')))
+}
 let temporizadorSesion = null
 
 function cerrarSesion() {
