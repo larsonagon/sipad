@@ -81,3 +81,8 @@
 }
 
 .vr-enlace a { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* Selector de modo (Entrevistas | Listas por enlace) */
+.vr-modos { display: inline-flex; gap: 4px; background: #eef2f8; border-radius: 12px; padding: 4px; margin: 14px 0 4px; }
+.vr-modos a { text-decoration: none; color: #334155; font-weight: 600; font-size: 13.5px; padding: 8px 16px; border-radius: 9px; }
+.vr-modos a.on { background: #fff; color: #0d3f77; box-shadow: 0 1px 3px rgba(16,42,73,.12); }

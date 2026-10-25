@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acta de levantamiento – SIPAD</title>
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<style>
+  :root { --tinta: #111827; --suave: #4b5563; --linea: #d1d5db; --azul: #0d3f77; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eef1f5; color: var(--tinta); font: 13px/1.45 Arial, Helvetica, sans-serif; }
+  .barra { position: sticky; top: 0; background: #0d3f77; color: #fff; display: flex; gap: 10px; justify-content: space-between; align-items: center; padding: 10px 16px; }
+  .barra button { font: inherit; font-weight: 700; border: none; border-radius: 8px; padding: 8px 14px; cursor: pointer; background: #fff; color: var(--azul); }
+  .hoja { background: #fff; max-width: 820px; margin: 18px auto; padding: 36px 44px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size: 16px; text-align: center; margin: 0 0 4px; text-transform: uppercase; letter-spacing: .02em; }
+  .ent { text-align: center; font-weight: 700; margin-bottom: 18px; }
+  h2 { font-size: 13px; text-transform: uppercase; color: var(--azul); border-bottom: 1px solid var(--linea); padding-bottom: 3px; margin: 20px 0 8px; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { border: 1px solid var(--linea); padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: #f3f4f6; font-size: 12px; }
+  .datos td:first-child { width: 28%; font-weight: 700; background: #fafafa; }
+  .r { font-weight: 700; white-space: nowrap; }
+  .tips { margin: 2px 0 0; padding-left: 16px; }
+  .muted { color: var(--suave); }
+  .firmas { display: grid; grid-template-columns: 1fr 1fr; gap: 34px 40px; margin-top: 44px; }
+  .firma { border-top: 1px solid var(--tinta); padding-top: 4px; }
+  .pie { margin-top: 28px; font-size: 11px; color: var(--suave); }
+  .error { max-width: 600px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 10px; }
+  @media (max-width: 640px) { .hoja { padding: 20px 16px; } .firmas { grid-template-columns: 1fr; } }
+  @media print {
+    body { background: #fff; } .barra { display: none; } .hoja { box-shadow: none; margin: 0; max-width: none; padding: 0; }
+    tr { page-break-inside: avoid; } .firmas { page-break-inside: avoid; }
+    @page { margin: 18mm 16mm; }
+  }
+</style>
+</head>
+<body>
+  <div class="barra"><span>Acta de levantamiento de información documental</span><button type="button" id="imprimir">Imprimir o guardar PDF</button></div>
+  <div id="acta"></div>
+  <script type="module" src="/entrevista/acta.js"></script>
+</body>
+</html>

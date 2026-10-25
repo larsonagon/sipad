@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cardVerif = document.getElementById('cardVerificacion');
   if (cardVerif) {
     cardVerif.style.display = puedeTRDAI ? '' : 'none';
-    cardVerif.onclick = () => { window.location.href = '/verificacion/index.html'; };
+    cardVerif.onclick = () => { window.location.href = '/entrevista/'; };
   }
   const cardSIC = document.getElementById('cardSIC');
   if (cardSIC) {

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrevistas por oficina – SIPAD</title>
+<link rel="stylesheet" href="/css/core/sipad-ui.css">
+<link rel="stylesheet" href="/css/core/notifications.css">
+<link rel="stylesheet" href="/verificacion/verificacion.css">
+<link rel="stylesheet" href="/entrevista/entrevista.css">
+  <!-- SIPAD-PWA -->
+  <meta name="theme-color" content="#0E4A57">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SIPAD">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+  <link rel="stylesheet" href="/css/core/mobile.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+      });
+    }
+  </script>
+  <!-- /SIPAD-PWA -->
+</head>
+<body>
+  <div id="header"></div>
+  <main class="module-page vr-page en-page">
+    <div class="module-header premium-header">
+      <h1>Verificación por dependencia</h1>
+      <p class="module-subtext">
+        Modo entrevista: usted pregunta a la oficina y marca lo que responden. Cada subserie viene con la
+        función del manual que la justifica. Al terminar, el acta de levantamiento queda lista para firma
+        y lo confirmado pasa a las propuestas de la TRD.
+      </p>
+    </div>
+    <nav class="vr-modos" aria-label="Modo de verificación">
+      <a href="/entrevista/" class="on" aria-current="page">Entrevistas</a>
+      <a href="/verificacion/">Listas por enlace</a>
+    </nav>
+    <div id="vista"></div>
+  </main>
+  <script type="module" src="/entrevista/entrevista.js"></script>
+</body>
+</html>

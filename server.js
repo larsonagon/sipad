@@ -107,6 +107,7 @@
 
   // ✅ VERIFICACIÓN por dependencia (lista Sí/No por enlace público, alternativa al ICAF)
   import { runVerificacionMigration } from './backend/modules/verificacion/verificacion.repository.js'
+  import { runEntrevistaMigration } from './backend/modules/verificacion/verificacion.entrevista.js'
   import { buildVerificacionRouter, buildVerificacionPublicaRouter } from './backend/modules/verificacion/verificacion.routes.js'
   import { requireLevel } from './backend/middlewares/role.middleware.js'
 
@@ -181,6 +182,7 @@
       // ✅ VERIFICACIÓN — defensivo: si falla, NO debe tumbar el arranque
       try {
         await runVerificacionMigration(db)
+        await runEntrevistaMigration(db)
       } catch (errVer) {
         console.error('⚠️ Migración VERIFICACIÓN falló (el servidor continúa):', errVer.message)
       }

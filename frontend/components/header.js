@@ -262,7 +262,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
     ?.addEventListener('click', () => { window.location.href = '/trd-ai/trd-ai-instrumentos.html' })
 
   document.getElementById('btnVerificacion')
-    ?.addEventListener('click', () => { window.location.href = '/verificacion/index.html' })
+    ?.addEventListener('click', () => { window.location.href = '/entrevista/' })
 
   document.getElementById('btnSIC')
     ?.addEventListener('click', () => { window.location.href = '/sic/index.html' })

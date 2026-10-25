@@ -15,6 +15,19 @@
 //   DELETE /respuestas/:id
 //   POST   /listas/:id/aplicar        lleva las decisiones a las propuestas de la TRD
 //   GET    /listas/:id/resultados.csv
+// Modo entrevista (el asesor pregunta y marca):
+//   GET    /guias                     guías importadas (una por oficina)
+//   POST   /guias/importar            { archivo: base64 .xlsx, nombre? }
+//   DELETE /guias/:id
+//   GET    /entrevistas
+//   POST   /entrevistas               { dependencia_id, guia_id?, oficina?, fecha?, lugar?, entrevistador? }
+//   GET    /entrevistas/:id           detalle (árbol subserie → tipologías) + resumen
+//   PUT    /entrevistas/:id           { fecha?, lugar?, entrevistador?, oficina?, asistentes?, observaciones?, estado? }
+//   DELETE /entrevistas/:id
+//   POST   /entrevistas/:id/items     { texto, padre_id?, serie?, subserie? }
+//   PUT    /entrevista-items/:id      { respuesta?, nota?, serie?, subserie?, texto? }
+//   DELETE /entrevista-items/:id      (solo agregados)
+//   POST   /entrevistas/:id/aplicar   lleva lo confirmado a las propuestas de la TRD
 // Públicas (/api/publico/verificacion, SIN sesión, por token):
 //   GET    /:token                    formulario (solo si la lista está abierta)
 //   POST   /:token                    { nombre, cargo?, respuestas: { itemId: { r, desde?, hasta?, soporte?, volumen? } }, adicionales?, observaciones? }
@@ -22,9 +35,10 @@
 
 import express from 'express'
 import * as repo from './verificacion.repository.js'
+import * as ent from './verificacion.entrevista.js'
 
 const usuario = (req) => req.user?.nombre || req.user?.username || req.user?.email || String(req.user?.sub || req.user?.id || '')
-const ent = (req) => req.entidad_id
+const eid = (req) => req.entidad_id
 
 function utilidades(etiqueta) {
   const responder = (res, out, okStatus = 200) => res.status(out.ok ? okStatus : (out.status || 400)).json(out)
@@ -53,49 +67,75 @@ export function buildVerificacionRouter(db, { guard = nivelMinimo(60) } = {}) {
   r.use(guard)
 
   r.get('/dependencias', envolver(async (req, res) =>
-    res.json({ ok: true, dependencias: await repo.dependenciasEntidad(db, ent(req)) }), 'No se pudieron cargar las dependencias'))
+    res.json({ ok: true, dependencias: await repo.dependenciasEntidad(db, eid(req)) }), 'No se pudieron cargar las dependencias'))
 
   r.get('/listas', envolver(async (req, res) =>
-    res.json({ ok: true, listas: await repo.listar(db, ent(req)) }), 'No se pudieron cargar las listas'))
+    res.json({ ok: true, listas: await repo.listar(db, eid(req)) }), 'No se pudieron cargar las listas'))
 
   r.post('/listas', envolver(async (req, res) =>
-    responder(res, await repo.crearLista(db, ent(req), req.body || {}, usuario(req)), 201), 'No se pudo crear la lista'))
+    responder(res, await repo.crearLista(db, eid(req), req.body || {}, usuario(req)), 201), 'No se pudo crear la lista'))
 
   r.get('/listas/:id', envolver(async (req, res) =>
-    responder(res, await repo.detalle(db, ent(req), req.params.id)), 'No se pudo cargar la lista'))
+    responder(res, await repo.detalle(db, eid(req), req.params.id)), 'No se pudo cargar la lista'))
 
   r.put('/listas/:id', envolver(async (req, res) =>
-    responder(res, await repo.actualizarLista(db, ent(req), req.params.id, req.body || {})), 'No se pudo guardar la lista'))
+    responder(res, await repo.actualizarLista(db, eid(req), req.params.id, req.body || {})), 'No se pudo guardar la lista'))
 
   r.delete('/listas/:id', envolver(async (req, res) =>
-    responder(res, await repo.eliminarLista(db, ent(req), req.params.id)), 'No se pudo eliminar la lista'))
+    responder(res, await repo.eliminarLista(db, eid(req), req.params.id)), 'No se pudo eliminar la lista'))
 
   r.post('/listas/:id/token', envolver(async (req, res) =>
-    responder(res, await repo.regenerarToken(db, ent(req), req.params.id)), 'No se pudo generar el enlace'))
+    responder(res, await repo.regenerarToken(db, eid(req), req.params.id)), 'No se pudo generar el enlace'))
 
   r.post('/listas/:id/items', envolver(async (req, res) =>
-    responder(res, await repo.agregarItems(db, ent(req), req.params.id, req.body || {}), 201), 'No se pudo agregar'))
+    responder(res, await repo.agregarItems(db, eid(req), req.params.id, req.body || {}), 201), 'No se pudo agregar'))
 
   r.put('/items/:id', envolver(async (req, res) =>
-    responder(res, await repo.actualizarItem(db, ent(req), req.params.id, req.body || {})), 'No se pudo guardar el ítem'))
+    responder(res, await repo.actualizarItem(db, eid(req), req.params.id, req.body || {})), 'No se pudo guardar el ítem'))
 
   r.delete('/items/:id', envolver(async (req, res) =>
-    responder(res, await repo.eliminarItem(db, ent(req), req.params.id)), 'No se pudo eliminar el ítem'))
+    responder(res, await repo.eliminarItem(db, eid(req), req.params.id)), 'No se pudo eliminar el ítem'))
 
   r.delete('/respuestas/:id', envolver(async (req, res) =>
-    responder(res, await repo.eliminarRespuesta(db, ent(req), req.params.id)), 'No se pudo eliminar la respuesta'))
+    responder(res, await repo.eliminarRespuesta(db, eid(req), req.params.id)), 'No se pudo eliminar la respuesta'))
 
   r.post('/listas/:id/aplicar', envolver(async (req, res) =>
-    responder(res, await repo.aplicar(db, ent(req), req.params.id, usuario(req))), 'No se pudieron aplicar los resultados'))
+    responder(res, await repo.aplicar(db, eid(req), req.params.id, usuario(req))), 'No se pudieron aplicar los resultados'))
 
   r.get('/listas/:id/resultados.csv', envolver(async (req, res) => {
-    const d = await repo.detalle(db, ent(req), req.params.id)
+    const d = await repo.detalle(db, eid(req), req.params.id)
     if (!d.ok) return responder(res, d)
     const nombre = (d.lista.dependencia_nombre || 'dependencia').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9]+/g, '-')
     res.setHeader('Content-Type', 'text/csv; charset=utf-8')
     res.setHeader('Content-Disposition', `attachment; filename="Verificacion-${nombre}.csv"`)
     res.end(repo.csvResultados(d))
   }, 'No se pudieron exportar los resultados'))
+
+  // ---------------- Modo entrevista ----------------
+  r.get('/guias', envolver(async (req, res) =>
+    res.json({ ok: true, guias: await ent.listarGuias(db, eid(req)) }), 'No se pudieron cargar las guías'))
+  r.post('/guias/importar', envolver(async (req, res) =>
+    responder(res, await ent.importarGuias(db, eid(req), req.body || {}, usuario(req)), 201), 'No se pudo importar la guía'))
+  r.delete('/guias/:id', envolver(async (req, res) =>
+    responder(res, await ent.eliminarGuia(db, eid(req), req.params.id)), 'No se pudo eliminar la guía'))
+  r.get('/entrevistas', envolver(async (req, res) =>
+    res.json({ ok: true, entrevistas: await ent.listarEntrevistas(db, eid(req)) }), 'No se pudieron cargar las entrevistas'))
+  r.post('/entrevistas', envolver(async (req, res) =>
+    responder(res, await ent.crearEntrevista(db, eid(req), req.body || {}, usuario(req)), 201), 'No se pudo crear la entrevista'))
+  r.get('/entrevistas/:id', envolver(async (req, res) =>
+    responder(res, await ent.detalleEntrevista(db, eid(req), req.params.id)), 'No se pudo cargar la entrevista'))
+  r.put('/entrevistas/:id', envolver(async (req, res) =>
+    responder(res, await ent.actualizarEntrevista(db, eid(req), req.params.id, req.body || {})), 'No se pudo guardar la entrevista'))
+  r.delete('/entrevistas/:id', envolver(async (req, res) =>
+    responder(res, await ent.eliminarEntrevista(db, eid(req), req.params.id)), 'No se pudo eliminar la entrevista'))
+  r.post('/entrevistas/:id/items', envolver(async (req, res) =>
+    responder(res, await ent.agregarItemEntrevista(db, eid(req), req.params.id, req.body || {}), 201), 'No se pudo agregar el documento'))
+  r.put('/entrevista-items/:id', envolver(async (req, res) =>
+    responder(res, await ent.responderItem(db, eid(req), req.params.id, req.body || {})), 'No se pudo guardar la respuesta'))
+  r.delete('/entrevista-items/:id', envolver(async (req, res) =>
+    responder(res, await ent.eliminarItemEntrevista(db, eid(req), req.params.id)), 'No se pudo quitar el documento'))
+  r.post('/entrevistas/:id/aplicar', envolver(async (req, res) =>
+    responder(res, await ent.aplicarEntrevista(db, eid(req), req.params.id)), 'No se pudieron aplicar los resultados'))
 
   return r
 }
