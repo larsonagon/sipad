@@ -51,7 +51,8 @@ export const REGISTRO_ESPACIO = [
   { id: 'ESP-05', texto: '¿Es de uso exclusivo para archivo?', tipo: 'spn' },
   { id: 'ESP-06', texto: 'Responsable o custodio del espacio', tipo: 'txt' },
   { id: 'ESP-07', texto: '¿Cuántas llaves existen?', tipo: 'num', unidad: 'llaves', extra: { tipo: 'txt', etiqueta: '¿Quién las tiene?' } },
-  { id: 'ESP-08', texto: 'Área aproximada', tipo: 'num', unidad: 'm²' },
+  { id: 'ESP-08', texto: 'Área aproximada (a simple vista)', tipo: 'lista', opcional: true,
+    opciones: ['Menos de 10 m²', '10–30 m²', '30–60 m²', 'Más de 60 m²'] },
   { id: 'ESP-09', texto: 'Fechas extremas aproximadas de los documentos (año inicial – año final)', tipo: 'txt' },
   { id: 'ESP-10', texto: '¿Guarda documentos de administraciones anteriores sin organizar (fondo acumulado)?', tipo: 'spn', inversa: true }
 ]
@@ -121,22 +122,10 @@ export const INSTITUCIONAL = [
 
 // ---------------- Sección 2 · Ficha de inspección por espacio ----------------
 export const FICHA = [
-  { id: 'A', titulo: 'Volumen (medido con flexómetro)', ayuda:
-    'Mida el largo ocupado en cada entrepaño y súmelo. Las cajas, archivadores y pilas se cuentan aparte SOLO si NO están sobre estantería.',
-    preguntas: [
-      { id: 'FI-01', tipo: 'num', unidad: 'm', texto: 'Metros lineales ocupados en estantería (suma del largo ocupado en cada entrepaño)' },
-      { id: 'FI-02', tipo: 'num', unidad: 'cajas', texto: 'Cajas de archivo estándar FUERA de estantería (piso, sobre muebles)',
-        extra: { tipo: 'num', etiqueta: 'Ancho de una caja (cm)', defecto: 20 } },
-      { id: 'FI-03', tipo: 'num', unidad: 'cajas', texto: 'Cajas improvisadas (cartón reciclado, otras) FUERA de estantería',
-        extra: { tipo: 'num', etiqueta: 'Ancho de una caja (cm)', defecto: 30 } },
-      { id: 'FI-04', tipo: 'num', unidad: 'gavetas', texto: 'Archivadores: número de gavetas ocupadas',
-        extra: { tipo: 'num', etiqueta: 'Largo ocupado total (m)' } },
-      { id: 'FI-05', tipo: 'num', unidad: 'pilas', texto: 'Documentos en pilas (piso, escritorios): número de pilas',
-        extra: { tipo: 'num', etiqueta: 'Altura total sumada (cm)' } },
-      { id: 'FI-06', tipo: 'multi', texto: 'Otros soportes presentes',
-        opciones: ['Planos', 'Fotografías', 'CD-DVD', 'USB', 'Cintas', 'Libros o tomos', 'Ninguno'] }
-    ]},
-  { id: 'B', titulo: 'Organización', preguntas: [
+  // Sin bloque de volumen: no es viable medir con flexómetro en campo (decisión oct. 2026).
+  { id: 'B', titulo: 'Organización y soportes', preguntas: [
+    { id: 'FI-06', tipo: 'multi', texto: 'Soportes distintos al papel presentes',
+      opciones: ['Planos', 'Fotografías', 'CD-DVD', 'USB', 'Cintas', 'Libros o tomos', 'Ninguno'] },
     { id: 'FI-07', tipo: 'lista', componente: 'ALM', opciones: RANGOS_PCT, texto: 'Proporción organizada (estimada)',
       puntaje: { '0–25 %': 0, '26–50 %': 0.33, '51–75 %': 0.66, '76–100 %': 1 } },
     { id: 'FI-08', tipo: 'lista', componente: 'ALM', opciones: RANGOS_PCT, texto: 'Proporción de cajas y carpetas rotuladas',
@@ -184,8 +173,10 @@ export const FICHA = [
     { id: 'FI-36', tipo: 'txt', opcional: true, texto: 'Observaciones' }
   ]}
 ]
-// FI-34 (fotografías) se maneja como adjuntos del espacio (mínimo 3).
-export const FOTOS_MINIMAS = 3
+// FI-34 (fotografías) se maneja como adjuntos del espacio. Son opcionales:
+// se recomiendan 3 (panorámica, mobiliario y el deterioro más grave).
+export const FOTOS_MINIMAS = 0
+export const FOTOS_RECOMENDADAS = 3
 
 // ---------------- Sección 3 · Sistemas ----------------
 export const SISTEMAS = [
@@ -234,5 +225,5 @@ export function indicePreguntas() {
 
 export function catalogo() {
   return { componentes: COMPONENTES, escala: ESCALA, registroEspacio: REGISTRO_ESPACIO, institucional: INSTITUCIONAL,
-    ficha: FICHA, fotosMinimas: FOTOS_MINIMAS, sistemas: SISTEMAS, repositorio: REPOSITORIO }
+    ficha: FICHA, fotosMinimas: FOTOS_MINIMAS, fotosRecomendadas: FOTOS_RECOMENDADAS, sistemas: SISTEMAS, repositorio: REPOSITORIO }
 }

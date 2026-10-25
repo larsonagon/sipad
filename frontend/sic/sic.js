@@ -116,7 +116,7 @@ function pregunta(p, actual, guardar, { dependencias = [] } = {}) {
   let estado = { ...(actual || {}) }
   const emitir = () => guardar(limpio(estado))
   const caja = el('div', { class: 'sic-preg', 'data-preg': p.id })
-  caja.append(el('div', { class: 'enunciado' }, el('code', { text: p.id }), p.texto))
+  caja.append(el('div', { class: 'enunciado' }, el('code', { text: p.id }), p.texto, p.opcional ? el('span', { class: 'opcional', text: ' (opcional)' }) : null))
 
   const seg = (opciones, clases = {}) => {
     const w = el('div', { class: 'sic-seg' })
@@ -271,9 +271,9 @@ function panelEspacios() {
 
   if (!EST.espacios.length) { p.append(el('div', { class: 'sic-vacio', text: 'Aún no hay espacios registrados.' })); return }
   const grid = el('div', { class: 'sic-cards' })
-  const totalFicha = CAT.ficha.reduce((n, b) => n + b.preguntas.length, 0)
+  const totalFicha = CAT.ficha.reduce((n, b) => n + b.preguntas.filter(q => !q.opcional).length, 0)
   for (const e of EST.espacios) {
-    const resp = CAT.ficha.reduce((n, b) => n + contarRespondidas(b.preguntas, e.ficha), 0)
+    const resp = CAT.ficha.reduce((n, b) => n + contarRespondidas(b.preguntas.filter(q => !q.opcional), e.ficha), 0)
     const pct = Math.round(resp / totalFicha * 100)
     const deps = (e.registro['ESP-03']?.v || []).map(id => EST.dependencias.find(d => String(d.id) === String(id))?.nombre).filter(Boolean)
     grid.append(el('div', { class: 'sic-card' },
@@ -281,7 +281,7 @@ function panelEspacios() {
       el('div', { class: 'meta', text: [e.registro['ESP-04']?.v, e.registro['ESP-02']?.v].filter(Boolean).join(' · ') || 'Sin tipo ni ubicación' }),
       el('div', { class: 'meta', text: deps.length ? deps.join(', ') : 'Sin dependencia asignada' }),
       el('div', { class: 'sic-mini' }, el('i', { style: `width:${pct}%` })),
-      el('div', { class: 'meta', text: `Ficha ${resp}/${totalFicha} · ${e.fotos} foto(s) de ${CAT.fotosMinimas} mínimas` }),
+      el('div', { class: 'meta', text: `Ficha ${resp}/${totalFicha} · ${e.fotos} foto(s) (opcionales)` }),
       el('div', { class: 'acciones-card' },
         el('button', { class: 'btn-primary btn-sm', type: 'button', text: 'Inspeccionar', onclick: () => { espacioActivo = e.id; sessionStorage.setItem('sic_espacio', e.id); irA('inspeccion') } }),
         el('button', { class: 'btn-secondary btn-sm', type: 'button', text: 'Editar registro', onclick: () => formularioEspacio(form, e) }),
@@ -397,8 +397,8 @@ function panelInspeccion() {
   })
   fotos.append(el('label', { class: 'sic-subir' }, input, '📷 Tomar o subir foto'))
   const d = el('details', { class: 'sic-bloque', open: true },
-    el('summary', {}, el('span', { text: 'Fotografías (panorámica, mobiliario y el deterioro más grave)' }),
-      el('span', { class: 'cuenta' + ((e.fotos || 0) >= CAT.fotosMinimas ? ' lleno' : ''), text: `${e.fotos || 0}/${CAT.fotosMinimas}` })),
+    el('summary', {}, el('span', { text: 'Fotografías — opcionales (se recomiendan: panorámica, mobiliario y el deterioro más grave)' }),
+      el('span', { class: 'cuenta' + ((e.fotos || 0) >= (CAT.fotosRecomendadas || 3) ? ' lleno' : ''), text: `${e.fotos || 0} · opcional` })),
     el('div', { class: 'cuerpo' }, fotos))
   p.append(d)
 }
@@ -467,8 +467,7 @@ async function panelResultados() {
 
   const kpi = (n, l, rojo) => el('div', { class: 'sic-kpi' + (rojo ? ' rojo' : '') }, el('div', { class: 'n', text: n }), el('div', { class: 'l', text: l }))
   p.append(el('div', { class: 'sic-kpis' },
-    kpi(fmt(a.volumen.total_ml), 'metros lineales levantados'),
-    kpi(fmt(a.volumen.mal_estado_ml), 'm en mal estado (estimado)', a.volumen.mal_estado_ml > 0),
+    kpi(String(r.espacios), 'espacios inspeccionados'),
     kpi(String(r.espacios_por_nivel['crítica']), 'espacios en riesgo crítico', r.espacios_por_nivel['crítica'] > 0),
     kpi(String(r.repositorios_criticos), 'repositorios en riesgo crítico', r.repositorios_criticos > 0),
     kpi(String(r.hallazgos_por_prioridad['crítica']), 'acciones de prioridad crítica', r.hallazgos_por_prioridad['crítica'] > 0),
@@ -499,13 +498,13 @@ async function panelResultados() {
   p.append(el('h2', { class: 'sic-h2', text: 'Resumen ejecutivo' }), res)
 
   // Espacios
-  p.append(el('h2', { class: 'sic-h2', text: 'Volumen y riesgo por espacio' }))
+  p.append(el('h2', { class: 'sic-h2', text: 'Estado y riesgo por espacio' }))
   if (a.espacios.length) {
     const t = el('table', { class: 'sic-tabla' })
-    t.innerHTML = `<thead><tr><th>Espacio</th><th>Tipo</th><th>Total (m)</th><th>Fuera de estantería (m)</th><th>Estado B/R/M</th><th>Riesgo</th><th>Factores principales</th></tr></thead>`
+    t.innerHTML = `<thead><tr><th>Espacio</th><th>Tipo</th><th>Estado B/R/M</th><th>Riesgo</th><th>Factores principales</th></tr></thead>`
     const tb = el('tbody')
     for (const e of a.espacios) tb.insertAdjacentHTML('beforeend', `<tr>
-      <td><b>${esc(e.nombre)}</b></td><td>${esc(e.tipo || '—')}</td><td class="num">${fmt(e.volumen.total)}</td><td class="num">${fmt(e.volumen.fuera_de_estanteria)}</td>
+      <td><b>${esc(e.nombre)}</b></td><td>${esc(e.tipo || '—')}</td>
       <td>${e.estado ? `${fmt(e.estado.bueno)} / ${fmt(e.estado.regular)} / ${fmt(e.estado.malo)}` : '—'}</td>
       <td><span class="nivel ${esc(e.riesgo.nivel)}">${esc(e.riesgo.nivel)}</span></td>
       <td>${esc(e.riesgo.factores.slice(0, 3).map(f => f.factor).join(' · ') || '—')}</td></tr>`)

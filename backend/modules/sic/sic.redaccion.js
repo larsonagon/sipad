@@ -25,7 +25,7 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
   const peores = crit.slice(0, 3).map(i => `${i.nombre.toLowerCase()} (${i.valor}/100)`)
 
   const sintesis = [
-    `El diagnóstico se levantó en ${r.espacios} espacio(s) donde ${entidad} guarda documentos, con un volumen total de ${fmt(a.volumen.total_ml)} metros lineales, de los cuales cerca de ${fmt(a.volumen.mal_estado_ml)} m están en mal estado y ${fmt(a.volumen.fuera_de_estanteria_ml)} m se encuentran fuera de estantería.`,
+    `El diagnóstico se levantó en ${r.espacios} espacio(s) donde ${entidad} guarda documentos.`,
     r.espacios ? `Por nivel de riesgo, ${niv['crítica']} espacio(s) quedaron en nivel crítico, ${niv['alta']} en alto, ${niv['media']} en medio y ${niv['baja']} en bajo.` : '',
     a.repositorios.length ? `En el componente electrónico se inventariaron ${a.repositorios.length} sistema(s) o repositorio(s), ${r.repositorios_criticos} de ellos en riesgo crítico de pérdida de información.` : 'No se inventariaron sistemas ni repositorios electrónicos.',
     peores.length ? `Los componentes más débiles son ${peores.join(', ')}.` : '',
@@ -35,7 +35,7 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
 
   const metodologia =
     'La información se obtuvo mediante el formulario de Diagnóstico Integral de SIPAD, diligenciado por el responsable de archivo ' +
-    '(cuestionario institucional e inspección de cada espacio con medición de metros lineales y registro fotográfico) y por la Oficina de Sistemas ' +
+    '(cuestionario institucional e inspección visual de cada espacio, con registro fotográfico cuando fue posible) y por la Oficina de Sistemas ' +
     '(inventario de sistemas y repositorios electrónicos). El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
     'y las respuestas "No sabe" se registran como tareas de verificación, no como hechos.'
 
@@ -59,10 +59,7 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
 // ---------------- Hechos para el asistente ----------------
 export function hechosParaLLM(a) {
   return {
-    volumen_total_m: a.volumen.total_ml,
-    volumen_mal_estado_m: a.volumen.mal_estado_ml,
-    volumen_fuera_estanteria_m: a.volumen.fuera_de_estanteria_ml,
-    espacios: a.espacios.map(e => ({ nombre: e.nombre, tipo: e.tipo, metros: e.volumen.total, riesgo: e.riesgo.nivel,
+    espacios: a.espacios.map(e => ({ nombre: e.nombre, tipo: e.tipo, estado_pct: e.estado, riesgo: e.riesgo.nivel,
       factores: e.riesgo.factores.slice(0, 4).map(f => f.factor) })),
     repositorios: a.repositorios.map(r => ({ nombre: r.nombre, tipo: r.tipo, riesgo: r.riesgo.nivel, factores: r.riesgo.factores })),
     indicadores: a.indicadores.filter(i => i.valor !== null).map(i => ({ componente: i.nombre, valor: i.valor, nivel: i.nivel })),
@@ -81,7 +78,7 @@ export function mensajesResumen(hechos, entidad) {
     '1. Usa ÚNICAMENTE los hechos del JSON. No inventes cifras, espacios, sistemas, fechas ni situaciones.',
     '   Toda cifra que escribas debe aparecer tal cual en el JSON.',
     '2. No cites normas. Las justificaciones se explican en concepto (por qué es un riesgo y qué se evita).',
-    '3. Estructura: situación general (volumen y riesgos), problemas más graves (prioridad crítica), qué se propone',
+    '3. Estructura: situación general (espacios y riesgos), problemas más graves (prioridad crítica), qué se propone',
     '   hacer primero y qué puede hacerse sin presupuesto, y la decisión que se le pide al Comité.',
     '4. Si hay respuestas pendientes de verificar, menciónalo en una frase.',
     '5. No menciones a SIPAD, al motor ni a la inteligencia artificial.'

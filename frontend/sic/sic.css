@@ -125,3 +125,5 @@
   .sic-ind .b { grid-column: 1 / -1; grid-row: 2; }
   .sic-card .acciones-card button { min-width: 0; }
 }
+
+.enunciado .opcional { color: #94a3b8; font-weight: 500; font-size: 12px; }

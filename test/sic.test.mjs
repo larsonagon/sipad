@@ -3,7 +3,7 @@ import { test, before, after, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
 import { crearPool, adaptar, assertNoProd } from './helpers/db.mjs'
-import { analizar, volumenEspacio, riesgoEspacio, riesgoRepositorio } from '../backend/modules/sic/sic.motor.js'
+import { analizar, riesgoEspacio, riesgoRepositorio, avance } from '../backend/modules/sic/sic.motor.js'
 import { indicePreguntas, catalogo } from '../backend/modules/sic/sic.formulario.js'
 import * as repo from '../backend/modules/sic/sic.repository.js'
 import { generarInformeSIC } from '../backend/modules/sic/sic.informe.js'
@@ -28,11 +28,11 @@ function escenario() {
     espacios: [
       { id: 'E1', fotos: 3,
         registro: { 'ESP-01': v('Casa abandonada'), 'ESP-03': v(['1']), 'ESP-04': v('Inmueble externo o abandonado'), 'ESP-07': v(1), 'ESP-10': v('si') },
-        ficha: { 'FI-01': v(10), 'FI-02': v(20, 20), 'FI-05': v(3, 150), 'FI-10': v({ bueno: 20, regular: 30, malo: 50 }),
+        ficha: { 'FI-26': v(['Estantería de madera', 'Cajas en el piso']), 'FI-10': v({ bueno: 20, regular: 30, malo: 50 }),
           'FI-11': v('extendido'), 'FI-12': v('puntual'), 'FI-17': v('si'), 'FI-27': v('no'), 'FI-30': v('no'), 'FI-23': v('si') } },
       { id: 'E2', fotos: 1,
         registro: { 'ESP-01': v('Oficina Hacienda'), 'ESP-03': v(['2']), 'ESP-04': v('Oficina compartida') },
-        ficha: { 'FI-01': v(25.5), 'FI-10': v({ bueno: 80, regular: 20, malo: 0 }), 'FI-11': v('ausente'), 'FI-12': v('ausente'),
+        ficha: { 'FI-10': v({ bueno: 80, regular: 20, malo: 0 }), 'FI-11': v('ausente'), 'FI-12': v('ausente'),
           'FI-17': v('no'), 'FI-27': v('si'), 'FI-30': v('si'), 'FI-24': v('si'), 'FI-23': v('si'), 'FI-33': v('no') } }
     ],
     repositorios: [
@@ -53,10 +53,22 @@ describe('catálogo', () => {
 })
 
 describe('motor', () => {
-  test('volumen: estantería + cajas fuera + pilas', () => {
-    const vol = volumenEspacio({ 'FI-01': v(10), 'FI-02': v(20, 20), 'FI-05': v(3, 150) })
-    assert.equal(vol.total, 10 + 4 + 1.5)
-    assert.equal(vol.fuera_de_estanteria, 5.5)
+  test('sin medición: no se pide volumen, el área es un rango opcional y las fotos son opcionales', () => {
+    const idx = indicePreguntas()
+    for (const id of ['FI-01', 'FI-02', 'FI-03', 'FI-04', 'FI-05']) assert.equal(idx[id], undefined, `${id} ya no se pregunta`)
+    assert.equal(idx['ESP-08'].tipo, 'lista')
+    assert.ok(idx['ESP-08'].opcional)
+    assert.equal(catalogo().fotosMinimas, 0)
+    // Una ficha con todas sus preguntas respondidas queda completa aunque no tenga fotos
+    const ficha = {}
+    for (const b of catalogo().ficha) for (const q of b.preguntas) if (!q.opcional) ficha[q.id] = v('x')
+    const av = avance({ institucional: {}, repositorios: [], espacios: [{ id: 'E', registro: {}, ficha, fotos: 0 }] })
+    assert.equal(av.espacios.fichasCompletas, 1)
+  })
+
+  test('cajas en el piso suman al riesgo y generan la acción de elevarlas', () => {
+    const r = riesgoEspacio({ registro: {}, ficha: { 'FI-26': v(['Cajas en el piso']) } })
+    assert.ok(r.factores.some(f => /piso/.test(f.factor)))
   })
 
   test('hongos extendidos fuerzan riesgo crítico', () => {
@@ -76,7 +88,8 @@ describe('motor', () => {
 
   test('análisis completo del escenario', () => {
     const a = analizar(escenario())
-    assert.equal(a.volumen.total_ml, 15.5 + 25.5)
+    assert.equal(a.volumen, undefined, 'el análisis ya no reporta volumen')
+    assert.ok(a.hallazgos.some(h => /contacto con el piso/.test(h.hallazgo)))
     assert.equal(a.espacios[0].nombre, 'Casa abandonada', 'el más riesgoso va primero')
     assert.equal(a.espacios[0].riesgo.nivel, 'crítica')
     assert.equal(a.resumen.repositorios_criticos, 1)
@@ -111,7 +124,6 @@ describe('motor', () => {
 
   test('diagnóstico vacío no rompe', () => {
     const a = analizar({})
-    assert.equal(a.volumen.total_ml, 0)
     assert.equal(a.espacios.length, 0)
   })
 })
@@ -127,7 +139,8 @@ describe('redacción', () => {
     const a = analizar(escenario())
     const r = await resumenEjecutivo(a, { entidad: 'Alcaldía', apiKey: null })
     assert.equal(r.fuente, 'motor')
-    assert.match(r.texto, /41 metros lineales/)
+    assert.match(r.texto, /2 espacio\(s\)/)
+    assert.doesNotMatch(r.texto, /metros lineales/)
   })
 
   test('con LLM inyectado advierte cifras inventadas', async () => {
@@ -159,7 +172,7 @@ describe('datos (Postgres)', () => {
   test('respuestas: guarda, valida y borra', async () => {
     assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-01': { v: 'si', s: 'Decreto 10' }, 'IN-02': 40 }, 'tecnico')).ok, true)
     assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-01': 'tal vez' })).ok, false, 'rechaza valor inválido')
-    assert.equal((await repo.guardarRespuestas(db, ENT, { 'FI-01': 3 })).ok, false, 'rechaza pregunta de otra sección')
+    assert.equal((await repo.guardarRespuestas(db, ENT, { 'FI-11': 'puntual' })).ok, false, 'rechaza pregunta de otra sección')
     assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-02': 150 })).ok, false, 'porcentaje > 100')
     await repo.guardarRespuestas(db, ENT, { 'IN-02': 50 })
     let e = await repo.obtenerEstado(db, ENT)
@@ -175,7 +188,8 @@ describe('datos (Postgres)', () => {
     assert.equal((await repo.crearEspacio(db, ENT, { registro: { 'ESP-01': 'X', 'ESP-03': ['902'] } })).ok, false, 'dependencia ajena')
     const c = await repo.crearEspacio(db, ENT, { registro: { 'ESP-01': 'Bodega', 'ESP-03': ['901'] } }, 'tecnico')
     assert.ok(c.ok)
-    assert.ok((await repo.actualizarEspacio(db, ENT, c.id, { ficha: { 'FI-01': 12, 'FI-11': 'puntual' } })).ok)
+    assert.ok((await repo.actualizarEspacio(db, ENT, c.id, { ficha: { 'FI-06': ['Planos'], 'FI-11': 'puntual' } })).ok)
+    assert.equal((await repo.actualizarEspacio(db, ENT, c.id, { ficha: { 'FI-01': 12 } })).ok, false, 'el volumen ya no existe')
     assert.ok((await repo.actualizarEspacio(db, ENT, c.id, { ficha: { 'FI-10': { bueno: 50, regular: 30, malo: 20 } } })).ok)
     assert.equal((await repo.actualizarEspacio(db, ENT, c.id, { ficha: { 'FI-10': { bueno: 50, regular: 30, malo: 30 } } })).ok, false, 'suma ≠ 100')
     const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
@@ -184,7 +198,7 @@ describe('datos (Postgres)', () => {
     assert.ok(f.ok)
     const e = await repo.obtenerEstado(db, ENT)
     const esp = e.espacios.find(x => x.id === c.id)
-    assert.equal(esp.ficha['FI-01'].v, 12)
+    assert.deepEqual(esp.ficha['FI-06'].v, ['Planos'])
     assert.equal(esp.ficha['FI-11'].v, 'puntual', 'el parche no borra lo anterior')
     assert.equal(esp.fotos, 1)
     assert.equal((await repo.obtenerFoto(db, OTRA, f.id)), null, 'foto aislada por entidad')

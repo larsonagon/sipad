@@ -3,7 +3,7 @@
 // ------------------------------------------------------
 // "Diagnóstico Integral de Archivos y propuesta de acciones del SIC".
 // Llena las secciones que el documento del SIC tenía pendientes:
-// diagnóstico (volumen, estado, riesgos), tabla de documentos
+// diagnóstico (estado, riesgos), tabla de documentos
 // electrónicos a preservar, hallazgos → acciones por programa y
 // cronograma propuesto. Es un BORRADOR para validación del asesor.
 // ======================================================
@@ -91,28 +91,16 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   c.push(H1('2. Síntesis del diagnóstico'))
   for (const parr of String(resumen?.texto || redaccion.sintesis).split(/\n\s*\n/)) c.push(P(parr.trim()))
 
-  // ---- 3. Volumen y estado ----
-  c.push(H1('3. Volumen documental y estado de conservación'))
-  c.push(P(`Volumen total levantado: ${fmt(a.volumen.total_ml)} metros lineales. Fuera de estantería: ${fmt(a.volumen.fuera_de_estanteria_ml)} m. En mal estado (estimado): ${fmt(a.volumen.mal_estado_ml)} m.`))
+  // ---- 3. Estado de conservación ----
+  c.push(H1('3. Espacios y estado de conservación'))
+  c.push(P('El estado de cada espacio se estimó por observación directa durante la inspección (proporción en buen, regular y mal estado). No se midió el volumen documental en metros lineales.'))
   if (a.espacios.length) {
     c.push(tabla(
-      ['Espacio', 'Tipo', 'Dependencias', 'Estantería (m)', 'Fuera de estantería (m)', 'Total (m)', 'Estado B / R / M (%)', 'Riesgo'],
-      [
-        ...a.espacios.map(e => [e.nombre, e.tipo || '—', e.dependencias.join(', ') || '—',
-          { texto: fmt(e.volumen.estanteria + e.volumen.archivadores), align: AlignmentType.RIGHT },
-          { texto: fmt(e.volumen.fuera_de_estanteria), align: AlignmentType.RIGHT },
-          { texto: fmt(e.volumen.total), align: AlignmentType.RIGHT, bold: true },
-          e.estado ? `${fmt(e.estado.bueno)} / ${fmt(e.estado.regular)} / ${fmt(e.estado.malo)}` : '—',
-          nivelCelda(e.riesgo.nivel)]),
-        [{ texto: 'TOTAL', bold: true }, '', '', '', { texto: fmt(a.volumen.fuera_de_estanteria_ml), align: AlignmentType.RIGHT, bold: true },
-          { texto: fmt(a.volumen.total_ml), align: AlignmentType.RIGHT, bold: true }, '', '']
-      ], [18, 12, 18, 9, 10, 8, 13, 12]))
-    const porDep = Object.entries(a.volumen.por_dependencia).sort((x, y) => y[1] - x[1])
-    if (porDep.length) {
-      c.push(H2('Volumen por dependencia'))
-      c.push(tabla(['Dependencia', 'Metros lineales'], porDep.map(([d, m]) => [d, { texto: fmt(m), align: AlignmentType.RIGHT }]), [75, 25]))
-      c.push(P('Cuando un espacio guarda documentos de varias dependencias, su volumen se reparte en partes iguales entre ellas.', { italics: true, size: 16, color: '666666' }))
-    }
+      ['Espacio', 'Tipo', 'Dependencias', 'Estado B / R / M (%)', 'Riesgo', 'Prioridad del técnico'],
+      a.espacios.map(e => [e.nombre, e.tipo || '—', e.dependencias.join(', ') || '—',
+        e.estado ? `${fmt(e.estado.bueno)} / ${fmt(e.estado.regular)} / ${fmt(e.estado.malo)}` : '—',
+        nivelCelda(e.riesgo.nivel), e.prioridad_tecnico || '—']),
+      [20, 14, 26, 14, 12, 14]))
   } else {
     c.push(P('Aún no se han registrado espacios con documentos.', { italics: true }))
   }

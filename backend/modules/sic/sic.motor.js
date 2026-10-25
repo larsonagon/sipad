@@ -2,7 +2,7 @@
 // SIPAD · Diagnóstico SIC — Motor de interpretación (determinista)
 // ------------------------------------------------------
 // Convierte las respuestas del formulario en:
-//   1. Volumen documental (metros lineales) por espacio / dependencia / entidad.
+//   1. (Sin volumen: no se mide en campo.) Estado y riesgo por espacio.
 //   2. Indicador 0–100 por componente del SIC.
 //   3. Nivel de riesgo por espacio (crítico/alto/medio/bajo) con sus factores.
 //   4. Riesgo por repositorio electrónico.
@@ -46,22 +46,6 @@ export const esNs = (v) => v === 'ns'
 const noOParcial = (v) => v === 'no' || v === 'parcial'
 
 const nombreEspacio = (e) => (val(e.registro, 'ESP-01') || '(espacio sin nombre)').toString()
-
-// ---------------- 1. Volumen ----------------
-export function volumenEspacio(ficha = {}) {
-  const estanteria = num(val(ficha, 'FI-01')) || 0
-  const cajas = (num(val(ficha, 'FI-02')) || 0) * ((num(ext(ficha, 'FI-02')) ?? 20) / 100)
-  const improvisadas = (num(val(ficha, 'FI-03')) || 0) * ((num(ext(ficha, 'FI-03')) ?? 30) / 100)
-  const archivadores = num(ext(ficha, 'FI-04')) || 0
-  const pilas = (num(ext(ficha, 'FI-05')) || 0) / 100
-  const fuera = cajas + improvisadas + pilas
-  const total = estanteria + cajas + improvisadas + archivadores + pilas
-  return {
-    estanteria: r1(estanteria), cajas: r1(cajas), improvisadas: r1(improvisadas),
-    archivadores: r1(archivadores), pilas: r1(pilas),
-    fuera_de_estanteria: r1(fuera), total: r1(total)
-  }
-}
 
 // ---------------- 2. Puntaje de una respuesta (0..1 o null) ----------------
 function puntaje(p, v) {
@@ -119,7 +103,7 @@ export function riesgoEspacio(e) {
   if (esNo(val(f, 'FI-23'))) add(10, 'Sin cerradura funcional', 'FI-23')
   if (esNo(val(f, 'FI-30'))) add(10, 'Sin extintor', 'FI-30')
   if (esNo(val(f, 'FI-27'))) add(10, 'Documentos en contacto con el piso', 'FI-27')
-  if ((num(val(f, 'FI-05')) || 0) > 0) add(5, 'Documentos en pilas', 'FI-05')
+  if ((val(f, 'FI-26') || []).includes('Cajas en el piso')) add(5, 'Cajas sobre el piso', 'FI-26')
 
   const malo = num(f['FI-10']?.v?.malo)
   if (malo !== null && malo > 0) add(Math.min(20, Math.round(malo * 0.2)), `${malo} % en mal estado`, 'FI-10')
@@ -312,18 +296,11 @@ function reglas(ctx) {
       accion: 'Revisar y corregir las instalaciones eléctricas de los espacios de archivo.' })
 
   // ---- Almacenamiento ----
-  const piso = espaciosDonde(e => esNo(val(e.ficha, 'FI-27')) || (num(val(e.ficha, 'FI-05')) || 0) > 0 || (num(val(e.ficha, 'FI-02')) || 0) + (num(val(e.ficha, 'FI-03')) || 0) > 0)
-  if (piso.length) {
-    const mlFuera = r1(E.reduce((a, e) => a + volumenEspacio(e.ficha).fuera_de_estanteria, 0))
-    h({ componente: 'ALM', prioridad: 'alta', costo: 'bajo', evidencia: ['FI-27', 'FI-02', 'FI-03', 'FI-05'], espacios: piso,
-      hallazgo: `En ${piso.length} espacio(s) hay documentos en contacto con el piso o fuera de estantería (${mlFuera} m lineales).`,
+  const piso = espaciosDonde(e => esNo(val(e.ficha, 'FI-27')) || (val(e.ficha, 'FI-26') || []).includes('Cajas en el piso'))
+  if (piso.length)
+    h({ componente: 'ALM', prioridad: 'alta', costo: 'bajo', evidencia: ['FI-27', 'FI-26'], espacios: piso,
+      hallazgo: `En ${piso.length} espacio(s) hay documentos en contacto con el piso o fuera de estantería: ${lista(piso)}.`,
       accion: 'Elevar del piso todas las unidades (estibas o entrepaño inferior a 10 cm como mínimo) y ubicarlas en estantería.' })
-  }
-  const improvis = E.reduce((a, e) => a + (num(val(e.ficha, 'FI-03')) || 0), 0)
-  if (improvis > 0)
-    h({ componente: 'ALM', prioridad: 'media', costo: 'contratacion', evidencia: ['FI-03'],
-      hallazgo: `Se usan ${improvis} cajas improvisadas como unidades de conservación.`,
-      accion: 'Re-almacenar en cajas y carpetas de archivo adecuadas, priorizando los espacios de mayor riesgo.' })
   const inestable = espaciosDonde(e => esNo(val(e.ficha, 'FI-29')))
   if (inestable.length)
     h({ componente: 'ALM', prioridad: 'alta', costo: 'bajo', evidencia: ['FI-29'], espacios: inestable,
@@ -336,10 +313,10 @@ function reglas(ctx) {
       hallazgo: `Hay documentos con daño grave por separar en ${graves.length} espacio(s)` + (cajas ? ` (unas ${cajas} cajas).` : '.'),
       accion: 'Separar, rotular e inventariar los documentos con daño grave y evaluar su intervención especializada.' })
   }
-  if (noOParcial(val(I, 'IN-39')) && ctx.volumen.total > 0)
+  if (noOParcial(val(I, 'IN-39')) && E.length > 0)
     h({ componente: 'ALM', prioridad: 'alta', costo: 'contratacion', evidencia: ['IN-39'],
-      hallazgo: `La entidad no tiene Archivo Central ni espacio identificado para él; el volumen levantado es de ${ctx.volumen.total} m lineales.`,
-      accion: `Definir y adecuar progresivamente un espacio para el Archivo Central con capacidad para al menos ${Math.ceil(ctx.volumen.total)} m lineales más el crecimiento esperado.` })
+      hallazgo: `La entidad no tiene Archivo Central ni espacio identificado para él; los documentos están repartidos en ${E.length} espacio(s).`,
+      accion: 'Definir y adecuar progresivamente un espacio para el Archivo Central con capacidad para recibir las transferencias de las dependencias y su crecimiento esperado.' })
 
   // ---- Condiciones ambientales ----
   const ventilacion = espaciosDonde(e => ['Deficiente', 'Nula'].includes(val(e.ficha, 'FI-20')))
@@ -452,7 +429,7 @@ export function avance(ctx) {
   const fichas = ctx.espacios.map(e => {
     const resp = contar(e.ficha, idsFicha)
     return { id: e.id, nombre: nombreEspacio(e), respondidas: resp, total: idsFicha.length,
-      fotos: e.fotos || 0, completa: resp === idsFicha.length && (e.fotos || 0) >= FOTOS_MINIMAS }
+      fotos: e.fotos || 0, completa: resp === idsFicha.length }
   })
   const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0)
   const inst = contar(ctx.institucional, idsInst)
@@ -478,26 +455,15 @@ export function analizar(entrada = {}) {
   ctx.totalDependencias = ctx.dependencias.length || null
   const depNombre = Object.fromEntries(ctx.dependencias.map(d => [String(d.id), d.nombre]))
 
-  // Volumen y riesgo por espacio
+  // Riesgo por espacio
   const espacios = ctx.espacios.map(e => {
-    const vol = volumenEspacio(e.ficha)
     const riesgo = riesgoEspacio(e)
     const deps = (val(e.registro, 'ESP-03') || []).map(id => depNombre[String(id)] || `Dependencia ${id}`)
     return { id: e.id, nombre: nombreEspacio(e), tipo: val(e.registro, 'ESP-04') || null, dependencias: deps,
-      volumen: vol, estado: e.ficha['FI-10']?.v || null, riesgo, prioridad_tecnico: val(e.ficha, 'FI-35') || null,
+      estado: e.ficha['FI-10']?.v || null, riesgo, prioridad_tecnico: val(e.ficha, 'FI-35') || null,
       fotos: e.fotos || 0 }
   })
-  const totalMl = r1(espacios.reduce((a, e) => a + e.volumen.total, 0))
-  // ml en mal estado (ponderado por el % malo de cada espacio)
-  const mlMalo = r1(espacios.reduce((a, e) => a + e.volumen.total * ((num(e.estado?.malo) || 0) / 100), 0))
-  const porDependencia = {}
-  for (const e of espacios) {
-    const deps = e.dependencias.length ? e.dependencias : ['Sin dependencia asignada']
-    for (const d of deps) porDependencia[d] = r1((porDependencia[d] || 0) + e.volumen.total / deps.length)
-  }
-  ctx.volumen = { total: totalMl }
-
-  const orden = (a, b) => PRIORIDADES.indexOf(a.riesgo.nivel) - PRIORIDADES.indexOf(b.riesgo.nivel) || b.riesgo.puntos - a.riesgo.puntos || b.volumen.total - a.volumen.total
+  const orden = (a, b) => PRIORIDADES.indexOf(a.riesgo.nivel) - PRIORIDADES.indexOf(b.riesgo.nivel) || b.riesgo.puntos - a.riesgo.puntos
   espacios.sort(orden)
 
   const repositorios = ctx.repositorios.map(r => ({
@@ -525,8 +491,6 @@ export function analizar(entrada = {}) {
   return {
     generado_en: new Date().toISOString(),
     avance: avance(ctx),
-    volumen: { total_ml: totalMl, mal_estado_ml: mlMalo, por_dependencia: porDependencia,
-      fuera_de_estanteria_ml: r1(espacios.reduce((a, e) => a + e.volumen.fuera_de_estanteria, 0)) },
     espacios,
     repositorios,
     indicadores: indicadores(ctx),
