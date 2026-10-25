@@ -51,7 +51,7 @@ function tabla(encabezados, filas, anchos) {
   return new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [head, ...rows] })
 }
 
-const nivelCelda = (n) => ({ texto: (n || '').toUpperCase(), fill: COLOR_NIVEL[n], bold: true, align: AlignmentType.CENTER })
+const nivelCelda = (n) => (n ? { texto: n.toUpperCase(), fill: COLOR_NIVEL[n], bold: true, align: AlignmentType.CENTER } : { texto: 'Sin inspección', align: AlignmentType.CENTER })
 
 function textoRespuesta(p, r) {
   if (!r) return '—'
@@ -83,7 +83,8 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   c.push(H1('1. Alcance y metodología'))
   c.push(P(redaccion.metodologia))
   const av = a.avance
-  c.push(P(`Avance del diligenciamiento: cuestionario institucional ${av.institucional.pct} %, sistemas ${av.sistemas.pct} %, ` +
+  c.push(P(`Avance del diligenciamiento: cuestionario de diagnóstico ${av.institucional.pct} % (${av.institucional.respondidas} de ${av.institucional.total} preguntas` +
+    (av.institucional.precargadas ? `; ${av.institucional.precargadas} respuestas precargadas aún sin confirmar por quien responde` : '') + '), ' +
     `${av.espacios.registrados} espacio(s) registrado(s)` + (av.espacios.declarados ? ` de ${av.espacios.declarados} declarados` : '') +
     `, ${av.espacios.fichasCompletas} ficha(s) de inspección completas y ${av.sistemas.repositorios} repositorio(s) electrónico(s) inventariado(s).`))
 
@@ -93,7 +94,7 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
 
   // ---- 3. Estado de conservación ----
   c.push(H1('3. Espacios y estado de conservación'))
-  c.push(P('El estado de cada espacio se estimó por observación directa durante la inspección (proporción en buen, regular y mal estado). No se midió el volumen documental en metros lineales.'))
+  if (a.espacios.some(e => e.estado)) c.push(P('El estado de cada espacio se estimó por observación directa durante la inspección (proporción en buen, regular y mal estado). No se midió el volumen documental en metros lineales.'))
   if (a.espacios.length) {
     c.push(tabla(
       ['Espacio', 'Tipo', 'Dependencias', 'Estado B / R / M (%)', 'Riesgo', 'Prioridad del técnico'],
@@ -106,10 +107,12 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   }
 
   // ---- 4. Matriz de riesgos ----
-  c.push(H1('4. Matriz de riesgos por espacio'))
-  c.push(P('El nivel de riesgo combina los factores observados en la inspección. Los hongos y la presencia de agua pesan más, por el daño que causan a los documentos y por el riesgo para la salud del personal.'))
-  if (a.espacios.length) c.push(tabla(['Espacio', 'Nivel', 'Puntos', 'Factores principales', 'Prioridad del técnico'],
-    a.espacios.map(e => [e.nombre, nivelCelda(e.riesgo.nivel), { texto: String(e.riesgo.puntos), align: AlignmentType.CENTER },
+  c.push(H1('4. Riesgos por espacio inspeccionado'))
+  if (a.espacios.some(e => e.riesgo.nivel)) c.push(P('El nivel de riesgo combina los factores observados en la inspección. Los hongos y la presencia de agua pesan más, por el daño que causan a los documentos y por el riesgo para la salud del personal.'))
+  const inspeccionados = a.espacios.filter(e => e.riesgo.nivel)
+  if (!inspeccionados.length) c.push(P('No se realizó inspección por espacio: los riesgos se califican para la entidad en los hallazgos de la sección 7, a partir del cuestionario de diagnóstico.', { italics: true }))
+  if (inspeccionados.length) c.push(tabla(['Espacio', 'Nivel', 'Puntos', 'Factores principales', 'Prioridad del técnico'],
+    inspeccionados.map(e => [e.nombre, nivelCelda(e.riesgo.nivel), { texto: String(e.riesgo.puntos), align: AlignmentType.CENTER },
       e.riesgo.factores.slice(0, 5).map(f => f.factor).join('\n') || 'Sin factores de riesgo registrados', e.prioridad_tecnico || '—']),
     [22, 11, 8, 44, 15]))
 
@@ -158,12 +161,12 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
     a.verificaciones.map(v => [v.pregunta, v.donde, v.texto]), [12, 25, 63]))
 
   // ---- Anexo A: respuestas ----
-  c.push(H1('Anexo A. Respuestas del cuestionario institucional y de sistemas'))
+  c.push(H1('Anexo A. Respuestas del cuestionario de diagnóstico'))
   for (const b of [...INSTITUCIONAL, ...SISTEMAS]) {
     c.push(H2(b.titulo))
     c.push(tabla(['ID', 'Pregunta', 'Respuesta', 'Soporte / observación'],
-      b.preguntas.map(p => { const r = estado.institucional[p.id]; return [p.id, p.texto, textoRespuesta(p, r), [r?.s, r?.o].filter(Boolean).join(' · ') || '—'] }),
-      [8, 47, 25, 20]))
+      b.preguntas.map(p => { const r = estado.institucional[p.id]; return [String(p.n || p.id), p.texto, textoRespuesta(p, r), [r?.s, r?.o].filter(Boolean).join(' · ') || '—'] }),
+      [6, 44, 14, 36]))
   }
 
   // ---- Anexo B: registro fotográfico ----

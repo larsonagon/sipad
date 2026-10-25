@@ -16,14 +16,12 @@ function escenario() {
   return {
     dependencias: [{ id: 1, nombre: 'Secretaría de Gobierno' }, { id: 2, nombre: 'Secretaría de Hacienda' }, { id: 3, nombre: 'Planeación' }, { id: 4, nombre: 'Despacho' }],
     institucional: {
-      'IN-01': v('si'), 'IN-02': v(30), 'IN-03': v(0), 'IN-05': v('no'), 'IN-08': v('no'),
-      'IN-10': v(2), 'IN-11': v(0), 'IN-15': v('no'), 'IN-16': v('no'), 'IN-17': v('no'), 'IN-18': v('no'),
-      'IN-19': v('no'), 'IN-20': v('Nadie'), 'IN-21': v('ns'), 'IN-22': v('parcial'), 'IN-23': v('parcial'),
-      'IN-24': v(0), 'IN-26': v('no'), 'IN-27': v('no'), 'IN-28': v('no'), 'IN-29': v('nunca'),
-      'IN-30': v('no'), 'IN-31': v('no'), 'IN-32': v('no'), 'IN-34': v('no'), 'IN-35': v('no'),
-      'IN-37': v('no'), 'IN-39': v('no'), 'IN-40': v('ns'),
-      'SI-01': v('parcial'), 'SI-02': v('no'), 'SI-03': v('no'), 'SI-04': v('no'), 'SI-05': v('Plataforma X'),
-      'SI-06': v(['Parametrización', 'Capacitación']), 'SI-07': v('no')
+      'P-002': v('no'), 'P-003': v('no'), 'P-005': v('no'), 'P-006': v('no'), 'P-011': v('si'),
+      'P-014': v('si'), 'P-021': { v: 'si', o: 'Sí, pero no se utiliza.' }, 'P-023': v('En los computadores de los funcionarios y en Google Drive'),
+      'P-024': v('no'), 'P-034': v('parcial'), 'P-035': v('no'), 'P-043': v('no'), 'P-046': v('no'), 'P-047': v('si'), 'P-048': v('si'),
+      'P-050': v('si'), 'P-051': v('no'), 'P-058': v('ns'), 'P-072': v('no'), 'P-081': v('no'), 'P-082': v('no'),
+      'P-107': v('no'), 'P-113': v('no'), 'P-129': { v: 'no', o: 'Nada formal; se cree que sí ha habido eliminaciones.' },
+      'P-130': v('Ninguna persona o instancia.'), 'P-112': v('ns')
     },
     espacios: [
       { id: 'E1', fotos: 3,
@@ -49,6 +47,34 @@ describe('catálogo', () => {
     assert.equal(ids.length, new Set(ids).size, 'no hay ids repetidos')
     const tipos = new Set(['spn', 'num', 'lista', 'multi', 'txt', 'escala', 'pct3', 'dep'])
     for (const p of Object.values(indicePreguntas())) assert.ok(tipos.has(p.tipo), `${p.id} tipo ${p.tipo}`)
+  })
+})
+
+describe('cuestionario de 140', () => {
+  test('140 preguntas numeradas en orden, con su redacción', () => {
+    const ps = catalogo().institucional.flatMap(b => b.preguntas)
+    assert.equal(ps.length, 140)
+    assert.deepEqual(ps.map(p => p.n), Array.from({ length: 140 }, (_, i) => i + 1))
+    assert.equal(ps[112].texto, '¿Existe algún espacio que pueda destinarse progresivamente como Archivo Central?')
+    assert.equal(catalogo().sistemas.length, 0)
+  })
+
+  test('interpreta la respuesta en palabras', () => {
+    const t = { 'Sí.': 'si', 'Sí, pero no se utiliza.': 'si', 'No.': 'no', 'No existe nada.': 'no', 'Algunas.': 'parcial', 'En algunos casos.': 'parcial',
+      'Quizá.': 'ns', 'Lo duda.': 'ns', 'No lo sabe; requiere verificación.': 'ns', 'No muchos.': 'parcial', 'Las TRD se están actualizando.': 'parcial',
+      'Cada dependencia lo hace de manera independiente.': 'no' }
+    for (const [txt, esperado] of Object.entries(t)) assert.equal(repo.interpretarRespuesta(txt), esperado, txt)
+  })
+
+  test('lee el Word de la entrevista y precarga sin pisar lo ya respondido', async () => {
+    const { Document, Packer, Paragraph } = await import('docx')
+    const parrafos = ['DIAGNÓSTICO PRELIMINAR', '1. ¿Quién es responsable de coordinar/administrar la gestión documental y los archivos?', 'Un técnico administrativo.',
+      '6. ¿Existe un Archivo Central independiente?', 'No.', '58. ¿Se puede saber con certeza qué documentos existen, dónde están y cuánto hay?', 'Lo duda.']
+    const buf = await Packer.toBuffer(new Document({ sections: [{ children: parrafos.map(t => new Paragraph(t)) }] }))
+    const r = repo.respuestasDesdeParrafos(await repo.parrafosDocx(buf))
+    assert.deepEqual(r['P-001'], { v: 'Un técnico administrativo.' })
+    assert.deepEqual(r['P-006'], { v: 'no', o: 'No.' })
+    assert.equal(r['P-058'].v, 'ns')
   })
 })
 
@@ -89,7 +115,7 @@ describe('motor', () => {
   test('análisis completo del escenario', () => {
     const a = analizar(escenario())
     assert.equal(a.volumen, undefined, 'el análisis ya no reporta volumen')
-    assert.ok(a.hallazgos.some(h => /contacto con el piso/.test(h.hallazgo)))
+    assert.ok(a.hallazgos.some(h => /sobre el piso/.test(h.hallazgo)))
     assert.equal(a.espacios[0].nombre, 'Casa abandonada', 'el más riesgoso va primero')
     assert.equal(a.espacios[0].riesgo.nivel, 'crítica')
     assert.equal(a.resumen.repositorios_criticos, 1)
@@ -100,6 +126,9 @@ describe('motor', () => {
     assert.match(textos, /copias de seguridad/)
     assert.match(textos, /plataforma existente/)
     assert.match(textos, /Archivo Central/)
+    assert.match(textos, /eliminación informal/)
+    // Todo hallazgo del cuestionario cita su pregunta (P-xxx)
+    assert.ok(a.hallazgos.filter(h => h.componente === 'GOB').every(h => h.evidencia.some(e => /^P-\d{3}$/.test(e))))
     // Orden por prioridad
     const ords = a.hallazgos.map(h => ['crítica', 'alta', 'media', 'baja'].indexOf(h.prioridad))
     assert.deepEqual(ords, [...ords].sort((x, y) => x - y))
@@ -107,9 +136,8 @@ describe('motor', () => {
     assert.ok(a.hallazgos.every(h => h.evidencia.length > 0))
     // "No sabe" → verificación, nunca hallazgo
     assert.equal(a.verificaciones.length, 2)
-    assert.ok(a.verificaciones.some(x => x.pregunta === 'IN-21'))
-    // FUID: 0 de 4
-    assert.ok(a.hallazgos.some(h => /0 de 4 dependencias/.test(h.hallazgo)))
+    assert.ok(a.verificaciones.some(x => x.pregunta === 'P-058'))
+    assert.ok(a.hallazgos.some(h => /FUID/.test(h.hallazgo)))
     // Indicadores con valores 0–100
     for (const i of a.indicadores) assert.ok(i.valor === null || (i.valor >= 0 && i.valor <= 100))
     // Cronograma cubre todos los hallazgos
@@ -170,17 +198,16 @@ describe('datos (Postgres)', () => {
   after(async () => { await pool?.end() })
 
   test('respuestas: guarda, valida y borra', async () => {
-    assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-01': { v: 'si', s: 'Decreto 10' }, 'IN-02': 40 }, 'tecnico')).ok, true)
-    assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-01': 'tal vez' })).ok, false, 'rechaza valor inválido')
+    assert.equal((await repo.guardarRespuestas(db, ENT, { 'P-002': { v: 'si', s: 'Decreto 10', o: 'Sí, por decreto.' }, 'P-001': 'Un técnico administrativo.' }, 'tecnico')).ok, true)
+    assert.equal((await repo.guardarRespuestas(db, ENT, { 'P-002': 'tal vez' })).ok, false, 'rechaza valor inválido')
     assert.equal((await repo.guardarRespuestas(db, ENT, { 'FI-11': 'puntual' })).ok, false, 'rechaza pregunta de otra sección')
-    assert.equal((await repo.guardarRespuestas(db, ENT, { 'IN-02': 150 })).ok, false, 'porcentaje > 100')
-    await repo.guardarRespuestas(db, ENT, { 'IN-02': 50 })
     let e = await repo.obtenerEstado(db, ENT)
-    assert.equal(e.institucional['IN-02'].v, 50)
-    assert.equal(e.institucional['IN-01'].s, 'Decreto 10')
-    await repo.guardarRespuestas(db, ENT, { 'IN-02': null })
+    assert.equal(e.institucional['P-001'].v, 'Un técnico administrativo.')
+    assert.equal(e.institucional['P-002'].s, 'Decreto 10')
+    assert.equal(e.institucional['P-002'].o, 'Sí, por decreto.')
+    await repo.guardarRespuestas(db, ENT, { 'P-001': null })
     e = await repo.obtenerEstado(db, ENT)
-    assert.equal(e.institucional['IN-02'], undefined)
+    assert.equal(e.institucional['P-001'], undefined)
   })
 
   test('espacios: crear, ficha parcial, dependencias de la entidad, fotos', async () => {

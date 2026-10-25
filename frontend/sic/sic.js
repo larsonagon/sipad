@@ -88,7 +88,7 @@ async function vaciarCola() {
       for (const pid of Object.keys(parche)) document.querySelector(`[data-preg="${pid}"]`)?.classList.remove('error')
     } catch (e) {
       error = e.message
-      const m = /^([A-Z]{2,3}-\d{2})/.exec(e.message)
+      const m = /^([A-Z]{1,3}-\d{2,3})/.exec(e.message)
       if (m) document.querySelector(`[data-preg="${m[1]}"]`)?.classList.add('error')
     }
   }
@@ -116,7 +116,7 @@ function pregunta(p, actual, guardar, { dependencias = [] } = {}) {
   let estado = { ...(actual || {}) }
   const emitir = () => guardar(limpio(estado))
   const caja = el('div', { class: 'sic-preg', 'data-preg': p.id })
-  caja.append(el('div', { class: 'enunciado' }, el('code', { text: p.id }), p.texto, p.opcional ? el('span', { class: 'opcional', text: ' (opcional)' }) : null))
+  caja.append(el('div', { class: 'enunciado' }, el('code', { text: p.n ? `${p.n}.` : p.id }), p.texto, p.opcional ? el('span', { class: 'opcional', text: ' (opcional)' }) : null))
 
   const seg = (opciones, clases = {}) => {
     const w = el('div', { class: 'sic-seg' })
@@ -211,6 +211,12 @@ function pregunta(p, actual, guardar, { dependencias = [] } = {}) {
     i.addEventListener('input', () => { estado.x = i.value === '' ? undefined : (p.extra.tipo === 'num' ? Number(i.value) : i.value); emitir() })
     caja.append(el('div', { class: 'sic-extra sic-input' }, el('label', { text: p.extra.etiqueta }), i))
   }
+  if (p.obs) {
+    const i = el('textarea', { rows: '2', placeholder: 'Respuesta en palabras de quien responde (detalle, ejemplos, dónde, cuándo)…' })
+    i.value = estado.o ?? ''
+    i.addEventListener('input', () => { estado.o = i.value || undefined; emitir() })
+    caja.append(el('div', { class: 'sic-obs sic-input' }, i))
+  }
   if (p.soporte) {
     const i = el('input', { type: 'text', placeholder: 'Ej.: Decreto 045 de 2023, acta del 12/03/2025…' })
     i.value = estado.s ?? ''
@@ -245,8 +251,9 @@ function pintarAvance() {
   const decl = a.espacios.declarados
   $('#avanceGeneral').innerHTML = `
     <div class="sic-barra" title="Avance general"><i style="width:${a.general}%"></i></div>
-    <span><b>${a.general}%</b> diligenciado · Institucional ${a.institucional.pct}% · Sistemas ${a.sistemas.pct}% ·
-    ${a.espacios.registrados}${decl ? ' de ' + decl : ''} espacio(s) · ${a.espacios.fichasCompletas} ficha(s) completas</span>`
+    <span><b>${a.institucional.pct}%</b> del cuestionario (${a.institucional.respondidas}/${a.institucional.total})` +
+    (a.institucional.precargadas ? ` · <b class="por-confirmar">${a.institucional.precargadas} por confirmar</b>` : '') +
+    ` · ${a.espacios.registrados}${decl ? ' de ' + decl : ''} espacio(s) · ${a.sistemas.repositorios} repositorio(s)</span>`
 }
 
 // ---------------- Panel 0 · Espacios ----------------
@@ -320,17 +327,66 @@ async function eliminarEspacio(e) {
 }
 
 // ---------------- Panel 1 · Institucional ----------------
+const esPrecargada = (id) => EST.auditoria?.[id]?.por === 'precarga' && EST.institucional[id]
+function marcarConfirmada(id) {
+  EST.auditoria = EST.auditoria || {}
+  EST.auditoria[id] = { por: USER?.nombre || 'usuario', en: new Date().toISOString() }
+  document.querySelector(`[data-preg="${id}"]`)?.classList.remove('precargada')
+  document.querySelector(`[data-preg="${id}"] .sic-precarga`)?.remove()
+}
 function panelPreguntasInst(contenedor, bloques) {
-  bloques.forEach((b, i) => contenedor.append(bloque(`${b.id} · ${b.titulo}`, b.preguntas, EST.institucional, (p, actualizarCuenta) =>
-    pregunta(p, EST.institucional[p.id], (v) => {
-      if (v === null) delete EST.institucional[p.id]; else EST.institucional[p.id] = v
-      actualizarCuenta(); encolar('inst', p.id, v)
-    }), { abierto: i === 0 })))
+  bloques.forEach((b, i) => {
+    const d = bloque(`${b.id} · ${b.titulo}`, b.preguntas, EST.institucional, (p, actualizarCuenta) => {
+      const caja = pregunta(p, EST.institucional[p.id], (v) => {
+        if (v === null) delete EST.institucional[p.id]; else EST.institucional[p.id] = v
+        actualizarCuenta(); encolar('inst', p.id, v); marcarConfirmada(p.id)
+      })
+      if (esPrecargada(p.id)) {
+        caja.classList.add('precargada')
+        caja.insertBefore(el('div', { class: 'sic-precarga' },
+          el('span', { text: 'Precargada · por confirmar' }),
+          el('button', { type: 'button', class: 'btn-secondary btn-sm', text: 'Confirmar', onclick: () => { encolar('inst', p.id, EST.institucional[p.id]); marcarConfirmada(p.id); refrescarPendientes() } })), caja.children[1] || null)
+      }
+      return caja
+    }, { abierto: i === 0 })
+    const pend = b.preguntas.filter(p => esPrecargada(p.id))
+    if (pend.length) {
+      const btn = el('button', { type: 'button', class: 'vr-link sic-confirmar-bloque', text: `Confirmar las ${pend.length} respuestas precargadas de este bloque`, onclick: () => {
+        for (const p of b.preguntas.filter(q => esPrecargada(q.id))) { encolar('inst', p.id, EST.institucional[p.id]); marcarConfirmada(p.id) }
+        btn.remove(); refrescarPendientes()
+      } })
+      d.querySelector('.cuerpo').prepend(btn)
+    }
+    contenedor.append(d)
+  })
+}
+function refrescarPendientes() {
+  const n = CAT.institucional.flatMap(b => b.preguntas).filter(p => esPrecargada(p.id)).length
+  const caja = $('#sicPendientes'); if (caja) caja.textContent = n ? `${n} respuesta(s) precargadas por confirmar.` : 'Todas las respuestas precargadas están confirmadas.'
 }
 function panelInstitucional() {
   const p = $('#panel-institucional'); p.innerHTML = ''
-  p.append(el('p', { class: 'sic-ayuda', text: 'Lo responde el responsable de archivo, una sola vez. Si existe un documento que respalde la respuesta (acto administrativo, acta), escriba su referencia.' }))
+  p.append(el('p', { class: 'sic-ayuda', text: 'Lo responde una sola persona que conozca la entidad (por ejemplo, el responsable de archivo). Marque la respuesta rápida y escriba la respuesta en sus palabras. Las respuestas precargadas son un punto de partida: revíselas, cámbielas si no son correctas y confírmelas.' }))
+  const hayPrecarga = CAT.institucional.flatMap(b => b.preguntas).some(q => EST.auditoria?.[q.id]?.por === 'precarga')
+  const barra = el('div', { class: 'sic-acciones-top' })
+  if (hayPrecarga) barra.append(el('div', { class: 'sic-aviso', id: 'sicPendientes' }))
+  if (PUEDE_ANALIZAR) {
+    const archivo = el('input', { type: 'file', accept: '.docx', hidden: true })
+    archivo.addEventListener('change', async () => {
+      const f = archivo.files?.[0]; if (!f) return
+      const datos = await new Promise((ok, mal) => { const r = new FileReader(); r.onload = () => ok(String(r.result)); r.onerror = mal; r.readAsDataURL(f) })
+      try {
+        await vaciarCola()
+        const r = await apiJson('/api/sic/importar-entrevista', { method: 'POST', body: { archivo: datos } })
+        toast(`Precargadas ${r.precargadas} respuestas` + (r.omitidas ? ` (${r.omitidas} ya respondidas no se cambiaron)` : ''), 'success')
+        await recargar('institucional')
+      } catch (e) { toast(e.message, 'error') } finally { archivo.value = '' }
+    })
+    barra.append(archivo, el('button', { class: 'btn-secondary btn-sm', type: 'button', text: '⬆ Precargar respuestas desde Word', onclick: () => archivo.click() }))
+  }
+  p.append(barra)
   panelPreguntasInst(p, CAT.institucional)
+  refrescarPendientes()
 }
 
 // ---------------- Panel 2 · Inspección ----------------
@@ -406,7 +462,7 @@ function panelInspeccion() {
 // ---------------- Panel 3 · Sistemas ----------------
 function panelSistemas() {
   const p = $('#panel-sistemas'); p.innerHTML = ''
-  p.append(el('p', { class: 'sic-ayuda', text: 'Lo responde la Oficina de Sistemas. Registre cada sistema, aplicación, carpeta o computador donde se guarden documentos de la entidad, incluidos los computadores y nubes personales.' }))
+  p.append(el('p', { class: 'sic-ayuda', text: 'Opcional. Las preguntas sobre documentos electrónicos están en el cuestionario (bloques 4 y 9). Aquí, si la Oficina de Sistemas puede, se registra cada sistema, aplicación, carpeta o computador donde se guarden documentos de la entidad, incluidos los computadores y nubes personales.' }))
   panelPreguntasInst(p, CAT.sistemas)
 
   p.append(el('h2', { class: 'sic-h2', text: 'Inventario de sistemas y repositorios' }))
@@ -467,7 +523,8 @@ async function panelResultados() {
 
   const kpi = (n, l, rojo) => el('div', { class: 'sic-kpi' + (rojo ? ' rojo' : '') }, el('div', { class: 'n', text: n }), el('div', { class: 'l', text: l }))
   p.append(el('div', { class: 'sic-kpis' },
-    kpi(String(r.espacios), 'espacios inspeccionados'),
+    kpi(String(a.hallazgos.length), 'hallazgos con su acción'),
+    kpi(String(a.avance.institucional.precargadas || 0), 'respuestas precargadas sin confirmar', (a.avance.institucional.precargadas || 0) > 0),
     kpi(String(r.espacios_por_nivel['crítica']), 'espacios en riesgo crítico', r.espacios_por_nivel['crítica'] > 0),
     kpi(String(r.repositorios_criticos), 'repositorios en riesgo crítico', r.repositorios_criticos > 0),
     kpi(String(r.hallazgos_por_prioridad['crítica']), 'acciones de prioridad crítica', r.hallazgos_por_prioridad['crítica'] > 0),
@@ -506,7 +563,7 @@ async function panelResultados() {
     for (const e of a.espacios) tb.insertAdjacentHTML('beforeend', `<tr>
       <td><b>${esc(e.nombre)}</b></td><td>${esc(e.tipo || '—')}</td>
       <td>${e.estado ? `${fmt(e.estado.bueno)} / ${fmt(e.estado.regular)} / ${fmt(e.estado.malo)}` : '—'}</td>
-      <td><span class="nivel ${esc(e.riesgo.nivel)}">${esc(e.riesgo.nivel)}</span></td>
+      <td>${e.riesgo.nivel ? `<span class="nivel ${esc(e.riesgo.nivel)}">${esc(e.riesgo.nivel)}</span>` : '<span class="meta">Sin inspección</span>'}</td>
       <td>${esc(e.riesgo.factores.slice(0, 3).map(f => f.factor).join(' · ') || '—')}</td></tr>`)
     t.append(tb); p.append(el('div', { class: 'sic-tabla-wrap' }, t))
   } else p.append(el('div', { class: 'sic-vacio', text: 'Sin espacios registrados.' }))

@@ -25,8 +25,8 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
   const peores = crit.slice(0, 3).map(i => `${i.nombre.toLowerCase()} (${i.valor}/100)`)
 
   const sintesis = [
-    `El diagnóstico se levantó en ${r.espacios} espacio(s) donde ${entidad} guarda documentos.`,
-    r.espacios ? `Por nivel de riesgo, ${niv['crítica']} espacio(s) quedaron en nivel crítico, ${niv['alta']} en alto, ${niv['media']} en medio y ${niv['baja']} en bajo.` : '',
+    `El diagnóstico de ${entidad} se levantó con el cuestionario de 140 preguntas` + (r.espacios ? ` y con el registro de ${r.espacios} espacio(s) donde se guardan documentos.` : '.'),
+    (niv['crítica'] + niv['alta'] + niv['media'] + niv['baja']) ? `De los espacios inspeccionados, por nivel de riesgo, ${niv['crítica']} espacio(s) quedaron en nivel crítico, ${niv['alta']} en alto, ${niv['media']} en medio y ${niv['baja']} en bajo.` : '',
     a.repositorios.length ? `En el componente electrónico se inventariaron ${a.repositorios.length} sistema(s) o repositorio(s), ${r.repositorios_criticos} de ellos en riesgo crítico de pérdida de información.` : 'No se inventariaron sistemas ni repositorios electrónicos.',
     peores.length ? `Los componentes más débiles son ${peores.join(', ')}.` : '',
     `El análisis arroja ${a.hallazgos.length} hallazgo(s): ${r.hallazgos_por_prioridad['crítica']} de prioridad crítica, ${r.hallazgos_por_prioridad['alta']} alta, ${r.hallazgos_por_prioridad['media']} media y ${r.hallazgos_por_prioridad['baja']} baja.`,
@@ -34,9 +34,9 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
   ].filter(Boolean).join(' ')
 
   const metodologia =
-    'La información se obtuvo mediante el formulario de Diagnóstico Integral de SIPAD, diligenciado por el responsable de archivo ' +
-    '(cuestionario institucional e inspección visual de cada espacio, con registro fotográfico cuando fue posible) y por la Oficina de Sistemas ' +
-    '(inventario de sistemas y repositorios electrónicos). El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
+    'La información se obtuvo con el cuestionario de diagnóstico de SIPAD (140 preguntas sobre responsabilidades, espacios, conservación, ' +
+    'procedimientos, emergencias, documentos electrónicos y recursos), respondido por una sola persona que conoce la entidad, ' +
+    'complementado con la inspección de espacios y el inventario de sistemas cuando fue posible. El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
     'y las respuestas "No sabe" se registran como tareas de verificación, no como hechos.'
 
   const componentes = a.indicadores.map(i => ({

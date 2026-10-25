@@ -11,6 +11,7 @@
 //   DELETE /espacios/:id
 //   POST   /espacios/:id/fotos        { nombre, mime, datos(base64), ancho, alto }
 //   GET    /fotos/:id                 imagen
+//   POST   /importar-entrevista       { archivo: base64 .docx, reemplazar? } precarga las 140 respuestas
 //   DELETE /fotos/:id
 //   POST   /repositorios              { datos }
 //   PUT    /repositorios/:id          { datos }
@@ -61,6 +62,10 @@ export function buildSICRouter(db, { guardAnalisis = requireLevel(60) } = {}) {
 
   r.put('/respuestas', envolver(async (req, res) =>
     responder(res, await repo.guardarRespuestas(db, ent(req), req.body?.respuestas, usuario(req))), 'No se pudieron guardar las respuestas'))
+
+  // Precarga desde el Word de la entrevista (solo asesor / archivista: nivel ≥ 60)
+  r.post('/importar-entrevista', guardAnalisis, envolver(async (req, res) =>
+    responder(res, await repo.importarEntrevista(db, ent(req), req.body || {})), 'No se pudo importar la entrevista'))
 
   r.put('/meta', envolver(async (req, res) =>
     responder(res, await repo.guardarMeta(db, ent(req), req.body || {})), 'No se pudo guardar'))

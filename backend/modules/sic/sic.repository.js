@@ -9,6 +9,7 @@
 // ======================================================
 
 import crypto from 'crypto'
+import JSZip from 'jszip'
 import { indicePreguntas, REGISTRO_ESPACIO, FICHA, REPOSITORIO, INSTITUCIONAL, SISTEMAS, ESCALA } from './sic.formulario.js'
 
 const IDX = indicePreguntas()
@@ -334,4 +335,77 @@ export async function guardarRedaccion(db, entidadId, redaccion) {
     `INSERT INTO sic_meta (entidad_id, redaccion, redaccion_en) VALUES (?, ?, ?)
      ON CONFLICT (entidad_id) DO UPDATE SET redaccion = EXCLUDED.redaccion, redaccion_en = EXCLUDED.redaccion_en`,
     [entidadId, JSON.stringify(redaccion), now()])
+}
+
+// ======================================================
+// Precarga desde la entrevista en Word (formato «N. ¿Pregunta?» + respuesta)
+// ------------------------------------------------------
+// Toma el .docx de la entrevista de levantamiento, ubica cada pregunta por su
+// número y guarda la respuesta como PRECARGADA (actualizado_por = 'precarga').
+// Quien responde el cuestionario la revisa y la confirma o la cambia; al guardar
+// con su usuario deja de figurar como precargada. No pisa respuestas ya dadas
+// salvo que se pida reemplazar.
+// ======================================================
+export const PRECARGA = 'precarga'
+
+function textoXml(x) {
+  return x.replace(/<w:tab\/>/g, ' ').replace(/<w:br\/>/g, ' ').replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ').trim()
+}
+
+export async function parrafosDocx(buffer) {
+  const zip = await JSZip.loadAsync(buffer)
+  const xml = await zip.file('word/document.xml')?.async('string')
+  if (!xml) throw new Error('El archivo no es un documento de Word (.docx) válido')
+  return (xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []).map(textoXml).filter(Boolean)
+}
+
+// Respuesta en palabras → respuesta rápida (Sí / Parcial / No / No sabe)
+export function interpretarRespuesta(t) {
+  const s = String(t || '').trim().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  if (!s) return null
+  if (/^(quiza|tal vez|lo duda|no lo sabe|no sabe|no se sabe|debe estarlo|deberia estarlo)|requiere verificacion/.test(s)) return 'ns'
+  if (/^(algun|en algunos|mixto|aproximad|parcial|no muchos|aun existe poco|habria dificultades|no, muy poca)|se estan actualizando|en actualizacion|en proceso/.test(s)) return 'parcial'
+  if (/^si\b/.test(s)) return 'si'
+  if (/^(no\b|nada\b|ninguna?\b|cada (dependencia|funcionario)|se necesitaria|considera que no|todo queda en papel|existe el riesgo)/.test(s)) return 'no'
+  return null
+}
+
+export function respuestasDesdeParrafos(parrafos) {
+  const porNumero = new Map(INSTITUCIONAL.flatMap(b => b.preguntas).map(p => [p.n, p]))
+  const out = {}
+  for (let i = 0; i < parrafos.length; i++) {
+    const m = /^(\d{1,3})\.\s+(.+)$/.exec(parrafos[i])
+    const p = m && porNumero.get(Number(m[1]))
+    if (!p || out[p.id]) continue
+    const resp = []
+    for (let j = i + 1; j < parrafos.length && !/^\d{1,3}\.\s+¿?/.test(parrafos[j]); j++) resp.push(parrafos[j])
+    const texto = resp.join(' ').trim()
+    if (!texto) continue
+    out[p.id] = p.tipo === 'txt' ? { v: texto } : { v: interpretarRespuesta(texto) || undefined, o: texto }
+  }
+  return out
+}
+
+export async function importarEntrevista(db, entidadId, { archivo, reemplazar = false } = {}) {
+  const b64 = typeof archivo === 'string' ? archivo.replace(/^data:[^,]*,/, '') : ''
+  if (!b64) return { ok: false, error: 'Adjunte el Word de la entrevista' }
+  let respuestas
+  try { respuestas = respuestasDesdeParrafos(await parrafosDocx(Buffer.from(b64, 'base64'))) }
+  catch (e) { return { ok: false, error: e.message || 'No se pudo leer el archivo' } }
+  const ids = Object.keys(respuestas)
+  if (!ids.length) return { ok: false, error: 'No se encontraron preguntas numeradas (1. ¿…?) con su respuesta en el documento' }
+  const actuales = await db.all(`SELECT pregunta_id FROM sic_respuestas WHERE entidad_id = ?`, [entidadId])
+  const yaRespondidas = new Set(actuales.map(a => a.pregunta_id))
+  const parche = {}
+  let omitidas = 0
+  for (const id of ids) {
+    if (!reemplazar && yaRespondidas.has(id)) { omitidas++; continue }
+    parche[id] = respuestas[id]
+  }
+  const r = Object.keys(parche).length ? await guardarRespuestas(db, entidadId, parche, PRECARGA) : { ok: true }
+  if (!r.ok) return r
+  const sinInterpretar = ids.filter(id => respuestas[id].o && !respuestas[id].v).length
+  return { ok: true, precargadas: Object.keys(parche).length, omitidas, encontradas: ids.length, sin_interpretar: sinInterpretar }
 }
