@@ -70,7 +70,7 @@ export function hechosParaLLM(a) {
 
 export function mensajesResumen(hechos, entidad) {
   const system = [
-    'Eres un asesor archivístico colombiano. Redactas el RESUMEN EJECUTIVO del Diagnóstico Integral de Archivos',
+    'Eres un asesor archivístico colombiano. Redactas el RESUMEN EJECUTIVO del Diagnóstico preliminar del SIC',
     'que sustenta el Sistema Integrado de Conservación (SIC) de una entidad pública, para presentarlo ante el Comité',
     'Institucional de Gestión y Desempeño. Español formal, claro y concreto. Entre 250 y 400 palabras, en prosa (sin viñetas).',
     '',

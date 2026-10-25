@@ -129,7 +129,7 @@ export function buildSICRouter(db, { guardAnalisis = requireLevel(60) } = {}) {
       redaccion: redaccionBase(analisis, { entidad }), resumen: estado.redaccion,
       fecha: new Date().toLocaleDateString('es-CO') })
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    res.setHeader('Content-Disposition', 'attachment; filename="Diagnostico-Integral-SIC.docx"')
+    res.setHeader('Content-Disposition', 'attachment; filename="Diagnostico-preliminar-SIC.docx"')
     res.setHeader('Content-Length', buffer.length)
     res.end(buffer)
   }, 'No se pudo generar el informe'))

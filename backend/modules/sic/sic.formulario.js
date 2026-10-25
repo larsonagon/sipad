@@ -1,5 +1,5 @@
 // ======================================================
-// SIPAD · Diagnóstico Integral para el SIC — Catálogo del formulario
+// SIPAD · Diagnóstico preliminar del SIC — Catálogo del formulario
 // ------------------------------------------------------
 // Definición declarativa (solo datos) de las preguntas del
 // formulario de diagnóstico del Sistema Integrado de Conservación.

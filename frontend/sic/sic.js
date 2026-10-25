@@ -1,4 +1,4 @@
-// SIPAD · Diagnóstico Integral para el SIC (frontend)
+// SIPAD · Diagnóstico preliminar del SIC (frontend)
 import { renderHeader } from '../components/header.js'
 
 // ---------------- Sesión / API ----------------
@@ -611,7 +611,7 @@ async function descargarInforme(btn) {
     await vaciarCola()
     const r = await api('/api/sic/informe.docx'); if (!r.ok) throw new Error('No se pudo generar el informe')
     const url = URL.createObjectURL(await r.blob())
-    const a = document.createElement('a'); a.href = url; a.download = 'Diagnostico-Integral-SIC.docx'
+    const a = document.createElement('a'); a.href = url; a.download = 'Diagnostico-preliminar-SIC.docx'
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
     toast('Informe generado', 'success')
   } catch (e) { toast(e.message, 'error') }
@@ -620,9 +620,9 @@ async function descargarInforme(btn) {
 
 // ---------------- Navegación ----------------
 const PANELES = { espacios: panelEspacios, institucional: panelInstitucional, inspeccion: panelInspeccion, sistemas: panelSistemas, resultados: panelResultados }
-let tabActual = 'espacios'
+let tabActual = 'institucional'
 async function irA(tab) {
-  if (tab === 'resultados' && !PUEDE_ANALIZAR) tab = 'espacios'
+  if (tab === 'resultados' && !PUEDE_ANALIZAR) tab = 'institucional'
   await vaciarCola()
   tabActual = tab
   sessionStorage.setItem('sic_tab', tab)
@@ -647,8 +647,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     CAT = await apiJson('/api/sic/formulario')
     EST = await apiJson('/api/sic/estado')
     pintarAvance()
-    await irA(sessionStorage.getItem('sic_tab') || 'espacios')
+    await irA(sessionStorage.getItem('sic_tab') || 'institucional')
   } catch (e) {
-    $('#panel-espacios').innerHTML = `<div class="sic-vacio">No se pudo cargar el diagnóstico: ${esc(e.message)}</div>`
+    $('#panel-institucional').innerHTML = `<div class="sic-vacio">No se pudo cargar el diagnóstico: ${esc(e.message)}</div>`
   }
 })

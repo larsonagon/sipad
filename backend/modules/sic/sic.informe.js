@@ -1,7 +1,7 @@
 // ======================================================
 // SIPAD · Diagnóstico SIC — Informe Word
 // ------------------------------------------------------
-// "Diagnóstico Integral de Archivos y propuesta de acciones del SIC".
+// "Diagnóstico preliminar del SIC y propuesta de acciones".
 // Llena las secciones que el documento del SIC tenía pendientes:
 // diagnóstico (estado, riesgos), tabla de documentos
 // electrónicos a preservar, hallazgos → acciones por programa y
@@ -71,9 +71,9 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
 
   // ---- Portada / encabezado ----
   c.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 },
-    children: [new TextRun({ text: 'DIAGNÓSTICO INTEGRAL DE ARCHIVOS', bold: true, size: 32, color: AZUL })] }))
+    children: [new TextRun({ text: 'DIAGNÓSTICO PRELIMINAR DEL SIC', bold: true, size: 32, color: AZUL })] }))
   c.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 80 },
-    children: [new TextRun({ text: 'y propuesta de acciones del Sistema Integrado de Conservación (SIC)', bold: true, size: 24, color: AZUL })] }))
+    children: [new TextRun({ text: 'Sistema Integrado de Conservación · hallazgos y propuesta de acciones', bold: true, size: 24, color: AZUL })] }))
   c.push(P(entidad, { align: AlignmentType.CENTER, bold: true, size: 24 }))
   c.push(P(`Fecha de corte: ${hoy}`, { align: AlignmentType.CENTER, size: 18, color: '555555' }))
   c.push(P('Documento de trabajo: borrador para validación técnica antes de su presentación al Comité Institucional de Gestión y Desempeño.',
@@ -187,11 +187,11 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   }
 
   const doc = new Document({
-    creator: 'SIPAD', title: 'Diagnóstico Integral de Archivos – SIC',
+    creator: 'SIPAD', title: 'Diagnóstico preliminar del SIC',
     sections: [{
       properties: { page: { size: { orientation: PageOrientation.LANDSCAPE }, margin: { top: 1000, bottom: 1000, left: 1100, right: 1100 } } },
       footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-        new TextRun({ text: `${entidad} · Diagnóstico Integral de Archivos · Página `, size: 15, color: '777777' }),
+        new TextRun({ text: `${entidad} · Diagnóstico preliminar del SIC · Página `, size: 15, color: '777777' }),
         new TextRun({ children: [PageNumber.CURRENT], size: 15, color: '777777' })] })] }) },
       children: c
     }]

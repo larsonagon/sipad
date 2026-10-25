@@ -33,27 +33,27 @@
   <div id="header"></div>
   <main class="module-page sic-page">
     <div class="module-header premium-header">
-      <h1>Diagnóstico Integral de Archivos</h1>
+      <h1>Diagnóstico preliminar del SIC</h1>
       <p class="module-subtext">
-        Base del Sistema Integrado de Conservación (SIC). Lo responde una sola persona que conozca la entidad,
-        con el cuestionario de diagnóstico (140 preguntas). La inspección por espacio y el inventario de sistemas son opcionales.
+        Base del Sistema Integrado de Conservación (SIC). Basta con responder el cuestionario de diagnóstico (140 preguntas);
+        lo responde una sola persona que conozca la entidad. Espacios, inspección y sistemas son opcionales.
         Las respuestas se guardan solas. Si no sabe una respuesta, marque <b>No sabe</b>: queda como tarea de verificación.
       </p>
       <div class="sic-avance" id="avanceGeneral" aria-live="polite"></div>
     </div>
 
     <nav class="sic-tabs" role="tablist" id="tabs">
-      <button role="tab" data-tab="espacios" class="active"><span>0</span> Espacios</button>
-      <button role="tab" data-tab="institucional"><span>1</span> Cuestionario</button>
-      <button role="tab" data-tab="inspeccion"><span>2</span> Inspección (opcional)</button>
-      <button role="tab" data-tab="sistemas"><span>3</span> Sistemas (opcional)</button>
+      <button role="tab" data-tab="institucional" class="active"><span>1</span> Cuestionario (140 preguntas)</button>
+      <button role="tab" data-tab="espacios"><span>2</span> Espacios (opcional)</button>
+      <button role="tab" data-tab="inspeccion"><span>3</span> Inspección (opcional)</button>
+      <button role="tab" data-tab="sistemas"><span>4</span> Sistemas (opcional)</button>
       <button role="tab" data-tab="resultados" id="tabResultados" hidden>Resultados</button>
     </nav>
 
     <div class="sic-estado-guardado" id="estadoGuardado"></div>
 
-    <section class="sic-panel" id="panel-espacios"></section>
-    <section class="sic-panel" id="panel-institucional" hidden></section>
+    <section class="sic-panel" id="panel-espacios" hidden></section>
+    <section class="sic-panel" id="panel-institucional"></section>
     <section class="sic-panel" id="panel-inspeccion" hidden></section>
     <section class="sic-panel" id="panel-sistemas" hidden></section>
     <section class="sic-panel" id="panel-resultados" hidden></section>
