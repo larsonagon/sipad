@@ -3,13 +3,14 @@
  *   - Navegaciones (documentos HTML): network-first con reserva a caché y luego a /offline.html.
  *   - API (/api/...): network-only. Nunca se sirve datos del banco desde caché para no mostrar
  *     información desactualizada; si no hay red, el front maneja el error como está hoy.
- *   - Estáticos propios (css/js/img/fuentes/manifest/iconos): stale-while-revalidate.
+ *   - Código propio (js/css/json): network-first (las actualizaciones se ven en la primera recarga).
+ *   - Imágenes, íconos y fuentes propias: stale-while-revalidate.
  *   - Terceros (Google Fonts, etc.): cache-first best-effort, sin romper si falla.
  * Al cambiar la versión se limpian los cachés viejos.
  */
 'use strict';
 
-const VERSION = 'sipad-v6'; // v6: tipografía Century Gothic / Jost
+const VERSION = 'sipad-v7'; // v7: código (js/css) siempre desde la red para no mostrar pantallas desactualizadas
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
@@ -83,7 +84,24 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Estáticos propios: stale-while-revalidate.
+  // Código propio (js/css/json): network-first. Así una actualización se ve en la
+  // primera recarga; la copia en caché solo se usa si no hay conexión.
+  if (sameOrigin && /\.(?:js|mjs|css|json)$/i.test(url.pathname)) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200) {
+            const copy = res.clone();
+            caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(async () => (await caches.match(req)) || Response.error())
+    );
+    return;
+  }
+
+  // Imágenes, íconos y fuentes propias: stale-while-revalidate.
   if (sameOrigin && isStaticAsset(url)) {
     event.respondWith(
       caches.open(RUNTIME_CACHE).then(async (cache) => {
