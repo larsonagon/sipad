@@ -129,3 +129,19 @@ code, kbd, samp, pre, .mono, .codigo, .num, [data-mono]{
   .pig-header{ position: static !important; }
   body{ padding-top: 0 !important; }
 }
+
+
+/* =====================================================
+   Escala de textos y títulos
+   Escritorio: la interfaz se ve como con el navegador al 90 %.
+   Móvil y tableta: sin zoom; títulos más pequeños.
+   ===================================================== */
+@media (min-width: 1100px) and (hover: hover) {
+  html { zoom: .9; }
+}
+.module-header h1 { font-size: 1.6rem !important; line-height: 1.2; margin-bottom: 6px; }
+.module-header .module-subtext, .module-header > p { font-size: .9rem !important; line-height: 1.5; }
+@media (max-width: 820px) {
+  .module-header h1 { font-size: 1.3rem !important; }
+  .module-header .module-subtext, .module-header > p { font-size: .85rem !important; }
+}

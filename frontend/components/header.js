@@ -16,13 +16,15 @@ function posicionarMenusAcciones() {
     if (!btn) return
     const r = btn.getBoundingClientRect()
     Object.assign(menu.style, { position: 'fixed', right: 'auto', bottom: 'auto', marginTop: '0', zIndex: '10000' })
-    const w = menu.offsetWidth, h = menu.offsetHeight
-    const margenInferior = 56 // pie de página fijo
+    // En escritorio la página tiene zoom (html { zoom: .9 }): se calcula en píxeles de pantalla y se divide al asignar
+    const z = parseFloat(getComputedStyle(document.documentElement).zoom) || 1
+    const w = menu.offsetWidth * z, h = menu.offsetHeight * z
+    const margenInferior = 56 * z // pie de página fijo
     const left = Math.max(8, Math.min(r.right - w, window.innerWidth - w - 8))
     let top = r.bottom + 4
     if (top + h > window.innerHeight - margenInferior) top = Math.max(8, r.top - h - 4)
-    menu.style.left = `${left}px`
-    menu.style.top = `${top}px`
+    menu.style.left = `${left / z}px`
+    menu.style.top = `${top / z}px`
   })
 }
 if (!window.__sipadMenus) {
