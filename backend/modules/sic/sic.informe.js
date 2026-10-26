@@ -83,17 +83,37 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   c.push(H1('1. Alcance y metodología'))
   c.push(P(redaccion.metodologia))
   const av = a.avance
-  c.push(P(`Avance del diligenciamiento: cuestionario de diagnóstico ${av.institucional.pct} % (${av.institucional.respondidas} de ${av.institucional.total} preguntas` +
-    (av.institucional.precargadas ? `; ${av.institucional.precargadas} respuestas precargadas aún sin confirmar por quien responde` : '') + '), ' +
-    `${av.espacios.registrados} espacio(s) registrado(s)` + (av.espacios.declarados ? ` de ${av.espacios.declarados} declarados` : '') +
-    `, ${av.espacios.fichasCompletas} ficha(s) de inspección completas y ${av.sistemas.repositorios} repositorio(s) electrónico(s) inventariado(s).`))
+  const hayEspacios = a.espacios.length > 0
+  const hayInspeccion = a.espacios.some(e => e.riesgo.nivel)
+  const hayRepos = a.repositorios.length > 0
+  c.push(P(`Avance del cuestionario: ${av.institucional.pct} % (${av.institucional.respondidas} de ${av.institucional.total} preguntas` +
+    (av.institucional.precargadas ? `; ${av.institucional.precargadas} respuestas precargadas aún sin confirmar por quien responde` : '') + ')' +
+    (hayEspacios ? `; ${av.espacios.registrados} espacio(s) registrado(s) y ${av.espacios.fichasCompletas} ficha(s) de inspección completas` : '') +
+    (hayRepos ? `; ${av.sistemas.repositorios} repositorio(s) electrónico(s) inventariado(s)` : '') + '.'))
+  const resp = estado.respondientes || []
+  if (resp.length) c.push(P('Respondió: ' + resp.map(r => `${r.nombre}${r.cargo ? ', ' + r.cargo : ''} (${r.respuestas} respuesta${r.respuestas === 1 ? '' : 's'})`).join('; ') + '.'))
+  else if (av.institucional.precargadas) c.push(P('Respuestas precargadas del levantamiento preliminar del asesor; aún no las confirma el responsable de archivo.', { italics: true }))
+  let num = 2
+  const sec = (titulo) => H1(`${++num}. ${titulo}`)
 
   // ---- 2. Síntesis ----
   c.push(H1('2. Síntesis del diagnóstico'))
   for (const parr of String(resumen?.texto || redaccion.sintesis).split(/\n\s*\n/)) c.push(P(parr.trim()))
+  // Respuestas abiertas clave, en palabras de quien responde
+  const abiertas = [
+    ['P-060', 'Los tres problemas más graves'],
+    ['P-140', 'Lo que impide mejorar la conservación'],
+    ['P-009', 'Problemas de los espacios de almacenamiento']
+  ].map(([id, et]) => [et, estado.institucional[id]?.v]).filter(([, v]) => typeof v === 'string' && v.trim())
+  if (abiertas.length) {
+    c.push(H2('Lo que señala quien responde'))
+    for (const [et, v] of abiertas) c.push(new Paragraph({ spacing: { after: 100 }, children: [
+      new TextRun({ text: `${et}: `, bold: true, size: 20 }), new TextRun({ text: v.trim(), italics: true, size: 20 })] }))
+  }
 
-  // ---- 3. Estado de conservación ----
-  c.push(H1('3. Espacios y estado de conservación'))
+  // ---- Espacios (solo si se registraron) ----
+  if (hayEspacios) {
+  c.push(sec('Espacios y estado de conservación'))
   if (a.espacios.some(e => e.estado)) c.push(P('El estado de cada espacio se estimó por observación directa durante la inspección (proporción en buen, regular y mal estado). No se midió el volumen documental en metros lineales.'))
   if (a.espacios.length) {
     c.push(tabla(
@@ -102,36 +122,36 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
         e.estado ? `${fmt(e.estado.bueno)} / ${fmt(e.estado.regular)} / ${fmt(e.estado.malo)}` : '—',
         nivelCelda(e.riesgo.nivel), e.prioridad_tecnico || '—']),
       [20, 14, 26, 14, 12, 14]))
-  } else {
-    c.push(P('Aún no se han registrado espacios con documentos.', { italics: true }))
+  }
   }
 
-  // ---- 4. Matriz de riesgos ----
-  c.push(H1('4. Riesgos por espacio inspeccionado'))
+  // ---- Riesgos por espacio (solo si hubo inspección) ----
+  if (hayInspeccion) {
+  c.push(sec('Riesgos por espacio inspeccionado'))
   if (a.espacios.some(e => e.riesgo.nivel)) c.push(P('El nivel de riesgo combina los factores observados en la inspección. Los hongos y la presencia de agua pesan más, por el daño que causan a los documentos y por el riesgo para la salud del personal.'))
   const inspeccionados = a.espacios.filter(e => e.riesgo.nivel)
-  if (!inspeccionados.length) c.push(P('No se realizó inspección por espacio: los riesgos se califican para la entidad en los hallazgos de la sección 7, a partir del cuestionario de diagnóstico.', { italics: true }))
-  if (inspeccionados.length) c.push(tabla(['Espacio', 'Nivel', 'Puntos', 'Factores principales', 'Prioridad del técnico'],
+  c.push(tabla(['Espacio', 'Nivel', 'Puntos', 'Factores principales', 'Prioridad del técnico'],
     inspeccionados.map(e => [e.nombre, nivelCelda(e.riesgo.nivel), { texto: String(e.riesgo.puntos), align: AlignmentType.CENTER },
       e.riesgo.factores.slice(0, 5).map(f => f.factor).join('\n') || 'Sin factores de riesgo registrados', e.prioridad_tecnico || '—']),
     [22, 11, 8, 44, 15]))
+  }
 
-  // ---- 5. Indicadores ----
-  c.push(H1('5. Evaluación por componente'))
+  // ---- Indicadores ----
+  c.push(sec('Evaluación por componente'))
   c.push(tabla(['Componente', 'Indicador (0–100)', 'Nivel', 'Respuestas evaluadas'],
     a.indicadores.map(i => [i.nombre, { texto: i.valor === null ? '—' : String(i.valor), align: AlignmentType.CENTER }, i.nivel,
       { texto: String(i.respuestas), align: AlignmentType.CENTER }]), [46, 18, 18, 18]))
 
-  // ---- 6. Documentos electrónicos ----
-  c.push(H1('6. Documentos electrónicos a preservar'))
-  if (a.repositorios.length) {
+  // ---- Documentos electrónicos (solo si Sistemas inventarió repositorios) ----
+  if (hayRepos) {
+  c.push(sec('Documentos electrónicos a preservar'))
     c.push(tabla(['Sistema o repositorio', 'Tipo', 'Contenido', 'Responsable', 'Copia de seguridad', 'Indispensable', 'Riesgo'],
       a.repositorios.map(r => [r.nombre, r.tipo || '—', r.contenido || '—', r.responsable || '—', r.copia || '—', r.indispensable ? 'Sí' : 'No', nivelCelda(r.riesgo.nivel)]),
       [17, 13, 22, 13, 12, 10, 13]))
-  } else c.push(P('La Oficina de Sistemas aún no ha inventariado sistemas ni repositorios.', { italics: true }))
+  }
 
   // ---- 7. Hallazgos y acciones ----
-  c.push(H1('7. Hallazgos y acciones por programa'))
+  c.push(sec('Hallazgos y acciones por programa'))
   c.push(P('Cada hallazgo indica la pregunta del formulario de la que proviene (columna Evidencia), para su verificación.'))
   const programas = [...new Set(a.hallazgos.map(h => h.componente))]
     .sort((x, y) => Object.keys(COMPONENTES).indexOf(x) - Object.keys(COMPONENTES).indexOf(y))
@@ -145,7 +165,7 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   if (!a.hallazgos.length) c.push(P('Sin hallazgos con la información diligenciada hasta ahora.', { italics: true }))
 
   // ---- 8. Cronograma ----
-  c.push(H1('8. Cronograma propuesto'))
+  c.push(sec('Cronograma propuesto'))
   c.push(P('Las acciones se ordenan por prioridad. Dentro de cada fase conviene ejecutar primero las que no tienen costo; las que requieren contratación deben incluirse en el presupuesto.'))
   for (const f of a.cronograma) {
     c.push(H2(`Prioridad ${f.prioridad} · ${f.plazo}`))
@@ -155,7 +175,7 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   }
 
   // ---- 9. Verificaciones ----
-  c.push(H1('9. Información pendiente de verificar'))
+  c.push(sec('Información pendiente de verificar'))
   c.push(P(redaccion.verificacion))
   if (a.verificaciones.length) c.push(tabla(['Pregunta', 'Dónde', 'Qué verificar'],
     a.verificaciones.map(v => [v.pregunta, v.donde, v.texto]), [12, 25, 63]))

@@ -169,6 +169,26 @@ export async function listarDependencias(db, entidadId) {
   }
 }
 
+// Quién respondió el cuestionario: usuarios con respuestas (sin contar la precarga del asesor)
+async function listarRespondientes(db, entidadId, filas) {
+  const cuenta = new Map()
+  for (const f of filas) {
+    const por = f.actualizado_por
+    if (!por || por === 'precarga') continue
+    cuenta.set(String(por), (cuenta.get(String(por)) || 0) + 1)
+  }
+  const out = []
+  for (const [id, respuestas] of cuenta) {
+    const sql = `SELECT u.nombre_completo AS nombre, c.nombre AS cargo FROM usuarios u LEFT JOIN cargos c ON c.id = u.id_cargo
+                  WHERE CAST(u.entidad_id AS TEXT) = ? AND `
+    const u = /^\d+$/.test(id)
+      ? await db.get(sql + 'u.id = ?', [String(entidadId), Number(id)]).catch(() => null)
+      : await db.get(sql + 'u.nombre_completo = ?', [String(entidadId), id]).catch(() => null)
+    out.push({ id, nombre: u?.nombre || id, cargo: u?.cargo || null, respuestas })
+  }
+  return out.sort((a, b) => b.respuestas - a.respuestas)
+}
+
 export async function obtenerEstado(db, entidadId) {
   const filas = await db.all(`SELECT pregunta_id, valor, actualizado_por, actualizado_en FROM sic_respuestas WHERE entidad_id = ?`, [entidadId])
   const institucional = {}
@@ -188,7 +208,8 @@ export async function obtenerEstado(db, entidadId) {
   const repositorios = reps.map(r => ({ id: r.id, datos: parse(r.datos, {}), actualizado_en: r.actualizado_en, actualizado_por: r.actualizado_por }))
   const meta = await db.get(`SELECT espacios_declarados, redaccion, redaccion_en FROM sic_meta WHERE entidad_id = ?`, [entidadId])
   const dependencias = await listarDependencias(db, entidadId)
-  return { institucional, auditoria, espacios, repositorios, dependencias,
+  const respondientes = await listarRespondientes(db, entidadId, filas)
+  return { institucional, auditoria, espacios, repositorios, dependencias, respondientes,
     espaciosDeclarados: meta?.espacios_declarados ?? null,
     redaccion: meta?.redaccion ? parse(meta.redaccion, null) : null, redaccion_en: meta?.redaccion_en || null }
 }

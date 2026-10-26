@@ -241,6 +241,7 @@ export function renderHeader(activeModule, gestionEntidadNombre = null) {
 
         ${puedeTRDAI ? `<button type="button" id="btnInstrumentos" ${modulo === 'Instrumentos' ? 'class="active"' : ''}>Instrumentos</button>` : ''}
 
+        ${puedeVerInformes ? `<button type="button" id="btnInformes" ${modulo === 'Informes' ? 'class="active"' : ''}>Informes</button>` : ''}
         ${puedeICAF ? `<button type="button" id="btnSIC" ${modulo === 'SIC' ? 'class="active"' : ''}>SIC</button>` : ''}
 
 

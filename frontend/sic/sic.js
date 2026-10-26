@@ -248,12 +248,10 @@ function bloque(titulo, preguntas, obj, crearPregunta, { abierto = false, ayuda 
 // ---------------- Avance ----------------
 function pintarAvance() {
   const a = EST.avance
-  const decl = a.espacios.declarados
   $('#avanceGeneral').innerHTML = `
     <div class="sic-barra" title="Avance general"><i style="width:${a.general}%"></i></div>
     <span><b>${a.institucional.pct}%</b> del cuestionario (${a.institucional.respondidas}/${a.institucional.total})` +
-    (a.institucional.precargadas ? ` · <b class="por-confirmar">${a.institucional.precargadas} por confirmar</b>` : '') +
-    ` · ${a.espacios.registrados}${decl ? ' de ' + decl : ''} espacio(s) · ${a.sistemas.repositorios} repositorio(s)</span>`
+    (a.institucional.precargadas ? ` · <b class="por-confirmar">${a.institucional.precargadas} por confirmar</b>` : '') + '</span>'
 }
 
 // ---------------- Panel 0 · Espacios ----------------
@@ -525,10 +523,14 @@ async function panelResultados() {
   p.append(el('div', { class: 'sic-kpis' },
     kpi(String(a.hallazgos.length), 'hallazgos con su acción'),
     kpi(String(a.avance.institucional.precargadas || 0), 'respuestas precargadas sin confirmar', (a.avance.institucional.precargadas || 0) > 0),
-    kpi(String(r.espacios_por_nivel['crítica']), 'espacios en riesgo crítico', r.espacios_por_nivel['crítica'] > 0),
-    kpi(String(r.repositorios_criticos), 'repositorios en riesgo crítico', r.repositorios_criticos > 0),
+    kpi(`${a.avance.institucional.respondidas}/${a.avance.institucional.total}`, 'preguntas respondidas'),
     kpi(String(r.hallazgos_por_prioridad['crítica']), 'acciones de prioridad crítica', r.hallazgos_por_prioridad['crítica'] > 0),
     kpi(String(a.verificaciones.length), 'respuestas por verificar', a.verificaciones.length > 0)))
+
+  const quienes = j.respondientes || []
+  p.append(el('div', { class: 'meta', style: 'font-size:13px;color:#475569;margin:4px 0 10px',
+    text: quienes.length ? 'Respondió: ' + quienes.map(x => `${x.nombre}${x.cargo ? ' (' + x.cargo + ')' : ''} · ${x.respuestas} respuestas`).join('; ')
+      : 'Aún nadie ha respondido con su usuario.' }))
 
   // Resumen ejecutivo
   const res = el('div', { class: 'sic-resumen' })
@@ -554,9 +556,9 @@ async function panelResultados() {
   res.append(origen, ta, avisos, el('div', { class: 'sic-acciones-top', style: 'margin-top:8px' }, btnRedactar, btnGuardar))
   p.append(el('h2', { class: 'sic-h2', text: 'Resumen ejecutivo' }), res)
 
-  // Espacios
-  p.append(el('h2', { class: 'sic-h2', text: 'Estado y riesgo por espacio' }))
+  // Espacios (solo si se registraron)
   if (a.espacios.length) {
+    p.append(el('h2', { class: 'sic-h2', text: 'Estado y riesgo por espacio' }))
     const t = el('table', { class: 'sic-tabla' })
     t.innerHTML = `<thead><tr><th>Espacio</th><th>Tipo</th><th>Estado B/R/M</th><th>Riesgo</th><th>Factores principales</th></tr></thead>`
     const tb = el('tbody')
@@ -566,7 +568,7 @@ async function panelResultados() {
       <td>${e.riesgo.nivel ? `<span class="nivel ${esc(e.riesgo.nivel)}">${esc(e.riesgo.nivel)}</span>` : '<span class="meta">Sin inspección</span>'}</td>
       <td>${esc(e.riesgo.factores.slice(0, 3).map(f => f.factor).join(' · ') || '—')}</td></tr>`)
     t.append(tb); p.append(el('div', { class: 'sic-tabla-wrap' }, t))
-  } else p.append(el('div', { class: 'sic-vacio', text: 'Sin espacios registrados.' }))
+  }
 
   // Indicadores
   p.append(el('h2', { class: 'sic-h2', text: 'Evaluación por componente (0–100)' }))
@@ -622,6 +624,8 @@ async function descargarInforme(btn) {
 const PANELES = { espacios: panelEspacios, institucional: panelInstitucional, inspeccion: panelInspeccion, sistemas: panelSistemas, resultados: panelResultados }
 let tabActual = 'institucional'
 async function irA(tab) {
+  // Espacios, inspección y sistemas ya no se muestran: el diagnóstico es el cuestionario
+  if (!['institucional', 'resultados'].includes(tab)) tab = 'institucional'
   if (tab === 'resultados' && !PUEDE_ANALIZAR) tab = 'institucional'
   await vaciarCola()
   tabActual = tab

@@ -27,16 +27,20 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
   const sintesis = [
     `El diagnóstico de ${entidad} se levantó con el cuestionario de 140 preguntas` + (r.espacios ? ` y con el registro de ${r.espacios} espacio(s) donde se guardan documentos.` : '.'),
     (niv['crítica'] + niv['alta'] + niv['media'] + niv['baja']) ? `De los espacios inspeccionados, por nivel de riesgo, ${niv['crítica']} espacio(s) quedaron en nivel crítico, ${niv['alta']} en alto, ${niv['media']} en medio y ${niv['baja']} en bajo.` : '',
-    a.repositorios.length ? `En el componente electrónico se inventariaron ${a.repositorios.length} sistema(s) o repositorio(s), ${r.repositorios_criticos} de ellos en riesgo crítico de pérdida de información.` : 'No se inventariaron sistemas ni repositorios electrónicos.',
+    a.repositorios.length ? `En el componente electrónico se inventariaron ${a.repositorios.length} sistema(s) o repositorio(s), ${r.repositorios_criticos} de ellos en riesgo crítico de pérdida de información.` : '',
     peores.length ? `Los componentes más débiles son ${peores.join(', ')}.` : '',
     `El análisis arroja ${a.hallazgos.length} hallazgo(s): ${r.hallazgos_por_prioridad['crítica']} de prioridad crítica, ${r.hallazgos_por_prioridad['alta']} alta, ${r.hallazgos_por_prioridad['media']} media y ${r.hallazgos_por_prioridad['baja']} baja.`,
     `De las acciones propuestas, ${r.acciones_por_costo.sin_costo} no tienen costo, ${r.acciones_por_costo.bajo} son de costo bajo y ${r.acciones_por_costo.contratacion} requieren presupuesto o contratación.`
   ].filter(Boolean).join(' ')
 
+  const complementos = [
+    a.espacios.length ? 'la inspección de espacios' : null,
+    a.repositorios.length ? 'el inventario de sistemas' : null
+  ].filter(Boolean)
   const metodologia =
     'La información se obtuvo con el cuestionario de diagnóstico de SIPAD (140 preguntas sobre responsabilidades, espacios, conservación, ' +
-    'procedimientos, emergencias, documentos electrónicos y recursos), respondido por una sola persona que conoce la entidad, ' +
-    'complementado con la inspección de espacios y el inventario de sistemas cuando fue posible. El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
+    'procedimientos, emergencias, documentos electrónicos y recursos), respondido por una sola persona que conoce la entidad' +
+    (complementos.length ? `, complementado con ${complementos.join(' y ')}` : '') + '. El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
     'y las respuestas "No sabe" se registran como tareas de verificación, no como hechos.'
 
   const componentes = a.indicadores.map(i => ({

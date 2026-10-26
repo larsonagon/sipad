@@ -499,8 +499,8 @@ export function avance(ctx) {
       precargadas: idsInst.filter(id => !vacio(val(ctx.institucional, id)) && ctx.auditoria?.[id]?.por === PRECARGA).length },
     sistemas: { respondidas: sis, total: idsSis.length, pct: pct(sis, idsSis.length), repositorios: ctx.repositorios.length },
     espacios: { registrados: ctx.espacios.length, declarados: num(ctx.espaciosDeclarados), fichasCompletas: fichas.filter(f => f.completa).length, fichas },
-    general: pct(inst + sis + fichas.reduce((a, f) => a + f.respondidas, 0),
-      idsInst.length + idsSis.length + fichas.length * idsFicha.length)
+    // El diagnóstico se basa en el cuestionario; espacios y sistemas son complementos opcionales
+    general: pct(inst, idsInst.length)
   }
 }
 

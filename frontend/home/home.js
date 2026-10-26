@@ -152,6 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  const cardReportes = document.getElementById('cardReportes');
+  if (cardReportes) {
+    cardReportes.style.display = puedeInformes ? '' : 'none';
+    cardReportes.onclick = () => { window.location.href = '/informes/index.html'; };
+  }
+
   if (cardInformes) {
     cardInformes.onclick = () => {
       window.location.href = '/trd-ai/trd-ai-instrumentos.html';

@@ -103,7 +103,7 @@ export function buildSICRouter(db, { guardAnalisis = requireLevel(60) } = {}) {
     const { estado, analisis } = await construirAnalisis(db, ent(req))
     const entidad = await nombreEntidad(db, ent(req))
     res.json({ ok: true, entidad, analisis, redaccion: redaccionBase(analisis, { entidad }),
-      resumen: estado.redaccion, resumen_en: estado.redaccion_en })
+      resumen: estado.redaccion, resumen_en: estado.redaccion_en, respondientes: estado.respondientes || [] })
   }, 'No se pudo analizar el diagnóstico'))
 
   r.post('/resumen', guardAnalisis, envolver(async (req, res) => {
