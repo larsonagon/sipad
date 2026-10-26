@@ -68,6 +68,9 @@ export const resolvePermissions = (user) => {
   const esSuperAdmin  = esMaster || rol === 'Super Admin'
   const esArchivista  = rol === 'Archivista'
   const esJefe        = rol === 'Jefe'
+  // Los menús muestran Informes por nivel (50 y 70); el permiso del servidor se alinea con eso
+  const nivel         = Number(user?.nivel_acceso ?? 0)
+  const nivelInformes = nivel === 50 || nivel === 70
   const esOperativo   = !esSuperAdmin // todos menos Super Admin
 
   return {
@@ -90,7 +93,7 @@ export const resolvePermissions = (user) => {
 
     // 🔹 Informes – Ver (Super Admin + Archivista ven todo, Jefe solo su dependencia)
     puedeVerInformes:
-      esSuperAdmin || esArchivista || esJefe,
+      esSuperAdmin || esArchivista || esJefe || nivelInformes,
 
     // 🔹 Informes – Ver solo su dependencia (Jefe)
     informesSoloDependencia:

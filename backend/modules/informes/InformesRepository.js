@@ -134,8 +134,8 @@ export default class InformesRepository {
       LEFT JOIN dependencias d ON d.id = a.dependencia_id
       LEFT JOIN dependencias du ON du.id = u.id_dependencia
       WHERE a.entidad_id = ?
-        AND a.genera_documentos IS NOT NULL
-        AND a.genera_documentos <> ''
+        AND a.documentos_generados IS NOT NULL
+        AND TRIM(a.documentos_generados) <> ''
     `
 
     const params = [entidadId]
@@ -182,7 +182,7 @@ export default class InformesRepository {
       const docs = row.documentos_generados || ''
 
       const tipos = docs
-        .split(',')
+        .split(/[\n,;]+/)  // el ICAF los guarda separados por coma o por línea (entrevista)
         .map(d => d.trim())
         .filter(d => d.length > 0)
 
