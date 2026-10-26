@@ -26,7 +26,7 @@ async function apiJson(url, options) {
   const r = await api(url, options)
   let j = {}
   try { j = await r.json() } catch { /* sin cuerpo */ }
-  if (!r.ok || j.ok === false) throw new Error(j.error || `Error ${r.status}`)
+  if (!r.ok || j.ok === false) { const e = new Error(j.error || `Error ${r.status}`); e.status = r.status; throw e }
   return j
 }
 
@@ -63,39 +63,79 @@ let EST = null
 let espacioActivo = sessionStorage.getItem('sic_espacio') || null
 
 // ---------------- Guardado automático (por lotes) ----------------
+// Cada respuesta se envía al servidor a los 0,7 s. Además queda una copia en este equipo
+// hasta que el servidor confirma: si se va el internet, se cierra la pestaña o vence la sesión,
+// al volver a abrir el cuestionario se envía lo que faltaba.
 const pendientes = new Map() // destino → { id: valor }
 let temporizador = null
+let reintento = null
+const CLAVE_RESPALDO = `sic_pendientes_${USER?.sub || 'x'}_${USER?.entidad_id || ''}_${sessionStorage.getItem('gestion_entidad_id') || ''}`
+function respaldar() {
+  try {
+    if (pendientes.size) localStorage.setItem(CLAVE_RESPALDO, JSON.stringify([...pendientes.entries()]))
+    else localStorage.removeItem(CLAVE_RESPALDO)
+  } catch { /* sin almacenamiento local: solo queda el envío al servidor */ }
+}
+function restaurarRespaldo() {
+  try {
+    const guardado = JSON.parse(localStorage.getItem(CLAVE_RESPALDO) || 'null')
+    if (!Array.isArray(guardado)) return 0
+    let n = 0
+    for (const [destino, parche] of guardado) {
+      pendientes.set(destino, { ...parche, ...(pendientes.get(destino) || {}) }); n += Object.keys(parche).length
+    }
+    return n
+  } catch { return 0 }
+}
 function encolar(destino, id, valor) {
   if (!pendientes.has(destino)) pendientes.set(destino, {})
   pendientes.get(destino)[id] = valor
+  respaldar()
   estadoGuardado('Guardando…')
   clearTimeout(temporizador)
   temporizador = setTimeout(vaciarCola, 700)
 }
+let enviando = null
 async function vaciarCola() {
   clearTimeout(temporizador)
+  if (enviando) { await enviando; if (!pendientes.size) return }
   if (!pendientes.size) return
-  const lote = [...pendientes.entries()]; pendientes.clear()
-  let error = null
-  for (const [destino, parche] of lote) {
-    try {
-      if (destino === 'inst') await apiJson('/api/sic/respuestas', { method: 'PUT', body: { respuestas: parche } })
-      else {
-        const [tipo, id, parte] = destino.split(':')
-        if (tipo === 'esp') await apiJson(`/api/sic/espacios/${id}`, { method: 'PUT', body: { [parte]: parche } })
-        if (tipo === 'rep') await apiJson(`/api/sic/repositorios/${id}`, { method: 'PUT', body: { datos: parche } })
+  enviando = (async () => {
+    const lote = [...pendientes.entries()]; pendientes.clear()
+    let error = null, sinConexion = false
+    for (const [destino, parche] of lote) {
+      try {
+        if (destino === 'inst') await apiJson('/api/sic/respuestas', { method: 'PUT', body: { respuestas: parche } })
+        else {
+          const [tipo, id, parte] = destino.split(':')
+          if (tipo === 'esp') await apiJson(`/api/sic/espacios/${id}`, { method: 'PUT', body: { [parte]: parche } })
+          if (tipo === 'rep') await apiJson(`/api/sic/repositorios/${id}`, { method: 'PUT', body: { datos: parche } })
+        }
+        for (const pid of Object.keys(parche)) document.querySelector(`[data-preg="${pid}"]`)?.classList.remove('error')
+      } catch (e) {
+        if (!e.status || e.status >= 500) {
+          // Sin internet o servidor caído: se devuelve a la cola (lo más reciente gana) y se reintenta
+          sinConexion = true
+          pendientes.set(destino, { ...parche, ...(pendientes.get(destino) || {}) })
+        } else {
+          error = e.message
+          const m = /^([A-Z]{1,3}-\d{2,3})/.exec(e.message)
+          if (m) document.querySelector(`[data-preg="${m[1]}"]`)?.classList.add('error')
+        }
       }
-      for (const pid of Object.keys(parche)) document.querySelector(`[data-preg="${pid}"]`)?.classList.remove('error')
-    } catch (e) {
-      error = e.message
-      const m = /^([A-Z]{1,3}-\d{2,3})/.exec(e.message)
-      if (m) document.querySelector(`[data-preg="${m[1]}"]`)?.classList.add('error')
     }
-  }
-  if (error) { estadoGuardado('No se guardó: ' + error, 'err'); toast(error, 'error') }
-  else { estadoGuardado('Guardado ✓ ' + new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }), 'ok'); refrescarAvance() }
+    respaldar()
+    if (sinConexion) {
+      estadoGuardado('Sin conexión: sus respuestas quedan guardadas en este equipo y se enviarán solas', 'err')
+      clearTimeout(reintento); reintento = setTimeout(vaciarCola, 15000)
+    } else if (error) { estadoGuardado('No se guardó: ' + error, 'err'); toast(error, 'error') }
+    else { estadoGuardado('Guardado ✓ ' + new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }), 'ok'); refrescarAvance() }
+  })()
+  try { await enviando } finally { enviando = null }
 }
-window.addEventListener('beforeunload', (e) => { if (pendientes.size) { vaciarCola(); e.preventDefault() } })
+window.addEventListener('beforeunload', (e) => { if (pendientes.size) { respaldar(); vaciarCola(); e.preventDefault() } })
+window.addEventListener('online', () => vaciarCola())
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && pendientes.size) { respaldar(); vaciarCola() } })
 
 async function refrescarAvance() {
   try { const j = await apiJson('/api/sic/estado'); EST.avance = j.avance; pintarAvance() } catch { /* silencioso */ }
@@ -649,6 +689,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.querySelectorAll('#tabs button').forEach(b => b.addEventListener('click', () => irA(b.dataset.tab)))
   try {
     CAT = await apiJson('/api/sic/formulario')
+    // Respuestas que quedaron en este equipo sin llegar al servidor (cierre, caída o sin internet)
+    const recuperadas = restaurarRespaldo()
+    if (recuperadas) { await vaciarCola(); if (!pendientes.size) toast(`Se recuperaron ${recuperadas} respuesta(s) que no se habían enviado`, 'success') }
     EST = await apiJson('/api/sic/estado')
     pintarAvance()
     await irA(sessionStorage.getItem('sic_tab') || 'institucional')
