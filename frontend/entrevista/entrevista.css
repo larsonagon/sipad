@@ -57,7 +57,7 @@
 .en-serie { margin-top: 10px; }
 .en-fila2 { display: grid; grid-template-columns: 2fr 1fr auto; gap: 8px; margin-top: 8px; }
 .en-serie.en-fila2 { grid-template-columns: 1fr 1fr; }
-.en-fila2 input, .en-tip-add input, .en-asist input, .en-nota textarea { font: inherit; font-size: 14px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; width: 100%; color: #1f2937; }
+.en-fila2 input, .en-tip-add input, .en-asist input:not([type=checkbox]), .en-nota textarea { font: inherit; font-size: 14px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; width: 100%; color: #1f2937; }
 
 .en-tips { margin-top: 12px; border-top: 1px dashed #e2e8f0; padding-top: 8px; }
 .en-tips-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; color: #64748b; font-weight: 600; margin-bottom: 4px; }
@@ -77,6 +77,9 @@
 .en-acta { margin-top: 18px; }
 .en-asist { display: grid; gap: 8px; margin: 8px 0; }
 .en-asist-fila { display: grid; grid-template-columns: 1.2fr 1fr 1fr auto auto; gap: 8px; align-items: center; }
+/* Casilla "Jefe": el cuadro no se estira y el texto queda pegado a él */
+.en-asist .vr-check { white-space: nowrap; justify-self: start; }
+.en-asist .vr-check input[type=checkbox] { width: 18px; height: 18px; flex: none; margin: 0; }
 .en-asist select, .en-icaf select { font: inherit; font-size: 13.5px; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #1f2937; min-width: 0; }
 .en-part summary { display: flex; align-items: baseline; gap: 10px; cursor: pointer; list-style: none; flex-wrap: wrap; }
 .en-part summary::-webkit-details-marker { display: none; }
