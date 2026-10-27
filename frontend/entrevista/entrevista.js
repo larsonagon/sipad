@@ -103,7 +103,15 @@ async function vistaInicio() {
         el('div', { class: 'vr-cifras' },
           el('div', {}, el('b', { text: r.si }), 'Sí'),
           el('div', {}, el('b', { text: r.no }), 'No'),
-          el('div', {}, el('b', { text: r.pendientes }), 'por preguntar'))))
+          el('div', {}, el('b', { text: r.pendientes }), 'por preguntar')),
+        // Borrar desde la lista las entrevistas que no se han cerrado (p. ej., abiertas por error)
+        e.estado !== 'cerrada' ? el('button', { type: 'button', class: 'vr-volver en-quitar', text: hechas ? 'Eliminar entrevista' : 'Eliminar (sin respuestas)',
+          onclick: async (ev) => {
+            ev.stopPropagation()
+            if (!confirm(`¿Eliminar la entrevista de ${e.oficina}${hechas ? ` con ${hechas} subserie(s) ya respondidas` : ''}? Las propuestas de la TRD ya creadas no se borran.`)) return
+            try { await api(`/api/verificacion/entrevistas/${e.id}`, { method: 'DELETE' }); toast('Entrevista eliminada', 'success'); vistaInicio() }
+            catch (err) { toast(err.message, 'error') }
+          } }) : null))
     }
     v.append(grid)
   }
