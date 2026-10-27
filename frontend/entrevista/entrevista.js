@@ -323,6 +323,8 @@ function tarjeta(s) {
   if (s.respuesta !== 'no' && (s.tipologias.length || s.respuesta === 'si')) {
     const esSi = s.respuesta === 'si'
     const tips = el('div', { class: 'en-tips' })
+    if (!s.tipologias.length) tips.append(el('div', { class: 'en-tips-cab' },
+      el('span', { text: 'La guía no trae documentos para esta subserie: pregunte cuáles produce la oficina y agréguelos uno por uno.' })))
     if (s.tipologias.length) {
       const sinMarcar = s.tipologias.filter(t => !t.respuesta).length
       tips.append(el('div', { class: 'en-tips-cab' },
