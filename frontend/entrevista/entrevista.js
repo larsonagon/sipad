@@ -316,12 +316,19 @@ function tarjeta(s) {
       card.append(el('div', { class: 'en-fila2 en-serie' }, serie, sub))
     }
     card.append(bloqueIcaf(s, () => { card.replaceWith(tarjeta(s)) }))
+  }
+
+  // Tipologías: se muestran desde el inicio (ayudan a preguntar). Si se marca un documento
+  // antes de responder la subserie, la subserie queda en Sí. Se ocultan si la subserie es No.
+  if (s.respuesta !== 'no' && (s.tipologias.length || s.respuesta === 'si')) {
+    const esSi = s.respuesta === 'si'
     const tips = el('div', { class: 'en-tips' })
     if (s.tipologias.length) {
       const sinMarcar = s.tipologias.filter(t => !t.respuesta).length
       tips.append(el('div', { class: 'en-tips-cab' },
-        el('span', { text: `Documentos que lleva el expediente${sinMarcar ? ` · faltan ${sinMarcar}` : ''}` }),
-        !cerrada() && sinMarcar ? el('button', { type: 'button', class: 'vr-volver', text: 'Marcar los demás como Sí', onclick: async () => {
+        el('span', { text: esSi ? `Documentos que lleva el expediente${sinMarcar ? ` · faltan ${sinMarcar}` : ''}`
+          : `Documentos que suele llevar (${s.tipologias.length}): pregunte por cada uno` }),
+        esSi && !cerrada() && sinMarcar ? el('button', { type: 'button', class: 'vr-volver', text: 'Marcar los demás como Sí', onclick: async () => {
           for (const t of s.tipologias.filter(x => !x.respuesta)) { if (await guardarItem(t.id, { respuesta: 'si' })) t.respuesta = 'si' }
           recalcular(); card.replaceWith(tarjeta(s))
         } }) : null))
@@ -329,6 +336,11 @@ function tarjeta(s) {
         const fila = el('div', { class: `en-tip ${t.respuesta || ''}` },
           el('span', { class: 'en-tip-txt' }, t.texto, t.origen === 'agregado' ? el('em', { text: ' (agregado)' }) : null),
           botonesResp(t.respuesta, async (r) => {
+            // Marcar un documento como Sí confirma que la oficina produce la subserie
+            if (r === 'si' && s.respuesta !== 'si') {
+              if (!(await guardarItem(s.id, { respuesta: 'si' }))) return
+              s.respuesta = 'si'
+            }
             if (await guardarItem(t.id, { respuesta: r })) { t.respuesta = r; recalcular(); card.replaceWith(tarjeta(s)) }
           }, true),
           t.origen === 'agregado' && !cerrada() ? el('button', { type: 'button', class: 'vr-icono', title: 'Quitar', 'aria-label': 'Quitar', text: '✕', onclick: async () => {
@@ -337,7 +349,7 @@ function tarjeta(s) {
         tips.append(fila)
       }
     }
-    if (!cerrada()) {
+    if (esSi && !cerrada()) {
       const nuevo = el('input', { type: 'text', maxlength: '300', placeholder: 'Otro documento de este expediente' })
       tips.append(el('form', { class: 'en-tip-add', onsubmit: async (ev) => {
         ev.preventDefault(); if (!nuevo.value.trim()) return
