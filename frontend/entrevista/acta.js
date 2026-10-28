@@ -38,7 +38,6 @@ async function cargar() {
 function pintar(d) {
   const e = d.entrevista
   const si = d.items.filter(s => s.respuesta === 'si')
-  const no = d.items.filter(s => s.respuesta === 'no')
   const ns = d.items.filter(s => s.respuesta === 'ns')
   const agregados = d.items.filter(s => s.origen === 'agregado')
   const nombreSerie = (s) => (s.serie && !/^por definir$/i.test(s.serie)) ? esc(s.serie) : '<span class="muted">Por definir</span>'
@@ -72,16 +71,13 @@ function pintar(d) {
     realizó con base en el manual de funciones de la entidad: cada subserie consultada corresponde a una función asignada a la oficina.</p>
 
     <h2>Resumen</h2>
-    <table><tr><th>Subseries consultadas</th><th>Confirmadas</th><th>No produce</th><th>No sabe</th><th>Mencionadas por la oficina</th></tr>
-      <tr><td>${d.resumen.subseries}</td><td>${d.resumen.si}</td><td>${d.resumen.no}</td><td>${d.resumen.ns}</td><td>${agregados.filter(a => !a.padre_id).length}</td></tr></table>
+    <table><tr><th>Subseries que produce la oficina</th><th>Pendientes de confirmar</th><th>Mencionadas por la oficina</th></tr>
+      <tr><td>${d.resumen.si}</td><td>${d.resumen.ns}</td><td>${agregados.filter(a => !a.padre_id).length}</td></tr></table>
 
     <h2>1. Documentación que la oficina confirma que produce</h2>
     ${si.length ? `<table><tr><th style="width:4%">N.º</th><th style="width:20%">Serie</th><th style="width:24%">Subserie</th><th>Tipologías documentales</th><th style="width:18%">Observación</th></tr>${si.map(filaSi).join('')}</table>` : '<p class="muted">Ninguna.</p>'}
 
-    <h2>2. Documentación que la oficina indica que no produce</h2>
-    ${lista(no)}
-
-    <h2>3. Pendiente de confirmar</h2>
+    <h2>2. Pendiente de confirmar</h2>
     ${lista(ns)}
 
     <h2>Observaciones</h2>
