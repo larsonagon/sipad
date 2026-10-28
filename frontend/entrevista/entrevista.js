@@ -2,6 +2,14 @@
 import { renderHeader } from '../components/header.js'
 
 // ---------------- Sesión / API ----------------
+
+// Abre el acta o el ICAF en otra pestaña. La sesión vive en sessionStorage (propio de cada
+// pestaña); con window.open la pestaña nueva conserva el vínculo con esta y puede tomarla.
+function abrirImprimible(url) {
+  const w = window.open(url, '_blank')
+  if (!w) window.location.href = url // bloqueador de ventanas: se abre en la misma pestaña
+}
+
 function usuarioToken() {
   const t = sessionStorage.getItem('token'); if (!t) return null
   try { return JSON.parse(decodeURIComponent(escape(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))) } catch { return null }
@@ -228,8 +236,8 @@ function pintar() {
     v.append(el('div', { class: 'vr-card en-cerrada' },
       el('b', { text: e.aplicado_en ? `Resultados llevados a la TRD el ${fechaTxt(e.aplicado_en)}.` : 'Entrevista cerrada. El acta está lista para firma.' }),
       el('div', { class: 'vr-acciones' },
-        el('a', { class: 'btn-primary btn-md', href: `/entrevista/acta.html?id=${encodeURIComponent(e.id)}`, target: '_blank', rel: 'noopener', text: 'Acta' }),
-        el('a', { class: 'btn-primary btn-md', href: `/entrevista/icaf.html?id=${encodeURIComponent(e.id)}`, target: '_blank', rel: 'noopener', text: 'ICAF para firma' }),
+        el('button', { class: 'btn-primary btn-md', type: 'button', text: 'Acta', onclick: () => abrirImprimible(`/entrevista/acta.html?id=${encodeURIComponent(e.id)}`) }),
+        el('button', { class: 'btn-primary btn-md', type: 'button', text: 'ICAF para firma', onclick: () => abrirImprimible(`/entrevista/icaf.html?id=${encodeURIComponent(e.id)}`) }),
         el('button', { class: 'btn-secondary btn-md', type: 'button', text: e.aplicado_en ? 'Actualizar TRD e ICAF' : 'Llevar a la TRD y al ICAF', onclick: aplicar }),
         el('button', { class: 'btn-secondary btn-md', type: 'button', text: 'Reabrir para corregir', onclick: () => estado('en_curso') }))))
   }

@@ -1,4 +1,14 @@
 // SIPAD · Acta de levantamiento de información documental (imprimible)
+// La sesión vive en sessionStorage, propio de cada pestaña: si esta pestaña se abrió
+// desde SIPAD, se copia la sesión de la pestaña de origen.
+;(() => {
+  if (sessionStorage.getItem('token')) return
+  try {
+    const o = window.opener && window.opener.sessionStorage
+    if (!o) return
+    for (const k of ['token', 'gestion_entidad_id', 'entidad_id']) { const v = o.getItem(k); if (v) sessionStorage.setItem(k, v) }
+  } catch { /* otra pestaña u origen: se queda sin sesión */ }
+})()
 const token = sessionStorage.getItem('token')
 const caja = document.getElementById('acta')
 document.getElementById('imprimir').addEventListener('click', () => window.print())
