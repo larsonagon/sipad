@@ -12,7 +12,7 @@ import {
   Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
   WidthType, AlignmentType, HeadingLevel, ImageRun, PageOrientation, Footer, PageNumber
 } from 'docx'
-import { COMPONENTES, INSTITUCIONAL, SISTEMAS } from './sic.formulario.js'
+import { COMPONENTES, INSTITUCIONAL, SISTEMAS, aplica } from './sic.formulario.js'
 import { PRIORIDADES } from './sic.motor.js'
 
 const AZUL = '0D3F77'
@@ -185,7 +185,7 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
   for (const b of [...INSTITUCIONAL, ...SISTEMAS]) {
     c.push(H2(b.titulo))
     c.push(tabla(['ID', 'Pregunta', 'Respuesta', 'Soporte / observación'],
-      b.preguntas.map(p => { const r = estado.institucional[p.id]; return [String(p.n || p.id), p.texto, textoRespuesta(p, r), [r?.s, r?.o].filter(Boolean).join(' · ') || '—'] }),
+      b.preguntas.map(p => { const r = estado.institucional[p.id]; return [String(p.n || p.id), p.texto, (aplica(p, estado.institucional) ? textoRespuesta(p, r) : 'No aplica'), [r?.s, r?.o].filter(Boolean).join(' · ') || '—'] }),
       [6, 44, 14, 36]))
   }
 

@@ -266,21 +266,37 @@ function pregunta(p, actual, guardar, { dependencias = [] } = {}) {
   return caja
 }
 
+// Una pregunta con noAplicaSi deja de aplicar según la respuesta de otra (p. ej. sin plataforma ⇒ 136–138 no aplican)
+function aplica(p) {
+  return !p.noAplicaSi || EST.institucional?.[p.noAplicaSi.pregunta]?.v !== p.noAplicaSi.valor
+}
+const RECUENTOS = []
+function actualizarAplicabilidad() {
+  for (const p of (CAT?.institucional || []).flatMap(b => b.preguntas).filter(q => q.noAplicaSi)) {
+    const caja = document.querySelector(`[data-preg="${p.id}"]`)
+    if (caja) caja.classList.toggle('no-aplica', !aplica(p))
+  }
+  RECUENTOS.forEach(f => f())
+}
+
 function contarRespondidas(preguntas, obj) {
-  return preguntas.filter(p => { const r = obj?.[p.id]; return r && !(r.v === undefined || r.v === null || r.v === '' || (Array.isArray(r.v) && !r.v.length)) }).length
+  return preguntas.filter(aplica).filter(p => { const r = obj?.[p.id]; return r && !(r.v === undefined || r.v === null || r.v === '' || (Array.isArray(r.v) && !r.v.length)) }).length
 }
 
 function bloque(titulo, preguntas, obj, crearPregunta, { abierto = false, ayuda = null } = {}) {
   const d = el('details', { class: 'sic-bloque' }); if (abierto) d.open = true
+  const total = () => preguntas.filter(aplica).length
   const n = contarRespondidas(preguntas, obj)
-  const cuenta = el('span', { class: 'cuenta' + (n === preguntas.length ? ' lleno' : ''), text: `${n}/${preguntas.length}` })
+  const cuenta = el('span', { class: 'cuenta' + (n === total() ? ' lleno' : ''), text: `${n}/${total()}` })
   d.append(el('summary', {}, el('span', { text: titulo }), cuenta))
   const cuerpo = el('div', { class: 'cuerpo' })
   if (ayuda) cuerpo.append(el('p', { class: 'sic-ayuda', text: ayuda }))
-  for (const p of preguntas) cuerpo.append(crearPregunta(p, () => {
-    const m = contarRespondidas(preguntas, obj)
-    cuenta.textContent = `${m}/${preguntas.length}`; cuenta.classList.toggle('lleno', m === preguntas.length)
-  }))
+  const recontar = () => {
+    const m = contarRespondidas(preguntas, obj), t = total()
+    cuenta.textContent = `${m}/${t}`; cuenta.classList.toggle('lleno', m === t)
+  }
+  RECUENTOS.push(recontar)
+  for (const p of preguntas) cuerpo.append(crearPregunta(p, recontar))
   d.append(cuerpo)
   return d
 }
@@ -378,7 +394,12 @@ function panelPreguntasInst(contenedor, bloques) {
       const caja = pregunta(p, EST.institucional[p.id], (v) => {
         if (v === null) delete EST.institucional[p.id]; else EST.institucional[p.id] = v
         actualizarCuenta(); encolar('inst', p.id, v); marcarConfirmada(p.id)
+        if (CAT.institucional.some(b => b.preguntas.some(q => q.noAplicaSi?.pregunta === p.id))) actualizarAplicabilidad()
       })
+      if (p.noAplicaSi) {
+        caja.querySelector('.enunciado').append(el('span', { class: 'sic-na', text: ` · No aplica: en la pregunta ${p.noAplicaSi.pregunta.replace('P-0', '').replace('P-', '')} se respondió "No"` }))
+        if (!aplica(p)) caja.classList.add('no-aplica')
+      }
       if (esPrecargada(p.id)) {
         caja.classList.add('precargada')
         caja.insertBefore(el('div', { class: 'sic-precarga' },
@@ -404,6 +425,7 @@ function refrescarPendientes() {
 }
 function panelInstitucional() {
   const p = $('#panel-institucional'); p.innerHTML = ''
+  RECUENTOS.length = 0
   p.append(el('p', { class: 'sic-ayuda', text: 'Lo responde una sola persona que conozca la entidad (por ejemplo, el responsable de archivo). Marque la respuesta rápida y escriba la respuesta en sus palabras. Las respuestas precargadas son un punto de partida: revíselas, cámbielas si no son correctas y confírmelas.' }))
   const hayPrecarga = CAT.institucional.flatMap(b => b.preguntas).some(q => EST.auditoria?.[q.id]?.por === 'precarga')
   const barra = el('div', { class: 'sic-acciones-top' })

@@ -89,7 +89,7 @@ export const INSTITUCIONAL = [
     { id: 'P-020', n: 20, tipo: 'spn', componente: 'EME', obs: true, texto: "¿Se realizan simulaciones o capacitación para recuperación después de emergencias?" }
   ]},
   { id: "4", titulo: "Documentos electrónicos", preguntas: [
-    { id: 'P-021', n: 21, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿La Alcaldía tiene un sistema o plataforma de gestión documental?" },
+    { id: 'P-021', n: 21, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿La entidad tiene un sistema o plataforma de gestión documental?" },
     { id: 'P-022', n: 22, tipo: 'spn', obs: true, texto: "¿Se producen documentos electrónicos?" },
     { id: 'P-023', n: 23, tipo: 'txt', texto: "¿Dónde se almacenan?" },
     { id: 'P-024', n: 24, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Existen copias de seguridad institucionales periódicas?" },
@@ -106,7 +106,7 @@ export const INSTITUCIONAL = [
     { id: 'P-033', n: 33, tipo: 'spn', componente: 'PRO', obs: true, texto: "¿Se realizan transferencias al Archivo Central?" },
     { id: 'P-034', n: 34, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Existen inventarios documentales, como FUID?" },
     { id: 'P-035', n: 35, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Esos inventarios están actualizados?" },
-    { id: 'P-036', n: 36, tipo: 'spn', componente: 'INS', obs: true, texto: "¿La Alcaldía conoce cuáles TRD fueron aprobadas anteriormente y mediante qué acto administrativo?" },
+    { id: 'P-036', n: 36, tipo: 'spn', componente: 'INS', obs: true, texto: "¿La entidad conoce cuáles TRD fueron aprobadas anteriormente y mediante qué acto administrativo?" },
     { id: 'P-037', n: 37, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Alguna vez se ha elaborado un SIC?" },
     { id: 'P-038', n: 38, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Existe Plan de Conservación Documental?" },
     { id: 'P-039', n: 39, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Existe Plan de Preservación Digital a Largo Plazo?" },
@@ -192,7 +192,7 @@ export const INSTITUCIONAL = [
     { id: 'P-109', n: 109, tipo: 'spn', componente: 'GOB', obs: true, texto: "¿Esos antecedentes están disponibles actualmente para consulta?" },
     { id: 'P-110', n: 110, tipo: 'spn', componente: 'GOB', obs: true, texto: "¿Existe seguimiento para verificar el cumplimiento de acciones relacionadas con el archivo?" },
     { id: 'P-111', n: 111, tipo: 'spn', componente: 'REC', obs: true, texto: "¿Habría posibilidad de asignar recursos económicos para ejecutar el SIC?" },
-    { id: 'P-112', n: 112, tipo: 'spn', componente: 'REC', obs: true, texto: "¿La Alcaldía podría contratar servicios externos especializados?" },
+    { id: 'P-112', n: 112, tipo: 'spn', componente: 'REC', obs: true, texto: "¿La entidad podría contratar servicios externos especializados?" },
     { id: 'P-113', n: 113, tipo: 'spn', componente: 'ALM', obs: true, texto: "¿Existe algún espacio que pueda destinarse progresivamente como Archivo Central?" },
     { id: 'P-114', n: 114, tipo: 'spn', obs: true, texto: "¿Las dependencias tienen espacios propios donde almacenan sus archivos?" },
     { id: 'P-115', n: 115, tipo: 'spn', componente: 'ALM', obs: true, texto: "¿Esos espacios son exclusivos para archivo?" },
@@ -205,7 +205,7 @@ export const INSTITUCIONAL = [
     { id: 'P-120', n: 120, tipo: 'spn', componente: 'PRO', obs: true, texto: "¿Existen medidas para evitar manipulación innecesaria o prácticas que deterioren originales?" },
     { id: 'P-121', n: 121, tipo: 'spn', componente: 'ALM', obs: true, texto: "¿Se utilizan materiales adecuados de conservación documental?" },
     { id: 'P-122', n: 122, tipo: 'spn', componente: 'ALM', inversa: true, obs: true, texto: "¿También se utilizan materiales potencialmente inadecuados?" },
-    { id: 'P-123', n: 123, tipo: 'spn', componente: 'EME', obs: true, texto: "¿La Alcaldía sabe cuáles documentos deben protegerse primero por su vulnerabilidad?" },
+    { id: 'P-123', n: 123, tipo: 'spn', componente: 'EME', obs: true, texto: "¿La entidad sabe cuáles documentos deben protegerse primero por su vulnerabilidad?" },
     { id: 'P-124', n: 124, tipo: 'txt', texto: "¿Existe un inventario o diagnóstico físico detallado por espacio?" },
     { id: 'P-125', n: 125, tipo: 'spn', componente: 'INS', obs: true, texto: "¿El diagnóstico de 2024 contiene información física detallada o es principalmente general?" },
     { id: 'P-126', n: 126, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Están identificados documentos, fondos o series con valor histórico que deban conservarse permanentemente?" },
@@ -220,10 +220,10 @@ export const INSTITUCIONAL = [
     { id: 'P-135', n: 135, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Se conforman expedientes electrónicos institucionalmente?" }
   ]},
   { id: "12", titulo: "Plataforma de gestión documental y cierre", preguntas: [
-    { id: 'P-136', n: 136, tipo: 'txt', texto: "¿Por qué no se utiliza la plataforma de gestión documental existente?" },
-    { id: 'P-137', n: 137, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Debería aprovecharse esa plataforma para centralizar documentos electrónicos y apoyar la preservación digital?" },
-    { id: 'P-138', n: 138, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿La Oficina de Sistemas tiene capacidad técnica para implementar y administrar la plataforma?" },
-    { id: 'P-139', n: 139, tipo: 'spn', componente: 'REC', obs: true, texto: "¿La Alcaldía estaría dispuesta a establecer indicadores y hacer seguimiento periódico al SIC?" },
+    { id: 'P-136', n: 136, tipo: 'txt', noAplicaSi: { pregunta: 'P-021', valor: 'no' }, texto: "¿Por qué no se utiliza la plataforma de gestión documental existente?" },
+    { id: 'P-137', n: 137, tipo: 'spn', noAplicaSi: { pregunta: 'P-021', valor: 'no' }, componente: 'DIG', obs: true, texto: "¿Debería aprovecharse esa plataforma para centralizar documentos electrónicos y apoyar la preservación digital?" },
+    { id: 'P-138', n: 138, tipo: 'spn', noAplicaSi: { pregunta: 'P-021', valor: 'no' }, componente: 'DIG', obs: true, texto: "¿La Oficina de Sistemas tiene capacidad técnica para implementar y administrar la plataforma?" },
+    { id: 'P-139', n: 139, tipo: 'spn', componente: 'REC', obs: true, texto: "¿La entidad estaría dispuesta a establecer indicadores y hacer seguimiento periódico al SIC?" },
     { id: 'P-140', n: 140, tipo: 'txt', texto: "¿Cuál es la principal condición que impide mejorar la conservación y preservación documental?" }
   ]}
 ]
@@ -307,6 +307,13 @@ export const REPOSITORIO = [
   { id: 'SR-11', texto: '¿Es indispensable para la continuidad del servicio?', tipo: 'spn' },
   { id: 'SR-12', texto: '¿Depende de un proveedor o contrato externo?', tipo: 'spn', extra: { tipo: 'txt', etiqueta: '¿Cuándo vence?' } }
 ]
+
+// Aplicabilidad: una pregunta con noAplicaSi deja de aplicar cuando la pregunta
+// de la que depende tiene ese valor (p. ej. sin plataforma ⇒ no se pregunta por su uso).
+export function aplica(p, respuestas) {
+  if (!p?.noAplicaSi) return true
+  return respuestas?.[p.noAplicaSi.pregunta]?.v !== p.noAplicaSi.valor
+}
 
 // Índice plano id → pregunta (para el motor y validaciones)
 export function indicePreguntas() {

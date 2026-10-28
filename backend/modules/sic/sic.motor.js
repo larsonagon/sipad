@@ -17,7 +17,7 @@
 // Valor de cada respuesta: { v, x?, s?, o? } (valor, extra, soporte, observación).
 // ======================================================
 
-import { COMPONENTES, INSTITUCIONAL, FICHA, SISTEMAS, REGISTRO_ESPACIO, REPOSITORIO, FOTOS_MINIMAS, indicePreguntas } from './sic.formulario.js'
+import { COMPONENTES, INSTITUCIONAL, FICHA, SISTEMAS, REGISTRO_ESPACIO, REPOSITORIO, FOTOS_MINIMAS, indicePreguntas, aplica } from './sic.formulario.js'
 
 const IDX = indicePreguntas()
 export const PRECARGA = 'precarga'
@@ -469,7 +469,7 @@ export function verificaciones(ctx) {
   const revisar = (obj, ids, donde) => {
     for (const id of ids) if (val(obj, id) === 'ns') out.push({ pregunta: id, texto: IDX[id]?.texto || id, donde })
   }
-  const idsInst = [...INSTITUCIONAL, ...SISTEMAS].flatMap(b => b.preguntas.map(p => p.id))
+  const idsInst = [...INSTITUCIONAL, ...SISTEMAS].flatMap(b => b.preguntas.filter(p => aplica(p, ctx.institucional)).map(p => p.id))
   revisar(ctx.institucional, idsInst, 'Cuestionario institucional')
   for (const e of ctx.espacios) {
     revisar(e.registro, REGISTRO_ESPACIO.map(p => p.id), nombreEspacio(e))
@@ -482,8 +482,8 @@ export function verificaciones(ctx) {
 // ---------------- 8. Avance ----------------
 export function avance(ctx) {
   const contar = (obj, ids) => ids.filter(id => !vacio(val(obj, id))).length
-  const idsInst = INSTITUCIONAL.flatMap(b => b.preguntas.map(p => p.id))
-  const idsSis = SISTEMAS.flatMap(b => b.preguntas.map(p => p.id))
+  const idsInst = INSTITUCIONAL.flatMap(b => b.preguntas.filter(p => aplica(p, ctx.institucional)).map(p => p.id))
+  const idsSis = SISTEMAS.flatMap(b => b.preguntas.filter(p => aplica(p, ctx.institucional)).map(p => p.id))
   const idsFicha = FICHA.flatMap(b => b.preguntas.filter(p => !p.opcional).map(p => p.id))
   const fichas = ctx.espacios.map(e => {
     const resp = contar(e.ficha, idsFicha)
