@@ -1,4 +1,4 @@
-// SIPAD · ICAF diligenciado por entrevista: un formulario por funcionario, para firma
+// SIPAD · ICAF diligenciado por entrevista: una hoja por actividad, con el diseño del ICAF oficial
 // La sesión vive en sessionStorage, propio de cada pestaña: si esta pestaña se abrió
 // desde SIPAD, se copia la sesión de la pestaña de origen.
 ;(() => {
@@ -18,11 +18,6 @@ function usuarioToken() {
   try { return JSON.parse(decodeURIComponent(escape(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))))) } catch { return null }
 }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
-const fechaLarga = (iso) => iso ? new Date(iso.slice(0, 10) + 'T12:00:00').toLocaleDateString('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
-const TIPO = { misional: 'Misional', apoyo: 'De apoyo', estrategica: 'Estratégica', control: 'Evaluación y control' }
-const FORMATO = { fisico: 'Físico', digital: 'Digital', ambos: 'Ambos' }
-const FREC = { diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', bimensual: 'Bimensual', trimestral: 'Trimestral', semestral: 'Semestral', anual: 'Anual', eventual: 'Eventual (cuando se requiere)' }
-const val = (v) => v ? esc(v) : '<span class="vacio">No indicado</span>'
 let DATOS = null
 
 async function cargar() {
@@ -43,51 +38,52 @@ async function cargar() {
   pintar()
 }
 
-function formulario(f, d) {
+// Mismo diseño del ICAF oficial (backend/modules/segtec/segtec.pdf.service.js): una hoja por actividad.
+const cap = (v) => { const t = String(v ?? '').replaceAll('_', ' ').trim(); return t ? esc(t.charAt(0).toUpperCase() + t.slice(1)) : '' }
+const FORMATO_OF = { fisico: 'Físico', digital: 'Digital', mixto: 'Mixto', ambos: 'Ambos' }
+const fechaCorta = (iso) => iso ? new Date(String(iso).slice(0, 10) + 'T12:00:00').toLocaleDateString('es-CO') : new Date().toLocaleDateString('es-CO')
+const campo = (etq, v) => `<div class="campo"><div class="label">${etq}</div><div class="box">${v ?? ''}</div></div>`
+
+function hojaActividad(x, a, d) {
   const e = d.entrevista
-  const a = f.asistente
-  const jefe = e.asistentes.find(x => x.jefe && x.id !== a.id)
-  const acts = f.actividades.map((x, i) => `
-    <div class="act">
-      <h3>Actividad ${i + 1} de ${f.actividades.length}</h3>
-      <table>
-        <tr><th colspan="2">Bloque 1 — Identificación básica de la actividad</th></tr>
-        <tr><td>1. Nombre de la actividad</td><td>${esc(x.nombre)}</td></tr>
-        <tr><td>2. Cargo responsable</td><td>${val(a.cargo)}</td></tr>
-        <tr><td>3. Clasificación funcional</td><td>${esc(TIPO[x.tipo_funcion] || x.tipo_funcion)}</td></tr>
-        <tr><td>4. Periodicidad</td><td>${val(FREC[x.frecuencia])}</td></tr>
-        <tr><td>5. Descripción</td><td>${esc(x.descripcion)}</td></tr>
-        <tr><th colspan="2">Bloque 2 — Producción documental asociada</th></tr>
-        <tr><td>6. ¿Genera documentos?</td><td>Sí</td></tr>
-        <tr><td>7. Documentos generados</td><td>${x.documentos.length ? `<ul class="tips">${x.documentos.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '<span class="vacio">No se detallaron tipologías</span>'}</td></tr>
-        <tr><td>8. Formato de producción</td><td>${val(FORMATO[x.formato])}</td></tr>
-        <tr><td>Serie / subserie</td><td>${x.serie ? `${esc(x.serie)} · ` : ''}${esc(x.subserie)}</td></tr>
-        <tr><td>¿Conforma expediente?</td><td>${x.expediente ? 'Sí' : 'No'}</td></tr>
-        <tr><td>11. Custodia</td><td>La misma dependencia</td></tr>
-        ${x.nota ? `<tr><td>Observación</td><td>${esc(x.nota)}</td></tr>` : ''}
-      </table>
-    </div>`).join('')
   return `<div class="hoja">
-    <h1>Instrumento de Caracterización de Actividades Funcionales (ICAF)</h1>
-    <div class="ent">${esc(d.entidad)}</div>
-    <table class="datos">
-      <tr><td>Dependencia</td><td>${esc(e.dependencia_nombre || '')}</td></tr>
-      <tr><td>Oficina productora</td><td>${esc(e.oficina)}</td></tr>
-      <tr><td>Funcionario</td><td>${esc(a.nombre)}</td></tr>
-      <tr><td>Cargo</td><td>${val(a.cargo)}</td></tr>
-      <tr><td>Fecha</td><td>${fechaLarga(e.fecha)}</td></tr>
-    </table>
-    <div class="decl">Formulario diligenciado mediante entrevista realizada el ${fechaLarga(e.fecha)}${e.lugar ? ` en ${esc(e.lugar)}` : ''}.
-      La información fue suministrada por el funcionario, quien la revisó y la aprueba con su firma. Las actividades corresponden a las
-      funciones de su cargo según el manual de funciones de la entidad.</div>
-    ${acts}
-    <div class="firmas">
-      <div class="firma"><b>${esc(a.nombre)}</b><br>${esc(a.cargo || '')}<br><span class="muted">Funcionario</span></div>
-      ${jefe ? `<div class="firma"><b>${esc(jefe.nombre)}</b><br>${esc(jefe.cargo || '')}<br><span class="muted">Jefe de la oficina — Vo. Bo.</span></div>` : ''}
-      <div class="firma"><b>${esc(e.entrevistador || ' ')}</b><br><span class="muted">Diligenció (entrevistador)</span></div>
+    <h1>INSTRUMENTO DE CARACTERIZACIÓN DE ACTIVIDADES FUNCIONALES</h1>
+    <div class="grid">
+      ${campo('Entidad', esc(d.entidad || ''))}
+      ${campo('Dependencia', esc(e.dependencia_nombre || 'No registrada'))}
+      ${campo('Funcionario', esc(a.nombre || 'No registrado'))}
+      ${campo('Fecha', fechaCorta(e.fecha))}
     </div>
-    <div class="pie">Generado en SIPAD a partir del acta de levantamiento de información documental de ${esc(e.oficina)}${e.cerrado_en ? '' : ' · BORRADOR: la entrevista no se ha cerrado'}.</div>
+    <h2>BLOQUE 1 — Identificación Básica de la Actividad</h2>
+    ${campo('1. Nombre de la actividad', esc(x.nombre))}
+    ${campo('2. Cargo responsable', esc(a.cargo || ''))}
+    ${campo('3. Clasificación funcional', cap(x.tipo_funcion))}
+    ${campo('4. Periodicidad', cap(x.frecuencia))}
+    ${campo('5. Descripción detallada', esc(x.descripcion || ''))}
+    <h2>BLOQUE 2 — Producción Documental Asociada</h2>
+    ${campo('6. ¿Genera documentos?', 'Sí')}
+    ${campo('7. Documentos generados', x.documentos.map(esc).join('; '))}
+    ${campo('8. Formato de producción', FORMATO_OF[x.formato] || cap(x.formato))}
+    ${campo('9. Documentos requeridos para iniciar la actividad', '')}
+    ${campo('10. Volumen documental', '')}
+    ${campo('11. Responsabilidad de custodia', 'La misma dependencia')}
+    ${campo('11a. Cargo responsable de custodia', '')}
+    ${campo('12. Localización de documentos', '')}
+    <h2>BLOQUE 3 — Gestión y Trámite</h2>
+    ${campo('13. ¿Tiene procedimiento formal?', '')}
+    ${campo('14. Dependencias involucradas', '')}
+    ${campo('15. ¿Tiene plazo para cumplirse?', '')}
+    ${campo('15a. Plazo legal establecido', '')}
+    ${campo('15b. Tiempo promedio real de ejecución', '')}
+    ${campo('16. ¿Genera expediente?', x.expediente ? 'Sí' : 'No')}
+    ${campo('17. Norma que exige la actividad', '')}
+    <div class="firma"><div class="linea"></div><div class="firma-nombre">${esc(a.nombre || '')}</div><div class="firma-cargo">${esc(a.cargo || '')}</div></div>
+    <div class="footer"><div>Sistema inteligente para la planeación archivística documental – SIPAD</div><div>Instrumento de caracterización de actividades funcionales</div></div>
   </div>`
+}
+
+function formulario(f, d) {
+  return f.actividades.map(x => hojaActividad(x, f.asistente, d)).join('')
 }
 
 function pintar() {
