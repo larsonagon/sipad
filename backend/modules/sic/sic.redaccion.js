@@ -25,7 +25,7 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
   const peores = crit.slice(0, 3).map(i => `${i.nombre.toLowerCase()} (${i.valor}/100)`)
 
   const sintesis = [
-    `El diagnóstico de ${entidad} se levantó con el cuestionario de 140 preguntas` + (r.espacios ? ` y con el registro de ${r.espacios} espacio(s) donde se guardan documentos.` : '.'),
+    `El diagnóstico de ${entidad} se levantó con el cuestionario de diagnóstico` + (r.espacios ? ` y con el registro de ${r.espacios} espacio(s) donde se guardan documentos.` : '.'),
     (niv['crítica'] + niv['alta'] + niv['media'] + niv['baja']) ? `De los espacios inspeccionados, por nivel de riesgo, ${niv['crítica']} espacio(s) quedaron en nivel crítico, ${niv['alta']} en alto, ${niv['media']} en medio y ${niv['baja']} en bajo.` : '',
     a.repositorios.length ? `En el componente electrónico se inventariaron ${a.repositorios.length} sistema(s) o repositorio(s), ${r.repositorios_criticos} de ellos en riesgo crítico de pérdida de información.` : '',
     peores.length ? `Los componentes más débiles son ${peores.join(', ')}.` : '',
@@ -38,7 +38,7 @@ export function redaccionBase(a, { entidad = 'la entidad' } = {}) {
     a.repositorios.length ? 'el inventario de sistemas' : null
   ].filter(Boolean)
   const metodologia =
-    'La información se obtuvo con el cuestionario de diagnóstico de SIPAD (140 preguntas sobre responsabilidades, espacios, conservación, ' +
+    'La información se obtuvo con el cuestionario de diagnóstico de SIPAD (preguntas sobre responsabilidades, espacios, conservación, ' +
     'procedimientos, emergencias, documentos electrónicos y recursos), respondido por una sola persona que conoce la entidad' +
     (complementos.length ? `, complementado con ${complementos.join(' y ')}` : '') + '. El análisis lo realiza un motor de reglas: cada hallazgo indica la pregunta de la que proviene, ' +
     'y las respuestas "No sabe" se registran como tareas de verificación, no como hechos.'

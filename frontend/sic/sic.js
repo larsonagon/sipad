@@ -397,7 +397,7 @@ function panelPreguntasInst(contenedor, bloques) {
         if (CAT.institucional.some(b => b.preguntas.some(q => q.noAplicaSi?.pregunta === p.id))) actualizarAplicabilidad()
       })
       if (p.noAplicaSi) {
-        caja.querySelector('.enunciado').append(el('span', { class: 'sic-na', text: ` · No aplica: en la pregunta ${p.noAplicaSi.pregunta.replace('P-0', '').replace('P-', '')} se respondió "No"` }))
+        caja.querySelector('.enunciado').append(el('span', { class: 'sic-na', text: ` · No aplica: en la pregunta ${CAT.institucional.flatMap(b => b.preguntas).find(q => q.id === p.noAplicaSi.pregunta)?.n ?? p.noAplicaSi.pregunta} se respondió "No"` }))
         if (!aplica(p)) caja.classList.add('no-aplica')
       }
       if (esPrecargada(p.id)) {

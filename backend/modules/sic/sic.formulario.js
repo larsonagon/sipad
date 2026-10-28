@@ -101,12 +101,14 @@ export const INSTITUCIONAL = [
     { id: 'P-030', n: 30, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Existe una persona o área formalmente responsable de la preservación digital a largo plazo?" }
   ]},
   { id: "5", titulo: "Instrumentos, planes y recursos", preguntas: [
-    { id: 'P-031', n: 31, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Las dependencias organizan los documentos conforme a las TRD?" },
-    { id: 'P-032', n: 32, tipo: 'spn', componente: 'INS', obs: true, texto: "Mientras se actualizan las TRD, ¿se utiliza la TRD anterior?" },
+    // Filtro: si la entidad nunca ha tenido TRD, no se pregunta cómo las aplica (31, 32, 36)
+    { id: 'P-141', n: '30A', tipo: 'spn', componente: 'INS', obs: true, texto: "¿La entidad tiene o ha tenido Tablas de Retención Documental (TRD) aprobadas?" },
+    { id: 'P-031', n: 31, tipo: 'spn', noAplicaSi: { pregunta: 'P-141', valor: 'no' }, componente: 'INS', obs: true, texto: "¿Las dependencias organizan los documentos conforme a las TRD?" },
+    { id: 'P-032', n: 32, tipo: 'spn', noAplicaSi: { pregunta: 'P-141', valor: 'no' }, componente: 'INS', obs: true, texto: "Mientras se actualizan las TRD, ¿se utiliza la TRD anterior?" },
     { id: 'P-033', n: 33, tipo: 'spn', componente: 'PRO', obs: true, texto: "¿Se realizan transferencias al Archivo Central?" },
     { id: 'P-034', n: 34, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Existen inventarios documentales, como FUID?" },
-    { id: 'P-035', n: 35, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Esos inventarios están actualizados?" },
-    { id: 'P-036', n: 36, tipo: 'spn', componente: 'INS', obs: true, texto: "¿La entidad conoce cuáles TRD fueron aprobadas anteriormente y mediante qué acto administrativo?" },
+    { id: 'P-035', n: 35, tipo: 'spn', noAplicaSi: { pregunta: 'P-034', valor: 'no' }, componente: 'INS', obs: true, texto: "¿Esos inventarios están actualizados?" },
+    { id: 'P-036', n: 36, tipo: 'spn', noAplicaSi: { pregunta: 'P-141', valor: 'no' }, componente: 'INS', obs: true, texto: "¿La entidad conoce cuáles TRD fueron aprobadas anteriormente y mediante qué acto administrativo?" },
     { id: 'P-037', n: 37, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Alguna vez se ha elaborado un SIC?" },
     { id: 'P-038', n: 38, tipo: 'spn', componente: 'INS', obs: true, texto: "¿Existe Plan de Conservación Documental?" },
     { id: 'P-039', n: 39, tipo: 'spn', componente: 'DIG', obs: true, texto: "¿Existe Plan de Preservación Digital a Largo Plazo?" },

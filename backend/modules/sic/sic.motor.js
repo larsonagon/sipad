@@ -218,7 +218,11 @@ function reglas(ctx) {
       accion: 'Presentar a la alta dirección los riesgos del diagnóstico (pérdida de información, sanciones y salud del personal) y obtener la aprobación formal del SIC.' })
 
   // ---- Instrumentos archivísticos ----
-  if (noP(31) || no(32))
+  if (no(141))
+    h({ componente: 'INS', prioridad: 'alta', evidencia: ev(141),
+      hallazgo: 'La entidad no cuenta con Tablas de Retención Documental ni otros instrumentos archivísticos aprobados; las TRD están en elaboración.',
+      accion: 'Culminar el diseño de las TRD, aprobarlas en el Comité Institucional de Gestión y Desempeño y convalidarlas; mientras tanto, organizar los documentos por asuntos y no eliminar ninguno.' })
+  else if (noP(31) || no(32))
     h({ componente: 'INS', prioridad: 'alta', evidencia: ev(31, 32),
       hallazgo: 'Las dependencias no organizan sus documentos con una TRD vigente: las TRD están en actualización y la anterior no se aplica.',
       accion: 'Culminar la actualización de las TRD, aprobarlas en el Comité y convalidarlas; mientras tanto, organizar por asuntos y no eliminar documentos.' })
@@ -229,7 +233,9 @@ function reglas(ctx) {
   const conFuid = num(r(11)) // compatibilidad con datos anteriores
   if (noP(34) || no(35) || (ctx.totalDependencias && conFuid !== null && conFuid < ctx.totalDependencias))
     h({ componente: 'INS', prioridad: 'alta', evidencia: ev(34, 35, 58),
-      hallazgo: 'Los inventarios documentales (FUID) existen solo en algunas dependencias y están desactualizados; no se sabe con certeza qué documentos hay ni dónde.',
+      hallazgo: no(34)
+        ? 'No existen inventarios documentales (FUID); no se sabe con certeza qué documentos hay ni dónde.'
+        : 'Los inventarios documentales (FUID) existen solo en algunas dependencias y están desactualizados; no se sabe con certeza qué documentos hay ni dónde.',
       accion: 'Levantar o actualizar el FUID en todas las dependencias, empezando por los espacios de mayor riesgo.' })
   const acumulados = espaciosDonde(e => esSi(val(e.registro, 'ESP-10')))
   if (si(59) || no(126) || no(128) || acumulados.length)
