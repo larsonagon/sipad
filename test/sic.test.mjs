@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 
 import { crearPool, adaptar, assertNoProd } from './helpers/db.mjs'
 import { analizar, riesgoEspacio, riesgoRepositorio, avance } from '../backend/modules/sic/sic.motor.js'
-import { indicePreguntas, catalogo } from '../backend/modules/sic/sic.formulario.js'
+import { indicePreguntas, catalogo, aplica } from '../backend/modules/sic/sic.formulario.js'
 import * as repo from '../backend/modules/sic/sic.repository.js'
 import { generarInformeSIC } from '../backend/modules/sic/sic.informe.js'
 import { redaccionBase, resumenEjecutivo, normasFueraDeLista, cifrasNoRespaldadas } from '../backend/modules/sic/sic.redaccion.js'
@@ -52,11 +52,24 @@ describe('catálogo', () => {
 
 describe('cuestionario de 140', () => {
   test('140 preguntas numeradas en orden, con su redacción', () => {
-    const ps = catalogo().institucional.flatMap(b => b.preguntas)
+    // Las 140 del levantamiento conservan su número; las preguntas filtro (p. ej. 30A) van aparte
+    const ps = catalogo().institucional.flatMap(b => b.preguntas).filter(p => typeof p.n === 'number')
     assert.equal(ps.length, 140)
     assert.deepEqual(ps.map(p => p.n), Array.from({ length: 140 }, (_, i) => i + 1))
     assert.equal(ps[112].texto, '¿Existe algún espacio que pueda destinarse progresivamente como Archivo Central?')
     assert.equal(catalogo().sistemas.length, 0)
+  })
+
+  test('preguntas que dependen de otra respuesta', () => {
+    const todas = catalogo().institucional.flatMap(b => b.preguntas)
+    const ids = new Set(todas.map(p => p.id))
+    for (const p of todas.filter(q => q.noAplicaSi)) assert.ok(ids.has(p.noAplicaSi.pregunta), p.id)
+    const p31 = todas.find(p => p.id === 'P-031'), p136 = todas.find(p => p.id === 'P-136')
+    assert.equal(aplica(p31, { 'P-141': { v: 'no' } }), false)
+    assert.equal(aplica(p31, { 'P-141': { v: 'parcial' } }), true)
+    assert.equal(aplica(p136, {}), true)
+    const base = { espacios: [], repositorios: [], auditoria: {} }
+    assert.equal(avance({ ...base, institucional: { 'P-141': v('no'), 'P-034': v('no'), 'P-021': v('no') } }).institucional.total, 134)
   })
 
   test('interpreta la respuesta en palabras', () => {
