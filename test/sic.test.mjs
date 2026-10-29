@@ -72,6 +72,15 @@ describe('cuestionario de 140', () => {
     assert.equal(avance({ ...base, institucional: { 'P-141': v('no'), 'P-034': v('no'), 'P-021': v('no') } }).institucional.total, 134)
   })
 
+  test('matriz de riesgos: probabilidad por respuestas, impacto fijo', () => {
+    const a = analizar({ institucional: { 'P-014': v('si'), 'P-050': v('si'), 'P-051': v('no'), 'P-024': v('no'), 'P-045': v('parcial') } })
+    const r = Object.fromEntries(a.riesgos.map(x => [x.id, x]))
+    assert.equal(a.riesgos.length, 10)
+    assert.equal(r.R1.probabilidad, 5); assert.equal(r.R1.nivel, 'extremo')
+    assert.equal(r.R2.valor, 25)
+    assert.equal(r.R10.nivel, 'sin datos')
+  })
+
   test('interpreta la respuesta en palabras', () => {
     const t = { 'Sí.': 'si', 'Sí, pero no se utiliza.': 'si', 'No.': 'no', 'No existe nada.': 'no', 'Algunas.': 'parcial', 'En algunos casos.': 'parcial',
       'Quizá.': 'ns', 'Lo duda.': 'ns', 'No lo sabe; requiere verificación.': 'ns', 'No muchos.': 'parcial', 'Las TRD se están actualizando.': 'parcial',

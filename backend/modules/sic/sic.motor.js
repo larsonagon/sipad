@@ -174,6 +174,63 @@ export function indicadores(ctx) {
   return out
 }
 
+// ---------------- 6b. Matriz de riesgos (probabilidad × impacto) ----------------
+// Diez riesgos de conservación. La PROBABILIDAD (1–5) sale de las respuestas: cada
+// pregunta indicadora aporta su "exposición" (1 − puntaje: 1 = el riesgo está presente
+// o el control no existe). El IMPACTO (1–5) es fijo por riesgo: lo que se pierde si ocurre.
+// Nivel = P × I: 15–25 extremo, 10–14 alto, 5–9 moderado, 1–4 bajo.
+export const RIESGOS = [
+  { id: 'R1', riesgo: 'Deterioro biológico por hongos y plagas', impacto: 5, programa: 'SAN',
+    preguntas: ['P-014', 'P-050', 'P-078', 'P-079', 'P-051', 'P-073', 'P-081'],
+    tratamiento: 'Aislar el material contaminado en cuarentena y contratar saneamiento ambiental.' },
+  { id: 'R2', riesgo: 'Pérdida de documentos electrónicos sin respaldo', impacto: 5, programa: 'DIG',
+    preguntas: ['P-024', 'P-025', 'P-026', 'P-088', 'P-090'],
+    tratamiento: 'Copia inmediata a disco externo y repositorio institucional con copia fuera de la sede.' },
+  { id: 'R3', riesgo: 'Daño por agua, filtraciones o inundación', impacto: 5, programa: 'INSP',
+    preguntas: ['P-047', 'P-048', 'P-076', 'P-077', 'P-083'],
+    tratamiento: 'Retirar las cajas del piso, alejarlas de las fuentes de agua y reparar filtraciones.' },
+  { id: 'R4', riesgo: 'Afectación a la salud del personal', impacto: 4, programa: 'SAN',
+    preguntas: ['P-014', 'P-072', 'P-082', 'P-071'],
+    tratamiento: 'Dotar elementos de protección y suspender la manipulación de material contaminado sin ellos.' },
+  { id: 'R5', riesgo: 'Pérdida o sustracción por acceso no controlado', impacto: 4, programa: 'SEG',
+    preguntas: ['P-045', 'P-046', 'P-116', 'P-117'],
+    tratamiento: 'Custodia formal de los depósitos, control de llaves y registro de ingreso.' },
+  { id: 'R6', riesgo: 'Eliminación o extravío de documentos sin control', impacto: 4, programa: 'INS',
+    preguntas: ['P-141', 'P-034', 'P-058', 'P-069', 'P-128'],
+    tratamiento: 'Circular que prohíbe eliminar, inventario documental y acta de entrega de puesto.' },
+  { id: 'R7', riesgo: 'Incendio', impacto: 5, programa: 'EME',
+    preguntas: ['P-049', 'P-084', 'P-019'],
+    tratamiento: 'Extintores aptos para documentos en cada depósito y capítulo documental en el plan de emergencias.' },
+  { id: 'R8', riesgo: 'Deterioro físico por almacenamiento inadecuado', impacto: 3, programa: 'ALM',
+    preguntas: ['P-011', 'P-054', 'P-015', 'P-121', 'P-053'],
+    tratamiento: 'Estibas, estantería adecuada y unidades de conservación estandarizadas.' },
+  { id: 'R9', riesgo: 'Pérdida de autenticidad e integridad electrónica', impacto: 3, programa: 'DIG',
+    preguntas: ['P-028', 'P-091', 'P-095', 'P-096'],
+    tratamiento: 'Permisos por rol, metadatos mínimos y huellas de integridad (SHA-256).' },
+  { id: 'R10', riesgo: 'Obsolescencia de formatos y equipos', impacto: 2, programa: 'DIG',
+    preguntas: ['P-027', 'P-029', 'P-094'],
+    tratamiento: 'Formatos de preservación abiertos y revisión anual de obsolescencia.' }
+]
+export const NIVEL_RIESGO = (pi) => pi >= 15 ? 'extremo' : pi >= 10 ? 'alto' : pi >= 5 ? 'moderado' : 'bajo'
+
+export function matrizRiesgos(ctx) {
+  const out = []
+  for (const r of RIESGOS) {
+    const exp = []
+    for (const id of r.preguntas) {
+      const p = IDX[id]; if (!p || !aplica(p, ctx.institucional)) continue
+      const s = puntaje(p, val(ctx.institucional, id))
+      if (s !== null) exp.push(1 - s)
+    }
+    if (!exp.length) { out.push({ ...r, probabilidad: null, valor: null, nivel: 'sin datos', evidencia: r.preguntas }); continue }
+    const media = exp.reduce((a, b) => a + b, 0) / exp.length
+    const probabilidad = 1 + Math.round(media * 4)
+    const valor = probabilidad * r.impacto
+    out.push({ ...r, programa: COMPONENTES[r.programa], probabilidad, valor, nivel: NIVEL_RIESGO(valor), evidencia: r.preguntas })
+  }
+  return out.sort((a, b) => (b.valor ?? -1) - (a.valor ?? -1))
+}
+
 // ---------------- 6. Reglas: hallazgo → acción ----------------
 // Cada regla devuelve 0..n hallazgos. `evidencia` = preguntas de origen (P-xxx del
 // cuestionario de 140; FI-xx y ESP-xx de la inspección opcional por espacio).
@@ -563,6 +620,7 @@ export function analizar(entrada = {}) {
     espacios,
     repositorios,
     indicadores: indicadores(ctx),
+    riesgos: matrizRiesgos(ctx),
     hallazgos,
     resumen: {
       espacios: espacios.length,
