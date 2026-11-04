@@ -21,3 +21,4 @@ node_modules/
 
 # Copias de la base de datos (datos reales)
 *.dump
+_to_delete/

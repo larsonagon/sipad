@@ -20,6 +20,7 @@
 //   GET    /analisis                  resultado del motor + redacción base
 //   POST   /resumen                   resumen ejecutivo (asistente, con guardias)
 //   GET    /informe.docx              informe Word del diagnóstico
+//   GET    /informe.xlsx              informe Excel del diagnóstico
 // ======================================================
 
 import express from 'express'
@@ -28,6 +29,7 @@ import { catalogo } from './sic.formulario.js'
 import { analizar } from './sic.motor.js'
 import { redaccionBase, resumenEjecutivo } from './sic.redaccion.js'
 import { generarInformeSIC } from './sic.informe.js'
+import { generarExcelSIC } from './sic.excel.js'
 import * as repo from './sic.repository.js'
 
 const usuario = (req) => req.user?.nombre || req.user?.username || req.user?.email || String(req.user?.sub || req.user?.id || '')
@@ -133,6 +135,18 @@ export function buildSICRouter(db, { guardAnalisis = requireLevel(60) } = {}) {
     res.setHeader('Content-Length', buffer.length)
     res.end(buffer)
   }, 'No se pudo generar el informe'))
+
+  r.get('/informe.xlsx', guardAnalisis, envolver(async (req, res) => {
+    const { estado, analisis } = await construirAnalisis(db, ent(req))
+    const entidad = await nombreEntidad(db, ent(req))
+    const buffer = await generarExcelSIC({ analisis, estado, entidad,
+      redaccion: redaccionBase(analisis, { entidad }), resumen: estado.redaccion,
+      fecha: new Date().toLocaleDateString('es-CO') })
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    res.setHeader('Content-Disposition', 'attachment; filename="Diagnostico-preliminar-SIC.xlsx"')
+    res.setHeader('Content-Length', buffer.length)
+    res.end(buffer)
+  }, 'No se pudo generar el informe en Excel'))
 
   return r
 }

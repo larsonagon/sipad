@@ -19,6 +19,7 @@ import { COMPONENTES, INSTITUCIONAL, SISTEMAS, aplica } from './sic.formulario.j
 import { PRIORIDADES, PLAZOS, NIVEL_RIESGO } from './sic.motor.js'
 
 // ---------------- Paleta y medidas (carta vertical) ----------------
+export const FUENTE = 'Century Gothic'
 const AZUL = '0D3F77'
 const AZUL_CLARO = 'EEF3FA'
 const GRIS = '6B7280'
@@ -35,7 +36,7 @@ const fmt = (n) => (n === null || n === undefined || n === '' ? '—' : Number(n
 // ---------------- Primitivas ----------------
 const NB = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
 const SIN_BORDES = { top: NB, bottom: NB, left: NB, right: NB, insideHorizontal: NB, insideVertical: NB }
-const R = (text, o = {}) => new TextRun({ text: String(text ?? ''), bold: !!o.bold, italics: !!o.italics, size: o.size || 20, color: o.color || '1F2937', font: o.font })
+const R = (text, o = {}) => new TextRun({ text: String(text ?? ''), bold: !!o.bold, italics: !!o.italics, size: o.size || 20, color: o.color || '1F2937', font: o.font || FUENTE })
 function P(text, o = {}) {
   return new Paragraph({
     alignment: o.align || AlignmentType.JUSTIFIED, keepNext: !!o.keepNext,
@@ -49,10 +50,10 @@ const salto = () => new Paragraph({ children: [new PageBreak()] })
 function H1(t) {
   return new Paragraph({ heading: HeadingLevel.HEADING_1, keepNext: true, spacing: { before: 240, after: 140 },
     border: { bottom: { style: BorderStyle.SINGLE, size: 12, color: AZUL, space: 4 } },
-    children: [new TextRun({ text: t, bold: true, size: 30, color: AZUL })] })
+    children: [new TextRun({ text: t, bold: true, size: 30, color: AZUL, font: FUENTE })] })
 }
 const H2 = (t) => new Paragraph({ heading: HeadingLevel.HEADING_2, keepNext: true, spacing: { before: 200, after: 90 },
-  children: [new TextRun({ text: t, bold: true, size: 23, color: AZUL })] })
+  children: [new TextRun({ text: t, bold: true, size: 23, color: AZUL, font: FUENTE })] })
 const lectura = (t) => P([R(t, { size: 19, color: GRIS, italics: true })], { after: 200, align: AlignmentType.LEFT })
 
 function C(children, { w, fill, borders, margins, vAlign, span } = {}) {
@@ -94,7 +95,7 @@ function tabla(encabezados, filas, porcentajes) {
 }
 const nivelCelda = (n) => (n ? { texto: n.toUpperCase(), fill: COLOR_NIVEL[n], bold: true, align: AlignmentType.CENTER } : { texto: 'Sin inspección', align: AlignmentType.CENTER })
 
-function textoRespuesta(p, r) {
+export function textoRespuesta(p, r) {
   if (!r) return '—'
   const v = r.v
   let t
@@ -427,10 +428,10 @@ export async function generarInformeSIC({ analisis: a, estado, redaccion, resume
 
   const pie = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
     R(`${entidad} · Diagnóstico preliminar del SIC · Página `, { size: 15, color: '9CA3AF' }),
-    new TextRun({ children: [PageNumber.CURRENT], size: 15, color: '9CA3AF' })] })] })
+    new TextRun({ children: [PageNumber.CURRENT], size: 15, color: '9CA3AF', font: FUENTE })] })] })
   const doc = new Document({
     creator: 'SIPAD', title: 'Diagnóstico preliminar del SIC',
-    styles: { default: { document: { run: { font: 'Calibri', size: 20 } } } },
+    styles: { default: { document: { run: { font: FUENTE, size: 20 } } } },
     sections: [{
       properties: { titlePage: true, page: { size: { width: 12240, height: 15840 }, margin: { top: 1134, bottom: 1134, left: 1134, right: 1134 } } },
       headers: {

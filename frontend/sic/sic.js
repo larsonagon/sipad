@@ -577,8 +577,9 @@ async function panelResultados() {
   const a = j.analisis, r = a.resumen
   p.innerHTML = ''
 
-  const btnWord = el('button', { class: 'btn-primary btn-sm', type: 'button', text: '⬇ Descargar informe Word', onclick: () => descargarInforme(btnWord) })
-  p.append(el('div', { class: 'sic-acciones-top' }, btnWord,
+  const btnWord = el('button', { class: 'btn-primary btn-sm', type: 'button', text: '⬇ Informe Word', onclick: () => descargarInforme(btnWord, 'docx') })
+  const btnExcel = el('button', { class: 'btn-primary btn-sm', type: 'button', text: '⬇ Informe Excel', onclick: () => descargarInforme(btnExcel, 'xlsx') })
+  p.append(el('div', { class: 'sic-acciones-top' }, btnWord, btnExcel,
     el('button', { class: 'btn-secondary btn-sm', type: 'button', text: '↻ Actualizar análisis', onclick: panelResultados })))
 
   const kpi = (n, l, rojo) => el('div', { class: 'sic-kpi' + (rojo ? ' rojo' : '') }, el('div', { class: 'n', text: n }), el('div', { class: 'l', text: l }))
@@ -669,13 +670,13 @@ async function panelResultados() {
   }
 }
 
-async function descargarInforme(btn) {
+async function descargarInforme(btn, ext = 'docx') {
   const original = btn.textContent; btn.disabled = true; btn.textContent = 'Generando…'
   try {
     await vaciarCola()
-    const r = await api('/api/sic/informe.docx'); if (!r.ok) throw new Error('No se pudo generar el informe')
+    const r = await api(`/api/sic/informe.${ext}`); if (!r.ok) throw new Error('No se pudo generar el informe')
     const url = URL.createObjectURL(await r.blob())
-    const a = document.createElement('a'); a.href = url; a.download = 'Diagnostico-preliminar-SIC.docx'
+    const a = document.createElement('a'); a.href = url; a.download = `Diagnostico-preliminar-SIC.${ext}`
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
     toast('Informe generado', 'success')
   } catch (e) { toast(e.message, 'error') }
