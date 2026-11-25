@@ -94,7 +94,7 @@ export function SEGTECActividadesRepository(db) {
     const row = await db.get(`
       SELECT
         a.*,
-        u.nombre_completo AS funcionario,
+        COALESCE(u.nombre_completo, a.funcionario_externo) AS funcionario,
         d.nombre AS dependencia,
         c.nombre AS cargo
       FROM segtec_actividades a
@@ -118,7 +118,7 @@ export function SEGTECActividadesRepository(db) {
     const row = await db.get(`
       SELECT
         a.*,
-        u.nombre_completo AS funcionario,
+        COALESCE(u.nombre_completo, a.funcionario_externo) AS funcionario,
         d.nombre AS dependencia,
         c.nombre AS cargo
       FROM segtec_actividades a
@@ -239,7 +239,7 @@ export function SEGTECActividadesRepository(db) {
     const queryBase = `
       SELECT
         a.*,
-        u.nombre_completo AS funcionario,
+        COALESCE(u.nombre_completo, a.funcionario_externo) AS funcionario,
         d.nombre AS dependencia,
         c.nombre AS cargo
       FROM segtec_actividades a

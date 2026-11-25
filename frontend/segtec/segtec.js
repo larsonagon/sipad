@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // (Super Admin / Archivista), que es quien estructura la TRD.
   if (puedeAnalizar) {
     document.getElementById('importarExcelBtn')?.classList.remove('hidden');
+    document.getElementById('icafPublicoBtn')?.classList.remove('hidden');
   }
 
   cerrarModalBtn?.addEventListener('click', cerrarModal);

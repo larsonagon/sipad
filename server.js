@@ -111,6 +111,10 @@
   import { buildVerificacionRouter, buildVerificacionPublicaRouter } from './backend/modules/verificacion/verificacion.routes.js'
   import { requireLevel } from './backend/middlewares/role.middleware.js'
 
+  // ✅ ICAF por enlace público (el funcionario diligencia sin usuario; el asesor incorpora)
+  import { runIcafPublicoMigration } from './backend/modules/icaf-publico/icaf-publico.repository.js'
+  import { buildIcafPublicoRouter, buildIcafPublicoAbiertoRouter } from './backend/modules/icaf-publico/icaf-publico.routes.js'
+
   // ==========================================================
   // INIT
   // ==========================================================
@@ -187,6 +191,13 @@
         console.error('⚠️ Migración VERIFICACIÓN falló (el servidor continúa):', errVer.message)
       }
 
+      // ✅ ICAF PÚBLICO — defensivo: si falla, NO debe tumbar el arranque
+      try {
+        await runIcafPublicoMigration(db)
+      } catch (errIcaf) {
+        console.error('⚠️ Migración ICAF PÚBLICO falló (el servidor continúa):', errIcaf.message)
+      }
+
       // ==================================================
       // INSTANCIAR TRD-AI
       // ==================================================
@@ -221,6 +232,17 @@
         message: { ok: false, error: 'Demasiados envíos. Intente de nuevo en unos minutos.' }
       })
       app.use('/api/publico/verificacion', buildVerificacionPublicaRouter(db, { limitador: verificacionLimiter }))
+
+      // ✅ ICAF — formulario público por enlace (sin sesión, antes de verificarJWT).
+      //    El límite es por IP y una entidad suele salir por una sola IP: se deja holgado.
+      const icafPublicoLimiter = rateLimit({
+        windowMs: 10 * 60 * 1000,
+        max: 60,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: { ok: false, error: 'Demasiados envíos. Intente de nuevo en unos minutos.' }
+      })
+      app.use('/api/publico/icaf', buildIcafPublicoAbiertoRouter(db, { limitador: icafPublicoLimiter }))
 
       // ==================================================
       // AUTH + TENANT
@@ -264,6 +286,9 @@
 
       // ✅ VERIFICACIÓN por dependencia (gestión del asesor, nivel ≥ 60)
       app.use('/api/verificacion', buildVerificacionRouter(db, { guard: requireLevel(60) }))
+
+      // ✅ ICAF por enlace público (bandeja del asesor, nivel ≥ 60)
+      app.use('/api/icaf-publico', buildIcafPublicoRouter(db, { guard: requireLevel(60) }))
 
       // ==================================================
       // 404 API
