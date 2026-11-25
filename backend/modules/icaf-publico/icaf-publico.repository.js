@@ -73,6 +73,13 @@ export async function runIcafPublicoMigration(db) {
     );
     CREATE INDEX IF NOT EXISTS idx_icafp_envios_entidad ON icafp_envios(entidad_id, estado);
   `)
+
+  // Día en que empieza la campaña (para los puntos por oportunidad de la medición)
+  try { await db.exec(`ALTER TABLE icafp_enlaces ADD COLUMN IF NOT EXISTS campana_inicio TEXT`) }
+  catch {
+    try { await db.exec(`ALTER TABLE icafp_enlaces ADD COLUMN campana_inicio TEXT`) }
+    catch { /* SQLite: la columna ya existe */ }
+  }
 }
 
 // ---------------- Utilidades ----------------
@@ -90,6 +97,10 @@ function lineas(v, max) {
 }
 function parse(j, def) { try { return j ? JSON.parse(j) : def } catch { return def } }
 const si = (v) => v === true || v === 1 || v === '1' || v === 'true' || v === 'si'
+function fechaISO(v) {
+  const s = String(v || '').slice(0, 10)
+  return /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) ? s : null
+}
 
 async function nombreEntidad(db, entidadId) {
   try {
@@ -115,7 +126,7 @@ async function enlaceDe(db, entidadId) {
 }
 
 function publicoEnlace(l) {
-  return { id: l.id, token: l.token, titulo: l.titulo, mensaje: l.mensaje, estado: l.estado, creado_en: l.creado_en, actualizado_en: l.actualizado_en }
+  return { id: l.id, token: l.token, titulo: l.titulo, mensaje: l.mensaje, estado: l.estado, campana_inicio: l.campana_inicio || null, creado_en: l.creado_en, actualizado_en: l.actualizado_en }
 }
 
 async function conteos(db, entidadId) {
@@ -152,7 +163,12 @@ export async function actualizarEnlace(db, entidadId, body = {}) {
   const titulo = body.titulo !== undefined ? (txt(body.titulo, LIMITES.titulo) || TITULO_DEFECTO) : l.titulo
   const mensaje = body.mensaje !== undefined ? txt(body.mensaje, LIMITES.mensaje) : l.mensaje
   const estado = body.estado !== undefined ? body.estado : l.estado
-  await db.run(`UPDATE icafp_enlaces SET titulo = ?, mensaje = ?, estado = ?, actualizado_en = ? WHERE id = ?`, [titulo, mensaje, estado, now(), l.id])
+  let inicio = l.campana_inicio || null
+  if (body.campana_inicio !== undefined) {
+    inicio = body.campana_inicio ? fechaISO(body.campana_inicio) : null
+    if (body.campana_inicio && !inicio) return { ok: false, status: 400, error: 'Fecha de inicio no válida' }
+  }
+  await db.run(`UPDATE icafp_enlaces SET titulo = ?, mensaje = ?, estado = ?, campana_inicio = ?, actualizado_en = ? WHERE id = ?`, [titulo, mensaje, estado, inicio, now(), l.id])
   return obtenerEnlace(db, entidadId)
 }
 
@@ -308,4 +324,102 @@ export async function descartarEnvio(db, entidadId, id, usuario = '') {
   if (e.estado !== 'pendiente') return { ok: false, status: 409, error: 'Esta respuesta ya fue revisada' }
   await db.run(`UPDATE icafp_envios SET estado = 'descartado', revisado_en = ?, revisado_por = ? WHERE id = ?`, [now(), txt(usuario, LIMITES.nombre), e.id])
   return { ok: true }
+}
+
+// ---------------- Medición (tabla de posiciones) ----------------
+// Puntaje de 100 por funcionario, calculado solo con las respuestas que el
+// asesor incorporó al ICAF (las descartadas y las pendientes no suman):
+//   Detalle     50  promedio de sus tareas: 25 si indicó qué documentos recibe
+//                   para empezar + 25 si explicó cómo la hace
+//   Cobertura   30  5 puntos por tarea, con tope de 6 tareas
+//   Oportunidad 20  según el día de su primer envío, contado desde el inicio
+//                   de la campaña: día 1 = 20, día 2 = 15, día 3 = 10, día 4 = 5
+// Una persona = un nombre (sin distinguir mayúsculas ni tildes): si envió varias
+// veces, sus tareas se suman sin repetir. Los empates se resuelven por sorteo.
+export const PUNTAJE = { detalleRecibe: 25, detalleExplica: 25, porTarea: 5, topeTareas: 6, oportunidad: [20, 15, 10, 5] }
+
+const clave = (v) => String(v || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim()
+// Día calendario en Colombia (UTC-5, sin horario de verano)
+const diaColombia = (iso) => new Date(Date.parse(iso) - 5 * 3600 * 1000).toISOString().slice(0, 10)
+const diasEntre = (desde, hasta) => Math.round((Date.parse(`${hasta}T00:00:00Z`) - Date.parse(`${desde}T00:00:00Z`)) / 86400000)
+
+export function puntosOportunidad(inicio, primerEnvioISO) {
+  if (!inicio || !primerEnvioISO) return 0
+  const d = diasEntre(inicio, diaColombia(primerEnvioISO))
+  return PUNTAJE.oportunidad[Math.max(0, d)] ?? 0
+}
+
+// Arma el ranking a partir de envíos ya leídos (función pura, para probarla sola).
+export function calcularRanking(envios, inicio = null) {
+  const personas = new Map()
+  for (const e of envios) {
+    const k = clave(e.nombre)
+    if (!k) continue
+    if (!personas.has(k)) personas.set(k, { nombre: e.nombre, cargo: e.cargo || null, dependencia: e.dependencia || null, primer_envio: e.enviado_en, envios: 0, tareas: new Map() })
+    const p = personas.get(k)
+    p.envios++
+    if (!p.cargo && e.cargo) p.cargo = e.cargo
+    if (e.enviado_en && (!p.primer_envio || e.enviado_en < p.primer_envio)) p.primer_envio = e.enviado_en
+    for (const a of e.actividades || []) {
+      const ka = clave(a.nombre)
+      if (!ka) continue
+      const previa = p.tareas.get(ka) || { recibe: false, explica: false }
+      p.tareas.set(ka, { recibe: previa.recibe || !!a.recibe, explica: previa.explica || !!a.descripcion })
+    }
+  }
+
+  const filas = []
+  for (const p of personas.values()) {
+    const tareas = [...p.tareas.values()]
+    if (!tareas.length) continue
+    const suma = tareas.reduce((n, t) => n + (t.recibe ? PUNTAJE.detalleRecibe : 0) + (t.explica ? PUNTAJE.detalleExplica : 0), 0)
+    const detalle = Math.round(suma / tareas.length)
+    const cobertura = PUNTAJE.porTarea * Math.min(tareas.length, PUNTAJE.topeTareas)
+    const oportunidad = puntosOportunidad(inicio, p.primer_envio)
+    filas.push({
+      nombre: p.nombre, cargo: p.cargo, dependencia: p.dependencia, envios: p.envios, tareas: tareas.length,
+      detalle, cobertura, oportunidad, total: detalle + cobertura + oportunidad, primer_envio: p.primer_envio
+    })
+  }
+  filas.sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es'))
+  // Puesto compartido en caso de empate (1, 1, 3…)
+  filas.forEach((f, i) => { f.posicion = i > 0 && filas[i - 1].total === f.total ? filas[i - 1].posicion : i + 1 })
+  filas.forEach(f => { f.empate = filas.filter(o => o.posicion === f.posicion).length > 1 })
+  return filas
+}
+
+export async function medicion(db, entidadId) {
+  const l = await enlaceDe(db, entidadId)
+  const inicio = l?.campana_inicio || null
+  const filas = await db.all(
+    `SELECT e.nombre, e.cargo, e.actividades, e.estado, e.enviado_en, e.dependencia_id, d.nombre AS dependencia
+       FROM icafp_envios e
+       LEFT JOIN dependencias d ON CAST(d.id AS TEXT) = e.dependencia_id
+      WHERE e.entidad_id = ? AND e.estado IN ('pendiente', 'incorporado')
+      ORDER BY e.enviado_en`,
+    [String(entidadId)]
+  )
+  const envios = filas.map(f => ({ ...f, actividades: parse(f.actividades, []) }))
+
+  // Tablero por dependencia: todas las activas, respondan o no (cuenta lo recibido y no descartado)
+  const deps = new Map((await dependenciasEntidad(db, entidadId)).map(d => [String(d.id), { nombre: d.nombre, personas: new Set(), tareas: 0 }]))
+  for (const e of envios) {
+    const k = String(e.dependencia_id)
+    if (!deps.has(k)) deps.set(k, { nombre: e.dependencia || 'Dependencia eliminada', personas: new Set(), tareas: 0 })
+    const d = deps.get(k)
+    d.personas.add(clave(e.nombre))
+    d.tareas += e.actividades.length
+  }
+  const dependencias = [...deps.values()]
+    .map(d => ({ nombre: d.nombre, funcionarios: d.personas.size, tareas: d.tareas }))
+    .sort((a, b) => b.funcionarios - a.funcionarios || b.tareas - a.tareas || a.nombre.localeCompare(b.nombre, 'es'))
+
+  return {
+    ok: true,
+    campana_inicio: inicio,
+    puntaje: PUNTAJE,
+    ranking: calcularRanking(envios.filter(e => e.estado === 'incorporado'), inicio),
+    dependencias,
+    pendientes: envios.filter(e => e.estado === 'pendiente').length
+  }
 }

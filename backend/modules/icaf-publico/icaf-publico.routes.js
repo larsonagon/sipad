@@ -4,11 +4,12 @@
 // Privadas (/api/icaf-publico, sesión + nivel ≥ 60):
 //   GET    /enlace                 enlace de la entidad (o null) + conteos
 //   POST   /enlace                 crea el enlace si no existe { titulo?, mensaje? }
-//   PUT    /enlace                 { titulo?, mensaje?, estado? }  (abierta | cerrada)
+//   PUT    /enlace                 { titulo?, mensaje?, estado?, campana_inicio? }  (abierta | cerrada; fecha AAAA-MM-DD)
 //   POST   /enlace/token           genera un enlace nuevo (invalida el anterior)
 //   GET    /envios?estado=         pendiente (defecto) | incorporado | descartado
 //   POST   /envios/:id/incorporar  crea las actividades en el ICAF
 //   POST   /envios/:id/descartar
+//   GET    /medicion               tabla de posiciones (puntaje por funcionario) + tablero por dependencia
 // Públicas (/api/publico/icaf, SIN sesión, por token):
 //   GET    /:token                 formulario (solo si el enlace está abierto)
 //   POST   /:token                 { nombre, cargo?, dependencia_id, actividades: [{ nombre, frecuencia, produce, documentos?, formato?, recibe?, descripcion? }], observaciones? }
@@ -58,6 +59,9 @@ export function buildIcafPublicoRouter(db, { guard = nivelMinimo(60) } = {}) {
     responder(res, await repo.incorporarEnvio(db, eid(req), req.params.id, usuario(req))), 'No se pudo incorporar la respuesta'))
   r.post('/envios/:id/descartar', envolver(async (req, res) =>
     responder(res, await repo.descartarEnvio(db, eid(req), req.params.id, usuario(req))), 'No se pudo descartar la respuesta'))
+
+  r.get('/medicion', envolver(async (req, res) =>
+    responder(res, await repo.medicion(db, eid(req))), 'No se pudo calcular la medición'))
 
   return r
 }

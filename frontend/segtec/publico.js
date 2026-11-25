@@ -57,11 +57,13 @@ const enlacePublico = (token) => `${location.origin}/icaf/?t=${token}`
 const FRECUENCIA = { diaria: 'Diaria', semanal: 'Semanal', mensual: 'Mensual', trimestral: 'Trimestral', semestral: 'Semestral', anual: 'Anual', eventual: 'Eventual (cuando se requiere)' }
 const FORMATO = { fisico: 'Físico', digital: 'Digital', ambos: 'Ambos' }
 const TABS = [['pendiente', 'Por revisar'], ['incorporado', 'Incorporadas'], ['descartado', 'Descartadas']]
+const MEDICION = 'medicion'
 
 let ENLACE = null
 let CONTEOS = { pendiente: 0, incorporado: 0, descartado: 0 }
 let TAB = 'pendiente'
 let ENVIOS = []
+let MED = null
 
 // ---------------- Carga ----------------
 async function cargar() {
@@ -70,8 +72,13 @@ async function cargar() {
   pintar()
 }
 async function recargarEnvios() {
-  const b = await api(`/api/icaf-publico/envios?estado=${TAB}`)
-  CONTEOS = b.conteos; ENVIOS = b.envios
+  if (TAB === MEDICION) {
+    const [a, m] = await Promise.all([api('/api/icaf-publico/enlace'), api('/api/icaf-publico/medicion')])
+    ENLACE = a.enlace; CONTEOS = a.conteos; MED = m
+  } else {
+    const b = await api(`/api/icaf-publico/envios?estado=${TAB}`)
+    CONTEOS = b.conteos; ENVIOS = b.envios
+  }
   pintar()
 }
 const intentar = (fn) => async () => { try { await fn() } catch (e) { toast(e.message, 'error') } }
@@ -150,10 +157,78 @@ function tarjetaEnvio(e) {
   return caja
 }
 
+// ---------------- Medición ----------------
+function celda(tag, texto, clase) { return el(tag, { class: clase || '', text: texto }) }
+
+function descargarCSV() {
+  const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const filas = [['Puesto', 'Funcionario', 'Cargo', 'Dependencia', 'Tareas', 'Detalle (50)', 'Cobertura (30)', 'Oportunidad (20)', 'Total (100)', 'Empate']]
+  MED.ranking.forEach(f => filas.push([f.posicion, f.nombre, f.cargo || '', f.dependencia || '', f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total, f.empate ? 'Sí' : 'No']))
+  const blob = new Blob(['\ufeff' + filas.map(f => f.map(q).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const a = el('a', { href: URL.createObjectURL(blob), download: 'Medicion-ICAF.csv' })
+  document.body.append(a); a.click(); a.remove()
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+}
+
+function vistaMedicion(v) {
+  const P = MED.puntaje
+  // Reglas + inicio de la campaña
+  const inicio = el('input', { type: 'date', value: MED.campana_inicio || '', style: 'font:inherit;font-size:14px;padding:8px 10px;border:1px solid #cbd5e1;border-radius:9px;' })
+  inicio.addEventListener('change', intentar(async () => {
+    await api('/api/icaf-publico/enlace', { method: 'PUT', body: { campana_inicio: inicio.value || null } })
+    toast('Fecha de inicio guardada', 'success'); await recargarEnvios()
+  }))
+  v.append(el('section', { class: 'vr-card' },
+    el('h3', { text: 'Cómo se calcula el puntaje (100 puntos)' }),
+    el('ul', { class: 'ip-reglas' },
+      el('li', {}, el('b', { text: `Detalle, ${P.detalleRecibe + P.detalleExplica}: ` }), `promedio de sus tareas; ${P.detalleRecibe} si indicó qué documentos recibe para empezar y ${P.detalleExplica} si explicó cómo la hace.`),
+      el('li', {}, el('b', { text: `Cobertura, ${P.porTarea * P.topeTareas}: ` }), `${P.porTarea} puntos por tarea, con tope de ${P.topeTareas} tareas.`),
+      el('li', {}, el('b', { text: `Oportunidad, ${P.oportunidad[0]}: ` }), `según el día del primer envío: ${P.oportunidad.map((n, i) => `día ${i + 1}, ${n}`).join('; ')}; después, 0.`)),
+    el('p', { class: 'vr-muted', text: 'Solo suman las respuestas incorporadas al ICAF. Quien envía varias veces queda con un solo puntaje (sus tareas se suman sin repetir). Los empates se definen por sorteo.' }),
+    ENLACE ? el('label', { class: 'vr-muted', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;' }, 'Primer día de la campaña:', inicio) : null,
+    ENLACE && !MED.campana_inicio ? el('p', { class: 'ip-aviso', text: 'Indique el primer día de la campaña. Mientras no lo haga, nadie recibe puntos por oportunidad.' }) : null))
+
+  if (MED.pendientes) v.append(el('p', { class: 'ip-aviso', text: MED.pendientes === 1
+    ? 'Hay 1 respuesta por revisar. No suma en la tabla hasta que la incorpore.'
+    : `Hay ${MED.pendientes} respuestas por revisar. No suman en la tabla hasta que las incorpore.` }))
+
+  // Tabla de posiciones
+  const caja = el('section', { class: 'vr-card' },
+    el('div', { class: 'ip-envio-cab' }, el('h3', { text: 'Tabla de posiciones' }),
+      MED.ranking.length ? el('button', { class: 'btn-secondary btn-md', type: 'button', text: 'Descargar (CSV)', onclick: descargarCSV }) : null))
+  if (!MED.ranking.length) caja.append(el('div', { class: 'vr-vacio', text: 'Todavía no hay respuestas incorporadas.' }))
+  else {
+    caja.append(el('table', { class: 'vr-tabla' },
+      el('thead', {}, el('tr', {}, celda('th', 'Puesto'), celda('th', 'Funcionario'), celda('th', 'Dependencia', 'ocultable'), celda('th', 'Tareas', 'num'),
+        celda('th', 'Detalle', 'num ocultable'), celda('th', 'Cobertura', 'num ocultable'), celda('th', 'Oportunidad', 'num ocultable'), celda('th', 'Total', 'num'))),
+      el('tbody', {}, MED.ranking.map(f => el('tr', { class: f.posicion <= 3 ? 'ip-podio' : '' },
+        celda('td', `${f.posicion}.º`, 'num'),
+        el('td', {}, el('b', { text: f.nombre }), f.cargo ? el('div', { class: 'vr-muted', text: f.cargo }) : null,
+          f.empate ? el('div', { class: 'ip-empate', text: 'Empate: se define por sorteo' }) : null),
+        celda('td', f.dependencia || '—', 'ocultable'), celda('td', String(f.tareas), 'num'),
+        celda('td', String(f.detalle), 'num ocultable'), celda('td', String(f.cobertura), 'num ocultable'), celda('td', String(f.oportunidad), 'num ocultable'),
+        el('td', { class: 'num' }, el('b', { text: String(f.total) })))))))
+  }
+  v.append(caja)
+
+  // Tablero por dependencia
+  const sin = MED.dependencias.filter(d => !d.funcionarios).length
+  v.append(el('section', { class: 'vr-card' },
+    el('h3', { text: 'Respuestas por dependencia' }),
+    el('p', { class: 'vr-muted', text: `Cuenta lo recibido (por revisar e incorporado). ${sin === 1 ? '1 dependencia no ha respondido.' : `${sin} dependencias no han respondido.`}` }),
+    el('table', { class: 'vr-tabla' },
+      el('thead', {}, el('tr', {}, celda('th', 'Dependencia'), celda('th', 'Funcionarios que respondieron', 'num'), celda('th', 'Tareas', 'num'))),
+      el('tbody', {}, MED.dependencias.map(d => el('tr', { class: d.funcionarios ? '' : 'ip-cero' },
+        celda('td', d.nombre), celda('td', String(d.funcionarios), 'num'), celda('td', String(d.tareas), 'num')))))))
+}
+
 function pintar() {
   const v = $('#vista'); v.replaceChildren(tarjetaEnlace())
-  v.append(el('div', { class: 'vr-tabs' }, TABS.map(([k, txt]) => el('button', { type: 'button', class: TAB === k ? 'on' : '', text: `${txt} (${CONTEOS[k] || 0})`,
-    onclick: intentar(async () => { TAB = k; await recargarEnvios() }) }))))
+  v.append(el('div', { class: 'vr-tabs' },
+    TABS.map(([k, txt]) => el('button', { type: 'button', class: TAB === k ? 'on' : '', text: `${txt} (${CONTEOS[k] || 0})`,
+      onclick: intentar(async () => { TAB = k; await recargarEnvios() }) })),
+    el('button', { type: 'button', class: TAB === MEDICION ? 'on' : '', text: 'Medición', onclick: intentar(async () => { TAB = MEDICION; await recargarEnvios() }) })))
+  if (TAB === MEDICION) return vistaMedicion(v)
   if (!ENVIOS.length) {
     const vacio = { pendiente: 'No hay respuestas por revisar.', incorporado: 'Todavía no se ha incorporado ninguna respuesta.', descartado: 'No hay respuestas descartadas.' }
     v.append(el('div', { class: 'vr-card vr-vacio', text: vacio[TAB] }))

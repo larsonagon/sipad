@@ -166,3 +166,68 @@ describe('ICAF por enlace público', () => {
     assert.equal((await http('GET', `/api/publico/icaf/${r.body.enlace.token}`)).body.mensaje, 'Diligenciar antes del viernes.')
   })
 })
+
+describe('medición (tabla de posiciones)', () => {
+  const t = (nombre, recibe, descripcion) => ({ nombre, recibe: recibe ? 'Solicitud' : null, descripcion: descripcion ? 'Se hace así' : null })
+  const envio = (nombre, enviado_en, actividades, extra = {}) => ({ nombre, enviado_en, actividades, dependencia: 'Hacienda', ...extra })
+
+  test('oportunidad: cuenta días calendario de Colombia desde el inicio', () => {
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-11-30T15:00:00.000Z'), 20)
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-12-01T04:30:00.000Z'), 20) // 11:30 p. m. del lunes en Colombia
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-12-01T05:00:00.000Z'), 15) // martes 12:00 a. m.
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-12-03T20:00:00.000Z'), 5)
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-12-04T20:00:00.000Z'), 0)
+    assert.equal(repo.puntosOportunidad('2026-11-30', '2026-11-27T20:00:00.000Z'), 20) // antes del inicio
+    assert.equal(repo.puntosOportunidad(null, '2026-11-30T15:00:00.000Z'), 0)
+  })
+
+  test('detalle, cobertura con tope, suma de envíos de la misma persona y empates', () => {
+    const r = repo.calcularRanking([
+      // Ana: 2 envíos (nombre escrito distinto), una tarea repetida → 3 tareas distintas
+      envio('Ana Pérez', '2026-12-01T15:00:00.000Z', [t('Expedir certificados', true, false), t('Atender público', false, false)]),
+      envio(' ana  PEREZ ', '2026-11-30T15:00:00.000Z', [t('expedir  certificados', false, true), t('Archivar', true, true)], { cargo: 'Auxiliar' }),
+      // Luis: 8 tareas completas → tope de cobertura
+      envio('Luis Díaz', '2026-12-04T15:00:00.000Z', Array.from({ length: 8 }, (_, i) => t(`Tarea ${i}`, true, true))),
+      // Eva y Leo: empate
+      envio('Eva Ruiz', '2026-12-02T15:00:00.000Z', [t('Una', true, true)]),
+      envio('Leo Mora', '2026-12-02T15:00:00.000Z', [t('Otra', true, true)]),
+      envio('Sin tareas', '2026-11-30T15:00:00.000Z', [])
+    ], '2026-11-30')
+    const ana = r.find(f => f.nombre === 'Ana Pérez')
+    assert.equal(ana.tareas, 3)
+    assert.equal(ana.envios, 2)
+    assert.equal(ana.cargo, 'Auxiliar')
+    assert.equal(ana.detalle, 33)      // (50 + 0 + 50) / 3
+    assert.equal(ana.cobertura, 15)
+    assert.equal(ana.oportunidad, 20)  // cuenta el primer envío (lunes)
+    assert.equal(ana.total, 68)
+    const luis = r.find(f => f.nombre === 'Luis Díaz')
+    assert.deepEqual([luis.detalle, luis.cobertura, luis.oportunidad, luis.total], [50, 30, 0, 80])
+    assert.deepEqual(r.map(f => [f.posicion, f.nombre, f.empate]), [
+      [1, 'Luis Díaz', false], [2, 'Ana Pérez', false], [3, 'Eva Ruiz', true], [3, 'Leo Mora', true]])
+    assert.equal(r.find(f => f.nombre === 'Eva Ruiz').total, 65) // 50 + 5 + 10
+  })
+
+  test('el servicio solo puntúa lo incorporado y arma el tablero por dependencia', async () => {
+    assert.equal((await http('GET', '/api/icaf-publico/medicion')).status, 401)
+    assert.equal((await http('PUT', '/api/icaf-publico/enlace', { campana_inicio: '30/11/2026' }, ASESOR)).status, 400)
+    const e = await http('PUT', '/api/icaf-publico/enlace', { campana_inicio: '2020-01-01' }, ASESOR)
+    assert.equal(e.body.enlace.campana_inicio, '2020-01-01')
+    const token = e.body.enlace.token
+    await http('POST', `/api/publico/icaf/${token}`, { nombre: 'Pendiente Uno', dependencia_id: '1', actividades: [actividad] })
+    const m = await http('GET', '/api/icaf-publico/medicion', null, ASESOR)
+    assert.equal(m.status, 200)
+    assert.equal(m.body.campana_inicio, '2020-01-01')
+    assert.equal(m.body.pendientes, 1)
+    // Solo Ana Pérez está incorporada: 2 tareas, una con "recibe" → detalle 13, cobertura 10, oportunidad 0 (envió años después del inicio)
+    assert.deepEqual(m.body.ranking.map(f => [f.posicion, f.nombre, f.dependencia, f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total]),
+      [[1, 'Ana Pérez', 'Secretaría de Hacienda', 2, 13, 10, 0, 23]])
+    // Tablero: cuenta pendientes e incorporadas, no descartadas (Luis); a igual número de funcionarios, primero la de más tareas
+    assert.deepEqual(m.body.dependencias, [
+      { nombre: 'Secretaría de Hacienda', funcionarios: 1, tareas: 2 },
+      { nombre: 'Despacho del Alcalde', funcionarios: 1, tareas: 1 }])
+    assert.equal((await http('GET', '/api/icaf-publico/medicion', null, AJENO)).body.ranking.length, 0)
+    const limpia = await http('PUT', '/api/icaf-publico/enlace', { campana_inicio: null }, ASESOR)
+    assert.equal(limpia.body.enlace.campana_inicio, null)
+  })
+})
