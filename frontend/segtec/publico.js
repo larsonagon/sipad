@@ -1,4 +1,7 @@
-// SIPAD · ICAF por enlace (gestión del asesor): enlace público + bandeja de respuestas
+// SIPAD · ICAF por enlace (gestión del asesor). Un módulo, dos pantallas:
+//   · /segtec/publico.html → solo el enlace (crear, copiar, abrir/cerrar, mensaje).
+//   · /segtec/segtec.html  → respuestas recibidas (revisar, incorporar, descartar) y medición,
+//                            dentro de #icafRespuestas.
 import { renderHeader } from '../components/header.js'
 
 // ---------------- Sesión / API ----------------
@@ -65,10 +68,19 @@ let TAB = 'pendiente'
 let ENVIOS = []
 let MED = null
 
+const PANEL = document.getElementById('icafRespuestas')
+const SOLO_ENLACE = !PANEL
+const vista = () => PANEL || $('#vista')
+
 // ---------------- Carga ----------------
 async function cargar() {
-  const [a, b] = await Promise.all([api('/api/icaf-publico/enlace'), api(`/api/icaf-publico/envios?estado=${TAB}`)])
-  ENLACE = a.enlace; CONTEOS = b.conteos; ENVIOS = b.envios
+  if (SOLO_ENLACE) {
+    const a = await api('/api/icaf-publico/enlace')
+    ENLACE = a.enlace; CONTEOS = a.conteos
+  } else {
+    const [a, b] = await Promise.all([api('/api/icaf-publico/enlace'), api(`/api/icaf-publico/envios?estado=${TAB}`)])
+    ENLACE = a.enlace; CONTEOS = b.conteos; ENVIOS = b.envios
+  }
   pintar()
 }
 async function recargarEnvios() {
@@ -148,7 +160,7 @@ function tarjetaEnvio(e) {
     const n = e.actividades.length
     caja.append(el('div', { class: 'vr-acciones' },
       el('button', { class: 'btn-primary btn-md', type: 'button', text: n === 1 ? 'Incorporar al ICAF (1 actividad)' : `Incorporar al ICAF (${n} actividades)`,
-        onclick: intentar(async () => { const r = await api(`/api/icaf-publico/envios/${encodeURIComponent(e.id)}/incorporar`, { method: 'POST' }); toast(r.creadas === 1 ? '1 actividad creada en el ICAF' : `${r.creadas} actividades creadas en el ICAF`, 'success'); await recargarEnvios() }) }),
+        onclick: intentar(async () => { const r = await api(`/api/icaf-publico/envios/${encodeURIComponent(e.id)}/incorporar`, { method: 'POST' }); toast(r.creadas === 1 ? '1 actividad creada en el ICAF' : `${r.creadas} actividades creadas en el ICAF`, 'success'); await recargarEnvios(); window.dispatchEvent(new Event('icaf-incorporado')) }) }),
       el('button', { class: 'btn-secondary btn-md', type: 'button', text: 'Descartar',
         onclick: intentar(async () => { await api(`/api/icaf-publico/envios/${encodeURIComponent(e.id)}/descartar`, { method: 'POST' }); toast('Respuesta descartada'); await recargarEnvios() }) })))
   } else {
@@ -223,7 +235,19 @@ function vistaMedicion(v) {
 }
 
 function pintar() {
-  const v = $('#vista'); v.replaceChildren(tarjetaEnlace())
+  const v = vista()
+  if (SOLO_ENLACE) {
+    const n = CONTEOS.pendiente || 0
+    v.replaceChildren(tarjetaEnlace(), el('p', { class: n ? 'ip-aviso' : 'vr-muted' },
+      n === 0 ? 'No hay respuestas por revisar. ' : n === 1 ? 'Hay 1 respuesta por revisar. ' : `Hay ${n} respuestas por revisar. `,
+      'Las respuestas y la medición están en la pantalla del ICAF.'))
+    return
+  }
+  v.replaceChildren(
+    el('h2', { text: 'Respuestas del formulario por enlace' }),
+    el('p', { class: 'vr-muted', text: ENLACE
+      ? 'Lo que envían los funcionarios por el enlace llega aquí. Revíselo e incorpórelo para que entre al listado de actividades.'
+      : 'Todavía no ha creado el enlace del formulario. Créelo con el botón «ICAF por enlace».' }))
   v.append(el('div', { class: 'vr-tabs' },
     TABS.map(([k, txt]) => el('button', { type: 'button', class: TAB === k ? 'on' : '', text: `${txt} (${CONTEOS[k] || 0})`,
       onclick: intentar(async () => { TAB = k; await recargarEnvios() }) })),
@@ -234,9 +258,15 @@ function pintar() {
     v.append(el('div', { class: 'vr-card vr-vacio', text: vacio[TAB] }))
   } else {
     ENVIOS.forEach(e => v.append(tarjetaEnvio(e)))
-    if (TAB === 'incorporado') v.append(el('p', { class: 'vr-muted', text: 'Las actividades incorporadas aparecen en el listado del ICAF a nombre del funcionario. Allí puede completarlas, descargar el formato para firma y generar las propuestas de la TRD.' }))
+    if (TAB === 'incorporado') v.append(el('p', { class: 'vr-muted', text: 'Las actividades incorporadas aparecen en el listado de abajo a nombre del funcionario. Allí puede completarlas, descargar el formato para firma y generar las propuestas de la TRD.' }))
   }
 }
 
-renderHeader('ICAF')
-cargar().catch(e => { $('#vista').replaceChildren(el('div', { class: 'vr-card vr-vacio', text: e.message })) })
+if (SOLO_ENLACE) {
+  renderHeader('ICAF', sessionStorage.getItem('gestion_entidad_nombre') || null)
+  cargar().catch(e => { vista().replaceChildren(el('div', { class: 'vr-card vr-vacio', text: e.message })) })
+} else {
+  // En la pantalla del ICAF el encabezado ya lo pinta segtec.js. Si el usuario no
+  // tiene nivel para la bandeja (403), el panel simplemente no se muestra.
+  cargar().catch(() => { PANEL.classList.add('hidden') })
+}

@@ -9,6 +9,9 @@
 
   <!-- CORE -->
   <link rel="stylesheet" href="/css/core/sipad-ui.css">
+  <link rel="stylesheet" href="/css/core/notifications.css">
+  <link rel="stylesheet" href="/verificacion/verificacion.css">
+  <link rel="stylesheet" href="/segtec/publico.css">
 
 
   <!-- SIPAD-PWA -->
@@ -68,6 +71,9 @@
       <!-- MENSAJES -->
       <div id="mensaje"></div>
 
+      <!-- RESPUESTAS DEL FORMULARIO POR ENLACE + MEDICIÓN (se llena por JS) -->
+      <section id="icafRespuestas" class="ip-panel hidden"></section>
+
       <!-- TABLA -->
       <div id="tablaRegistros" class="table-container"></div>
 
@@ -125,6 +131,7 @@
 
   <!-- JS -->
   <script type="module" src="/segtec/segtec.js"></script>
+  <script type="module" src="/segtec/publico.js"></script>
   <script src="/components/password-modal.js"></script>
 
 </body>

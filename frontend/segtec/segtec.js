@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (puedeAnalizar) {
     document.getElementById('importarExcelBtn')?.classList.remove('hidden');
     document.getElementById('icafPublicoBtn')?.classList.remove('hidden');
+    document.getElementById('icafRespuestas')?.classList.remove('hidden');
+    // Al incorporar una respuesta del formulario por enlace, se refresca el listado
+    window.addEventListener('icaf-incorporado', () => { cargarActividades(); });
   }
 
   cerrarModalBtn?.addEventListener('click', cerrarModal);
