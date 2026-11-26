@@ -70,7 +70,7 @@ section { padding: 34px 0 6px; }
 .pie-form span.enviar { background: var(--azul); color: #fff; font-weight: 700; padding: 7px 16px; border-radius: 9px; font-size: 12px; }
 .f-caja { background: #fff; border: 1px solid var(--linea); border-radius: 12px; padding: 11px; display: grid; gap: 7px; }
 .f-caja.intro { border-top: 6px solid var(--azul); }
-.f-caja h4 { margin: 0; font-family: var(--titulos); font-size: 14px; }
+.f-caja h4 { margin: 0; font-family: var(--titulos); font-size: 14px; display: flex; align-items: center; }
 .f-rotulo { font-weight: 700; font-size: 12px; }
 .f-ayuda { font-size: 10.5px; color: var(--tinta-suave); margin-top: -4px; }
 .f-campo { border: 1px solid #c5d0da; border-radius: 8px; padding: 8px 9px; min-height: 34px; background: #fff; font-size: 12.5px; white-space: pre-line; }
@@ -157,9 +157,21 @@ details p { padding: 0 0 14px; color: #2c4257; }
 footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
 
 @media (max-width: 760px) {
-  .recorrido { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-  .pantalla { height: 440px; }
-  .paso-texto > p { font-size: 16px; }
+  /* En el celular todo el paso cabe en una pantalla: título, teléfono y botones, en ese orden.
+     Los botones quedan fijos abajo mientras se recorre la sección. */
+  .recorrido { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .paso-texto { display: contents; }
+  #pasoCuenta { order: 1; scroll-margin-top: 10px; }
+  #pasoTitulo { order: 2; font-size: 22px; }
+  #pasoTexto { order: 3; font-size: 15.5px; line-height: 1.4; }
+  .celular { order: 4; max-width: 300px; padding: 9px; border-radius: 28px; margin-top: 4px; }
+  .pantalla { height: 416px; border-radius: 20px; }
+  .lienzo { padding: 8px; gap: 6px; }
+  .f-caja { padding: 9px; gap: 6px; }
+  .mando-paso { order: 5; position: sticky; bottom: 0; z-index: 2; background: var(--papel); padding: 10px 0; margin: 0 -18px; padding-left: 18px; padding-right: 18px; box-shadow: 0 -8px 14px -10px rgba(16,38,58,.35); }
+  .mando-paso .boton { flex: 1; }
+  #puntos { order: 6; justify-content: space-between; }
+  #pasoComparar { order: 7; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -217,7 +229,7 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
         <h3 id="pasoTitulo"></h3>
         <p id="pasoTexto"></p>
         <div class="comparar" id="pasoComparar"></div>
-        <div class="mando">
+        <div class="mando mando-paso">
           <button class="boton claro" type="button" id="btnAnterior">Anterior</button>
           <button class="boton azul" type="button" id="btnSiguiente">Siguiente</button>
         </div>
@@ -475,7 +487,7 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
     $('#pieTexto').textContent = p.pie
     $('#pieEnviar').classList.remove('toque')
     $('#btnAnterior').disabled = paso === 0
-    $('#btnSiguiente').textContent = paso === PASOS.length - 1 ? 'Volver a empezar' : 'Siguiente'
+    $('#btnSiguiente').textContent = paso === PASOS.length - 1 ? 'Repetir' : 'Siguiente'
     document.querySelectorAll('#puntos button').forEach((b, i) => {
       if (i === paso) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current')
       b.classList.toggle('hecho', visitados.has(i) && i !== paso)
@@ -484,9 +496,17 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
   }
 
   $('#puntos').innerHTML = PASOS.map((p, i) => `<li><button type="button" aria-label="Paso ${i + 1}: ${p.titulo}">${i + 1}</button></li>`).join('')
-  document.querySelectorAll('#puntos button').forEach((b, i) => b.addEventListener('click', () => { paso = i; pintarPaso() }))
-  $('#btnAnterior').addEventListener('click', () => { if (paso > 0) { paso--; pintarPaso() } })
-  $('#btnSiguiente').addEventListener('click', () => { paso = paso === PASOS.length - 1 ? 0 : paso + 1; pintarPaso() })
+  // En el celular, al cambiar de paso la pantalla se acomoda sola para que se vean
+  // el título y el teléfono que se va llenando, sin tener que devolverse.
+  const enCelular = window.matchMedia('(max-width: 760px)')
+  function irAlPaso(n) {
+    paso = n
+    pintarPaso()
+    if (enCelular.matches) $('#pasoCuenta').scrollIntoView({ block: 'start', behavior: sinMovimiento ? 'auto' : 'smooth' })
+  }
+  document.querySelectorAll('#puntos button').forEach((b, i) => b.addEventListener('click', () => irAlPaso(i)))
+  $('#btnAnterior').addEventListener('click', () => { if (paso > 0) irAlPaso(paso - 1) })
+  $('#btnSiguiente').addEventListener('click', () => irAlPaso(paso === PASOS.length - 1 ? 0 : paso + 1))
   pintarPaso()
 
   // ================= Práctica =================
