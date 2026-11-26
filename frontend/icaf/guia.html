@@ -77,6 +77,13 @@ section { padding: 34px 0 6px; }
 .f-campo.alto { min-height: 52px; }
 .f-campo.activo { border-color: var(--ambar); box-shadow: 0 0 0 3px rgba(242,162,12,.28); }
 .f-campo.activo::after { content: ""; display: inline-block; width: 1.5px; height: 13px; background: var(--tinta); margin-left: 1px; vertical-align: -2px; animation: parpadeo 1s steps(2) infinite; }
+.f-select { display: flex; justify-content: space-between; align-items: center; gap: 8px; border: 1px solid #c5d0da; border-radius: 8px; padding: 8px 9px; min-height: 34px; background: #fff; font-size: 12.5px; }
+.f-select::after { content: "▾"; color: var(--tinta-suave); font-size: 13px; }
+.f-select.toque { border-color: var(--ambar); box-shadow: 0 0 0 3px rgba(242,162,12,.28); }
+.f-lista { border: 1px solid #c5d0da; border-radius: 8px; background: #fff; box-shadow: 0 8px 18px rgba(16,38,58,.16); overflow: hidden; font-size: 11.5px; margin-top: -3px; }
+.f-lista div { padding: 5px 9px; border-top: 1px solid #eef2f6; }
+.f-lista div:first-child { border-top: 0; }
+.f-lista div.elegida { background: var(--azul); color: #fff; font-weight: 700; }
 .f-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .f-chip { border: 1.5px solid #c5d0da; border-radius: 999px; padding: 5px 10px; font-size: 11.5px; font-weight: 700; color: #33475b; background: #fff; }
 .f-chip.elegido { background: var(--azul); border-color: var(--azul); color: #fff; }
@@ -336,13 +343,14 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
       html: `<div class="f-caja intro"><h4>Cuéntenos qué hace en su trabajo</h4><div>Queremos saber qué tareas hace usted y qué documentos salen de ellas. No hay respuestas buenas ni malas.</div></div>
              <div class="f-caja"><h4>Sus datos</h4><div class="f-rotulo">Su nombre completo</div><div class="f-campo"></div><div class="f-rotulo">Su cargo (opcional)</div><div class="f-campo"></div></div>` },
     { titulo: 'Escriba sus datos',
-      texto: 'Ponga su nombre completo, su cargo y elija de la lista la dependencia u oficina donde trabaja.',
+      texto: 'Escriba su nombre completo y su cargo. La dependencia no se escribe: toque el campo y elíjala de la lista.',
       si: 'Su nombre completo, igual cada vez que envíe.', no: 'Solo el primer nombre o un apodo.',
       pie: '0 tareas listas',
       html: `<div class="f-caja"><h4>Sus datos</h4>
              <div class="f-rotulo">Su nombre completo</div><div class="f-campo" data-escribe="Ana María Pérez"></div>
              <div class="f-rotulo">Su cargo (opcional)</div><div class="f-campo" data-escribe="Auxiliar administrativa"></div>
-             <div class="f-rotulo">Dependencia u oficina donde trabaja</div><div class="f-campo" data-escribe="SECRETARÍA DE HACIENDA"></div></div>` },
+             <div class="f-rotulo">Dependencia u oficina donde trabaja</div>
+             <div class="f-select" data-elige="SECRETARÍA DE HACIENDA" data-opciones="SECRETARÍA DE GOBIERNO|SECRETARÍA DE HACIENDA|SISBEN"><span>Seleccione…</span></div></div>` },
     { titulo: 'Cuente una tarea',
       texto: 'En «¿Qué tarea hace?» escriba una sola tarea, como se la contaría a un compañero.',
       si: '«Expedir paz y salvos de impuesto predial».', no: '«Apoyo administrativo» o «Funciones varias».',
@@ -394,10 +402,14 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
 
   async function animar(miTurno) {
     const lienzo = $('#lienzo')
-    const nodos = [...lienzo.querySelectorAll('[data-escribe], [data-toca]')]
+    const nodos = [...lienzo.querySelectorAll('[data-escribe], [data-toca], [data-elige]')]
     // Estado final de una vez si la persona pidió menos movimiento
     if (sinMovimiento) {
-      nodos.forEach(n => { if (n.dataset.escribe !== undefined) n.textContent = n.dataset.escribe; else n.classList.add(n.dataset.toca === 'toque' ? 'toque' : 'elegido') })
+      nodos.forEach(n => {
+        if (n.dataset.escribe !== undefined) n.textContent = n.dataset.escribe
+        else if (n.dataset.elige !== undefined) n.firstElementChild.textContent = n.dataset.elige
+        else n.classList.add(n.dataset.toca === 'toque' ? 'toque' : 'elegido')
+      })
       if (PASOS[paso].enviar) { $('#pieEnviar').classList.add('toque'); const g = lienzo.querySelector('[data-aparece]'); if (g) g.hidden = false }
       return
     }
@@ -414,6 +426,25 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
         }
         await espera(350)
         n.classList.remove('activo')
+      } else if (n.dataset.elige !== undefined) {
+        // Lista desplegable: se toca el campo, se abre la lista y se elige una opción
+        n.classList.add('toque')
+        await espera(650)
+        if (miTurno !== turno) return
+        const lista = document.createElement('div')
+        lista.className = 'f-lista'
+        n.dataset.opciones.split('|').forEach(o => { const d = document.createElement('div'); d.textContent = o; lista.appendChild(d) })
+        n.after(lista)
+        await espera(1000)
+        if (miTurno !== turno) return
+        const elegida = [...lista.children].find(d => d.textContent === n.dataset.elige)
+        if (elegida) elegida.classList.add('elegida')
+        await espera(850)
+        if (miTurno !== turno) return
+        lista.remove()
+        n.firstElementChild.textContent = n.dataset.elige
+        n.classList.remove('toque')
+        await espera(300)
       } else {
         n.classList.add('toque')
         await espera(520)
