@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Guía para llenar el ICAF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@500;600;700&family=Mulish:wght@400;600;700&display=swap">
+<style>
+/* Idea de la página: una guía de bolsillo. Un celular a la vista que se llena solo,
+   paso a paso, y a su lado la instrucción; después se practica y se revisa. Un solo tema claro. */
+:root {
+  color-scheme: light;
+  --tinta: #10263a;        /* texto */
+  --tinta-suave: #51657a;  /* texto secundario */
+  --papel: #f3f6f8;        /* fondo */
+  --hoja: #ffffff;         /* tarjetas */
+  --linea: #dbe3ea;        /* bordes */
+  --marca: #0e4a57;        /* verde petróleo de SIPAD */
+  --azul: #0d3f77;         /* acción */
+  --ambar: #f2a20c;        /* acento: lo que hay que tocar */
+  --si: #12864e;
+  --no: #b3261e;
+  --titulos: "Century Gothic", CenturyGothic, "Jost", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --cuerpo: "Mulish", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font-family: var(--cuerpo); font-size: 16px; line-height: 1.5; -webkit-text-size-adjust: 100%; }
+h1, h2, h3 { font-family: var(--titulos); text-wrap: balance; line-height: 1.15; margin: 0; }
+p { margin: 0; }
+button { font: inherit; cursor: pointer; }
+a { color: var(--azul); }
+:focus-visible { outline: 3px solid var(--ambar); outline-offset: 2px; border-radius: 6px; }
+.ancho { max-width: 1040px; margin: 0 auto; padding: 0 18px; }
+
+/* ---------- Portada ---------- */
+.portada { background: var(--marca); color: #fff; padding: 30px 0 34px; }
+.portada .ancho { display: grid; gap: 14px; }
+.sello { justify-self: start; font-family: var(--titulos); font-weight: 700; font-size: 13px; letter-spacing: 1.2px; text-transform: uppercase; background: rgba(255,255,255,.14); padding: 5px 12px; border-radius: 8px; }
+.portada h1 { font-size: clamp(30px, 6vw, 46px); font-weight: 700; max-width: 16ch; }
+.portada p { font-size: 17px; max-width: 54ch; color: #dcecef; }
+.datos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; padding: 0; list-style: none; }
+.datos li { background: #fff; color: var(--marca); font-weight: 700; font-size: 14px; padding: 7px 13px; border-radius: 999px; }
+.acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.boton { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 11px 20px; border-radius: 12px; border: 2px solid transparent; font-family: var(--titulos); font-weight: 700; font-size: 15.5px; text-decoration: none; }
+.boton.lleno { background: var(--ambar); color: #1d1400; }
+.boton.linea { background: transparent; color: #fff; border-color: rgba(255,255,255,.7); }
+.boton.azul { background: var(--azul); color: #fff; }
+.boton.claro { background: var(--hoja); color: var(--azul); border-color: var(--azul); }
+.boton[disabled] { opacity: .45; cursor: default; }
+
+/* ---------- Secciones ---------- */
+section { padding: 34px 0 6px; }
+.encabezado { display: grid; gap: 6px; margin-bottom: 18px; }
+.encabezado h2 { font-size: clamp(23px, 4.4vw, 30px); color: var(--marca); }
+.encabezado p { color: var(--tinta-suave); max-width: 62ch; }
+
+/* ---------- Recorrido ---------- */
+.recorrido { display: grid; grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 28px; align-items: start; }
+.celular { width: 100%; max-width: 320px; margin: 0 auto; background: #0b1a26; border-radius: 34px; padding: 12px; box-shadow: 0 18px 40px rgba(16,38,58,.22); }
+.pantalla { background: #f4f6f9; border-radius: 24px; height: 500px; overflow: hidden; display: flex; flex-direction: column; font-size: 12.5px; }
+.barra-sipad { background: var(--marca); color: #fff; padding: 9px 12px; display: flex; gap: 8px; align-items: center; font-size: 11px; font-weight: 600; flex: none; }
+.barra-sipad b { background: rgba(255,255,255,.16); padding: 2px 7px; border-radius: 6px; letter-spacing: .4px; font-family: var(--titulos); }
+.lienzo { padding: 10px; flex: 1; overflow: hidden; display: grid; align-content: start; gap: 8px; }
+.pie-form { background: #fff; border-top: 1px solid var(--linea); padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--tinta-suave); flex: none; }
+.pie-form span.enviar { background: var(--azul); color: #fff; font-weight: 700; padding: 7px 16px; border-radius: 9px; font-size: 12px; }
+.f-caja { background: #fff; border: 1px solid var(--linea); border-radius: 12px; padding: 11px; display: grid; gap: 7px; }
+.f-caja.intro { border-top: 6px solid var(--azul); }
+.f-caja h4 { margin: 0; font-family: var(--titulos); font-size: 14px; }
+.f-rotulo { font-weight: 700; font-size: 12px; }
+.f-ayuda { font-size: 10.5px; color: var(--tinta-suave); margin-top: -4px; }
+.f-campo { border: 1px solid #c5d0da; border-radius: 8px; padding: 8px 9px; min-height: 34px; background: #fff; font-size: 12.5px; white-space: pre-line; }
+.f-campo.alto { min-height: 52px; }
+.f-campo.activo { border-color: var(--ambar); box-shadow: 0 0 0 3px rgba(242,162,12,.28); }
+.f-campo.activo::after { content: ""; display: inline-block; width: 1.5px; height: 13px; background: var(--tinta); margin-left: 1px; vertical-align: -2px; animation: parpadeo 1s steps(2) infinite; }
+.f-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.f-chip { border: 1.5px solid #c5d0da; border-radius: 999px; padding: 5px 10px; font-size: 11.5px; font-weight: 700; color: #33475b; background: #fff; }
+.f-chip.elegido { background: var(--azul); border-color: var(--azul); color: #fff; }
+.f-chip.toque { box-shadow: 0 0 0 4px rgba(242,162,12,.5); border-color: var(--ambar); }
+.f-agregar { border: 1.5px dashed #8fa1b3; border-radius: 12px; padding: 10px; text-align: center; font-weight: 700; color: var(--azul); background: #fff; }
+.f-agregar.toque, .pie-form span.enviar.toque { box-shadow: 0 0 0 4px rgba(242,162,12,.55); }
+.f-gracias { text-align: center; padding: 26px 12px; }
+.f-gracias .visto { width: 46px; height: 46px; border-radius: 50%; background: var(--si); color: #fff; font-size: 26px; line-height: 46px; margin: 0 auto 8px; font-weight: 700; }
+.f-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #e7edf4; color: var(--azul); font-size: 11px; font-weight: 700; margin-right: 6px; }
+.f-num.lista { background: var(--si); color: #fff; }
+@keyframes parpadeo { 50% { opacity: 0; } }
+
+.paso-texto { display: grid; gap: 14px; }
+.paso-cuenta { font-family: var(--titulos); font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--azul); }
+.paso-texto h3 { font-size: clamp(22px, 4vw, 28px); }
+.paso-texto > p { font-size: 17px; max-width: 46ch; }
+.comparar { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.comparar div { border-radius: 12px; padding: 12px 14px; background: var(--hoja); border: 1px solid var(--linea); border-left-width: 6px; }
+.comparar .asi-si { border-left-color: var(--si); }
+.comparar .asi-no { border-left-color: var(--no); }
+.comparar b { display: block; font-family: var(--titulos); font-size: 13px; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 3px; }
+.comparar .asi-si b { color: var(--si); }
+.comparar .asi-no b { color: var(--no); }
+.mando { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.puntos { display: flex; gap: 7px; padding: 0; margin: 0; list-style: none; }
+.puntos button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--linea); background: var(--hoja); color: var(--tinta-suave); font-weight: 700; font-size: 13px; padding: 0; }
+.puntos button[aria-current="step"] { background: var(--azul); border-color: var(--azul); color: #fff; }
+.puntos button.hecho { border-color: var(--si); color: var(--si); }
+
+/* ---------- Práctica ---------- */
+.practica { background: var(--hoja); border: 1px solid var(--linea); border-radius: 18px; padding: 20px; display: grid; gap: 14px; max-width: 720px; }
+.practica .frase { font-family: var(--titulos); font-size: clamp(20px, 4vw, 26px); font-weight: 600; background: var(--papel); border-radius: 12px; padding: 18px; }
+.practica .avance { font-size: 13.5px; color: var(--tinta-suave); font-weight: 700; }
+.respuesta { border-radius: 12px; padding: 13px 15px; font-size: 15.5px; border: 1px solid var(--linea); border-left: 6px solid var(--linea); min-height: 78px; }
+.respuesta.acierto { border-left-color: var(--si); }
+.respuesta.fallo { border-left-color: var(--ambar); }
+.respuesta b { font-family: var(--titulos); }
+
+/* ---------- Ejemplos por oficina ---------- */
+.oficinas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.oficinas button { min-height: 42px; padding: 8px 14px; border-radius: 999px; border: 2px solid var(--linea); background: var(--hoja); font-weight: 700; font-size: 14px; color: var(--tinta); }
+.oficinas button[aria-pressed="true"] { background: var(--marca); border-color: var(--marca); color: #fff; }
+.ejemplos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ejemplo { background: var(--hoja); border: 1px solid var(--linea); border-radius: 14px; padding: 15px; display: grid; gap: 8px; align-content: start; }
+.ejemplo h3 { font-size: 17px; }
+.ejemplo small { font-weight: 700; color: var(--tinta-suave); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; }
+.ejemplo ul { margin: 0; padding-left: 18px; font-size: 15px; }
+.nota { font-size: 14px; color: var(--tinta-suave); margin-top: 12px; }
+
+/* ---------- Lista antes de enviar ---------- */
+.lista { display: grid; gap: 8px; max-width: 720px; padding: 0; margin: 0; list-style: none; }
+.lista label { display: flex; gap: 12px; align-items: flex-start; background: var(--hoja); border: 1px solid var(--linea); border-radius: 12px; padding: 13px 15px; cursor: pointer; }
+.lista input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--si); flex: none; }
+.lista input:checked + span { color: var(--tinta-suave); }
+.listo { margin-top: 14px; max-width: 720px; border-radius: 14px; padding: 16px; background: var(--hoja); border: 2px dashed var(--linea); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+.listo.completo { border: 2px solid var(--si); background: #eef8f2; }
+.listo strong { font-family: var(--titulos); font-size: 17px; }
+
+/* ---------- Preguntas ---------- */
+.preguntas { display: grid; gap: 8px; max-width: 720px; }
+details { background: var(--hoja); border: 1px solid var(--linea); border-radius: 12px; padding: 0 15px; }
+summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style-position: outside; margin-left: 18px; }
+details p { padding: 0 0 14px; color: #2c4257; }
+
+.plazo { margin: 34px 0 0; background: var(--marca); color: #fff; }
+.plazo .ancho { padding-top: 26px; padding-bottom: 30px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+.plazo h2 { font-size: clamp(21px, 4vw, 27px); }
+.plazo p { color: #dcecef; }
+footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
+
+@media (max-width: 760px) {
+  .recorrido { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .pantalla { height: 440px; }
+  .paso-texto > p { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .f-campo.activo::after { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="portada">
+  <div class="ancho">
+    <span class="sello">Guía rápida · Gestión Documental</span>
+    <h1>Llene su ICAF en 5 minutos</h1>
+    <p>El ICAF es el formulario donde usted cuenta qué tareas hace y qué documentos salen de ellas. Con eso se organiza el archivo de la entidad.</p>
+    <ul class="datos">
+      <li>Sin usuario ni contraseña</li>
+      <li>Desde el celular</li>
+      <li>7 pasos</li>
+    </ul>
+    <div class="acciones">
+      <a class="boton lleno" href="#recorrido">Ver el recorrido</a>
+      <a class="boton linea" data-formulario href="https://sipad.onrender.com/icaf/?t=bRnCVygirY3G-uKgNIszk1lEkBxxQQtH" target="_blank" rel="noopener">Abrir el formulario</a>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="recorrido">
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Mire cómo se llena</h2>
+      <p>El celular se va llenando solo. Avance con los botones o toque el número del paso que quiera repetir.</p>
+    </div>
+    <div class="recorrido">
+      <div class="celular" aria-hidden="true">
+        <div class="pantalla">
+          <div class="barra-sipad"><b>SIPAD</b> Alcaldía de Aguachica</div>
+          <div class="lienzo" id="lienzo"></div>
+          <div class="pie-form"><span id="pieTexto">0 tareas listas</span><span class="enviar" id="pieEnviar">Enviar</span></div>
+        </div>
+      </div>
+      <div class="paso-texto" aria-live="polite">
+        <span class="paso-cuenta" id="pasoCuenta"></span>
+        <h3 id="pasoTitulo"></h3>
+        <p id="pasoTexto"></p>
+        <div class="comparar" id="pasoComparar"></div>
+        <div class="mando">
+          <button class="boton claro" type="button" id="btnAnterior">Anterior</button>
+          <button class="boton azul" type="button" id="btnSiguiente">Siguiente</button>
+        </div>
+        <ol class="puntos" id="puntos" aria-label="Pasos del recorrido"></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="practica">
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Practique: ¿así está bien escrita?</h2>
+      <p>Una tarea bien escrita dice qué se hace y sobre qué. Lea cada ejemplo y decida.</p>
+    </div>
+    <div class="practica">
+      <span class="avance" id="practicaAvance"></span>
+      <div class="frase" id="practicaFrase"></div>
+      <div class="mando" id="practicaBotones">
+        <button class="boton azul" type="button" data-voto="si">Así está bien</button>
+        <button class="boton claro" type="button" data-voto="no">Le falta detalle</button>
+      </div>
+      <div class="respuesta" id="practicaRespuesta" aria-live="polite">Elija una opción para ver la explicación.</div>
+      <div class="mando">
+        <button class="boton claro" type="button" id="practicaSiguiente" disabled>Siguiente ejemplo</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ejemplos">
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Ejemplos según su oficina</h2>
+      <p>Toque el área que más se parezca a la suya para ver cómo escribir una tarea y sus documentos.</p>
+    </div>
+    <div class="oficinas" id="oficinas" role="group" aria-label="Áreas"></div>
+    <div class="ejemplos" id="ejemplosLista"></div>
+    <p class="nota">Son ejemplos para orientarse. Escriba lo que usted hace en realidad, con sus propias palabras.</p>
+  </div>
+</section>
+
+<section id="revision">
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Antes de pulsar «Enviar»</h2>
+      <p>Marque cada punto cuando lo haya revisado.</p>
+    </div>
+    <ul class="lista" id="lista">
+      <li><label><input type="checkbox" id="rev1"><span>Escribí mi nombre completo y elegí mi dependencia.</span></label></li>
+      <li><label><input type="checkbox" id="rev2"><span>Cada tarea dice qué hago y sobre qué, sin frases generales como «apoyo» o «varios».</span></label></li>
+      <li><label><input type="checkbox" id="rev3"><span>En cada tarea marqué cada cuánto la hago.</span></label></li>
+      <li><label><input type="checkbox" id="rev4"><span>Escribí los documentos por su nombre, uno por renglón, y dónde quedan guardados.</span></label></li>
+      <li><label><input type="checkbox" id="rev5"><span>Conté qué me entregan para empezar y cómo hago la tarea.</span></label></li>
+      <li><label><input type="checkbox" id="rev6"><span>Agregué todas las tareas que hago de forma habitual, no solo una.</span></label></li>
+    </ul>
+    <div class="listo" id="listo">
+      <strong id="listoTexto">Le faltan 6 puntos por revisar.</strong>
+      <a class="boton azul" data-formulario href="https://sipad.onrender.com/icaf/?t=bRnCVygirY3G-uKgNIszk1lEkBxxQQtH" target="_blank" rel="noopener">Abrir el formulario</a>
+    </div>
+  </div>
+</section>
+
+<section id="preguntas">
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Preguntas frecuentes</h2>
+    </div>
+    <div class="preguntas">
+      <details><summary>¿Necesito usuario o contraseña?</summary><p>No. Abra el enlace, escriba su nombre y empiece.</p></details>
+      <details><summary>¿Lo puedo llenar desde el celular?</summary><p>Sí. Funciona en celular, tableta y computador.</p></details>
+      <details><summary>¿Se pierde lo que escribí si cierro la página?</summary><p>No, mientras no lo haya enviado. Vuelva a abrir el enlace en el mismo celular o computador y encontrará lo que llevaba.</p></details>
+      <details><summary>Ya envié y olvidé una tarea. ¿Qué hago?</summary><p>Abra el enlace otra vez, escriba su nombre igual que la primera vez y envíe solo la tarea que le faltó.</p></details>
+      <details><summary>¿Cuántas tareas debo registrar?</summary><p>Las que hace de forma habitual en su cargo. En cada envío caben hasta 30 tareas.</p></details>
+      <details><summary>Mi oficina no aparece en la lista. ¿Qué hago?</summary><p>Avise a Gestión Documental para que la agreguen. Cuando la creen, aparece en la lista del formulario.</p></details>
+      <details><summary>¿Qué pasa después de enviar?</summary><p>Gestión Documental revisa sus respuestas y las registra. Luego le presentará el formato con sus actividades para que lo revise y lo firme.</p></details>
+      <details><summary>¿Para qué sirve esta información?</summary><p>Para construir las Tablas de Retención Documental: el instrumento que define qué documentos produce cada oficina y cuánto tiempo se conservan.</p></details>
+    </div>
+  </div>
+</section>
+
+<div class="plazo">
+  <div class="ancho">
+    <div>
+      <h2>Del 30 de noviembre al 4 de diciembre de 2026</h2>
+      <p>Ese es el plazo para diligenciarlo. Entre más completo, mejor.</p>
+    </div>
+    <a class="boton lleno" data-formulario href="https://sipad.onrender.com/icaf/?t=bRnCVygirY3G-uKgNIszk1lEkBxxQQtH" target="_blank" rel="noopener">Abrir el formulario</a>
+  </div>
+</div>
+
+</main>
+
+<footer><div class="ancho">Alcaldía de Aguachica · Gestión Documental · SIPAD</div></footer>
+
+<script>
+(() => {
+  'use strict'
+  const $ = (s, e = document) => e.querySelector(s)
+  const sinMovimiento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  // Si la guía se abre junto al formulario (misma dirección, con ?t=), los botones llevan a ese formulario.
+  try {
+    const t = new URLSearchParams(location.search).get('t')
+    if (t && /^[\w-]{20,80}$/.test(t)) document.querySelectorAll('[data-formulario]').forEach(a => { a.href = '/icaf/?t=' + t })
+  } catch { /* se deja el enlace por defecto */ }
+
+  // ================= Recorrido =================
+  // Cada pantalla es HTML fijo. data-escribe = texto que se va escribiendo; data-toca = elemento que se marca.
+  const chips = (lista, elegido) => '<div class="f-chips">' + lista.map(c => `<span class="f-chip"${c === elegido ? ' data-toca="elegido"' : ''}>${c}</span>`).join('') + '</div>'
+  const FRECUENCIAS = ['Todos los días', 'Cada semana', 'Cada mes', 'Cada tres meses', 'Cada seis meses', 'Una vez al año', 'Solo cuando se necesita']
+
+  const PASOS = [
+    { titulo: 'Abra el enlace',
+      texto: 'Toque el enlace que recibió por WhatsApp o correo, o escanee el código QR. El formulario abre de una vez.',
+      si: 'Abrirlo desde el celular, en cualquier momento del día.', no: 'Buscar un usuario o una contraseña: no se necesitan.',
+      pie: '0 tareas listas',
+      html: `<div class="f-caja intro"><h4>Cuéntenos qué hace en su trabajo</h4><div>Queremos saber qué tareas hace usted y qué documentos salen de ellas. No hay respuestas buenas ni malas.</div></div>
+             <div class="f-caja"><h4>Sus datos</h4><div class="f-rotulo">Su nombre completo</div><div class="f-campo"></div><div class="f-rotulo">Su cargo (opcional)</div><div class="f-campo"></div></div>` },
+    { titulo: 'Escriba sus datos',
+      texto: 'Ponga su nombre completo, su cargo y elija de la lista la dependencia u oficina donde trabaja.',
+      si: 'Su nombre completo, igual cada vez que envíe.', no: 'Solo el primer nombre o un apodo.',
+      pie: '0 tareas listas',
+      html: `<div class="f-caja"><h4>Sus datos</h4>
+             <div class="f-rotulo">Su nombre completo</div><div class="f-campo" data-escribe="Ana María Pérez"></div>
+             <div class="f-rotulo">Su cargo (opcional)</div><div class="f-campo" data-escribe="Auxiliar administrativa"></div>
+             <div class="f-rotulo">Dependencia u oficina donde trabaja</div><div class="f-campo" data-escribe="SECRETARÍA DE HACIENDA"></div></div>` },
+    { titulo: 'Cuente una tarea',
+      texto: 'En «¿Qué tarea hace?» escriba una sola tarea, como se la contaría a un compañero.',
+      si: '«Expedir paz y salvos de impuesto predial».', no: '«Apoyo administrativo» o «Funciones varias».',
+      pie: '0 tareas listas',
+      html: `<div class="f-caja"><h4><span class="f-num">1</span>Tarea 1</h4>
+             <div class="f-rotulo">¿Qué tarea hace?</div><div class="f-ayuda">Escríbala como se la contaría a un compañero.</div>
+             <div class="f-campo alto" data-escribe="Expedir paz y salvos de impuesto predial"></div>
+             <div class="f-rotulo">¿Cada cuánto la hace?</div>${chips(FRECUENCIAS)}</div>` },
+    { titulo: 'Marque cada cuánto la hace',
+      texto: 'Toque una sola opción: la que mejor describa la frecuencia de esa tarea.',
+      si: 'Si la hace cuando alguien la pide, marque «Solo cuando se necesita».', no: 'Dejarla sin marcar: el formulario no deja enviar.',
+      pie: '0 tareas listas',
+      html: `<div class="f-caja"><h4><span class="f-num">1</span>Tarea 1</h4>
+             <div class="f-rotulo">¿Qué tarea hace?</div><div class="f-campo">Expedir paz y salvos de impuesto predial</div>
+             <div class="f-rotulo">¿Cada cuánto la hace?</div>${chips(FRECUENCIAS, 'Solo cuando se necesita')}</div>` },
+    { titulo: 'Diga qué documentos salen',
+      texto: 'Si de la tarea sale algún documento, marque «Sí», escríbalos uno por renglón y diga dónde quedan guardados.',
+      si: 'El nombre de cada documento: «Paz y salvo», «Recibo de pago».', no: '«Papeles», «Soportes varios» o «Lo normal».',
+      pie: '1 tarea lista',
+      html: `<div class="f-caja"><h4><span class="f-num lista">1</span>Tarea 1</h4>
+             <div class="f-rotulo">¿De esa tarea sale algún documento?</div>${chips(['Sí', 'No'], 'Sí')}
+             <div class="f-rotulo">¿Cuáles documentos?</div><div class="f-ayuda">Escriba uno por renglón.</div>
+             <div class="f-campo alto" data-escribe="Paz y salvo de impuesto predial\nRecibo de pago"></div>
+             <div class="f-rotulo">¿Dónde quedan guardados?</div>${chips(['En papel', 'En el computador', 'En ambos'], 'En ambos')}</div>` },
+    { titulo: 'Complete el detalle',
+      texto: 'Cuente qué le entregan o qué necesita para empezar, y explique en pocas palabras cómo hace la tarea.',
+      si: 'Dos o tres renglones claros. Entre más completo, mejor.', no: 'Dejar los dos campos en blanco por ser opcionales.',
+      pie: '1 tarea lista',
+      html: `<div class="f-caja"><h4><span class="f-num lista">1</span>Tarea 1</h4>
+             <div class="f-rotulo">¿Qué documentos le entregan o necesita para empezar?</div>
+             <div class="f-campo alto" data-escribe="Solicitud del contribuyente\nCopia de la cédula"></div>
+             <div class="f-rotulo">Explique en pocas palabras cómo la hace</div>
+             <div class="f-campo alto" data-escribe="Reviso que el predio esté al día, genero el paz y salvo y lo entrego firmado."></div></div>` },
+    { titulo: 'Agregue las demás y envíe',
+      texto: 'Con «+ Agregar otra tarea» registre sus demás tareas, una por una. Al terminar, pulse «Enviar» y espere el mensaje de confirmación.',
+      si: 'Registrar todas las tareas que hace de forma habitual.', no: 'Enviar una sola tarea y dar el formulario por terminado.',
+      pie: '2 tareas listas',
+      html: `<div class="f-agregar" data-toca="toque">+ Agregar otra tarea</div>
+             <div class="f-caja"><h4><span class="f-num lista">2</span>Tarea 2</h4>
+             <div class="f-rotulo">¿Qué tarea hace?</div><div class="f-campo" data-escribe="Atender contribuyentes en ventanilla"></div>
+             <div class="f-rotulo">¿Cada cuánto la hace?</div>${chips(['Todos los días', 'Cada semana', 'Cada mes'], 'Todos los días')}</div>
+             <div class="f-caja f-gracias" data-aparece hidden><div class="visto">✓</div><h4>¡Gracias! Su información quedó registrada.</h4><div>Ya puede cerrar esta página.</div></div>`,
+      enviar: true }
+  ]
+
+  let paso = 0, turno = 0
+  const visitados = new Set([0])
+  const espera = (ms) => new Promise(r => setTimeout(r, ms))
+
+  async function animar(miTurno) {
+    const lienzo = $('#lienzo')
+    const nodos = [...lienzo.querySelectorAll('[data-escribe], [data-toca]')]
+    // Estado final de una vez si la persona pidió menos movimiento
+    if (sinMovimiento) {
+      nodos.forEach(n => { if (n.dataset.escribe !== undefined) n.textContent = n.dataset.escribe; else n.classList.add(n.dataset.toca === 'toque' ? 'toque' : 'elegido') })
+      if (PASOS[paso].enviar) { $('#pieEnviar').classList.add('toque'); const g = lienzo.querySelector('[data-aparece]'); if (g) g.hidden = false }
+      return
+    }
+    await espera(450)
+    for (const n of nodos) {
+      if (miTurno !== turno) return
+      if (n.dataset.escribe !== undefined) {
+        const texto = n.dataset.escribe
+        n.classList.add('activo')
+        for (let i = 1; i <= texto.length; i++) {
+          if (miTurno !== turno) return
+          n.textContent = texto.slice(0, i)
+          await espera(texto[i - 1] === '\n' ? 260 : 34)
+        }
+        await espera(350)
+        n.classList.remove('activo')
+      } else {
+        n.classList.add('toque')
+        await espera(520)
+        if (miTurno !== turno) return
+        if (n.dataset.toca === 'elegido') { n.classList.remove('toque'); n.classList.add('elegido') }
+        await espera(380)
+      }
+    }
+    if (PASOS[paso].enviar && miTurno === turno) {
+      await espera(500)
+      $('#pieEnviar').classList.add('toque')
+      await espera(900)
+      if (miTurno !== turno) return
+      const g = lienzo.querySelector('[data-aparece]')
+      if (g) { lienzo.querySelectorAll(':scope > :not([data-aparece])').forEach(e => { e.hidden = true }); g.hidden = false }
+    }
+  }
+
+  function pintarPaso() {
+    const p = PASOS[paso]
+    turno++
+    visitados.add(paso)
+    $('#pasoCuenta').textContent = `Paso ${paso + 1} de ${PASOS.length}`
+    $('#pasoTitulo').textContent = p.titulo
+    $('#pasoTexto').textContent = p.texto
+    $('#pasoComparar').innerHTML = `<div class="asi-si"><b>Así sí</b>${p.si}</div><div class="asi-no"><b>Así no</b>${p.no}</div>`
+    $('#lienzo').innerHTML = p.html
+    $('#pieTexto').textContent = p.pie
+    $('#pieEnviar').classList.remove('toque')
+    $('#btnAnterior').disabled = paso === 0
+    $('#btnSiguiente').textContent = paso === PASOS.length - 1 ? 'Volver a empezar' : 'Siguiente'
+    document.querySelectorAll('#puntos button').forEach((b, i) => {
+      if (i === paso) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current')
+      b.classList.toggle('hecho', visitados.has(i) && i !== paso)
+    })
+    animar(turno)
+  }
+
+  $('#puntos').innerHTML = PASOS.map((p, i) => `<li><button type="button" aria-label="Paso ${i + 1}: ${p.titulo}">${i + 1}</button></li>`).join('')
+  document.querySelectorAll('#puntos button').forEach((b, i) => b.addEventListener('click', () => { paso = i; pintarPaso() }))
+  $('#btnAnterior').addEventListener('click', () => { if (paso > 0) { paso--; pintarPaso() } })
+  $('#btnSiguiente').addEventListener('click', () => { paso = paso === PASOS.length - 1 ? 0 : paso + 1; pintarPaso() })
+  pintarPaso()
+
+  // ================= Práctica =================
+  const CASOS = [
+    { frase: 'Apoyo a la gestión', bien: false, porque: 'No dice qué se hace ni sobre qué.', mejor: '«Elaborar las actas del comité de contratación».' },
+    { frase: 'Expedir certificados de residencia', bien: true, porque: 'Dice qué se hace (expedir) y sobre qué (certificados de residencia).' },
+    { frase: 'Varios', bien: false, porque: 'No describe ninguna tarea. Piense en lo que más hace en la semana.', mejor: '«Recibir y radicar la correspondencia que llega a la oficina».' },
+    { frase: 'Liquidar la nómina mensual de los empleados', bien: true, porque: 'Es una tarea concreta y cualquiera entiende de qué se trata.' },
+    { frase: 'Lo que me pida el jefe', bien: false, porque: 'Eso cambia cada día y no se puede clasificar. Escriba lo que más le piden.', mejor: '«Proyectar respuestas a derechos de petición».' },
+    { frase: 'Hacer visitas de inspección a establecimientos', bien: true, porque: 'Queda claro qué se hace y a quién va dirigido.' }
+  ]
+  let caso = 0, aciertos = 0, respondido = false
+
+  function pintarCaso() {
+    respondido = false
+    const r = $('#practicaRespuesta')
+    r.className = 'respuesta'
+    if (caso >= CASOS.length) {
+      $('#practicaAvance').textContent = 'Práctica terminada'
+      $('#practicaFrase').textContent = `Acertó ${aciertos} de ${CASOS.length}.`
+      r.textContent = aciertos === CASOS.length ? 'Ya sabe cómo escribir sus tareas. Puede abrir el formulario.' : 'La clave es decir qué hace y sobre qué. Puede repetir la práctica o pasar al formulario.'
+      $('#practicaBotones').hidden = true
+      $('#practicaSiguiente').disabled = false
+      $('#practicaSiguiente').textContent = 'Repetir la práctica'
+      return
+    }
+    $('#practicaBotones').hidden = false
+    $('#practicaAvance').textContent = `Ejemplo ${caso + 1} de ${CASOS.length}`
+    $('#practicaFrase').textContent = `«${CASOS[caso].frase}»`
+    r.textContent = 'Elija una opción para ver la explicación.'
+    $('#practicaSiguiente').disabled = true
+    $('#practicaSiguiente').textContent = caso === CASOS.length - 1 ? 'Ver el resultado' : 'Siguiente ejemplo'
+  }
+  document.querySelectorAll('#practicaBotones button').forEach(b => b.addEventListener('click', () => {
+    if (respondido || caso >= CASOS.length) return
+    respondido = true
+    const c = CASOS[caso]
+    const acerto = (b.dataset.voto === 'si') === c.bien
+    if (acerto) aciertos++
+    const r = $('#practicaRespuesta')
+    r.className = 'respuesta ' + (acerto ? 'acierto' : 'fallo')
+    r.innerHTML = `<b>${acerto ? 'Correcto.' : 'No del todo.'}</b> ${c.bien ? 'Está bien escrita. ' : 'Le falta detalle. '}${c.porque}${c.mejor ? ' Mejor así: ' + c.mejor : ''}`
+    $('#practicaSiguiente').disabled = false
+  }))
+  $('#practicaSiguiente').addEventListener('click', () => {
+    if (caso >= CASOS.length) { caso = 0; aciertos = 0 } else caso++
+    pintarCaso()
+  })
+  pintarCaso()
+
+  // ================= Ejemplos por oficina =================
+  const OFICINAS = [
+    { nombre: 'Hacienda y Tesorería', tareas: [
+      ['Expedir paz y salvos de impuesto predial', ['Paz y salvo', 'Recibo de pago']],
+      ['Elaborar comprobantes de egreso', ['Comprobante de egreso', 'Orden de pago', 'Soportes del pago']],
+      ['Liquidar el impuesto de industria y comercio', ['Declaración', 'Liquidación oficial']] ] },
+    { nombre: 'Gobierno, Inspecciones y Comisarías', tareas: [
+      ['Tramitar querellas policivas', ['Querella', 'Acta de audiencia', 'Decisión']],
+      ['Atender solicitudes de medidas de protección', ['Solicitud', 'Auto de trámite', 'Medida de protección']],
+      ['Expedir permisos para eventos', ['Solicitud', 'Resolución de permiso']] ] },
+    { nombre: 'Salud', tareas: [
+      ['Hacer visitas de inspección sanitaria', ['Acta de visita', 'Concepto sanitario']],
+      ['Reportar eventos de salud pública', ['Ficha de notificación', 'Informe']],
+      ['Atender afiliaciones al régimen subsidiado', ['Formulario de afiliación', 'Listado de afiliados']] ] },
+    { nombre: 'Planeación y Obras', tareas: [
+      ['Expedir certificados de uso del suelo', ['Solicitud', 'Certificado de uso del suelo']],
+      ['Supervisar contratos de obra', ['Informe de supervisión', 'Acta parcial', 'Registro fotográfico']],
+      ['Actualizar encuestas del Sisbén', ['Solicitud', 'Ficha de caracterización']] ] },
+    { nombre: 'Jurídica y Contratación', tareas: [
+      ['Elaborar contratos de prestación de servicios', ['Estudios previos', 'Minuta del contrato', 'Pólizas']],
+      ['Responder derechos de petición', ['Petición', 'Oficio de respuesta']],
+      ['Representar al municipio en procesos judiciales', ['Demanda', 'Contestación', 'Fallo']] ] },
+    { nombre: 'Recursos Humanos', tareas: [
+      ['Liquidar la nómina', ['Nómina', 'Novedades', 'Comprobante de pago']],
+      ['Administrar las historias laborales', ['Hoja de vida', 'Acto de nombramiento', 'Afiliaciones']],
+      ['Tramitar vacaciones y permisos', ['Solicitud', 'Resolución']] ] },
+    { nombre: 'Otra oficina', tareas: [
+      ['Recibir y radicar la correspondencia', ['Comunicación recibida', 'Planilla de radicación']],
+      ['Elaborar informes de gestión', ['Informe de gestión', 'Anexos']],
+      ['Participar en comités', ['Citación', 'Acta de comité']] ] }
+  ]
+  let oficina = 0
+  function pintarOficinas() {
+    $('#oficinas').innerHTML = OFICINAS.map((o, i) => `<button type="button" aria-pressed="${i === oficina}" data-i="${i}">${o.nombre}</button>`).join('')
+    $('#ejemplosLista').innerHTML = OFICINAS[oficina].tareas.map(([t, docs]) =>
+      `<article class="ejemplo"><small>Tarea</small><h3>${t}</h3><small>Documentos que salen</small><ul>${docs.map(d => `<li>${d}</li>`).join('')}</ul></article>`).join('')
+    document.querySelectorAll('#oficinas button').forEach(b => b.addEventListener('click', () => { oficina = Number(b.dataset.i); pintarOficinas(); $('#oficinas button[aria-pressed="true"]').focus() }))
+  }
+  pintarOficinas()
+
+  // ================= Lista antes de enviar =================
+  const casillas = [...document.querySelectorAll('#lista input')]
+  function revisarLista() {
+    const faltan = casillas.filter(c => !c.checked).length
+    $('#listo').classList.toggle('completo', faltan === 0)
+    $('#listoTexto').textContent = faltan === 0 ? 'Todo revisado. Ya puede enviar su formulario.' : faltan === 1 ? 'Le falta 1 punto por revisar.' : `Le faltan ${faltan} puntos por revisar.`
+  }
+  casillas.forEach(c => c.addEventListener('change', revisarLista))
+  revisarLista()
+})()
+</script>
+</body>
+</html>
