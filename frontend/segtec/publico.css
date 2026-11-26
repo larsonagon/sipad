@@ -11,6 +11,9 @@
 .ip-aviso { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; border-radius: 10px; padding: 9px 12px; font-size: 13.5px; margin: 10px 0; }
 .ip-podio td { background: #f0f9f4; }
 .ip-empate { font-size: 12px; font-weight: 600; color: #b45309; }
+.ip-provisional td, .ip-provisional td b { color: #64748b; }
+.ip-provisional.ip-podio td { background: #f8fafc; }
+.ip-nota-prov { font-size: 12px; font-weight: 600; color: #64748b; font-style: italic; }
 .ip-cero td { color: #b91c1c; }
 .vr-tabs { flex-wrap: wrap; }
 @media (max-width: 720px) { .ip-act dl { grid-template-columns: 1fr; } }

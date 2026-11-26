@@ -327,8 +327,9 @@ export async function descartarEnvio(db, entidadId, id, usuario = '') {
 }
 
 // ---------------- Medición (tabla de posiciones) ----------------
-// Puntaje de 100 por funcionario, calculado solo con las respuestas que el
-// asesor incorporó al ICAF (las descartadas y las pendientes no suman):
+// Puntaje de 100 por funcionario. Queda en firme con las respuestas que el asesor
+// incorporó al ICAF; las que están por revisar aparecen con puntaje provisional
+// (provisional: true) y las descartadas no cuentan:
 //   Detalle     50  promedio de sus tareas: 25 si indicó qué documentos recibe
 //                   para empezar + 25 si explicó cómo la hace
 //   Cobertura   30  5 puntos por tarea, con tope de 6 tareas
@@ -355,9 +356,10 @@ export function calcularRanking(envios, inicio = null) {
   for (const e of envios) {
     const k = clave(e.nombre)
     if (!k) continue
-    if (!personas.has(k)) personas.set(k, { nombre: e.nombre, cargo: e.cargo || null, dependencia: e.dependencia || null, primer_envio: e.enviado_en, envios: 0, tareas: new Map() })
+    if (!personas.has(k)) personas.set(k, { nombre: e.nombre, cargo: e.cargo || null, dependencia: e.dependencia || null, primer_envio: e.enviado_en, envios: 0, provisional: false, tareas: new Map() })
     const p = personas.get(k)
     p.envios++
+    if (e.estado === 'pendiente') p.provisional = true
     if (!p.cargo && e.cargo) p.cargo = e.cargo
     if (e.enviado_en && (!p.primer_envio || e.enviado_en < p.primer_envio)) p.primer_envio = e.enviado_en
     for (const a of e.actividades || []) {
@@ -378,7 +380,8 @@ export function calcularRanking(envios, inicio = null) {
     const oportunidad = puntosOportunidad(inicio, p.primer_envio)
     filas.push({
       nombre: p.nombre, cargo: p.cargo, dependencia: p.dependencia, envios: p.envios, tareas: tareas.length,
-      detalle, cobertura, oportunidad, total: detalle + cobertura + oportunidad, primer_envio: p.primer_envio
+      detalle, cobertura, oportunidad, total: detalle + cobertura + oportunidad, primer_envio: p.primer_envio,
+      provisional: p.provisional
     })
   }
   filas.sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es'))
@@ -418,7 +421,7 @@ export async function medicion(db, entidadId) {
     ok: true,
     campana_inicio: inicio,
     puntaje: PUNTAJE,
-    ranking: calcularRanking(envios.filter(e => e.estado === 'incorporado'), inicio),
+    ranking: calcularRanking(envios, inicio),
     dependencias,
     pendientes: envios.filter(e => e.estado === 'pendiente').length
   }

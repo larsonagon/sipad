@@ -174,8 +174,8 @@ function celda(tag, texto, clase) { return el(tag, { class: clase || '', text: t
 
 function descargarCSV() {
   const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`
-  const filas = [['Puesto', 'Funcionario', 'Cargo', 'Dependencia', 'Tareas', 'Detalle (50)', 'Cobertura (30)', 'Oportunidad (20)', 'Total (100)', 'Empate']]
-  MED.ranking.forEach(f => filas.push([f.posicion, f.nombre, f.cargo || '', f.dependencia || '', f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total, f.empate ? 'Sí' : 'No']))
+  const filas = [['Puesto', 'Funcionario', 'Cargo', 'Dependencia', 'Tareas', 'Detalle (50)', 'Cobertura (30)', 'Oportunidad (20)', 'Total (100)', 'Empate', 'Puntaje']]
+  MED.ranking.forEach(f => filas.push([f.posicion, f.nombre, f.cargo || '', f.dependencia || '', f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total, f.empate ? 'Sí' : 'No', f.provisional ? 'Provisional' : 'En firme']))
   const blob = new Blob(['\ufeff' + filas.map(f => f.map(q).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' })
   const a = el('a', { href: URL.createObjectURL(blob), download: 'Medicion-ICAF.csv' })
   document.body.append(a); a.click(); a.remove()
@@ -196,26 +196,27 @@ function vistaMedicion(v) {
       el('li', {}, el('b', { text: `Detalle, ${P.detalleRecibe + P.detalleExplica}: ` }), `promedio de sus tareas; ${P.detalleRecibe} si indicó qué documentos recibe para empezar y ${P.detalleExplica} si explicó cómo la hace.`),
       el('li', {}, el('b', { text: `Cobertura, ${P.porTarea * P.topeTareas}: ` }), `${P.porTarea} puntos por tarea, con tope de ${P.topeTareas} tareas.`),
       el('li', {}, el('b', { text: `Oportunidad, ${P.oportunidad[0]}: ` }), `según el día del primer envío: ${P.oportunidad.map((n, i) => `día ${i + 1}, ${n}`).join('; ')}; después, 0.`)),
-    el('p', { class: 'vr-muted', text: 'Solo suman las respuestas incorporadas al ICAF. Quien envía varias veces queda con un solo puntaje (sus tareas se suman sin repetir). Los empates se definen por sorteo.' }),
+    el('p', { class: 'vr-muted', text: 'El puntaje queda en firme cuando usted incorpora la respuesta al ICAF; mientras está por revisar es provisional, y si la descarta deja de contar. Quien envía varias veces queda con un solo puntaje (sus tareas se suman sin repetir). Los empates se definen por sorteo.' }),
     ENLACE ? el('label', { class: 'vr-muted', style: 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;' }, 'Primer día de la campaña:', inicio) : null,
     ENLACE && !MED.campana_inicio ? el('p', { class: 'ip-aviso', text: 'Indique el primer día de la campaña. Mientras no lo haga, nadie recibe puntos por oportunidad.' }) : null))
 
   if (MED.pendientes) v.append(el('p', { class: 'ip-aviso', text: MED.pendientes === 1
-    ? 'Hay 1 respuesta por revisar. No suma en la tabla hasta que la incorpore.'
-    : `Hay ${MED.pendientes} respuestas por revisar. No suman en la tabla hasta que las incorpore.` }))
+    ? 'Hay 1 respuesta por revisar. Aparece en la tabla con puntaje provisional hasta que la incorpore o la descarte.'
+    : `Hay ${MED.pendientes} respuestas por revisar. Aparecen en la tabla con puntaje provisional hasta que las incorpore o las descarte.` }))
 
   // Tabla de posiciones
   const caja = el('section', { class: 'vr-card' },
     el('div', { class: 'ip-envio-cab' }, el('h3', { text: 'Tabla de posiciones' }),
       MED.ranking.length ? el('button', { class: 'btn-secondary btn-md', type: 'button', text: 'Descargar (CSV)', onclick: descargarCSV }) : null))
-  if (!MED.ranking.length) caja.append(el('div', { class: 'vr-vacio', text: 'Todavía no hay respuestas incorporadas.' }))
+  if (!MED.ranking.length) caja.append(el('div', { class: 'vr-vacio', text: 'Todavía no ha respondido ningún funcionario.' }))
   else {
     caja.append(el('table', { class: 'vr-tabla' },
       el('thead', {}, el('tr', {}, celda('th', 'Puesto'), celda('th', 'Funcionario'), celda('th', 'Dependencia', 'ocultable'), celda('th', 'Tareas', 'num'),
         celda('th', 'Detalle', 'num ocultable'), celda('th', 'Cobertura', 'num ocultable'), celda('th', 'Oportunidad', 'num ocultable'), celda('th', 'Total', 'num'))),
-      el('tbody', {}, MED.ranking.map(f => el('tr', { class: f.posicion <= 3 ? 'ip-podio' : '' },
+      el('tbody', {}, MED.ranking.map(f => el('tr', { class: [f.posicion <= 3 ? 'ip-podio' : '', f.provisional ? 'ip-provisional' : ''].join(' ').trim() },
         celda('td', `${f.posicion}.º`, 'num'),
         el('td', {}, el('b', { text: f.nombre }), f.cargo ? el('div', { class: 'vr-muted', text: f.cargo }) : null,
+          f.provisional ? el('div', { class: 'ip-nota-prov', text: 'Puntaje provisional: falta incorporar' }) : null,
           f.empate ? el('div', { class: 'ip-empate', text: 'Empate: se define por sorteo' }) : null),
         celda('td', f.dependencia || '—', 'ocultable'), celda('td', String(f.tareas), 'num'),
         celda('td', String(f.detalle), 'num ocultable'), celda('td', String(f.cobertura), 'num ocultable'), celda('td', String(f.oportunidad), 'num ocultable'),

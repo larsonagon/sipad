@@ -208,7 +208,7 @@ describe('medición (tabla de posiciones)', () => {
     assert.equal(r.find(f => f.nombre === 'Eva Ruiz').total, 65) // 50 + 5 + 10
   })
 
-  test('el servicio solo puntúa lo incorporado y arma el tablero por dependencia', async () => {
+  test('el servicio puntúa lo incorporado en firme, lo pendiente como provisional, y arma el tablero por dependencia', async () => {
     assert.equal((await http('GET', '/api/icaf-publico/medicion')).status, 401)
     assert.equal((await http('PUT', '/api/icaf-publico/enlace', { campana_inicio: '30/11/2026' }, ASESOR)).status, 400)
     const e = await http('PUT', '/api/icaf-publico/enlace', { campana_inicio: '2020-01-01' }, ASESOR)
@@ -219,9 +219,12 @@ describe('medición (tabla de posiciones)', () => {
     assert.equal(m.status, 200)
     assert.equal(m.body.campana_inicio, '2020-01-01')
     assert.equal(m.body.pendientes, 1)
-    // Solo Ana Pérez está incorporada: 2 tareas, una con "recibe" → detalle 13, cobertura 10, oportunidad 0 (envió años después del inicio)
-    assert.deepEqual(m.body.ranking.map(f => [f.posicion, f.nombre, f.dependencia, f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total]),
-      [[1, 'Ana Pérez', 'Secretaría de Hacienda', 2, 13, 10, 0, 23]])
+    // Pendiente Uno (por revisar): 1 tarea con "recibe" → 25 + 5; provisional.
+    // Ana Pérez (incorporada): 2 tareas, una con "recibe" → detalle 13, cobertura 10; en firme.
+    // Oportunidad 0 para ambos (enviaron años después del inicio). Luis, descartado, no aparece.
+    assert.deepEqual(m.body.ranking.map(f => [f.posicion, f.nombre, f.dependencia, f.tareas, f.detalle, f.cobertura, f.oportunidad, f.total, f.provisional]), [
+      [1, 'Pendiente Uno', 'Despacho del Alcalde', 1, 25, 5, 0, 30, true],
+      [2, 'Ana Pérez', 'Secretaría de Hacienda', 2, 13, 10, 0, 23, false]])
     // Tablero: cuenta pendientes e incorporadas, no descartadas (Luis); a igual número de funcionarios, primero la de más tareas
     assert.deepEqual(m.body.dependencias, [
       { nombre: 'Secretaría de Hacienda', funcionarios: 1, tareas: 2 },
