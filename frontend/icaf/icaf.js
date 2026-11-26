@@ -111,7 +111,9 @@ function pintar() {
     el('ol', { class: 'if-pasos' },
       el('li', { text: 'Escriba su nombre y elija su dependencia.' }),
       el('li', { text: 'Cuente sus tareas, una por una, con sus propias palabras.' }),
-      el('li', { text: 'Pulse «Enviar». No necesita usuario ni contraseña.' }))
+      el('li', { text: 'Pulse «Enviar».' })),
+    el('p', { class: 'if-guia' }, '¿Primera vez? ',
+      el('a', { href: `/icaf/guia.html?t=${encodeURIComponent(TOKEN)}`, text: 'Vea la guía y el video de un minuto' }), '.')
   ))
 
   const sel = el('select', { id: 'fDependencia' }, el('option', { value: '', text: 'Seleccione…' }),

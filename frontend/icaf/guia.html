@@ -141,6 +141,8 @@ details { background: var(--hoja); border: 1px solid var(--linea); border-radius
 summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style-position: outside; margin-left: 18px; }
 details p { padding: 0 0 14px; color: #2c4257; }
 
+.video { display: block; width: 100%; max-width: 300px; aspect-ratio: 9 / 16; border-radius: 18px; background: #0b1a26; box-shadow: 0 14px 32px rgba(16,38,58,.2); }
+
 .plazo { margin: 34px 0 0; background: var(--marca); color: #fff; }
 .plazo .ancho { padding-top: 26px; padding-bottom: 30px; display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
 .plazo h2 { font-size: clamp(21px, 4vw, 27px); }
@@ -166,8 +168,8 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
     <h1>Llene su ICAF en 5 minutos</h1>
     <p>El ICAF es el formulario donde usted cuenta qué tareas hace y qué documentos salen de ellas. Con eso se organiza el archivo de la entidad.</p>
     <ul class="datos">
-      <li>Sin usuario ni contraseña</li>
       <li>Desde el celular</li>
+      <li>Unos 5 minutos</li>
       <li>7 pasos</li>
     </ul>
     <div class="acciones">
@@ -178,6 +180,16 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
 </header>
 
 <main>
+
+<section id="video" hidden>
+  <div class="ancho">
+    <div class="encabezado">
+      <h2>Véalo en un minuto</h2>
+      <p>El video muestra el formulario llenándose de principio a fin.</p>
+    </div>
+    <video class="video" id="videoGuia" controls playsinline preload="metadata" src="/icaf/como-llenar-el-icaf.mp4#t=0.8"></video>
+  </div>
+</section>
 
 <section id="recorrido">
   <div class="ancho">
@@ -268,7 +280,7 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
       <h2>Preguntas frecuentes</h2>
     </div>
     <div class="preguntas">
-      <details><summary>¿Necesito usuario o contraseña?</summary><p>No. Abra el enlace, escriba su nombre y empiece.</p></details>
+      <details><summary>¿Cómo entro al formulario?</summary><p>Abra el enlace que recibió, escriba su nombre y empiece.</p></details>
       <details><summary>¿Lo puedo llenar desde el celular?</summary><p>Sí. Funciona en celular, tableta y computador.</p></details>
       <details><summary>¿Se pierde lo que escribí si cierro la página?</summary><p>No, mientras no lo haya enviado. Vuelva a abrir el enlace en el mismo celular o computador y encontrará lo que llevaba.</p></details>
       <details><summary>Ya envié y olvidé una tarea. ¿Qué hago?</summary><p>Abra el enlace otra vez, escriba su nombre igual que la primera vez y envíe solo la tarea que le faltó.</p></details>
@@ -303,8 +315,13 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
   // Si la guía se abre junto al formulario (misma dirección, con ?t=), los botones llevan a ese formulario.
   try {
     const t = new URLSearchParams(location.search).get('t')
-    if (t && /^[\w-]{20,80}$/.test(t)) document.querySelectorAll('[data-formulario]').forEach(a => { a.href = '/icaf/?t=' + t })
+    if (t && /^[\w-]{20,80}$/.test(t)) document.querySelectorAll('[data-formulario]').forEach(a => { a.href = '/icaf/?t=' + t; a.removeAttribute('target') })
   } catch { /* se deja el enlace por defecto */ }
+
+  // El video vive junto al formulario; la sección aparece solo si el archivo carga.
+  const video = $('#videoGuia')
+  video.addEventListener('loadedmetadata', () => { $('#video').hidden = false })
+  if (video.readyState >= 1) $('#video').hidden = false
 
   // ================= Recorrido =================
   // Cada pantalla es HTML fijo. data-escribe = texto que se va escribiendo; data-toca = elemento que se marca.
@@ -314,7 +331,7 @@ footer { padding: 18px 0 28px; font-size: 13.5px; color: var(--tinta-suave); }
   const PASOS = [
     { titulo: 'Abra el enlace',
       texto: 'Toque el enlace que recibió por WhatsApp o correo, o escanee el código QR. El formulario abre de una vez.',
-      si: 'Abrirlo desde el celular, en cualquier momento del día.', no: 'Buscar un usuario o una contraseña: no se necesitan.',
+      si: 'Abrirlo desde el celular, en cualquier momento del día.', no: 'Dejarlo para el último día del plazo.',
       pie: '0 tareas listas',
       html: `<div class="f-caja intro"><h4>Cuéntenos qué hace en su trabajo</h4><div>Queremos saber qué tareas hace usted y qué documentos salen de ellas. No hay respuestas buenas ni malas.</div></div>
              <div class="f-caja"><h4>Sus datos</h4><div class="f-rotulo">Su nombre completo</div><div class="f-campo"></div><div class="f-rotulo">Su cargo (opcional)</div><div class="f-campo"></div></div>` },
